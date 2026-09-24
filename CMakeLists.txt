@@ -23,6 +23,7 @@ if(NOT is_multi_config AND NOT CMAKE_BUILD_TYPE)
 endif()
 
 include(cmake/Dependencies.cmake)
+include(cmake/CompilerOptions.cmake)
 qt_standard_project_setup()
 
 option(AIMUSIC_BUILD_TOOLS "Build developer tools" ON)

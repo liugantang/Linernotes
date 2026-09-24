@@ -14,3 +14,5 @@ target_link_libraries(aimusic_depcheck
         AiMusic::Deps::Ebur128
         AiMusic::Deps::Keychain
 )
+
+aimusic_set_target_options(aimusic_depcheck)

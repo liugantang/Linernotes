@@ -19,3 +19,5 @@ target_link_libraries(aimusic_core
     PUBLIC
         Qt6::Core
 )
+
+aimusic_set_target_options(aimusic_core)

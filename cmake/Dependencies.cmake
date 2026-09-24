@@ -58,7 +58,7 @@ find_path(QTKEYCHAIN_INCLUDE_DIR
     PATH_SUFFIXES qt6keychain qt5keychain
 )
 if(QTKEYCHAIN_INCLUDE_DIR)
-    target_include_directories(aimusic_dep_keychain INTERFACE "${QTKEYCHAIN_INCLUDE_DIR}")
+    target_include_directories(aimusic_dep_keychain SYSTEM INTERFACE "${QTKEYCHAIN_INCLUDE_DIR}")
 endif()
 add_library(AiMusic::Deps::Keychain ALIAS aimusic_dep_keychain)
 
