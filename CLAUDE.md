@@ -25,14 +25,14 @@ Claude 的调用成本高，Gemini 便宜。因此：
    - 固定要求：先阅读 `docs/DEVELOPMENT.md`；**不要执行 git commit / 切换分支**；只改与任务相关的文件；完成后运行构建和 `ctest`，在最终回复中汇报修改的文件列表、测试结果和遗留问题
 2. **委托执行**（执行时间长，放到后台运行，Bash 的 `run_in_background: true`）：
    ```bash
-   agy -p "请阅读 .ai/tasks/<任务编号>.md 并完成其中的任务。" \
+   cd /home/liugantang/Code/AiMusic && agy -p "项目根目录是 /home/liugantang/Code/AiMusic，所有命令都在此目录下执行。请阅读 /home/liugantang/Code/AiMusic/.ai/tasks/<任务编号>.md 并完成其中的任务。" \
        --dangerously-skip-permissions --model gemini-3.7-flash-high \
        --print-timeout 60m > .ai/logs/<任务编号>.log 2>&1
    ```
 3. **审查**：看 `git status`、`git diff`；自己运行一次构建和 `ctest`（不要只信汇报）；对照任务说明与 DEVELOPMENT.md 检查范围、设计、测试是否充分、有无越界修改。
 4. **返工**：问题写进 `.ai/tasks/<任务编号>.review.md`，然后再次委托：
    ```bash
-   agy -p "请阅读 .ai/tasks/<任务编号>.review.md，按审查意见修改。" \
+   cd /home/liugantang/Code/AiMusic && agy -p "项目根目录是 /home/liugantang/Code/AiMusic，所有命令都在此目录下执行。请阅读 /home/liugantang/Code/AiMusic/.ai/tasks/<任务编号>.review.md，按审查意见修改。" \
        --dangerously-skip-permissions --model gemini-3.7-flash-high \
        --print-timeout 60m > .ai/logs/<任务编号>-r<N>.log 2>&1
    ```
@@ -41,6 +41,8 @@ Claude 的调用成本高，Gemini 便宜。因此：
 6. **阶段收尾**：按 DEVELOPMENT.md 1.4 核对阶段验收标准，合并到 `main` 并打标签。
 
 ### 其他
+
+- **prompt 中必须写明项目绝对路径和任务文件的绝对路径**：agy 的 shell 可能从家目录启动，曾因 `find . -name 0.1.md` 扫描整个家目录而卡住十几分钟。若 agy 长时间无文件改动，用 `pstree -ap <pid>` 查看是否有卡住的子进程。
 
 - 较大的技术选型或验证（spike）也可以交给 Gemini 调研，但结论由 Claude 审查后写入 `docs/decisions/`。
 - 可用模型用 `agy models` 查看。
