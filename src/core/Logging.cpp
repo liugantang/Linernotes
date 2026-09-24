@@ -64,7 +64,9 @@ QString formatLogLine(QtMsgType type, const QMessageLogContext &context, const Q
         break;
     }
 
-    const QString timeStr = timestamp.toString(Qt::ISODateWithMs);
+    // 转为固定偏移，使 ISO 字符串带上时区偏移（如 +08:00），本地时间直接输出会省略偏移
+    const QString timeStr
+        = timestamp.toOffsetFromUtc(timestamp.offsetFromUtc()).toString(Qt::ISODateWithMs);
     const std::string_view categoryView
         = (context.category != nullptr) ? std::string_view(context.category) : std::string_view();
     const std::string_view category
