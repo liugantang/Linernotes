@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 AiMusic contributors
+
 add_library(aimusic_testsupport STATIC
     TestSupport.cpp
     TestSupport.h

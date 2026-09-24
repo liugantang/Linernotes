@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 AiMusic contributors
+
 option(AIMUSIC_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
 option(AIMUSIC_SANITIZE "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
 

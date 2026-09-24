@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 AiMusic contributors
+
 function(aimusic_add_test)
     cmake_parse_arguments(
         TEST

@@ -1,0 +1,69 @@
+name: 缺陷报告 / Bug Report
+description: 提交 AiMusic 运行或使用中的问题与缺陷
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢提交缺陷报告！请在提交前搜索已有的 Issue 避免重复提交。
+  - type: input
+    id: version
+    attributes:
+      label: AiMusic 版本 (Version)
+      description: 请提供具体的软件版本号或 Git commit 哈希
+      placeholder: 例如：0.1.0 或 commit 3e4a5b6
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: 操作系统与桌面环境 (Operating System)
+      description: 操作系统名称、内核版本及桌面环境
+      placeholder: 例如：Arch Linux, Linux 6.12, KDE Plasma 6.2 (Wayland)
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤 (Steps to Reproduce)
+      description: 请详细描述重现问题的步骤
+      placeholder: |
+        1. 启动 AiMusic
+        2. 在曲库中扫描目录...
+        3. 点击播放...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为 (Expected Behavior)
+      description: 期望看到的正常结果
+      placeholder: 音乐正常播放并正确显示封面与标签...
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际行为 (Actual Behavior)
+      description: 实际发生的问题（崩溃、报错、UI 显示异常等）
+      placeholder: 程序崩溃并退出...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志与输出信息 (Logs & Output)
+      description: |
+        相关日志信息。日志目录可通过运行 `aimusic --print-paths` 查看（默认位于数据目录下的 `logs/` 目录中）。
+      placeholder: 粘贴控制台输出或日志文件中的相关片段...
+      render: shell
+    validations:
+      required: false
+  - type: textarea
+    id: additional_info
+    attributes:
+      label: 其他补充信息 (Additional Information)
+      description: 截图、音频文件格式/标签样本（请勿上传有版权的完整音频）或其他上下文
+    validations:
+      required: false

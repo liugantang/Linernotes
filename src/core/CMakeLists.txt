@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 AiMusic contributors
+
 configure_file(
     Version.h.in
     ${CMAKE_CURRENT_BINARY_DIR}/generated/core/Version.h
