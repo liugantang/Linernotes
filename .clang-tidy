@@ -1,0 +1,93 @@
+---
+# Clang-Tidy configuration for AiMusic
+
+# 启用的检查类别：
+#   bugprone-*, clang-analyzer-*, cppcoreguidelines-*, modernize-*,
+#   performance-*, readability-*, misc-*
+#
+# 关闭的检查规则及原因：
+#   -modernize-use-trailing-return-type: 风格不采用
+#   -readability-magic-numbers, -cppcoreguidelines-avoid-magic-numbers: 噪音太大
+#   -cppcoreguidelines-owning-memory: 与 Qt 父子对象模型冲突
+#   -readability-identifier-length: 变量名长度限制过严
+#   -cppcoreguidelines-pro-type-vararg, -cppcoreguidelines-pro-bounds-array-to-pointer-decay: Qt 宏大量触发
+#   -misc-include-cleaner: 误报多
+#   -misc-non-private-member-variables-in-classes: 数据结构体/Qt内部类常用公有成员
+#   -bugprone-easily-swappable-parameters: 相邻同类型参数误报多
+#   -readability-convert-member-functions-to-static: Qt 槽函数/信号不应转为 static
+#   -cppcoreguidelines-avoid-const-or-ref-data-members: 不可变成员合法使用
+#   -modernize-use-nodiscard: 与 Qt API 习惯及部分接口设计冲突
+#   -readability-redundant-access-specifiers: Qt 的 public slots: / signals: 会触发
+
+Checks: >-
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  misc-*,
+  -modernize-use-trailing-return-type,
+  -readability-magic-numbers,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-owning-memory,
+  -readability-identifier-length,
+  -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -misc-include-cleaner,
+  -misc-non-private-member-variables-in-classes,
+  -bugprone-easily-swappable-parameters,
+  -readability-convert-member-functions-to-static,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -modernize-use-nodiscard,
+  -readability-redundant-access-specifiers
+
+WarningsAsErrors: ''
+
+HeaderFilterRegex: '(^|/)(app|src|tools|tests)/'
+
+CheckOptions:
+  # 类/结构体/枚举/联合体 CamelCase
+  readability-identifier-naming.ClassCase: CamelCase
+  readability-identifier-naming.StructCase: CamelCase
+  readability-identifier-naming.EnumCase: CamelCase
+  readability-identifier-naming.UnionCase: CamelCase
+
+  # 函数、方法、变量、参数 camelBack
+  readability-identifier-naming.FunctionCase: camelBack
+  readability-identifier-naming.MethodCase: camelBack
+  readability-identifier-naming.VariableCase: camelBack
+  readability-identifier-naming.ParameterCase: camelBack
+  readability-identifier-naming.LocalVariableCase: camelBack
+  readability-identifier-naming.PublicMemberCase: camelBack
+
+  # 私有/保护成员前缀 m_
+  readability-identifier-naming.PrivateMemberPrefix: m_
+  readability-identifier-naming.PrivateMemberCase: camelBack
+  readability-identifier-naming.ProtectedMemberPrefix: m_
+  readability-identifier-naming.ProtectedMemberCase: camelBack
+
+  # 静态成员前缀 s_
+  readability-identifier-naming.ClassConstantPrefix: s_
+  readability-identifier-naming.ClassConstantCase: camelBack
+  readability-identifier-naming.StaticVariablePrefix: s_
+  readability-identifier-naming.StaticVariableCase: camelBack
+  readability-identifier-naming.StaticConstantPrefix: s_
+  readability-identifier-naming.StaticConstantCase: camelBack
+  readability-identifier-naming.GlobalVariablePrefix: s_
+  readability-identifier-naming.GlobalVariableCase: camelBack
+
+  # 全局常量与 constexpr 变量前缀 k + CamelCase
+  readability-identifier-naming.GlobalConstantPrefix: k
+  readability-identifier-naming.GlobalConstantCase: CamelCase
+  readability-identifier-naming.ConstexprVariablePrefix: k
+  readability-identifier-naming.ConstexprVariableCase: CamelCase
+
+  # 枚举常量 CamelCase
+  readability-identifier-naming.EnumConstantCase: CamelCase
+  readability-identifier-naming.ScopedEnumConstantCase: CamelCase
+
+  # 命名空间 lower_case
+  readability-identifier-naming.NamespaceCase: lower_case
+...
