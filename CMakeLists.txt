@@ -27,10 +27,17 @@ include(cmake/CompilerOptions.cmake)
 qt_standard_project_setup()
 
 option(AIMUSIC_BUILD_TOOLS "Build developer tools" ON)
+option(AIMUSIC_BUILD_TESTS "Build tests" ON)
 
 add_subdirectory(src)
 add_subdirectory(app)
 
 if(AIMUSIC_BUILD_TOOLS)
     add_subdirectory(tools)
+endif()
+
+if(AIMUSIC_BUILD_TESTS)
+    enable_testing()
+    include(cmake/Testing.cmake)
+    add_subdirectory(tests)
 endif()
