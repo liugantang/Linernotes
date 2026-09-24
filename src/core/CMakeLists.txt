@@ -1,0 +1,21 @@
+configure_file(
+    Version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/generated/aimusic/core/Version.h
+    @ONLY
+)
+
+add_library(aimusic_core STATIC
+    Version.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/generated/aimusic/core/Version.h
+)
+add_library(AiMusic::core ALIAS aimusic_core)
+
+target_include_directories(aimusic_core
+    PUBLIC
+        ${CMAKE_CURRENT_BINARY_DIR}/generated
+)
+
+target_link_libraries(aimusic_core
+    PUBLIC
+        Qt6::Core
+)

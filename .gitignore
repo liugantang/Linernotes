@@ -1,2 +1,8 @@
 # AI 协作的临时文件（任务说明、执行日志）
 /.ai/
+
+/build/
+/.cache/
+CMakeUserPresets.json
+compile_commands.json
+
