@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2026 AiMusic contributors
+
+#pragma once
+
+#include <QString>
+
+namespace aimusic::core {
+
+inline constexpr int kVersionMajor = @PROJECT_VERSION_MAJOR@;
+inline constexpr int kVersionMinor = @PROJECT_VERSION_MINOR@;
+inline constexpr int kVersionPatch = @PROJECT_VERSION_PATCH@;
+
+/// "0.1.0" 形式的版本字符串
+QString versionString();
+
+/// 应用名 "AiMusic"
+QString applicationName();
+
+} // namespace aimusic::core

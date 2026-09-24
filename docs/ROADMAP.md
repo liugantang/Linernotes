@@ -40,25 +40,33 @@
 
 ---
 
-## 阶段 0：工程基建（0.5 周）
+## 阶段 0：工程基建（0.5 周）✅ 完成（2026-09-25）
 
 **目标**：空仓库 → 可编译、可测试、可持续集成的骨架。
 
 | # | 任务 |
 |---|---|
-| 0.1 | CMake 工程骨架：`app/`（可执行文件）、`src/core`、`src/player`、`src/library`、`src/ai`、`src/features/*`、`qml/`、`tests/`、`resources/` |
-| 0.2 | 依赖接入：Qt6（Core/Gui/Quick/QuickControls2/Sql/Network/DBus/Concurrent/Test）、libmpv、TagLib、uchardet、ICU、Chromaprint、FFmpeg、libebur128（均通过 pkg-config / find_package） |
-| 0.3 | 编译选项：C++20、`-Wall -Wextra -Werror`（Debug 可放宽）、ASan/UBSan 构建类型 |
-| 0.4 | 代码规范：`.clang-format`、`.clang-tidy`、`.editorconfig` |
-| 0.5 | 测试框架：Qt Test（或 Catch2），`ctest` 集成 |
-| 0.6 | 日志：基于 `QLoggingCategory` 的分类日志 + 文件滚动输出 |
-| 0.7 | 配置与路径：`QStandardPaths` 下的 config/data/cache 目录约定；`Settings` 单例封装 |
-| 0.8 | CI：GitHub Actions（Linux 构建 + 单测）；可选 pre-commit |
-| 0.8b | 开源基础：LICENSE（GPL-3.0-or-later，与 libmpv 的 GPL 构建一致）、README、CONTRIBUTING、Issue/PR 模板 |
-| 0.9 | 最小 QML 窗口，显示版本号，确认 Qt Quick 渲染正常 |
+| ✅ 0.1 | CMake 工程骨架：`app/`（可执行文件）、`src/core`、`src/player`、`src/library`、`src/ai`、`src/features/*`、`qml/`、`tests/`、`resources/` |
+| ✅ 0.2 | 依赖接入：Qt6（Core/Gui/Quick/QuickControls2/Sql/Network/DBus/Concurrent/Test）、libmpv、TagLib、uchardet、ICU、Chromaprint、FFmpeg、libebur128（均通过 pkg-config / find_package） |
+| ✅ 0.3 | 编译选项：C++20、`-Wall -Wextra -Werror`（Debug 可放宽）、ASan/UBSan 构建类型 |
+| ✅ 0.4 | 代码规范：`.clang-format`、`.clang-tidy`、`.editorconfig` |
+| ✅ 0.5 | 测试框架：Qt Test（或 Catch2），`ctest` 集成 |
+| ✅ 0.6 | 日志：基于 `QLoggingCategory` 的分类日志 + 文件滚动输出 |
+| ✅ 0.7 | 配置与路径：`QStandardPaths` 下的 config/data/cache 目录约定；`Settings` 单例封装 |
+| ✅ 0.8 | CI：GitHub Actions（Linux 构建 + 单测）；可选 pre-commit |
+| ✅ 0.8b | 开源基础：LICENSE（GPL-3.0-or-later，与 libmpv 的 GPL 构建一致）、README、CONTRIBUTING、Issue/PR 模板 |
+| ✅ 0.9 | 最小 QML 窗口，显示版本号，确认 Qt Quick 渲染正常 |
 
 **交付物**：能 `cmake --build` 并跑通空测试的仓库。
 **验收**：CI 绿；本地 Debug/Release/ASan 三种构建都能跑。
+
+**验收记录（2026-09-25）**：
+- debug / release / asan / ci（-Werror）四套预设全部构建通过，零警告（移除了在 Release 下对 Qt 生成代码误报的 -Wnull-dereference）；gcc 与 clang 均验证
+- ctest：6 个测试（5 单元 + 1 集成冒烟）在 debug / asan / ci 下全部通过
+- `scripts/format.sh --check`、`scripts/tidy.sh --strict`、qmllint 均无问题
+- QML 窗口在 KDE Wayland 下手动截图确认显示正常
+- 未验证：GitHub Actions 实际运行（仓库尚未配置远程），首次推送后确认
+- 与计划的偏差：新增 0.8b（开源基础文件）；include 路径约定、SPDX 头、clang-tidy 对 Qt Test 的适配在本阶段中补充进 DEVELOPMENT.md
 
 ---
 
