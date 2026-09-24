@@ -22,8 +22,14 @@ if(NOT is_multi_config AND NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
 endif()
 
-find_package(Qt6 6.8 REQUIRED COMPONENTS Core)
+include(cmake/Dependencies.cmake)
 qt_standard_project_setup()
+
+option(AIMUSIC_BUILD_TOOLS "Build developer tools" ON)
 
 add_subdirectory(src)
 add_subdirectory(app)
+
+if(AIMUSIC_BUILD_TOOLS)
+    add_subdirectory(tools)
+endif()
