@@ -1,8 +1,8 @@
-#include <aimusic/core/Version.h>
-
 #include <QObject>
 #include <QString>
 #include <QTest>
+
+#include <core/Version.h>
 
 namespace {
 

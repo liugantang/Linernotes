@@ -7,7 +7,6 @@ add_library(AiMusic::TestSupport ALIAS aimusic_testsupport)
 target_include_directories(aimusic_testsupport
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/..
-        ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_link_libraries(aimusic_testsupport

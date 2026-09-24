@@ -5,3 +5,11 @@ aimusic_add_test(
     LIBS
         AiMusic::core
 )
+
+aimusic_add_test(
+    NAME core_Logging
+    SOURCES
+        tst_Logging.cpp
+    LIBS
+        AiMusic::core
+)

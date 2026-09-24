@@ -1,8 +1,8 @@
-#include <aimusic/core/Version.h>
-
 #include <QCommandLineParser>
 #include <QCoreApplication>
 #include <QTextStream>
+
+#include <core/Version.h>
 
 int main(int argc, char *argv[])
 {

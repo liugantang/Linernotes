@@ -1,4 +1,4 @@
-#include <aimusic/core/Version.h>
+#include <core/Version.h>
 
 namespace aimusic::core {
 
