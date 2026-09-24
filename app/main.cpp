@@ -3,8 +3,10 @@
 
 #include <QCommandLineOption>
 #include <QCommandLineParser>
-#include <QCoreApplication>
 #include <QDir>
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
+#include <QQuickStyle>
 #include <QTextStream>
 
 #include <core/CoreSettings.h>
@@ -15,11 +17,11 @@
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication::setOrganizationName(QString());
-    QCoreApplication::setApplicationName(aimusic::core::applicationName());
-    QCoreApplication::setApplicationVersion(aimusic::core::versionString());
+    QGuiApplication::setOrganizationName(QString());
+    QGuiApplication::setApplicationName(aimusic::core::applicationName());
+    QGuiApplication::setApplicationVersion(aimusic::core::versionString());
 
-    const QCoreApplication app(argc, argv);
+    const QGuiApplication app(argc, argv);
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("AI music player"));
@@ -29,6 +31,11 @@ int main(int argc, char *argv[])
     const QCommandLineOption printPathsOption(
         QStringLiteral("print-paths"), QStringLiteral("Print application directories and exit."));
     parser.addOption(printPathsOption);
+
+    QCommandLineOption smokeTestOption(
+        QStringLiteral("smoke-test"), QStringLiteral("Run smoke test and exit immediately."));
+    smokeTestOption.setFlags(QCommandLineOption::HiddenFromHelp);
+    parser.addOption(smokeTestOption);
 
     parser.process(app);
 
@@ -70,9 +77,43 @@ int main(int argc, char *argv[])
         qPrintable(paths.configDir()), qPrintable(paths.dataDir()), qPrintable(paths.cacheDir()),
         qPrintable(paths.logDir()));
 
-    QTextStream out(stdout);
-    out << aimusic::core::applicationName() << u' ' << aimusic::core::versionString() << Qt::endl;
+    QQuickStyle::setStyle(QStringLiteral("Fusion"));
+
+    QQmlApplicationEngine engine;
+
+    const bool isSmokeTest = parser.isSet(smokeTestOption);
+
+    QObject::connect(
+        &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
+        [](const QUrl &url) {
+            qCCritical(aimusic::core::lcCore, "Failed to create QML root object: %s",
+                qPrintable(url.toString()));
+            QCoreApplication::exit(EXIT_FAILURE);
+        },
+        Qt::QueuedConnection);
+
+    QObject::connect(
+        &engine, &QQmlApplicationEngine::objectCreated, &app,
+        [isSmokeTest](QObject *object, const QUrl &url) {
+            if (!object) {
+                qCCritical(aimusic::core::lcCore, "Failed to load QML root object from: %s",
+                    qPrintable(url.toString()));
+                QCoreApplication::exit(EXIT_FAILURE);
+                return;
+            }
+            if (isSmokeTest) {
+                qCInfo(aimusic::core::lcCore,
+                    "Smoke test: QML root object created successfully from %s",
+                    qPrintable(url.toString()));
+                QCoreApplication::exit(0);
+            }
+        },
+        Qt::QueuedConnection);
+
+    engine.loadFromModule(QStringLiteral("AiMusic"), QStringLiteral("Main"));
+
+    const int exitCode = QGuiApplication::exec();
 
     aimusic::core::uninstallLogging();
-    return 0;
+    return exitCode;
 }

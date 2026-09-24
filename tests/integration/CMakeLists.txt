@@ -15,3 +15,5 @@
 #     TIMEOUT
 #         60
 # )
+
+add_subdirectory(app)
