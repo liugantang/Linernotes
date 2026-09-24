@@ -47,6 +47,9 @@ WarningsAsErrors: ''
 
 HeaderFilterRegex: '(^|/)(app|src|tools|tests)/'
 
+# 排除构建目录中的生成文件（moc、autogen、configure_file 产物）
+ExcludeHeaderFilterRegex: '(/build/|_autogen/)'
+
 CheckOptions:
   # 类/结构体/枚举/联合体 CamelCase
   readability-identifier-naming.ClassCase: CamelCase
