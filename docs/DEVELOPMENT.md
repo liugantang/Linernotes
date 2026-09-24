@@ -104,6 +104,7 @@ Refs: ROADMAP 2.6
 ### 2.3 头文件与依赖
 
 - 头文件使用 `#pragma once`。
+- include 路径：每个模块只把 `src/` 作为公共 include 根目录，外部一律写 `#include <模块/头文件.h>`（如 `<core/Logging.h>`）；模块内部 .cpp 包含自己的头文件可用 `"Logging.h"`。生成的头文件放在构建目录的 `generated/<模块>/` 下，包含方式相同。测试辅助库同理：`#include <common/TestSupport.h>`。
 - include 顺序：对应头文件 → 本项目 → Qt → 第三方 → 标准库，各组之间空一行（由 clang-format 自动排序）。
 - 头文件中能前向声明就不 include；第三方库（mpv、TagLib、FFmpeg、ONNX Runtime）的头文件**只允许出现在对应封装模块的 .cpp 中**，不外泄到公共头文件。
 
