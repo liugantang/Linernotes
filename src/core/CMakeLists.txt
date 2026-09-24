@@ -5,8 +5,13 @@ configure_file(
 )
 
 add_library(aimusic_core STATIC
+    CoreSettings.h
     Logging.cpp
     Logging.h
+    Paths.cpp
+    Paths.h
+    Settings.cpp
+    Settings.h
     Version.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/generated/core/Version.h
 )

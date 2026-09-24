@@ -13,3 +13,20 @@ aimusic_add_test(
     LIBS
         AiMusic::core
 )
+
+aimusic_add_test(
+    NAME core_Paths
+    SOURCES
+        tst_Paths.cpp
+    LIBS
+        AiMusic::core
+)
+
+aimusic_add_test(
+    NAME core_Settings
+    SOURCES
+        tst_Settings.cpp
+    LIBS
+        AiMusic::core
+)
+
