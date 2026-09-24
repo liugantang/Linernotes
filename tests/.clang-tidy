@@ -1,0 +1,8 @@
+---
+# 测试目录：继承上级配置
+InheritParentConfig: true
+
+# QFETCH 宏展开为非 const 局部变量，无法加 const
+Checks: >-
+  -misc-const-correctness
+...

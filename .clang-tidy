@@ -51,6 +51,10 @@ HeaderFilterRegex: '(^|/)(app|src|tools|tests)/'
 ExcludeHeaderFilterRegex: '(/build/|_autogen/)'
 
 CheckOptions:
+  # Qt 的 QCOMPARE/QVERIFY 等宏展开后会大幅抬高认知复杂度
+  readability-function-cognitive-complexity.IgnoreMacros: true
+  # Qt Test 数据驱动函数约定命名为 <测试名>_data
+  readability-identifier-naming.MethodIgnoredRegexp: '^[a-z][a-zA-Z0-9]*_data$'
   # 类/结构体/枚举/联合体 CamelCase
   readability-identifier-naming.ClassCase: CamelCase
   readability-identifier-naming.StructCase: CamelCase
