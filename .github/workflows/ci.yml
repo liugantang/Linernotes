@@ -1,0 +1,126 @@
+name: CI
+
+'on':
+  push:
+    branches:
+      - main
+      - 'phase/**'
+  pull_request:
+
+jobs:
+  build-test:
+    name: Build & Test (${{ matrix.compiler }})
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [gcc, clang]
+        include:
+          - compiler: gcc
+            cc: gcc
+            cxx: g++
+          - compiler: clang
+            cc: clang
+            cxx: clang++
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache pacman packages
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/pacman/pkg
+          key: pacman-${{ runner.os }}-${{ hashFiles('scripts/ci/install-deps-arch.sh') }}
+          restore-keys: |
+            pacman-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: ./scripts/ci/install-deps-arch.sh
+
+      - name: Configure CMake
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: cmake --preset ci
+
+      - name: Build
+        run: cmake --build --preset ci
+
+      - name: Test
+        run: ctest --preset ci
+
+      - name: Upload test log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: last-test-log-${{ matrix.compiler }}
+          path: build/*/Testing/Temporary/LastTest.log
+          if-no-files-found: ignore
+
+  lint:
+    name: Lint & Code Style
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache pacman packages
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/pacman/pkg
+          key: pacman-${{ runner.os }}-${{ hashFiles('scripts/ci/install-deps-arch.sh') }}
+          restore-keys: |
+            pacman-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: ./scripts/ci/install-deps-arch.sh
+
+      - name: Check formatting
+        run: scripts/format.sh --check
+
+      - name: Configure CMake for Clang-Tidy
+        run: cmake --preset debug
+
+      - name: Run Clang-Tidy
+        run: scripts/tidy.sh --strict
+
+  asan:
+    name: AddressSanitizer
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cache pacman packages
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/pacman/pkg
+          key: pacman-${{ runner.os }}-${{ hashFiles('scripts/ci/install-deps-arch.sh') }}
+          restore-keys: |
+            pacman-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: ./scripts/ci/install-deps-arch.sh
+
+      - name: Configure CMake (ASan)
+        run: cmake --preset asan
+
+      - name: Build
+        run: cmake --build --preset asan
+
+      - name: Test
+        run: ctest --preset asan
+
+      - name: Upload test log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: last-test-log-asan
+          path: build/*/Testing/Temporary/LastTest.log
+          if-no-files-found: ignore
