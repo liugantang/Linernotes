@@ -23,6 +23,7 @@ function(aimusic_set_target_options target)
             target_compile_options(${target} PRIVATE /WX)
         endif()
     elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+        # 不启用 -Wnull-dereference：GCC 优化后对 Qt 生成的 qmlcache 代码产生误报
         target_compile_options(${target} PRIVATE
             -Wall
             -Wextra
@@ -31,7 +32,6 @@ function(aimusic_set_target_options target)
             -Wnon-virtual-dtor
             -Woverloaded-virtual
             -Wcast-align
-            -Wnull-dereference
             -Wformat=2
             -Wimplicit-fallthrough
         )
