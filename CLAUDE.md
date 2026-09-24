@@ -26,14 +26,14 @@ Claude 的调用成本高，Gemini 便宜。因此：
 2. **委托执行**（执行时间长，放到后台运行，Bash 的 `run_in_background: true`）：
    ```bash
    agy -p "请阅读 .ai/tasks/<任务编号>.md 并完成其中的任务。" \
-       --dangerously-skip-permissions --model gemini-3.8-flash-high \
+       --dangerously-skip-permissions --model gemini-3.7-flash-high \
        --print-timeout 60m > .ai/logs/<任务编号>.log 2>&1
    ```
 3. **审查**：看 `git status`、`git diff`；自己运行一次构建和 `ctest`（不要只信汇报）；对照任务说明与 DEVELOPMENT.md 检查范围、设计、测试是否充分、有无越界修改。
 4. **返工**：问题写进 `.ai/tasks/<任务编号>.review.md`，然后再次委托：
    ```bash
    agy -p "请阅读 .ai/tasks/<任务编号>.review.md，按审查意见修改。" \
-       --dangerously-skip-permissions --model gemini-3.8-flash-high \
+       --dangerously-skip-permissions --model gemini-3.7-flash-high \
        --print-timeout 60m > .ai/logs/<任务编号>-r<N>.log 2>&1
    ```
    同一任务连续两轮返工仍不通过：换 `--model gemini-3.1-pro-high` 再试，或把任务拆小；仍不行再向用户说明情况。
