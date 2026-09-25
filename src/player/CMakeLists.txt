@@ -8,6 +8,9 @@ add_library(linernotes_player STATIC
     Player.h
     PlayerLogging.cpp
     PlayerLogging.h
+    PlayMode.h
+    PlayOrder.cpp
+    PlayOrder.h
 )
 add_library(Linernotes::player ALIAS linernotes_player)
 
