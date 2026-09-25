@@ -91,3 +91,23 @@ linernotes_add_test(
     TIMEOUT
         60
 )
+
+linernotes_add_test(
+    NAME player_PlayCli
+    SOURCES
+        tst_PlayCli.cpp
+    LIBS
+        Linernotes::player
+        Linernotes::TestSupport
+    LABELS
+        integration
+    TIMEOUT
+        60
+)
+
+target_compile_definitions(tst_player_PlayCli
+    PRIVATE
+        PLAYCLI_PATH="$<TARGET_FILE:linernotes-playcli>"
+)
+add_dependencies(tst_player_PlayCli linernotes-playcli)
+

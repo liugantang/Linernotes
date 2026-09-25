@@ -39,6 +39,8 @@ private slots:
     void repeatOnePlaysTrackAgainGaplessly();
     void stopThenPlayResumesCurrentItem();
     void openFileReplacesQueue();
+    void transitionSignalOrder();
+    void seekWhilePlayingIsAccurate();
 };
 
 void TstPlayerQueue::initTestCase()
@@ -359,6 +361,85 @@ void TstPlayerQueue::openFileReplacesQueue()
     QCOMPARE(player.queue()->currentIndex(), 0);
     QCOMPARE(player.currentSource(), p880);
     QTRY_COMPARE_WITH_TIMEOUT(player.state(), Player::PlaybackState::Playing, 5000);
+}
+
+void TstPlayerQueue::transitionSignalOrder()
+{
+    Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    QVERIFY(player.isValid());
+
+    const QString p440 = linernotes::test::fixturePath(QStringLiteral("audio/tone_440_1s.flac"));
+    const QString p660 = linernotes::test::fixturePath(QStringLiteral("audio/tone_660_1s.flac"));
+    QVERIFY(QFile::exists(p440));
+    QVERIFY(QFile::exists(p660));
+
+    player.queue()->setItems({ { .source = p440 }, { .source = p660 } });
+
+    QStringList eventLog;
+    auto logEvent = [&](const QString &name, const QString &detail) {
+        eventLog.append(QStringLiteral("%1: %2").arg(name, detail));
+    };
+
+    int queueIndexAtSource1Changed = -1;
+    double firstTrack1Position = -1.0;
+
+    connect(player.queue(), &PlayQueue::currentIndexChanged,
+        [&](int idx) { logEvent(QStringLiteral("currentIndexChanged"), QString::number(idx)); });
+
+    connect(&player, &Player::currentSourceChanged, [&](const QString &src) {
+        logEvent(QStringLiteral("currentSourceChanged"), src);
+        if (src == p660) {
+            queueIndexAtSource1Changed = player.queue()->currentIndex();
+        }
+    });
+
+    connect(&player, &Player::durationChanged, [&](double dur) {
+        logEvent(QStringLiteral("durationChanged"), QString::number(dur, 'f', 2));
+    });
+
+    connect(&player, &Player::positionChanged, [&](double pos) {
+        logEvent(QStringLiteral("positionChanged"), QString::number(pos, 'f', 2));
+        if (player.currentSource() == p660 && firstTrack1Position < 0.0) {
+            firstTrack1Position = pos;
+        }
+    });
+
+    QSignalSpy finishSpy(&player, &Player::playbackFinished);
+
+    player.playIndex(0);
+
+    QTRY_COMPARE_WITH_TIMEOUT(finishSpy.count(), 1, 8000);
+    QTRY_COMPARE_WITH_TIMEOUT(player.state(), Player::PlaybackState::Stopped, 5000);
+
+    // 检查在收到 currentSourceChanged 时 queue()->currentIndex() 已是 1
+    QCOMPARE(queueIndexAtSource1Changed, 1);
+
+    // 切换后第一次 positionChanged 的值 < 0.5
+    QVERIFY2(firstTrack1Position >= 0.0 && firstTrack1Position < 0.5,
+        qPrintable(QStringLiteral("First positionChanged of track 1 was %1 (expected < 0.5)")
+                .arg(firstTrack1Position)));
+
+    QVERIFY(!eventLog.isEmpty());
+}
+
+void TstPlayerQueue::seekWhilePlayingIsAccurate()
+{
+    Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    QVERIFY(player.isValid());
+
+    const QString silence = linernotes::test::fixturePath(QStringLiteral("audio/silence_5s.flac"));
+    QVERIFY(QFile::exists(silence));
+
+    player.queue()->setItems({ { .source = silence } });
+
+    player.playIndex(0);
+    QTRY_COMPARE_WITH_TIMEOUT(player.state(), Player::PlaybackState::Playing, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(player.duration() > 4.0, 5000);
+
+    player.seek(3.0);
+
+    QTRY_VERIFY_WITH_TIMEOUT(player.position() >= 3.0 && player.position() <= 3.5, 5000);
+    QCOMPARE(player.state(), Player::PlaybackState::Playing);
 }
 
 } // namespace
