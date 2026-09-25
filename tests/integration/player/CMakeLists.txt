@@ -40,3 +40,17 @@ linernotes_add_test(
         120
 )
 
+linernotes_add_test(
+    NAME player_PlayerErrors
+    SOURCES
+        tst_PlayerErrors.cpp
+    LIBS
+        Linernotes::player
+        Linernotes::TestSupport
+    LABELS
+        integration
+    TIMEOUT
+        120
+)
+
+

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <QObject>
+#include <QSet>
 #include <QString>
 
 #include <player/MpvHandle.h>
@@ -69,6 +70,9 @@ signals:
     void currentSourceChanged(const QString &source);
     /// 语义：队列播放结束（最后一首自然播完且没有下一首）
     void playbackFinished();
+    /// 某项无法播放（文件不存在、格式无法识别/解码失败）。source 为该项路径，message
+    /// 为可读原因（来自 mpv）。
+    void playbackError(const QString &source, const QString &message);
 
 private:
     void onPropertyChanged(const QString &name, const QVariant &value);
@@ -81,6 +85,7 @@ private:
     void updatePlaybackState();
 
     void onStartFile(qint64 entryId);
+    void onFileLoaded();
     void onEndFile(qint64 entryId, MpvHandle::EndFileReason reason, const QString &error);
     void onUpcomingChanged();
     void schedulePreloadSync();
@@ -107,6 +112,9 @@ private:
     bool m_preloadIsRepeatOne = false;
     bool m_preloadSyncPending = false;
     bool m_inInternalSync = false;
+    QHash<qint64, QString> m_entrySources;
+    QSet<qint64> m_ignoredEntryIds;
+    int m_consecutiveErrorCount = 0;
 };
 
 } // namespace linernotes::player
