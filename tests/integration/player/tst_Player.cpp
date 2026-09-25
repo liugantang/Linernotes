@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #include <QFile>
+#include <QRegularExpression>
 #include <QSignalSpy>
 #include <QTest>
 
@@ -19,6 +20,7 @@ class TstPlayer : public QObject {
 
 private slots:
     void initTestCase();
+    void init();
 
     void initialStateIsStopped();
     void openFilePlays();
@@ -42,6 +44,11 @@ void TstPlayer::initTestCase()
 {
     qRegisterMetaType<Player::PlaybackState>();
     qRegisterMetaType<linernotes::player::Player::PlaybackState>();
+}
+
+void TstPlayer::init()
+{
+    QTest::failOnWarning(QRegularExpression(QStringLiteral("af-command")));
 }
 
 void TstPlayer::initialStateIsStopped()
@@ -148,6 +155,7 @@ void TstPlayer::seekChangesPosition()
     const QString path = linernotes::test::fixturePath(QStringLiteral("audio/tone_440_1s.flac"));
     player.openFile(path);
     QTRY_COMPARE_WITH_TIMEOUT(player.state(), Player::PlaybackState::Playing, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(player.duration() > 0.5, 5000);
 
     player.pause();
     QTRY_COMPARE_WITH_TIMEOUT(player.state(), Player::PlaybackState::Paused, 5000);

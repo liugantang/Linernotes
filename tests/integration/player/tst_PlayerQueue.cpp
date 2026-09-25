@@ -3,6 +3,7 @@
 
 #include <QElapsedTimer>
 #include <QFile>
+#include <QRegularExpression>
 #include <QSignalSpy>
 #include <QTest>
 
@@ -25,6 +26,7 @@ class TstPlayerQueue : public QObject {
 
 private slots:
     void initTestCase();
+    void init();
 
     void playsQueueInOrder();
     void gaplessTransitionDoesNotStop();
@@ -45,6 +47,11 @@ void TstPlayerQueue::initTestCase()
     qRegisterMetaType<linernotes::player::Player::PlaybackState>();
     qRegisterMetaType<PlayMode>();
     qRegisterMetaType<linernotes::player::PlayMode>();
+}
+
+void TstPlayerQueue::init()
+{
+    QTest::failOnWarning(QRegularExpression(QStringLiteral("af-command")));
 }
 
 void TstPlayerQueue::playsQueueInOrder()
@@ -190,6 +197,7 @@ void TstPlayerQueue::previousRestartsAfterThreshold()
 
     player.playIndex(0);
     QTRY_COMPARE_WITH_TIMEOUT(player.state(), Player::PlaybackState::Playing, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(player.duration() > 4.0, 5000);
 
     player.pause();
     QTRY_COMPARE_WITH_TIMEOUT(player.state(), Player::PlaybackState::Paused, 5000);

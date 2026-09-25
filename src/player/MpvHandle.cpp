@@ -351,7 +351,7 @@ QString MpvHandle::errorString() const
     return m_errorString;
 }
 
-bool MpvHandle::command(const QStringList &args)
+bool MpvHandle::command(const QStringList &args, bool warnOnFailure)
 {
     if (!isValid() || !m_handle || args.isEmpty()) {
         return false;
@@ -370,7 +370,11 @@ bool MpvHandle::command(const QStringList &args)
 
     const int err = mpv_command(m_handle.get(), cArgs.data());
     if (err < 0) {
-        qCWarning(lcPlayer) << "Command failed:" << args << "error:" << mpv_error_string(err);
+        if (warnOnFailure) {
+            qCWarning(lcPlayer) << "Command failed:" << args << "error:" << mpv_error_string(err);
+        } else {
+            qCDebug(lcPlayer) << "Command failed:" << args << "error:" << mpv_error_string(err);
+        }
         return false;
     }
     return true;
@@ -382,10 +386,17 @@ bool MpvHandle::setProperty(const QString &name, const QVariant &value)
         return false;
     }
 
-    MpvNodeBuilder builder;
-    mpv_node node = builder.create(value);
     const QByteArray nameUtf8 = name.toUtf8();
-    const int err = mpv_set_property(m_handle.get(), nameUtf8.constData(), MPV_FORMAT_NODE, &node);
+    int err = 0;
+    if (value.metaType().id() == QMetaType::QString) {
+        const QByteArray valUtf8 = value.toString().toUtf8();
+        err = mpv_set_property_string(m_handle.get(), nameUtf8.constData(), valUtf8.constData());
+    } else {
+        MpvNodeBuilder builder;
+        mpv_node node = builder.create(value);
+        err = mpv_set_property(m_handle.get(), nameUtf8.constData(), MPV_FORMAT_NODE, &node);
+    }
+
     if (err < 0) {
         qCWarning(lcPlayer) << "Failed to set property" << name << "to" << value << ":"
                             << mpv_error_string(err);
@@ -480,6 +491,9 @@ void MpvHandle::drainEvents()
         }
         case MPV_EVENT_FILE_LOADED:
             emit fileLoaded();
+            break;
+        case MPV_EVENT_AUDIO_RECONFIG:
+            emit audioReconfigured();
             break;
         case MPV_EVENT_END_FILE:
             handleEndFileEvent(this, event);

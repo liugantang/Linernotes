@@ -2,6 +2,8 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 add_library(linernotes_player STATIC
+    GainRamp.cpp
+    GainRamp.h
     MpvHandle.cpp
     MpvHandle.h
     Player.cpp
@@ -13,6 +15,8 @@ add_library(linernotes_player STATIC
     PlayOrder.h
     PlayQueue.cpp
     PlayQueue.h
+    VoiceChannel.cpp
+    VoiceChannel.h
 )
 add_library(Linernotes::player ALIAS linernotes_player)
 

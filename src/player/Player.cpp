@@ -54,12 +54,48 @@ QVariantList parseAudioDeviceList(const QVariant &value)
     }
     return devices;
 }
+
+MpvHandle::OptionList buildPlayerOptions(const MpvHandle::OptionList &extraOptions)
+{
+    MpvHandle::OptionList options = extraOptions;
+    QString userAf;
+    int afIndex = -1;
+    for (int i = 0; i < options.size(); ++i) {
+        if (options[i].first == QStringLiteral("af")) {
+            userAf = options[i].second;
+            afIndex = i;
+            break;
+        }
+    }
+
+    const QString duckFilter = QStringLiteral("@duck:lavfi=[volume=volume=1.0]");
+    const QString combinedAf
+        = userAf.isEmpty() ? duckFilter : (userAf + QStringLiteral(",") + duckFilter);
+
+    if (afIndex >= 0) {
+        options[afIndex].second = combinedAf;
+    } else {
+        options.append({ QStringLiteral("af"), combinedAf });
+    }
+    return options;
+}
 } // namespace
 
 Player::Player(const MpvHandle::OptionList &extraOptions, QObject *parent)
     : QObject(parent)
-    , m_mpv(new MpvHandle(extraOptions, this))
+    , m_mpv(new MpvHandle(buildPlayerOptions(extraOptions), this))
 {
+    for (const auto &opt : extraOptions) {
+        if (opt.first == QStringLiteral("af")) {
+            m_userAudioFilters = opt.second;
+            break;
+        }
+    }
+
+    m_duckTimer.setInterval(10);
+    m_duckTimer.setTimerType(Qt::PreciseTimer);
+    connect(&m_duckTimer, &QTimer::timeout, this, &Player::onDuckTimerTick);
+
     std::random_device rd;
     const quint64 seed = (static_cast<quint64>(rd()) << 32) | static_cast<quint64>(rd());
     m_queue = new PlayQueue(seed, this);
@@ -126,6 +162,7 @@ Player::Player(const MpvHandle::OptionList &extraOptions, QObject *parent)
     connect(m_mpv, &MpvHandle::propertyChanged, this, &Player::onPropertyChanged);
     connect(m_mpv, &MpvHandle::startFile, this, &Player::onStartFile);
     connect(m_mpv, &MpvHandle::fileLoaded, this, &Player::onFileLoaded);
+    connect(m_mpv, &MpvHandle::audioReconfigured, this, &Player::onAudioReconfigured);
     connect(m_mpv, &MpvHandle::endFile, this, &Player::onEndFile);
 }
 
@@ -164,6 +201,11 @@ bool Player::isMuted() const
     return m_muted;
 }
 
+double Player::duckGain() const
+{
+    return m_duckGain;
+}
+
 QString Player::currentSource() const
 {
     return m_currentSource;
@@ -191,6 +233,19 @@ int Player::mpvPlaylistCount() const
     }
     const QVariant val = m_mpv->property(QStringLiteral("playlist-count"));
     return val.isValid() ? val.toInt() : 0;
+}
+
+QVariant Player::mpvAudioFilters() const
+{
+    if (m_mpv == nullptr || !m_mpv->isValid()) {
+        return { };
+    }
+    return m_mpv->property(QStringLiteral("af"));
+}
+
+int Player::duckApplyCount() const
+{
+    return m_duckApplyCount;
 }
 
 void Player::openFile(const QString &path)
@@ -351,6 +406,113 @@ void Player::setMuted(bool muted)
         return;
     }
     m_mpv->setProperty(QStringLiteral("mute"), muted);
+}
+
+void Player::duckTo(double gain, int rampMs)
+{
+    const double targetGain = std::clamp(gain, 0.0, 1.0);
+    qCDebug(lcPlayer) << "duckTo target:" << targetGain << "rampMs:" << rampMs
+                      << "current duckGain:" << m_duckGain;
+
+    if (rampMs <= 0) {
+        m_duckTimer.stop();
+        m_duckRamp = GainRamp(targetGain, targetGain, 0);
+        m_duckGain = targetGain;
+        applyDuckGainToMpv();
+        if (std::abs(m_duckGain - m_lastEmittedDuckGain) > 1e-6) {
+            m_lastEmittedDuckGain = m_duckGain;
+            emit duckGainChanged(m_duckGain);
+        }
+        emit duckFinished(m_duckGain);
+        return;
+    }
+
+    if (std::abs(m_duckGain - targetGain) < 1e-6 && !m_duckTimer.isActive()) {
+        emit duckFinished(m_duckGain);
+        return;
+    }
+
+    m_duckRamp = GainRamp(m_duckGain, targetGain, rampMs);
+    m_duckElapsedTimer.restart();
+    if (!m_duckTimer.isActive()) {
+        m_duckTimer.start();
+    }
+}
+
+void Player::unduck(int rampMs)
+{
+    duckTo(1.0, rampMs);
+}
+
+void Player::onDuckTimerTick()
+{
+    const qint64 elapsed = m_duckElapsedTimer.elapsed();
+    const double newGain = m_duckRamp.valueAt(elapsed);
+    m_duckGain = newGain;
+    applyDuckGainToMpv();
+
+    if (std::abs(m_duckGain - m_lastEmittedDuckGain) >= 0.02) {
+        m_lastEmittedDuckGain = m_duckGain;
+        emit duckGainChanged(m_duckGain);
+    }
+
+    if (m_duckRamp.isFinishedAt(elapsed)) {
+        m_duckTimer.stop();
+        m_duckGain = m_duckRamp.target();
+        applyDuckGainToMpv();
+        if (std::abs(m_duckGain - m_lastEmittedDuckGain) > 1e-6) {
+            m_lastEmittedDuckGain = m_duckGain;
+            emit duckGainChanged(m_duckGain);
+        }
+        emit duckFinished(m_duckGain);
+    }
+}
+
+// ============================================================================
+// Ducking 音频压低与滤镜链生命周期机制说明
+//
+// 1. mpv 在加载新文件或音频格式/采样率发生变化时会重新构建音频滤镜链（Audio Filter Chain）。
+//    新建滤镜链会根据当前 `af` 属性重新初始化，导致之前通过 `af-command` 设置的动态增益丢失。
+// 2. 为确保切换曲目及格式重构后压低增益不丢失：
+//    - 在 `loadfile ... replace` 之前，若当前 duckGain != 1.0，先把 `af` 属性设置为包含当前增益
+//      的滤镜字符串（`@duck:lavfi=[volume=volume=<gain>]` 并与用户 extra af 组合），使新建的
+//      滤镜链从一开始就以目标增益运行，尽可能消除全音量跳变窗口。
+//    - 监听 `MpvHandle::audioReconfigured` 信号（对应 `MPV_EVENT_AUDIO_RECONFIG`），在每次滤镜链
+//      完成重构时，通过 `applyDuckGainToMpv()`（下发 `af-command duck volume <gain>`）重新确认
+//      并应用当前增益。
+// 3. 局限性说明：
+//    在无缝切歌（gapless）且两首歌曲音频格式不同触发 mpv 内部滤镜链重构时，从滤镜重建到 Qt 事件
+//    循环接收并处理 `audioReconfigured` 信号之间，可能存在极短暂的微秒级事件窗口。
+// ============================================================================
+
+void Player::applyDuckGainToMpv()
+{
+    if (m_mpv == nullptr || !m_mpv->isValid()) {
+        return;
+    }
+    const bool ok = m_mpv->command(
+        { QStringLiteral("af-command"), QStringLiteral("duck"), QStringLiteral("volume"),
+            QString::number(m_duckGain, 'f', 6), QStringLiteral("volume") },
+        false);
+    if (ok) {
+        ++m_duckApplyCount;
+    }
+}
+
+void Player::onAudioReconfigured()
+{
+    qCDebug(lcPlayer) << "audioReconfigured, re-applying duck gain:" << m_duckGain;
+    applyDuckGainToMpv();
+}
+
+QString Player::formattedDuckFilter(double gain) const
+{
+    const QString duckFilter = QStringLiteral("@duck:lavfi=[volume=volume=")
+        + QString::number(gain, 'f', 6) + QStringLiteral("]");
+    if (m_userAudioFilters.isEmpty()) {
+        return duckFilter;
+    }
+    return m_userAudioFilters + QStringLiteral(",") + duckFilter;
 }
 
 bool Player::selectAudioDevice(const QString &name)
@@ -583,6 +745,8 @@ void Player::loadCurrentItem(const QueueItem &item)
     }
 
     if (m_mpv != nullptr && m_mpv->isValid()) {
+        // 让新建的滤镜链一开始就带当前增益，缩小重建后到 audioReconfigured 之间的全音量窗口
+        m_mpv->setProperty(QStringLiteral("af"), formattedDuckFilter(m_duckGain));
         m_mpv->command({ QStringLiteral("loadfile"), item.source, QStringLiteral("replace") });
         m_mpv->setProperty(QStringLiteral("pause"), false);
         m_currentEntryId = lastPlaylistEntryId();

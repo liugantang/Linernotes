@@ -2,6 +2,19 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 linernotes_add_test(
+    NAME player_Ducking
+    SOURCES
+        tst_Ducking.cpp
+    LIBS
+        Linernotes::player
+        Linernotes::TestSupport
+    LABELS
+        integration
+    TIMEOUT
+        60
+)
+
+linernotes_add_test(
     NAME player_MpvHandle
     SOURCES
         tst_MpvHandle.cpp
@@ -53,4 +66,15 @@ linernotes_add_test(
         120
 )
 
-
+linernotes_add_test(
+    NAME player_VoiceChannel
+    SOURCES
+        tst_VoiceChannel.cpp
+    LIBS
+        Linernotes::player
+        Linernotes::TestSupport
+    LABELS
+        integration
+    TIMEOUT
+        60
+)

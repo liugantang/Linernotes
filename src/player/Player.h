@@ -3,12 +3,15 @@
 
 #pragma once
 
+#include <QElapsedTimer>
 #include <QObject>
 #include <QSet>
 #include <QString>
+#include <QTimer>
 #include <QVariant>
 #include <QVariantList>
 
+#include <player/GainRamp.h>
 #include <player/MpvHandle.h>
 
 #include <cstdint>
@@ -28,6 +31,7 @@ class Player : public QObject {
     Q_PROPERTY(double duration READ duration NOTIFY durationChanged)
     Q_PROPERTY(int volume READ volume WRITE setVolume NOTIFY volumeChanged)
     Q_PROPERTY(bool muted READ isMuted WRITE setMuted NOTIFY mutedChanged)
+    Q_PROPERTY(double duckGain READ duckGain NOTIFY duckGainChanged)
     Q_PROPERTY(QString currentSource READ currentSource NOTIFY currentSourceChanged)
     Q_PROPERTY(QVariantList audioDevices READ audioDevices NOTIFY audioDevicesChanged)
     Q_PROPERTY(QString audioDevice READ audioDevice NOTIFY audioDeviceChanged)
@@ -49,6 +53,7 @@ public:
     [[nodiscard]] double duration() const;
     [[nodiscard]] int volume() const;
     [[nodiscard]] bool isMuted() const;
+    [[nodiscard]] double duckGain() const;
     [[nodiscard]] QString currentSource() const;
     [[nodiscard]] QVariantList audioDevices() const;
     [[nodiscard]] QString audioDevice() const;
@@ -56,6 +61,12 @@ public:
 
     /// 仅供测试与调试：返回 mpv 内部播放列表当前的项数（不变式：≤ 2）
     [[nodiscard]] int mpvPlaylistCount() const;
+
+    /// 仅供测试与调试：返回 mpv 当前的 af 属性值
+    [[nodiscard]] QVariant mpvAudioFilters() const;
+
+    /// 仅供测试与调试：返回成功执行 af-command 的次数
+    [[nodiscard]] int duckApplyCount() const;
 
 public slots:
     void openFile(const QString &path);
@@ -69,6 +80,11 @@ public slots:
     void seek(double seconds);
     void setVolume(int volume);
     void setMuted(bool muted);
+    /// 在 rampMs 内平滑渐变到 gain（夹到
+    /// [0,1]）。渐变进行中再次调用：从当前值开始新的渐变，不跳变。
+    void duckTo(double gain, int rampMs = 300);
+    /// 等价于 duckTo(1.0, rampMs)
+    void unduck(int rampMs = 500);
     /// 切换输出设备。name 不在当前 audioDevices 列表中时返回 false 且不做任何改变（记 qCWarning）。
     bool selectAudioDevice(const QString &name);
     void setExclusiveMode(bool exclusive);
@@ -79,6 +95,8 @@ signals:
     void durationChanged(double duration);
     void volumeChanged(int volume);
     void mutedChanged(bool muted);
+    void duckGainChanged(double gain);
+    void duckFinished(double gain);
     void currentSourceChanged(const QString &source);
     void audioDevicesChanged();
     void audioDeviceChanged(const QString &name);
@@ -88,6 +106,9 @@ signals:
     /// 某项无法播放（文件不存在、格式无法识别/解码失败）。source 为该项路径，message
     /// 为可读原因（来自 mpv）。
     void playbackError(const QString &source, const QString &message);
+
+private slots:
+    void onDuckTimerTick();
 
 private:
     void onPropertyChanged(const QString &name, const QVariant &value);
@@ -104,12 +125,15 @@ private:
 
     void onStartFile(qint64 entryId);
     void onFileLoaded();
+    void onAudioReconfigured();
     void onEndFile(qint64 entryId, MpvHandle::EndFileReason reason, const QString &error);
     void onUpcomingChanged();
     void schedulePreloadSync();
     void syncPreload();
     void loadCurrentItem(const QueueItem &item);
     [[nodiscard]] qint64 lastPlaylistEntryId() const;
+    void applyDuckGainToMpv();
+    [[nodiscard]] QString formattedDuckFilter(double gain) const;
 
     MpvHandle *m_mpv = nullptr;
     PlayQueue *m_queue = nullptr;
@@ -119,7 +143,14 @@ private:
     double m_duration = 0.0;
     int m_volume = 100;
     bool m_muted = false;
+    double m_duckGain = 1.0;
+    double m_lastEmittedDuckGain = 1.0;
+    int m_duckApplyCount = 0;
+    GainRamp m_duckRamp;
+    QTimer m_duckTimer;
+    QElapsedTimer m_duckElapsedTimer;
     QString m_currentSource;
+    QString m_userAudioFilters;
     QVariantList m_audioDevices;
     QString m_audioDevice = QStringLiteral("auto");
     bool m_exclusiveMode = false;

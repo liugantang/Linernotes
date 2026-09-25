@@ -46,9 +46,10 @@ public:
     [[nodiscard]] bool isValid() const;
     [[nodiscard]] QString errorString() const;
 
-    /// 同步执行命令，例如 {"loadfile", path, "replace"}。失败返回 false 并以 qCWarning(lcPlayer)
-    /// 记录 mpv_error_string。
-    bool command(const QStringList &args);
+    /// 同步执行命令，例如 {"loadfile", path, "replace"}。失败返回 false。
+    /// warnOnFailure 为 true 时以 qCWarning(lcPlayer) 记录 mpv_error_string，为 false 时记
+    /// qCDebug(lcPlayer)。
+    bool command(const QStringList &args, bool warnOnFailure = true);
 
     /// 通过 MPV_FORMAT_NODE 读写属性。支持 QVariant 类型：bool、int/qint64、double、QString、
     /// QVariantList、QVariantMap（递归）。读取失败返回无效 QVariant。
@@ -66,6 +67,7 @@ signals:
     void propertyChanged(const QString &name, const QVariant &value);
     void startFile(qint64 playlistEntryId);
     void fileLoaded();
+    void audioReconfigured();
     /// error 为 mpv_error_string（仅 reason==Error 时非空）
     void endFile(qint64 playlistEntryId, linernotes::player::MpvHandle::EndFileReason reason,
         const QString &error);

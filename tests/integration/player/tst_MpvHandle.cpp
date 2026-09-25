@@ -35,6 +35,7 @@ private slots:
     void commandFailsForUnknownCommand();
 
     void loadFileEmitsLifecycleEvents();
+    void emitsAudioReconfigured();
     void observedPropertiesEmitChanges();
     void observeSamePropertyTwiceRegistersOnce();
     void loadingCorruptFileEndsWithError();
@@ -148,6 +149,20 @@ void TstMpvHandle::loadFileEmitsLifecycleEvents()
     const auto endReason = endSpy.at(0).at(1).value<MpvHandle::EndFileReason>();
     QCOMPARE(endReason, MpvHandle::EndFileReason::Eof);
     QVERIFY(endSpy.at(0).at(2).toString().isEmpty());
+}
+
+void TstMpvHandle::emitsAudioReconfigured()
+{
+    MpvHandle handle({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    QVERIFY(handle.isValid());
+
+    QSignalSpy reconfigSpy(&handle, &MpvHandle::audioReconfigured);
+
+    const QString path = linernotes::test::fixturePath(QStringLiteral("audio/tone_440_1s.flac"));
+    QVERIFY(QFile::exists(path));
+    QVERIFY(handle.command({ QStringLiteral("loadfile"), path, QStringLiteral("replace") }));
+
+    QTRY_VERIFY_WITH_TIMEOUT(reconfigSpy.count() >= 1, 5000);
 }
 
 void TstMpvHandle::observedPropertiesEmitChanges()

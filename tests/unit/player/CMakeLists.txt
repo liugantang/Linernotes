@@ -2,6 +2,14 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 linernotes_add_test(
+    NAME player_GainRamp
+    SOURCES
+        tst_GainRamp.cpp
+    LIBS
+        Linernotes::player
+)
+
+linernotes_add_test(
     NAME player_PlayOrder
     SOURCES
         tst_PlayOrder.cpp
@@ -16,4 +24,3 @@ linernotes_add_test(
     LIBS
         Linernotes::player
 )
-
