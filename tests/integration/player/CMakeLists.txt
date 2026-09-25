@@ -27,3 +27,16 @@ linernotes_add_test(
         60
 )
 
+linernotes_add_test(
+    NAME player_PlayerQueue
+    SOURCES
+        tst_PlayerQueue.cpp
+    LIBS
+        Linernotes::player
+        Linernotes::TestSupport
+    LABELS
+        integration
+    TIMEOUT
+        120
+)
+

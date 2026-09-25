@@ -80,7 +80,7 @@
 | ✅ 1.2 | 事件循环接入：`mpv_set_wakeup_callback` → `QMetaObject::invokeMethod(Qt::QueuedConnection)` → 在主线程 drain 事件 |
 | ✅ 1.3 | 属性观察：`time-pos`、`duration`、`pause`、`volume`、`idle-active`、`playlist-pos`，转换为 Qt 信号 |
 | ✅ 1.4 | `Player` 类（QObject，Q_PROPERTY 暴露给 QML）：play/pause/stop/seek/volume/mute |
-| 1.5 | `PlayQueue` 模型：队列由我们自己维护（而非完全依赖 mpv playlist），向 mpv 预加载下一首以实现 gapless |
+| ✅ 1.5 | `PlayQueue` 模型：队列由我们自己维护（而非完全依赖 mpv playlist），向 mpv 预加载下一首以实现 gapless |
 | ✅ 1.6 | 播放模式：顺序/列表循环/单曲循环/随机（实现“不短期重复”的洗牌：Fisher-Yates + 最近历史回避） |
 | 1.7 | 错误处理：文件不存在、解码失败 → 跳过并上报 |
 | 1.8 | 输出设备枚举与切换（`audio-device-list` / `audio-device`） |

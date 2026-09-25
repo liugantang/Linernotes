@@ -12,10 +12,14 @@
 
 namespace linernotes::player {
 
+class PlayQueue;
+struct QueueItem;
+
 class Player : public QObject {
     Q_OBJECT
     Q_DISABLE_COPY_MOVE(Player)
 
+    Q_PROPERTY(linernotes::player::PlayQueue *queue READ queue CONSTANT)
     Q_PROPERTY(PlaybackState state READ state NOTIFY stateChanged)
     Q_PROPERTY(double position READ position NOTIFY positionChanged)
     Q_PROPERTY(double duration READ duration NOTIFY durationChanged)
@@ -31,6 +35,7 @@ public:
     explicit Player(const MpvHandle::OptionList &extraOptions = { }, QObject *parent = nullptr);
     ~Player() override = default;
 
+    [[nodiscard]] PlayQueue *queue() const;
     [[nodiscard]] bool isValid() const;
     [[nodiscard]] PlaybackState state() const;
     [[nodiscard]] double position() const;
@@ -39,9 +44,14 @@ public:
     [[nodiscard]] bool isMuted() const;
     [[nodiscard]] QString currentSource() const;
 
+    /// 仅供测试与调试：返回 mpv 内部播放列表当前的项数（不变式：≤ 2）
+    [[nodiscard]] int mpvPlaylistCount() const;
+
 public slots:
-    /// 过渡接口：替换当前播放并立即开始播放（1.5 引入队列后由队列驱动，此方法保留作为底层能力）。
     void openFile(const QString &path);
+    void playIndex(int row);
+    void next();
+    void previous();
     void play();
     void pause();
     void togglePause();
@@ -57,7 +67,7 @@ signals:
     void volumeChanged(int volume);
     void mutedChanged(bool muted);
     void currentSourceChanged(const QString &source);
-    /// 当前文件正常播放到结尾（mpv end-file reason == Eof）
+    /// 语义：队列播放结束（最后一首自然播完且没有下一首）
     void playbackFinished();
 
 private:
@@ -70,7 +80,16 @@ private:
     void handleMuteChanged(const QVariant &value);
     void updatePlaybackState();
 
+    void onStartFile(qint64 entryId);
+    void onEndFile(qint64 entryId, MpvHandle::EndFileReason reason, const QString &error);
+    void onUpcomingChanged();
+    void schedulePreloadSync();
+    void syncPreload();
+    void loadCurrentItem(const QueueItem &item);
+    [[nodiscard]] qint64 lastPlaylistEntryId() const;
+
     MpvHandle *m_mpv = nullptr;
+    PlayQueue *m_queue = nullptr;
     PlaybackState m_state = PlaybackState::Stopped;
     double m_position = 0.0;
     double m_lastEmittedPosition = 0.0;
@@ -80,6 +99,14 @@ private:
     QString m_currentSource;
     bool m_idleActive = true;
     bool m_pause = false;
+
+    qint64 m_currentEntryId = -1;
+    quint64 m_currentUid = 0;
+    qint64 m_preloadEntryId = -1;
+    quint64 m_preloadUid = 0;
+    bool m_preloadIsRepeatOne = false;
+    bool m_preloadSyncPending = false;
+    bool m_inInternalSync = false;
 };
 
 } // namespace linernotes::player

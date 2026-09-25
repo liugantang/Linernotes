@@ -3,17 +3,29 @@
 
 #include "Player.h"
 
+#include "PlayQueue.h"
 #include "PlayerLogging.h"
 
 #include <algorithm>
 #include <cmath>
+#include <random>
 
 namespace linernotes::player {
+
+namespace {
+constexpr double kRestartThresholdSeconds = 3.0;
+} // namespace
 
 Player::Player(const MpvHandle::OptionList &extraOptions, QObject *parent)
     : QObject(parent)
     , m_mpv(new MpvHandle(extraOptions, this))
 {
+    std::random_device rd;
+    const quint64 seed = (static_cast<quint64>(rd()) << 32) | static_cast<quint64>(rd());
+    m_queue = new PlayQueue(seed, this);
+
+    connect(m_queue, &PlayQueue::upcomingChanged, this, &Player::onUpcomingChanged);
+
     if (m_mpv == nullptr || !m_mpv->isValid()) {
         qCWarning(lcPlayer) << "Player initialization failed because MpvHandle is invalid:"
                             << ((m_mpv != nullptr) ? m_mpv->errorString()
@@ -54,12 +66,13 @@ Player::Player(const MpvHandle::OptionList &extraOptions, QObject *parent)
     }
 
     connect(m_mpv, &MpvHandle::propertyChanged, this, &Player::onPropertyChanged);
-    connect(m_mpv, &MpvHandle::endFile, this,
-        [this](qint64 /*entryId*/, MpvHandle::EndFileReason reason, const QString & /*error*/) {
-            if (reason == MpvHandle::EndFileReason::Eof) {
-                emit playbackFinished();
-            }
-        });
+    connect(m_mpv, &MpvHandle::startFile, this, &Player::onStartFile);
+    connect(m_mpv, &MpvHandle::endFile, this, &Player::onEndFile);
+}
+
+PlayQueue *Player::queue() const
+{
+    return m_queue;
 }
 
 bool Player::isValid() const
@@ -97,33 +110,84 @@ QString Player::currentSource() const
     return m_currentSource;
 }
 
+int Player::mpvPlaylistCount() const
+{
+    if (m_mpv == nullptr || !m_mpv->isValid()) {
+        return 0;
+    }
+    const QVariant val = m_mpv->property(QStringLiteral("playlist-count"));
+    return val.isValid() ? val.toInt() : 0;
+}
+
 void Player::openFile(const QString &path)
 {
-    qCDebug(lcPlayer) << "Opening file:" << path;
-    if (m_currentSource != path) {
-        m_currentSource = path;
-        emit currentSourceChanged(m_currentSource);
-    }
-    if (m_mpv == nullptr || !m_mpv->isValid()) {
+    qCDebug(lcPlayer) << "openFile:" << path;
+    m_queue->setItems({ { .source = path } }, -1);
+    playIndex(0);
+}
+
+void Player::playIndex(int row)
+{
+    qCDebug(lcPlayer) << "playIndex:" << row;
+    if (row < 0 || row >= m_queue->count()) {
         return;
     }
-    m_mpv->command({ QStringLiteral("loadfile"), path, QStringLiteral("replace") });
-    m_mpv->setProperty(QStringLiteral("pause"), false);
+    const auto item = m_queue->jumpTo(row);
+    if (item.has_value()) {
+        loadCurrentItem(*item);
+    }
+}
+
+void Player::next()
+{
+    qCDebug(lcPlayer) << "next() called";
+    const auto nextItem = m_queue->advance(PlayOrder::Advance::User);
+    if (nextItem.has_value()) {
+        loadCurrentItem(*nextItem);
+    } else {
+        stop();
+    }
+}
+
+void Player::previous()
+{
+    qCDebug(lcPlayer) << "previous() called, position:" << m_position;
+    if (m_position > kRestartThresholdSeconds) {
+        seek(0.0);
+    } else {
+        const auto prevItem = m_queue->previous();
+        if (prevItem.has_value()) {
+            loadCurrentItem(*prevItem);
+        } else {
+            seek(0.0);
+        }
+    }
 }
 
 void Player::play()
 {
     qCDebug(lcPlayer) << "play() called, current state:" << static_cast<int>(m_state)
-                      << "currentSource:" << m_currentSource;
+                      << "queue count:" << m_queue->count();
     if (m_mpv == nullptr || !m_mpv->isValid()) {
+        return;
+    }
+
+    if (m_queue->count() == 0) {
         return;
     }
 
     if (m_state == PlaybackState::Paused) {
         m_mpv->setProperty(QStringLiteral("pause"), false);
-    } else if (m_state == PlaybackState::Stopped && !m_currentSource.isEmpty()) {
-        m_mpv->command({ QStringLiteral("loadfile"), m_currentSource, QStringLiteral("replace") });
-        m_mpv->setProperty(QStringLiteral("pause"), false);
+    } else if (m_state == PlaybackState::Stopped) {
+        const auto cur = m_queue->currentItem();
+        if (cur.has_value()) {
+            loadCurrentItem(*cur);
+        } else {
+            const auto nextItem = m_queue->advance(PlayOrder::Advance::Auto);
+            if (nextItem.has_value()) {
+                loadCurrentItem(*nextItem);
+            }
+        }
     }
 }
 
@@ -151,10 +215,17 @@ void Player::togglePause()
 void Player::stop()
 {
     qCDebug(lcPlayer) << "stop() called";
+    m_preloadEntryId = -1;
+    m_preloadUid = 0;
+    m_preloadIsRepeatOne = false;
+    m_currentEntryId = -1;
+    m_currentUid = 0;
+
     if (m_mpv == nullptr || !m_mpv->isValid()) {
         return;
     }
     m_mpv->command({ QStringLiteral("stop") });
+    m_mpv->command({ QStringLiteral("playlist-clear") });
 }
 
 void Player::seek(double seconds)
@@ -301,6 +372,190 @@ void Player::updatePlaybackState()
         qCDebug(lcPlayer) << "Playback state changed to" << static_cast<int>(m_state);
         emit stateChanged(m_state);
     }
+}
+
+// ============================================================================
+// Gapless 预加载与播放列表同步核心设计说明
+//
+// 1. 不变式：mpv 的 playlist 最多包含 2 项：[正在播放项, 预加载项]。
+//    Player 通过 m_currentEntryId / m_currentUid 与 m_preloadEntryId / m_preloadUid 跟踪两项。
+// 2. 加载当前项：使用 `loadfile <path> replace` 覆盖原有列表并播放。
+//    加载预加载项：使用 `loadfile <path> append` 追加到末尾供 mpv 预读与无缝解码。
+// 3. 自然切换：当监听到 mpv 的 startFile 事件且 entryId == m_preloadEntryId 时，说明 mpv
+//    已无缝切换到预加载项。此时调用 queue()->advance(Auto) 推进队列，更新当前项并移除旧项
+//    （`playlist-remove 0`），随后触发下一轮预加载。
+// 4. 预加载同步：连接 PlayQueue::upcomingChanged 信号，合并排队调用 syncPreload() 计算
+//    queue()->peekNext(Auto)。若与当前预加载项不符，则通过 `playlist-remove 1` 替换为新预加载项。
+// 5. 单曲循环（RepeatOne）：peekNext(Auto) 仍返回当前项，照常 append 同一文件以实现无缝单曲循环。
+// ============================================================================
+
+void Player::loadCurrentItem(const QueueItem &item)
+{
+    m_inInternalSync = true;
+    m_preloadEntryId = -1;
+    m_preloadUid = 0;
+    m_preloadIsRepeatOne = false;
+    m_currentUid = item.uid;
+
+    if (m_currentSource != item.source) {
+        m_currentSource = item.source;
+        emit currentSourceChanged(m_currentSource);
+    }
+
+    if (m_mpv != nullptr && m_mpv->isValid()) {
+        m_mpv->command({ QStringLiteral("loadfile"), item.source, QStringLiteral("replace") });
+        m_mpv->setProperty(QStringLiteral("pause"), false);
+        m_currentEntryId = lastPlaylistEntryId();
+    }
+    m_inInternalSync = false;
+
+    schedulePreloadSync();
+}
+
+qint64 Player::lastPlaylistEntryId() const
+{
+    if (m_mpv == nullptr || !m_mpv->isValid()) {
+        return -1;
+    }
+    const QVariant var = m_mpv->property(QStringLiteral("playlist"));
+    const QVariantList list = var.toList();
+    if (!list.isEmpty()) {
+        const QVariantMap map = list.last().toMap();
+        return map.value(QStringLiteral("id")).toLongLong();
+    }
+    return -1;
+}
+
+void Player::onStartFile(qint64 entryId)
+{
+    if (entryId == m_currentEntryId) {
+        qCDebug(lcPlayer) << "startFile for current entry:" << entryId;
+        schedulePreloadSync();
+        return;
+    }
+
+    if (entryId == m_preloadEntryId && m_preloadEntryId != -1) {
+        qCDebug(lcPlayer) << "Seamless transition to preloaded entry:" << entryId;
+        const auto advItem = m_queue->advance(PlayOrder::Advance::Auto);
+        if (!advItem.has_value() || advItem->uid != m_preloadUid) {
+            qCWarning(lcPlayer) << "Natural transition mismatch: expected preload uid"
+                                << m_preloadUid << "got" << (advItem ? advItem->uid : 0);
+            if (advItem.has_value()) {
+                loadCurrentItem(*advItem);
+            } else {
+                stop();
+            }
+            return;
+        }
+
+        m_currentUid = m_preloadUid;
+        m_currentEntryId = m_preloadEntryId;
+        m_preloadUid = 0;
+        m_preloadEntryId = -1;
+        m_preloadIsRepeatOne = false;
+
+        if (m_currentSource != advItem->source) {
+            m_currentSource = advItem->source;
+            emit currentSourceChanged(m_currentSource);
+        }
+
+        if (m_mpv != nullptr && m_mpv->isValid()) {
+            m_mpv->command({ QStringLiteral("playlist-remove"), QStringLiteral("0") });
+        }
+
+        schedulePreloadSync();
+    }
+}
+
+void Player::onEndFile(qint64 entryId, MpvHandle::EndFileReason reason, const QString &error)
+{
+    qCDebug(lcPlayer) << "endFile:" << entryId << "reason:" << static_cast<int>(reason)
+                      << "error:" << error;
+    if (reason == MpvHandle::EndFileReason::Eof) {
+        if (m_preloadEntryId == -1 && (entryId == m_currentEntryId || m_currentEntryId == -1)) {
+            m_queue->advance(PlayOrder::Advance::Auto);
+            m_currentEntryId = -1;
+            m_currentUid = 0;
+            emit playbackFinished();
+        }
+    } else if (reason == MpvHandle::EndFileReason::Error) {
+        qCWarning(lcPlayer) << "Playback error on entry" << entryId << ":" << error;
+        if (m_preloadEntryId == -1 && (entryId == m_currentEntryId || m_currentEntryId == -1)) {
+            m_currentEntryId = -1;
+            m_currentUid = 0;
+        }
+    }
+}
+
+void Player::onUpcomingChanged()
+{
+    schedulePreloadSync();
+}
+
+void Player::schedulePreloadSync()
+{
+    if (m_preloadSyncPending) {
+        return;
+    }
+    m_preloadSyncPending = true;
+    QMetaObject::invokeMethod(this, &Player::syncPreload, Qt::QueuedConnection);
+}
+
+void Player::syncPreload()
+{
+    m_preloadSyncPending = false;
+
+    if (m_inInternalSync || m_mpv == nullptr || !m_mpv->isValid()) {
+        return;
+    }
+
+    if (m_currentEntryId == -1 || m_state == PlaybackState::Stopped) {
+        if (m_preloadEntryId != -1) {
+            m_inInternalSync = true;
+            m_mpv->command({ QStringLiteral("playlist-remove"), QStringLiteral("1") });
+            m_preloadEntryId = -1;
+            m_preloadUid = 0;
+            m_preloadIsRepeatOne = false;
+            m_inInternalSync = false;
+        }
+        return;
+    }
+
+    const auto targetNext = m_queue->peekNext(PlayOrder::Advance::Auto);
+    const bool isRepeatOne = (m_queue->mode() == PlayMode::RepeatOne);
+
+    if (!targetNext.has_value()) {
+        if (m_preloadEntryId != -1) {
+            m_inInternalSync = true;
+            m_mpv->command({ QStringLiteral("playlist-remove"), QStringLiteral("1") });
+            m_preloadEntryId = -1;
+            m_preloadUid = 0;
+            m_preloadIsRepeatOne = false;
+            m_inInternalSync = false;
+        }
+        return;
+    }
+
+    const QueueItem &nextItem = *targetNext;
+
+    if (m_preloadEntryId != -1 && m_preloadUid == nextItem.uid
+        && m_preloadIsRepeatOne == isRepeatOne) {
+        return;
+    }
+
+    m_inInternalSync = true;
+    if (m_preloadEntryId != -1) {
+        m_mpv->command({ QStringLiteral("playlist-remove"), QStringLiteral("1") });
+        m_preloadEntryId = -1;
+        m_preloadUid = 0;
+        m_preloadIsRepeatOne = false;
+    }
+
+    m_mpv->command({ QStringLiteral("loadfile"), nextItem.source, QStringLiteral("append") });
+    m_preloadEntryId = lastPlaylistEntryId();
+    m_preloadUid = nextItem.uid;
+    m_preloadIsRepeatOne = isRepeatOne;
+    m_inInternalSync = false;
 }
 
 } // namespace linernotes::player
