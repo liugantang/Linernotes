@@ -31,6 +31,11 @@ private slots:
     void muteToggles();
     void playbackFinishedEmittedAtEof();
     void stateChangedNotEmittedRedundantly();
+    void audioDevicesContainsAuto();
+    void defaultAudioDeviceIsAuto();
+    void selectingUnknownDeviceFails();
+    void selectingListedDeviceSucceeds();
+    void exclusiveModeToggles();
 };
 
 void TstPlayer::initTestCase()
@@ -244,6 +249,107 @@ void TstPlayer::stateChangedNotEmittedRedundantly()
         const auto curr = stateSpy.at(i).at(0).value<Player::PlaybackState>();
         QVERIFY2(prev != curr, "Adjacent stateChanged emissions must not have the same state");
     }
+}
+
+void TstPlayer::audioDevicesContainsAuto()
+{
+    Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    QVERIFY(player.isValid());
+
+    QTRY_VERIFY_WITH_TIMEOUT(!player.audioDevices().isEmpty(), 5000);
+
+    const QVariantList devices = player.audioDevices();
+    QVERIFY(!devices.isEmpty());
+
+    bool foundAuto = false;
+    for (const QVariant &devVar : devices) {
+        QCOMPARE(devVar.metaType().id(), QMetaType::QVariantMap);
+        const QVariantMap dev = devVar.toMap();
+        QVERIFY(dev.contains(QStringLiteral("name")));
+        QVERIFY(dev.contains(QStringLiteral("description")));
+        const QString name = dev.value(QStringLiteral("name")).toString();
+        const QString desc = dev.value(QStringLiteral("description")).toString();
+        QVERIFY(!name.isEmpty());
+        QVERIFY(!desc.isEmpty());
+        if (name == QStringLiteral("auto")) {
+            foundAuto = true;
+        }
+    }
+    QVERIFY(foundAuto);
+}
+
+void TstPlayer::defaultAudioDeviceIsAuto()
+{
+    Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    QVERIFY(player.isValid());
+    QCOMPARE(player.audioDevice(), QStringLiteral("auto"));
+    QCOMPARE(player.exclusiveMode(), false);
+}
+
+void TstPlayer::selectingUnknownDeviceFails()
+{
+    Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    QVERIFY(player.isValid());
+
+    QSignalSpy spy(&player, &Player::audioDeviceChanged);
+    const QString origDevice = player.audioDevice();
+
+    const bool result = player.selectAudioDevice(QStringLiteral("nonexistent_device_xyz_123"));
+    QCOMPARE(result, false);
+    QCOMPARE(player.audioDevice(), origDevice);
+    QVERIFY(!spy.wait(50));
+    QCOMPARE(spy.count(), 0);
+}
+
+void TstPlayer::selectingListedDeviceSucceeds()
+{
+    Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    QVERIFY(player.isValid());
+    QTRY_VERIFY_WITH_TIMEOUT(!player.audioDevices().isEmpty(), 5000);
+
+    const QVariantList devices = player.audioDevices();
+    const QVariantMap targetDev = devices.last().toMap();
+    const QString targetName = targetDev.value(QStringLiteral("name")).toString();
+    QVERIFY(!targetName.isEmpty());
+
+    QSignalSpy spy(&player, &Player::audioDeviceChanged);
+    const QString initialDevice = player.audioDevice();
+
+    const bool result = player.selectAudioDevice(targetName);
+    QCOMPARE(result, true);
+
+    QTRY_COMPARE_WITH_TIMEOUT(player.audioDevice(), targetName, 5000);
+
+    if (targetName != initialDevice) {
+        QCOMPARE(spy.count(), 1);
+        QCOMPARE(spy.at(0).at(0).toString(), targetName);
+    } else {
+        QCOMPARE(spy.count(), 0);
+    }
+}
+
+void TstPlayer::exclusiveModeToggles()
+{
+    Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    QVERIFY(player.isValid());
+    QCOMPARE(player.exclusiveMode(), false);
+
+    QSignalSpy spy(&player, &Player::exclusiveModeChanged);
+
+    player.setExclusiveMode(true);
+    QTRY_COMPARE_WITH_TIMEOUT(player.exclusiveMode(), true, 5000);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.at(0).at(0).toBool(), true);
+
+    // Setting same value again should not emit signal
+    player.setExclusiveMode(true);
+    QVERIFY(!spy.wait(50));
+    QCOMPARE(spy.count(), 1);
+
+    player.setExclusiveMode(false);
+    QTRY_COMPARE_WITH_TIMEOUT(player.exclusiveMode(), false, 5000);
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(spy.at(1).at(0).toBool(), false);
 }
 
 } // namespace

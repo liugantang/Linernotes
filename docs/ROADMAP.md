@@ -83,7 +83,7 @@
 | ✅ 1.5 | `PlayQueue` 模型：队列由我们自己维护（而非完全依赖 mpv playlist），向 mpv 预加载下一首以实现 gapless |
 | ✅ 1.6 | 播放模式：顺序/列表循环/单曲循环/随机（实现“不短期重复”的洗牌：Fisher-Yates + 最近历史回避） |
 | ✅ 1.7 | 错误处理：文件不存在、解码失败 → 跳过并上报 |
-| 1.8 | 输出设备枚举与切换（`audio-device-list` / `audio-device`） |
+| ✅ 1.8 | 输出设备枚举与切换（`audio-device-list` / `audio-device`） |
 | 1.9 | 为 DJ 预留：`VoiceChannel`（第二个 mpv 实例专门播放语音）+ 主通道音量平滑渐变（ducking）接口，先实现接口与简单测试 |
 | 1.10 | 队列与进度持久化（退出保存，启动恢复） |
 | 1.11 | 单元/集成测试：用测试音频文件验证 gapless 切换、seek、事件时序 |

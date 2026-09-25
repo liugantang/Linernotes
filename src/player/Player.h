@@ -6,6 +6,8 @@
 #include <QObject>
 #include <QSet>
 #include <QString>
+#include <QVariant>
+#include <QVariantList>
 
 #include <player/MpvHandle.h>
 
@@ -27,6 +29,10 @@ class Player : public QObject {
     Q_PROPERTY(int volume READ volume WRITE setVolume NOTIFY volumeChanged)
     Q_PROPERTY(bool muted READ isMuted WRITE setMuted NOTIFY mutedChanged)
     Q_PROPERTY(QString currentSource READ currentSource NOTIFY currentSourceChanged)
+    Q_PROPERTY(QVariantList audioDevices READ audioDevices NOTIFY audioDevicesChanged)
+    Q_PROPERTY(QString audioDevice READ audioDevice NOTIFY audioDeviceChanged)
+    Q_PROPERTY(
+        bool exclusiveMode READ exclusiveMode WRITE setExclusiveMode NOTIFY exclusiveModeChanged)
 
 public:
     enum class PlaybackState : std::uint8_t { Stopped, Playing, Paused };
@@ -44,6 +50,9 @@ public:
     [[nodiscard]] int volume() const;
     [[nodiscard]] bool isMuted() const;
     [[nodiscard]] QString currentSource() const;
+    [[nodiscard]] QVariantList audioDevices() const;
+    [[nodiscard]] QString audioDevice() const;
+    [[nodiscard]] bool exclusiveMode() const;
 
     /// 仅供测试与调试：返回 mpv 内部播放列表当前的项数（不变式：≤ 2）
     [[nodiscard]] int mpvPlaylistCount() const;
@@ -60,6 +69,9 @@ public slots:
     void seek(double seconds);
     void setVolume(int volume);
     void setMuted(bool muted);
+    /// 切换输出设备。name 不在当前 audioDevices 列表中时返回 false 且不做任何改变（记 qCWarning）。
+    bool selectAudioDevice(const QString &name);
+    void setExclusiveMode(bool exclusive);
 
 signals:
     void stateChanged(linernotes::player::Player::PlaybackState state);
@@ -68,6 +80,9 @@ signals:
     void volumeChanged(int volume);
     void mutedChanged(bool muted);
     void currentSourceChanged(const QString &source);
+    void audioDevicesChanged();
+    void audioDeviceChanged(const QString &name);
+    void exclusiveModeChanged(bool exclusive);
     /// 语义：队列播放结束（最后一首自然播完且没有下一首）
     void playbackFinished();
     /// 某项无法播放（文件不存在、格式无法识别/解码失败）。source 为该项路径，message
@@ -82,6 +97,9 @@ private:
     void handleDurationChanged(const QVariant &value);
     void handleVolumeChanged(const QVariant &value);
     void handleMuteChanged(const QVariant &value);
+    void handleAudioDeviceListChanged(const QVariant &value);
+    void handleAudioDeviceChanged(const QVariant &value);
+    void handleAudioExclusiveChanged(const QVariant &value);
     void updatePlaybackState();
 
     void onStartFile(qint64 entryId);
@@ -102,6 +120,9 @@ private:
     int m_volume = 100;
     bool m_muted = false;
     QString m_currentSource;
+    QVariantList m_audioDevices;
+    QString m_audioDevice = QStringLiteral("auto");
+    bool m_exclusiveMode = false;
     bool m_idleActive = true;
     bool m_pause = false;
 
