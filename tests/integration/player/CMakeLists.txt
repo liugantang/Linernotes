@@ -13,3 +13,17 @@ linernotes_add_test(
     TIMEOUT
         60
 )
+
+linernotes_add_test(
+    NAME player_Player
+    SOURCES
+        tst_Player.cpp
+    LIBS
+        Linernotes::player
+        Linernotes::TestSupport
+    LABELS
+        integration
+    TIMEOUT
+        60
+)
+

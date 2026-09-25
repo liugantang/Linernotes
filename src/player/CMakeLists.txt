@@ -4,6 +4,8 @@
 add_library(linernotes_player STATIC
     MpvHandle.cpp
     MpvHandle.h
+    Player.cpp
+    Player.h
     PlayerLogging.cpp
     PlayerLogging.h
 )
