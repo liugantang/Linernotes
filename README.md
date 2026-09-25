@@ -1,10 +1,10 @@
-# AiMusic
+# Linernotes
 
-> **AiMusic** is an open-source, local-first desktop music player enhanced by AI. It does not replace your local music library, but empowers it to be clean, conversational, radio-hosted, insightful, and memorable. Built with C++20, Qt 6 (Qt Quick / QML), and libmpv.
+> **Linernotes** (named after the liner notes inside record sleeves that tell the stories behind the music) is an open-source, local-first desktop music player enhanced by AI. It does not replace your local music library, but empowers it to be clean, conversational, radio-hosted, insightful, and memorable. Built with C++20, Qt 6 (Qt Quick / QML), and libmpv.
 
 ---
 
-**AiMusic** 是一款面向本地音乐收藏者的开源桌面音乐播放器。AI 不替代你的曲库，而是让曲库「**变干净、能对话、会主持、可解读、有记忆**」。
+**Linernotes** 是一款面向本地音乐收藏者的开源桌面音乐播放器。AI 不替代你的曲库，而是让曲库「**变干净、能对话、会主持、可解读、有记忆**」。
 
 ## 五大 AI 角色
 
@@ -19,7 +19,7 @@
 - **本地优先与隐私保护**：音频文件永不上传；仅在必要时发送文本元数据与聚合统计，且用户可完全关闭网络调用。
 - **用户自带服务 (BYOK)**：软件不内置 API Key、不提供中转服务；用户自带任意兼容 OpenAI 接口的服务（支持云端 API 或 Ollama / llama.cpp 等本地模型）。
 - **非破坏性与可解释**：写回文件为显式操作，所有 AI 决策均提供依据与可审核 diff，可随时撤销。
-- **离线可降级**：断网或未配置 AI 服务时，AiMusic 仍是一款功能完整、轻快好用的本地音乐播放器。
+- **离线可降级**：断网或未配置 AI 服务时，Linernotes 仍是一款功能完整、轻快好用的本地音乐播放器。
 
 ## 当前状态
 

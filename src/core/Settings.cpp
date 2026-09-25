@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2026 AiMusic contributors
+// SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #include "Settings.h"
 
 #include <QSettings>
 
-namespace aimusic::core {
+namespace linernotes::core {
 
 Settings::Settings(const QString &iniFilePath, QObject *parent)
     : QObject(parent)
@@ -40,4 +40,4 @@ void Settings::removeKey(const QString &keyName)
     m_settings->remove(keyName);
 }
 
-} // namespace aimusic::core
+} // namespace linernotes::core

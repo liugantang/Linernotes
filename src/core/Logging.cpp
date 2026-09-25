@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2026 AiMusic contributors
+// SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #include "Logging.h"
 
@@ -20,9 +20,9 @@
 #include <string_view>
 #include <utility>
 
-namespace aimusic::core {
+namespace linernotes::core {
 
-Q_LOGGING_CATEGORY(lcCore, "aimusic.core")
+Q_LOGGING_CATEGORY(lcCore, "linernotes.core")
 
 namespace {
 
@@ -402,4 +402,4 @@ void uninstallLogging()
     }
 }
 
-} // namespace aimusic::core
+} // namespace linernotes::core

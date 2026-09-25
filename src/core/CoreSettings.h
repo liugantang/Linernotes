@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2026 AiMusic contributors
+// SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #pragma once
 
@@ -7,7 +7,7 @@
 
 #include <core/Settings.h>
 
-namespace aimusic::core {
+namespace linernotes::core {
 
 using namespace Qt::StringLiterals;
 
@@ -15,4 +15,4 @@ using namespace Qt::StringLiterals;
 // Qt6
 inline const SettingKey<QString> kLogLevel { u"log/level", u"info"_s };
 
-} // namespace aimusic::core
+} // namespace linernotes::core

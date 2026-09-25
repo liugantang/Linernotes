@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2026 AiMusic contributors
+// SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #include <QObject>
 #include <QString>
@@ -14,21 +14,21 @@ class TstVersion : public QObject {
 
 private slots:
     void versionStringMatchesComponents();
-    void applicationNameIsAiMusic();
+    void applicationNameIsLinernotes();
 };
 
 void TstVersion::versionStringMatchesComponents()
 {
     const QString expected = QStringLiteral("%1.%2.%3")
-                                 .arg(aimusic::core::kVersionMajor)
-                                 .arg(aimusic::core::kVersionMinor)
-                                 .arg(aimusic::core::kVersionPatch);
-    QCOMPARE(aimusic::core::versionString(), expected);
+                                 .arg(linernotes::core::kVersionMajor)
+                                 .arg(linernotes::core::kVersionMinor)
+                                 .arg(linernotes::core::kVersionPatch);
+    QCOMPARE(linernotes::core::versionString(), expected);
 }
 
-void TstVersion::applicationNameIsAiMusic()
+void TstVersion::applicationNameIsLinernotes()
 {
-    QCOMPARE(aimusic::core::applicationName(), QStringLiteral("AiMusic"));
+    QCOMPARE(linernotes::core::applicationName(), QStringLiteral("Linernotes"));
 }
 
 } // namespace

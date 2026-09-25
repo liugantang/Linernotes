@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2026 AiMusic contributors
+// SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #pragma once
 
@@ -8,13 +8,13 @@
 #include <QString>
 #include <QtLogging>
 
-namespace aimusic::core {
+namespace linernotes::core {
 
 Q_DECLARE_LOGGING_CATEGORY(lcCore)
 
 struct LogConfig {
     QString directory;
-    QString baseName = QStringLiteral("aimusic");
+    QString baseName = QStringLiteral("linernotes");
     qint64 maxFileBytes = static_cast<qint64>(5) * 1024 * 1024;
     int maxBackupFiles = 5;
     bool writeToConsole = true;
@@ -31,9 +31,9 @@ void installLogging(const LogConfig &config);
 void uninstallLogging();
 
 /// 把一条日志格式化为一行文本（不含换行符）。暴露出来便于测试。
-/// 格式：2026-09-25T14:03:12.345+08:00 [I] aimusic.core: message  (file.cpp:42)
+/// 格式：2026-09-25T14:03:12.345+08:00 [I] linernotes.core: message  (file.cpp:42)
 /// 级别缩写：D I W C F；Release 构建中 QMessageLogContext 无文件信息时省略括号部分。
 QString formatLogLine(QtMsgType type, const QMessageLogContext &context, const QString &message,
     const QDateTime &timestamp);
 
-} // namespace aimusic::core
+} // namespace linernotes::core

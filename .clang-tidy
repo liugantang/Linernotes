@@ -1,5 +1,5 @@
 ---
-# Clang-Tidy configuration for AiMusic
+# Clang-Tidy configuration for Linernotes
 
 # 启用的检查类别：
 #   bugprone-*, clang-analyzer-*, cppcoreguidelines-*, modernize-*,

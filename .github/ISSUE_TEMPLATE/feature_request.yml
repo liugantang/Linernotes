@@ -1,12 +1,12 @@
 name: 功能建议 / Feature Request
-description: 为 AiMusic 提出新的功能构想或改进建议
+description: 为 Linernotes 提出新的功能构想或改进建议
 title: "[Feature]: "
 labels: ["enhancement"]
 body:
   - type: markdown
     attributes:
       value: |
-        感谢为 AiMusic 提出改进建议！请先查阅 [REQUIREMENTS.md](docs/REQUIREMENTS.md) 与 [ROADMAP.md](docs/ROADMAP.md) 查看是否已有对应规划。
+        感谢为 Linernotes 提出改进建议！请先查阅 [REQUIREMENTS.md](docs/REQUIREMENTS.md) 与 [ROADMAP.md](docs/ROADMAP.md) 查看是否已有对应规划。
   - type: textarea
     id: problem
     attributes:

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2026 AiMusic contributors
+// SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #include <QCoreApplication>
 #include <QDir>
@@ -29,44 +29,44 @@ private slots:
     void fromEnvironmentWithAndWithoutEnvVar();
 
 private:
-    bool m_hadOriginalAimusicHome = false;
-    QByteArray m_originalAimusicHome;
+    bool m_hadOriginalLinernotesHome = false;
+    QByteArray m_originalLinernotesHome;
 };
 
 void TstPaths::initTestCase()
 {
     QCoreApplication::setOrganizationName(QString());
-    QCoreApplication::setApplicationName(aimusic::core::applicationName());
+    QCoreApplication::setApplicationName(linernotes::core::applicationName());
 
-    m_hadOriginalAimusicHome = qEnvironmentVariableIsSet("AIMUSIC_HOME");
-    if (m_hadOriginalAimusicHome) {
-        m_originalAimusicHome = qgetenv("AIMUSIC_HOME");
+    m_hadOriginalLinernotesHome = qEnvironmentVariableIsSet("LINERNOTES_HOME");
+    if (m_hadOriginalLinernotesHome) {
+        m_originalLinernotesHome = qgetenv("LINERNOTES_HOME");
     }
 }
 
 void TstPaths::cleanupTestCase()
 {
-    if (m_hadOriginalAimusicHome) {
-        qputenv("AIMUSIC_HOME", m_originalAimusicHome);
+    if (m_hadOriginalLinernotesHome) {
+        qputenv("LINERNOTES_HOME", m_originalLinernotesHome);
     } else {
-        qunsetenv("AIMUSIC_HOME");
+        qunsetenv("LINERNOTES_HOME");
     }
 }
 
 void TstPaths::init()
 {
-    qunsetenv("AIMUSIC_HOME");
+    qunsetenv("LINERNOTES_HOME");
 }
 
 void TstPaths::cleanup()
 {
-    qunsetenv("AIMUSIC_HOME");
+    qunsetenv("LINERNOTES_HOME");
 }
 
 void TstPaths::underRootPathsCorrect()
 {
     const QString root = QStringLiteral("/custom/app_root");
-    const auto paths = aimusic::core::Paths::underRoot(root);
+    const auto paths = linernotes::core::Paths::underRoot(root);
 
     QCOMPARE(paths.configDir(), QStringLiteral("/custom/app_root/config"));
     QCOMPARE(paths.dataDir(), QStringLiteral("/custom/app_root/data"));
@@ -74,7 +74,8 @@ void TstPaths::underRootPathsCorrect()
     QCOMPARE(paths.logDir(), QStringLiteral("/custom/app_root/logs"));
 
     // Trailing slash handled cleanly
-    const auto pathsTrailing = aimusic::core::Paths::underRoot(QStringLiteral("/custom/app_root/"));
+    const auto pathsTrailing
+        = linernotes::core::Paths::underRoot(QStringLiteral("/custom/app_root/"));
     QCOMPARE(pathsTrailing.configDir(), QStringLiteral("/custom/app_root/config"));
     QCOMPARE(pathsTrailing.dataDir(), QStringLiteral("/custom/app_root/data"));
     QCOMPARE(pathsTrailing.cacheDir(), QStringLiteral("/custom/app_root/cache"));
@@ -83,7 +84,7 @@ void TstPaths::underRootPathsCorrect()
 
 void TstPaths::standardPathsMatchConventions()
 {
-    const auto stdPaths = aimusic::core::Paths::standard();
+    const auto stdPaths = linernotes::core::Paths::standard();
 
     QVERIFY(!stdPaths.configDir().isEmpty());
     QVERIFY(!stdPaths.dataDir().isEmpty());
@@ -91,11 +92,11 @@ void TstPaths::standardPathsMatchConventions()
     QCOMPARE(stdPaths.logDir(), QDir(stdPaths.dataDir()).filePath(QStringLiteral("logs")));
 
 #ifdef Q_OS_LINUX
-    // On Linux with organizationName="" and applicationName="AiMusic",
-    // standard config/data/cache paths end with /AiMusic.
-    QVERIFY(stdPaths.configDir().endsWith(QStringLiteral("/AiMusic")));
-    QVERIFY(stdPaths.dataDir().endsWith(QStringLiteral("/AiMusic")));
-    QVERIFY(stdPaths.cacheDir().endsWith(QStringLiteral("/AiMusic")));
+    // On Linux with organizationName="" and applicationName="Linernotes",
+    // standard config/data/cache paths end with /Linernotes.
+    QVERIFY(stdPaths.configDir().endsWith(QStringLiteral("/Linernotes")));
+    QVERIFY(stdPaths.dataDir().endsWith(QStringLiteral("/Linernotes")));
+    QVERIFY(stdPaths.cacheDir().endsWith(QStringLiteral("/Linernotes")));
 #endif
 }
 
@@ -105,7 +106,7 @@ void TstPaths::ensureCreatedCreatesAllDirectories()
     QVERIFY(tempDir.isValid());
 
     const QString root = QDir(tempDir.path()).filePath(QStringLiteral("test_root"));
-    const auto paths = aimusic::core::Paths::underRoot(root);
+    const auto paths = linernotes::core::Paths::underRoot(root);
 
     QVERIFY(!QDir(paths.configDir()).exists());
     QVERIFY(!QDir(paths.dataDir()).exists());
@@ -125,28 +126,28 @@ void TstPaths::ensureCreatedCreatesAllDirectories()
 
 void TstPaths::fromEnvironmentWithAndWithoutEnvVar()
 {
-    // 1. Without AIMUSIC_HOME
-    qunsetenv("AIMUSIC_HOME");
-    const auto pathsStandard = aimusic::core::Paths::fromEnvironment();
-    const auto expectedStandard = aimusic::core::Paths::standard();
+    // 1. Without LINERNOTES_HOME
+    qunsetenv("LINERNOTES_HOME");
+    const auto pathsStandard = linernotes::core::Paths::fromEnvironment();
+    const auto expectedStandard = linernotes::core::Paths::standard();
     QCOMPARE(pathsStandard.configDir(), expectedStandard.configDir());
     QCOMPARE(pathsStandard.dataDir(), expectedStandard.dataDir());
     QCOMPARE(pathsStandard.cacheDir(), expectedStandard.cacheDir());
     QCOMPARE(pathsStandard.logDir(), expectedStandard.logDir());
 
-    // 2. With AIMUSIC_HOME set
-    const QString customHome = QStringLiteral("/tmp/custom_aimusic_home");
-    qputenv("AIMUSIC_HOME", customHome.toUtf8());
-    const auto pathsCustom = aimusic::core::Paths::fromEnvironment();
-    const auto expectedCustom = aimusic::core::Paths::underRoot(customHome);
+    // 2. With LINERNOTES_HOME set
+    const QString customHome = QStringLiteral("/tmp/custom_linernotes_home");
+    qputenv("LINERNOTES_HOME", customHome.toUtf8());
+    const auto pathsCustom = linernotes::core::Paths::fromEnvironment();
+    const auto expectedCustom = linernotes::core::Paths::underRoot(customHome);
     QCOMPARE(pathsCustom.configDir(), expectedCustom.configDir());
     QCOMPARE(pathsCustom.dataDir(), expectedCustom.dataDir());
     QCOMPARE(pathsCustom.cacheDir(), expectedCustom.cacheDir());
     QCOMPARE(pathsCustom.logDir(), expectedCustom.logDir());
 
-    // 3. Clear AIMUSIC_HOME again
-    qunsetenv("AIMUSIC_HOME");
-    const auto pathsRestored = aimusic::core::Paths::fromEnvironment();
+    // 3. Clear LINERNOTES_HOME again
+    qunsetenv("LINERNOTES_HOME");
+    const auto pathsRestored = linernotes::core::Paths::fromEnvironment();
     QCOMPARE(pathsRestored.configDir(), expectedStandard.configDir());
 }
 

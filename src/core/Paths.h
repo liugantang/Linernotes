@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2026 AiMusic contributors
+// SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #pragma once
 
 #include <QString>
 
-namespace aimusic::core {
+namespace linernotes::core {
 
 class Paths {
 public:
@@ -14,7 +14,7 @@ public:
     /// 所有目录都放在 root
     /// 下（root/config、root/data、root/cache、root/logs）。用于测试和便携模式。
     static Paths underRoot(const QString &root);
-    /// 若环境变量 AIMUSIC_HOME 非空则 underRoot(它)，否则 standard()
+    /// 若环境变量 LINERNOTES_HOME 非空则 underRoot(它)，否则 standard()
     static Paths fromEnvironment();
 
     QString configDir() const;
@@ -32,4 +32,4 @@ private:
     QString m_logDir;
 };
 
-} // namespace aimusic::core
+} // namespace linernotes::core

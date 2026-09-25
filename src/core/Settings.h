@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2026 AiMusic contributors
+// SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #pragma once
 
@@ -14,7 +14,7 @@
 
 class QSettings;
 
-namespace aimusic::core {
+namespace linernotes::core {
 
 template <typename T> struct SettingKey {
     QAnyStringView name; // e.g. "player/volume"
@@ -268,4 +268,4 @@ private:
     std::unique_ptr<QSettings> m_settings;
 };
 
-} // namespace aimusic::core
+} // namespace linernotes::core

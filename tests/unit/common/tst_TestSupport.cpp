@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2026 AiMusic contributors
+// SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #include <QByteArray>
 #include <QObject>
@@ -27,37 +27,37 @@ private:
 
 void TstTestSupport::init()
 {
-    m_hadOriginalFixturesEnv = qEnvironmentVariableIsSet("AIMUSIC_TEST_FIXTURES");
+    m_hadOriginalFixturesEnv = qEnvironmentVariableIsSet("LINERNOTES_TEST_FIXTURES");
     if (m_hadOriginalFixturesEnv) {
-        m_originalFixturesEnv = qgetenv("AIMUSIC_TEST_FIXTURES");
+        m_originalFixturesEnv = qgetenv("LINERNOTES_TEST_FIXTURES");
     }
 }
 
 void TstTestSupport::cleanup()
 {
     if (m_hadOriginalFixturesEnv) {
-        qputenv("AIMUSIC_TEST_FIXTURES", m_originalFixturesEnv);
+        qputenv("LINERNOTES_TEST_FIXTURES", m_originalFixturesEnv);
     } else {
-        qunsetenv("AIMUSIC_TEST_FIXTURES");
+        qunsetenv("LINERNOTES_TEST_FIXTURES");
     }
 }
 
 void TstTestSupport::fixturePathJoinsRelativePath()
 {
-    qputenv("AIMUSIC_TEST_FIXTURES", "/tmp/mock_fixtures");
+    qputenv("LINERNOTES_TEST_FIXTURES", "/tmp/mock_fixtures");
 
-    const QString result = aimusic::test::fixturePath(QStringLiteral("audio/sample.mp3"));
+    const QString result = linernotes::test::fixturePath(QStringLiteral("audio/sample.mp3"));
     QCOMPARE(result, QStringLiteral("/tmp/mock_fixtures/audio/sample.mp3"));
 
-    const QString nested = aimusic::test::fixturePath(QStringLiteral("nested/dir/file.json"));
+    const QString nested = linernotes::test::fixturePath(QStringLiteral("nested/dir/file.json"));
     QCOMPARE(nested, QStringLiteral("/tmp/mock_fixtures/nested/dir/file.json"));
 }
 
 void TstTestSupport::fixturePathWithEmptyRelativePath()
 {
-    qputenv("AIMUSIC_TEST_FIXTURES", "/tmp/mock_fixtures");
+    qputenv("LINERNOTES_TEST_FIXTURES", "/tmp/mock_fixtures");
 
-    const QString result = aimusic::test::fixturePath(QString());
+    const QString result = linernotes::test::fixturePath(QString());
     QCOMPARE(result, QStringLiteral("/tmp/mock_fixtures"));
 }
 
