@@ -26,10 +26,10 @@ jobs:
             cxx: clang++
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Cache pacman packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: /var/cache/pacman/pkg
           key: pacman-${{ runner.os }}-${{ hashFiles('scripts/ci/install-deps-arch.sh') }}
@@ -53,7 +53,7 @@ jobs:
 
       - name: Upload test log on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: last-test-log-${{ matrix.compiler }}
           path: build/*/Testing/Temporary/LastTest.log
@@ -66,10 +66,10 @@ jobs:
       image: archlinux:latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Cache pacman packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: /var/cache/pacman/pkg
           key: pacman-${{ runner.os }}-${{ hashFiles('scripts/ci/install-deps-arch.sh') }}
@@ -85,6 +85,10 @@ jobs:
       - name: Configure CMake for Clang-Tidy
         run: cmake --preset debug
 
+      # 必须先构建：测试文件 include 的 .moc 由 automoc 在构建时生成
+      - name: Build (generates moc files needed by clang-tidy)
+        run: cmake --build --preset debug
+
       - name: Run Clang-Tidy
         run: scripts/tidy.sh --strict
 
@@ -95,10 +99,10 @@ jobs:
       image: archlinux:latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Cache pacman packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: /var/cache/pacman/pkg
           key: pacman-${{ runner.os }}-${{ hashFiles('scripts/ci/install-deps-arch.sh') }}
@@ -119,7 +123,7 @@ jobs:
 
       - name: Upload test log on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: last-test-log-asan
           path: build/*/Testing/Temporary/LastTest.log
