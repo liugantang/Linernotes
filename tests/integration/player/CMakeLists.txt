@@ -67,6 +67,19 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME player_PlayerPersistence
+    SOURCES
+        tst_PlayerPersistence.cpp
+    LIBS
+        Linernotes::player
+        Linernotes::TestSupport
+    LABELS
+        integration
+    TIMEOUT
+        60
+)
+
+linernotes_add_test(
     NAME player_VoiceChannel
     SOURCES
         tst_VoiceChannel.cpp

@@ -6,6 +6,8 @@ add_library(linernotes_player STATIC
     GainRamp.h
     MpvHandle.cpp
     MpvHandle.h
+    PlaybackSnapshot.cpp
+    PlaybackSnapshot.h
     Player.cpp
     Player.h
     PlayerLogging.cpp

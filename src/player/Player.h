@@ -13,6 +13,7 @@
 
 #include <player/GainRamp.h>
 #include <player/MpvHandle.h>
+#include <player/PlaybackSnapshot.h>
 
 #include <cstdint>
 
@@ -58,6 +59,12 @@ public:
     [[nodiscard]] QVariantList audioDevices() const;
     [[nodiscard]] QString audioDevice() const;
     [[nodiscard]] bool exclusiveMode() const;
+
+    [[nodiscard]] PlaybackSnapshot snapshot() const;
+    /// 用快照替换当前队列与设置；若 currentIndex 有效，则加载该项、定位到 position 并保持暂停
+    /// （不能先出声再暂停：加载前就设为暂停，定位可用 loadfile 的 start 选项或 fileLoaded 后
+    /// seek）。
+    void restore(const PlaybackSnapshot &snapshot);
 
     /// 仅供测试与调试：返回 mpv 内部播放列表当前的项数（不变式：≤ 2）
     [[nodiscard]] int mpvPlaylistCount() const;
@@ -131,6 +138,7 @@ private:
     void schedulePreloadSync();
     void syncPreload();
     void loadCurrentItem(const QueueItem &item);
+    void loadItemPaused(const QueueItem &item, double startPosition);
     [[nodiscard]] qint64 lastPlaylistEntryId() const;
     void applyDuckGainToMpv();
     [[nodiscard]] QString formattedDuckFilter(double gain) const;

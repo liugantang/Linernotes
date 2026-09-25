@@ -226,6 +226,85 @@ bool Player::exclusiveMode() const
     return m_exclusiveMode;
 }
 
+PlaybackSnapshot Player::snapshot() const
+{
+    PlaybackSnapshot snap;
+    if (m_queue != nullptr) {
+        const int count = m_queue->count();
+        snap.items.reserve(count);
+        for (int i = 0; i < count; ++i) {
+            const auto &item = m_queue->at(i);
+            snap.items.append({ .source = item.source, .trackId = item.trackId });
+        }
+        snap.currentIndex = m_queue->currentIndex();
+        snap.mode = m_queue->mode();
+    }
+    snap.position
+        = (snap.currentIndex != -1 && m_state != PlaybackState::Stopped) ? m_position : 0.0;
+    snap.volume = m_volume;
+    snap.muted = m_muted;
+    snap.audioDevice = m_audioDevice;
+    return snap;
+}
+
+void Player::restore(const PlaybackSnapshot &snapshot)
+{
+    qCDebug(lcPlayer) << "restore() called: items count:" << snapshot.items.size()
+                      << "currentIndex:" << snapshot.currentIndex
+                      << "position:" << snapshot.position
+                      << "mode:" << static_cast<int>(snapshot.mode) << "volume:" << snapshot.volume
+                      << "muted:" << snapshot.muted << "audioDevice:" << snapshot.audioDevice;
+
+    setVolume(snapshot.volume);
+    setMuted(snapshot.muted);
+
+    if (snapshot.audioDevice.isEmpty() || snapshot.audioDevice == QStringLiteral("auto")) {
+        if (m_audioDevice != QStringLiteral("auto")) {
+            selectAudioDevice(QStringLiteral("auto"));
+        }
+    } else {
+        bool deviceFound = false;
+        for (const QVariant &devVar : m_audioDevices) {
+            if (devVar.toMap().value(QStringLiteral("name")).toString() == snapshot.audioDevice) {
+                deviceFound = true;
+                break;
+            }
+        }
+        if (deviceFound) {
+            selectAudioDevice(snapshot.audioDevice);
+        } else {
+            qCInfo(lcPlayer) << "Snapshot audio device" << snapshot.audioDevice
+                             << "not found in audioDevices list, keeping auto";
+            if (m_audioDevice != QStringLiteral("auto")) {
+                selectAudioDevice(QStringLiteral("auto"));
+            }
+        }
+    }
+
+    m_consecutiveErrorCount = 0;
+    stop();
+
+    m_queue->setMode(snapshot.mode);
+
+    QList<QueueItem> queueItems;
+    queueItems.reserve(snapshot.items.size());
+    for (const auto &item : snapshot.items) {
+        queueItems.append({ .source = item.source, .trackId = item.trackId });
+    }
+
+    int targetIndex = snapshot.currentIndex;
+    if (targetIndex < 0 || targetIndex >= queueItems.size()) {
+        targetIndex = -1;
+    }
+
+    m_queue->setItems(queueItems, targetIndex);
+
+    if (targetIndex != -1) {
+        const QueueItem &item = m_queue->at(targetIndex);
+        loadItemPaused(item, snapshot.position);
+    }
+}
+
 int Player::mpvPlaylistCount() const
 {
     if (m_mpv == nullptr || !m_mpv->isValid()) {
@@ -749,6 +828,44 @@ void Player::loadCurrentItem(const QueueItem &item)
         m_mpv->setProperty(QStringLiteral("af"), formattedDuckFilter(m_duckGain));
         m_mpv->command({ QStringLiteral("loadfile"), item.source, QStringLiteral("replace") });
         m_mpv->setProperty(QStringLiteral("pause"), false);
+        m_currentEntryId = lastPlaylistEntryId();
+        if (m_currentEntryId != -1) {
+            m_entrySources.insert(m_currentEntryId, item.source);
+        }
+    }
+    m_inInternalSync = false;
+
+    schedulePreloadSync();
+}
+
+void Player::loadItemPaused(const QueueItem &item, double startPosition)
+{
+    m_inInternalSync = true;
+    if (m_preloadEntryId != -1) {
+        m_ignoredEntryIds.insert(m_preloadEntryId);
+        m_entrySources.remove(m_preloadEntryId);
+    }
+    m_preloadEntryId = -1;
+    m_preloadUid = 0;
+    m_preloadIsRepeatOne = false;
+    m_currentUid = item.uid;
+
+    if (m_currentSource != item.source) {
+        m_currentSource = item.source;
+        emit currentSourceChanged(m_currentSource);
+    }
+
+    if (m_mpv != nullptr && m_mpv->isValid()) {
+        m_mpv->setProperty(QStringLiteral("af"), formattedDuckFilter(m_duckGain));
+        m_pause = true;
+        m_mpv->setProperty(QStringLiteral("pause"), true);
+        const double pos
+            = (std::isnan(startPosition) || !std::isfinite(startPosition) || startPosition < 0.0)
+            ? 0.0
+            : startPosition;
+        const QString options = QStringLiteral("pause=yes,start=%1").arg(pos, 0, 'f', 6);
+        m_mpv->command({ QStringLiteral("loadfile"), item.source, QStringLiteral("replace"),
+            QStringLiteral("0"), options });
         m_currentEntryId = lastPlaylistEntryId();
         if (m_currentEntryId != -1) {
             m_entrySources.insert(m_currentEntryId, item.source);

@@ -18,6 +18,14 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME player_PlaybackSnapshot
+    SOURCES
+        tst_PlaybackSnapshot.cpp
+    LIBS
+        Linernotes::player
+)
+
+linernotes_add_test(
     NAME player_PlayQueue
     SOURCES
         tst_PlayQueue.cpp
