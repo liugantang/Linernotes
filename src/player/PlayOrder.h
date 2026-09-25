@@ -42,6 +42,14 @@ public:
     /// 用户直接点选某首
     void jumpTo(int index);
 
+    /// 让 index 成为紧接当前曲目之后播放的那首（用于“下一首播放”）。
+    /// Shuffle：把 index
+    /// 从本轮序列中移到当前位置之后（若它在本轮已播放部分，也移过来，并正确调整位置）；
+    ///          之后的 peekNext/advance 返回它，再之后继续原有随机顺序。
+    /// 其它模式：不做任何事（调用方已把它插在 current+1，自然就是下一首）。
+    /// 注意：index 等于 current 或越界时忽略。
+    void scheduleNext(int index);
+
     /// 队列变化通知（下标语义与 QAbstractItemModel 的 rowsInserted/rowsRemoved/rowsMoved 一致）
     void onInserted(int row, int count);
     void onRemoved(int row, int count);

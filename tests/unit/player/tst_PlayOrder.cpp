@@ -45,6 +45,7 @@ private slots:
     void movementBehavior();
     void modeSwitchBehavior();
     void jumpToBehavior();
+    void scheduleNextBehavior();
 };
 
 void TstPlayOrder::tableBehavior_data()
@@ -671,6 +672,177 @@ void TstPlayOrder::jumpToBehavior()
         std::ranges::sort(remaining);
         const std::vector<int> expected = { 0, 1, 2, 4 };
         QCOMPARE(remaining, expected);
+    }
+}
+
+void TstPlayOrder::scheduleNextBehavior()
+{
+    // 1. current == -1 (unstarted): scheduleNext sets the first track
+    {
+        for (const quint64 seed : { 1ULL, 42ULL, 98765ULL }) {
+            PlayOrder order(seed);
+            order.setMode(PlayMode::Shuffle);
+            order.reset(5, -1);
+
+            const int scheduledTrack = 3;
+            order.scheduleNext(scheduledTrack);
+
+            QCOMPARE(order.peekNext(PlayOrder::Advance::Auto), std::optional<int>(scheduledTrack));
+            const auto first = order.advance(PlayOrder::Advance::Auto);
+            QCOMPARE(first, std::optional<int>(scheduledTrack));
+            QCOMPARE(order.current(), scheduledTrack);
+
+            // Remaining 4 advances should visit {0, 1, 2, 4} with no duplicates
+            std::vector<int> roundItems = { scheduledTrack };
+            for (int i = 0; i < 4; ++i) {
+                const auto next = order.advance(PlayOrder::Advance::Auto);
+                QVERIFY(next.has_value());
+                roundItems.push_back(next.value_or(-1));
+            }
+            std::ranges::sort(roundItems);
+            const std::vector<int> expected = { 0, 1, 2, 3, 4 };
+            QCOMPARE(roundItems, expected);
+        }
+    }
+
+    // 2. current != -1 (mid-round): scheduleNext sets next track and peekNext matches advance
+    {
+        PlayOrder order(42);
+        order.setMode(PlayMode::Shuffle);
+        order.reset(6, -1);
+
+        const auto s0 = order.advance(PlayOrder::Advance::Auto);
+        const auto s1 = order.advance(PlayOrder::Advance::Auto);
+        QVERIFY(s0.has_value());
+        QVERIFY(s1.has_value());
+
+        // Find an unplayed track
+        const int p0 = s0.value_or(-1);
+        const int p1 = s1.value_or(-1);
+        int targetTrack = -1;
+        for (int i = 0; i < 6; ++i) {
+            if (i != p0 && i != p1) {
+                targetTrack = i;
+                break;
+            }
+        }
+        QVERIFY(targetTrack != -1);
+
+        order.scheduleNext(targetTrack);
+        QCOMPARE(order.peekNext(PlayOrder::Advance::Auto), std::optional<int>(targetTrack));
+        const auto nextAdv = order.advance(PlayOrder::Advance::Auto);
+        QCOMPARE(nextAdv, std::optional<int>(targetTrack));
+        QCOMPARE(order.current(), targetTrack);
+
+        // Advance remainder of the round
+        std::vector<int> allPlayed = { p0, p1, targetTrack };
+        for (int i = 0; i < 3; ++i) {
+            const auto adv = order.advance(PlayOrder::Advance::Auto);
+            QVERIFY(adv.has_value());
+            allPlayed.push_back(adv.value_or(-1));
+        }
+        std::ranges::sort(allPlayed);
+        const std::vector<int> expected = { 0, 1, 2, 3, 4, 5 };
+        QCOMPARE(allPlayed, expected);
+    }
+
+    // 3. Consecutive calls: schedule b then a yields a -> b order
+    {
+        PlayOrder order(12345);
+        order.setMode(PlayMode::Shuffle);
+        order.reset(6, -1);
+
+        const auto s0 = order.advance(PlayOrder::Advance::Auto);
+        QVERIFY(s0.has_value());
+        const int p0 = s0.value_or(-1);
+
+        // Pick two distinct unplayed tracks a and b
+        std::vector<int> unplayed;
+        for (int i = 0; i < 6; ++i) {
+            if (i != p0) {
+                unplayed.push_back(i);
+            }
+        }
+        const int b = unplayed.at(0);
+        const int a = unplayed.at(1);
+
+        order.scheduleNext(b);
+        order.scheduleNext(a);
+
+        QCOMPARE(order.peekNext(PlayOrder::Advance::Auto), std::optional<int>(a));
+        QCOMPARE(order.advance(PlayOrder::Advance::Auto), std::optional<int>(a));
+
+        QCOMPARE(order.peekNext(PlayOrder::Advance::Auto), std::optional<int>(b));
+        QCOMPARE(order.advance(PlayOrder::Advance::Auto), std::optional<int>(b));
+
+        // Remaining 3 tracks complete the round
+        std::vector<int> allPlayed = { p0, a, b };
+        for (int i = 0; i < 3; ++i) {
+            const auto adv = order.advance(PlayOrder::Advance::Auto);
+            QVERIFY(adv.has_value());
+            allPlayed.push_back(adv.value_or(-1));
+        }
+        std::ranges::sort(allPlayed);
+        const std::vector<int> expected = { 0, 1, 2, 3, 4, 5 };
+        QCOMPARE(allPlayed, expected);
+    }
+
+    // 4. Scheduling an already-played track moves it after current
+    {
+        PlayOrder order(42);
+        order.setMode(PlayMode::Shuffle);
+        order.reset(5, -1);
+
+        const auto s0 = order.advance(PlayOrder::Advance::Auto);
+        const auto s1 = order.advance(PlayOrder::Advance::Auto);
+        const auto s2 = order.advance(PlayOrder::Advance::Auto);
+        QVERIFY(s0.has_value() && s1.has_value() && s2.has_value());
+
+        const int played0 = s0.value_or(-1);
+        order.scheduleNext(played0);
+
+        QCOMPARE(order.peekNext(PlayOrder::Advance::Auto), std::optional<int>(played0));
+        QCOMPARE(order.advance(PlayOrder::Advance::Auto), std::optional<int>(played0));
+
+        // The remaining 2 unplayed tracks should now follow
+        std::vector<int> remaining;
+        for (int i = 0; i < 2; ++i) {
+            const auto adv = order.advance(PlayOrder::Advance::Auto);
+            QVERIFY(adv.has_value());
+            remaining.push_back(adv.value_or(-1));
+        }
+        QCOMPARE(remaining.size(), 2UL);
+        QVERIFY(!remaining.empty());
+        for (int track : remaining) {
+            QVERIFY(
+                track != s0.value_or(-1) && track != s1.value_or(-1) && track != s2.value_or(-1));
+        }
+    }
+
+    // 5. Edge cases: index == current, out of bounds, Sequential mode
+    {
+        PlayOrder order(42);
+        order.setMode(PlayMode::Shuffle);
+        order.reset(5, 2);
+
+        // index == current
+        order.scheduleNext(2);
+        const auto peekAfterSame = order.peekNext(PlayOrder::Advance::Auto);
+        // Should not be 2
+        QVERIFY(peekAfterSame.has_value() && peekAfterSame.value() != 2);
+
+        // Out of bounds
+        order.scheduleNext(-1);
+        order.scheduleNext(10);
+        QCOMPARE(order.peekNext(PlayOrder::Advance::Auto), peekAfterSame);
+
+        // Sequential mode ignores scheduleNext
+        PlayOrder seqOrder(42);
+        seqOrder.setMode(PlayMode::Sequential);
+        seqOrder.reset(5, 1);
+        seqOrder.scheduleNext(4);
+        QCOMPARE(seqOrder.peekNext(PlayOrder::Advance::Auto), std::optional<int>(2));
+        QCOMPARE(seqOrder.advance(PlayOrder::Advance::Auto), std::optional<int>(2));
     }
 }
 

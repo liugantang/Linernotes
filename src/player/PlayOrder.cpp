@@ -475,6 +475,54 @@ void PlayOrder::jumpTo(int index)
     }
 }
 
+void PlayOrder::scheduleNext(int index)
+{
+    if (index < 0 || index >= m_count || index == m_current) {
+        return;
+    }
+
+    if (m_mode != PlayMode::Shuffle) {
+        return;
+    }
+
+    if (m_currentRound.empty()) {
+        return;
+    }
+
+    auto it = std::ranges::find(m_currentRound, index);
+    if (it == m_currentRound.end()) {
+        return;
+    }
+
+    const int pos = static_cast<int>(std::distance(m_currentRound.begin(), it));
+
+    int targetPos = 0;
+    if (m_current != -1) {
+        targetPos = m_shuffleIndex + 1;
+    } else {
+        targetPos = (m_shuffleIndex >= 0) ? m_shuffleIndex : 0;
+    }
+
+    if (pos == targetPos) {
+        return;
+    }
+
+    m_currentRound.erase(it);
+
+    if (pos < m_shuffleIndex) {
+        --m_shuffleIndex;
+    }
+
+    if (m_current != -1) {
+        targetPos = m_shuffleIndex + 1;
+    } else {
+        targetPos = (m_shuffleIndex >= 0) ? m_shuffleIndex : 0;
+    }
+
+    targetPos = std::clamp(targetPos, 0, static_cast<int>(m_currentRound.size()));
+    m_currentRound.insert(m_currentRound.begin() + targetPos, index);
+}
+
 void PlayOrder::onInserted(int row, int count)
 {
     if (count <= 0 || row < 0 || row > m_count) {

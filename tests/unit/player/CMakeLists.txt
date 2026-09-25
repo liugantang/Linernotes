@@ -8,3 +8,12 @@ linernotes_add_test(
     LIBS
         Linernotes::player
 )
+
+linernotes_add_test(
+    NAME player_PlayQueue
+    SOURCES
+        tst_PlayQueue.cpp
+    LIBS
+        Linernotes::player
+)
+

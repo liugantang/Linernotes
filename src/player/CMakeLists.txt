@@ -11,6 +11,8 @@ add_library(linernotes_player STATIC
     PlayMode.h
     PlayOrder.cpp
     PlayOrder.h
+    PlayQueue.cpp
+    PlayQueue.h
 )
 add_library(Linernotes::player ALIAS linernotes_player)
 
