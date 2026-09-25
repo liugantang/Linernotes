@@ -5,6 +5,7 @@
 
 #include <QCoreApplication>
 #include <QFile>
+#include <QRegularExpression>
 
 #include <fcntl.h>
 #include <sys/socket.h>
@@ -289,6 +290,16 @@ void PlayCli::handleStdinCommand(const QString &line)
         const int vol = QStringView(trimmed).sliced(2).trimmed().toInt(&ok);
         if (ok) {
             m_player.setVolume(std::clamp(vol, 0, 100));
+        }
+    } else if (trimmed.startsWith(QStringLiteral("d "))
+        || trimmed.startsWith(QStringLiteral("d\t"))) {
+        // d <增益 0-1> [渐变毫秒，默认 300]：手动验证 ducking 渐变是否有爆音
+        const QStringList parts = trimmed.split(QRegularExpression(QStringLiteral("\\s+")));
+        bool ok = false;
+        const double gain = parts.value(1).toDouble(&ok);
+        const int rampMs = parts.size() > 2 ? parts.at(2).toInt() : 300;
+        if (ok) {
+            m_player.duckTo(gain, rampMs);
         }
     } else if (trimmed.startsWith(QStringLiteral("m "))
         || trimmed.startsWith(QStringLiteral("m\t"))) {
