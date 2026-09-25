@@ -65,7 +65,7 @@
 - ctest：6 个测试（5 单元 + 1 集成冒烟）在 debug / asan / ci 下全部通过
 - `scripts/format.sh --check`、`scripts/tidy.sh --strict`、qmllint 均无问题
 - QML 窗口在 KDE Wayland 下手动截图确认显示正常
-- 未验证：GitHub Actions 实际运行（仓库尚未配置远程），首次推送后确认
+- GitHub Actions：首次运行 lint 失败（仅 configure 未构建，缺少 moc 文件），修复后全部通过（2026-09-25，run 36077615173）
 - 与计划的偏差：新增 0.8b（开源基础文件）；include 路径约定、SPDX 头、clang-tidy 对 Qt Test 的适配在本阶段中补充进 DEVELOPMENT.md
 
 ---
