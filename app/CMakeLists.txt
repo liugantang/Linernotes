@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 AiMusic contributors
+# SPDX-FileCopyrightText: 2026 Linernotes contributors
 
-qt_add_executable(aimusic
+qt_add_executable(linernotes
     main.cpp
 )
 
@@ -17,8 +17,8 @@ set_source_files_properties(
         QT_QML_SINGLETON_TYPE TRUE
 )
 
-qt_add_qml_module(aimusic
-    URI AiMusic
+qt_add_qml_module(linernotes
+    URI Linernotes
     VERSION 1.0
     RESOURCE_PREFIX "/qt/qml"
     QML_FILES
@@ -29,12 +29,12 @@ qt_add_qml_module(aimusic
         AppInfo.cpp
 )
 
-target_link_libraries(aimusic
+target_link_libraries(linernotes
     PRIVATE
-        AiMusic::core
+        Linernotes::core
         Qt6::Gui
         Qt6::Quick
         Qt6::QuickControls2
 )
 
-aimusic_set_target_options(aimusic)
+linernotes_set_target_options(linernotes)

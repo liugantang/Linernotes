@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2026 AiMusic contributors
+// SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #include <QDir>
 #include <QFile>
@@ -18,18 +18,18 @@ namespace {
 
 using namespace Qt::StringLiterals;
 
-constexpr aimusic::core::SettingKey<bool> kTestBool { u"test/bool", true };
-constexpr aimusic::core::SettingKey<int> kTestInt { u"test/int", 42 };
-constexpr aimusic::core::SettingKey<double> kTestDouble { u"test/double", 3.14 };
+constexpr linernotes::core::SettingKey<bool> kTestBool { u"test/bool", true };
+constexpr linernotes::core::SettingKey<int> kTestInt { u"test/int", 42 };
+constexpr linernotes::core::SettingKey<double> kTestDouble { u"test/double", 3.14 };
 
-aimusic::core::SettingKey<QString> makeTestStringKey()
+linernotes::core::SettingKey<QString> makeTestStringKey()
 {
-    return aimusic::core::SettingKey<QString> { u"test/string", u"default_str"_s };
+    return linernotes::core::SettingKey<QString> { u"test/string", u"default_str"_s };
 }
 
-aimusic::core::SettingKey<QStringList> makeTestListKey()
+linernotes::core::SettingKey<QStringList> makeTestListKey()
 {
-    return aimusic::core::SettingKey<QStringList> { u"test/list",
+    return linernotes::core::SettingKey<QStringList> { u"test/list",
         QStringList { u"alpha"_s, u"beta"_s } };
 }
 
@@ -52,7 +52,7 @@ void TstSettings::defaultValuesWhenKeyNotPresent()
     QVERIFY(tempDir.isValid());
 
     const QString iniPath = QDir(tempDir.path()).filePath(QStringLiteral("settings.ini"));
-    const aimusic::core::Settings settings(iniPath);
+    const linernotes::core::Settings settings(iniPath);
 
     QCOMPARE(settings.value(kTestBool), true);
     QCOMPARE(settings.value(kTestInt), 42);
@@ -68,7 +68,7 @@ void TstSettings::writeAndReadSupportedTypes()
     QVERIFY(tempDir.isValid());
 
     const QString iniPath = QDir(tempDir.path()).filePath(QStringLiteral("settings.ini"));
-    aimusic::core::Settings settings(iniPath);
+    linernotes::core::Settings settings(iniPath);
 
     settings.setValue(kTestBool, false);
     QCOMPARE(settings.value(kTestBool), false);
@@ -101,7 +101,7 @@ void TstSettings::persistenceAcrossInstances()
     const auto kTestList = makeTestListKey();
 
     {
-        aimusic::core::Settings s1(iniPath);
+        linernotes::core::Settings s1(iniPath);
         s1.setValue(kTestBool, false);
         s1.setValue(kTestInt, 2026);
         s1.setValue(kTestDouble, 99.9);
@@ -111,7 +111,7 @@ void TstSettings::persistenceAcrossInstances()
     }
 
     {
-        const aimusic::core::Settings s2(iniPath);
+        const linernotes::core::Settings s2(iniPath);
         QCOMPARE(s2.value(kTestBool), false);
         QCOMPARE(s2.value(kTestInt), 2026);
         QCOMPARE(s2.value(kTestDouble), 99.9);
@@ -126,12 +126,12 @@ void TstSettings::resetRestoresDefaultAndEmitsSignal()
     QVERIFY(tempDir.isValid());
 
     const QString iniPath = QDir(tempDir.path()).filePath(QStringLiteral("settings.ini"));
-    aimusic::core::Settings settings(iniPath);
+    linernotes::core::Settings settings(iniPath);
 
     settings.setValue(kTestInt, 999);
     QCOMPARE(settings.value(kTestInt), 999);
 
-    QSignalSpy spy(&settings, &aimusic::core::Settings::changed);
+    QSignalSpy spy(&settings, &linernotes::core::Settings::changed);
 
     settings.reset(kTestInt);
     QCOMPARE(spy.count(), 1);
@@ -149,9 +149,9 @@ void TstSettings::unchangedValueDoesNotEmitChanged()
     QVERIFY(tempDir.isValid());
 
     const QString iniPath = QDir(tempDir.path()).filePath(QStringLiteral("settings.ini"));
-    aimusic::core::Settings settings(iniPath);
+    linernotes::core::Settings settings(iniPath);
 
-    QSignalSpy spy(&settings, &aimusic::core::Settings::changed);
+    QSignalSpy spy(&settings, &linernotes::core::Settings::changed);
 
     // Initial writes emit signals
     settings.setValue(kTestBool, false);
@@ -210,7 +210,7 @@ void TstSettings::typeMismatchFallsBackToDefault()
         rawSettings.sync();
     }
 
-    const aimusic::core::Settings settings(iniPath);
+    const linernotes::core::Settings settings(iniPath);
     QCOMPARE(settings.value(kTestBool), true);
     QCOMPARE(settings.value(kTestInt), 42);
     QCOMPARE(settings.value(kTestDouble), 3.14);
@@ -222,12 +222,12 @@ void TstSettings::coreSettingsLogLevel()
     QVERIFY(tempDir.isValid());
 
     const QString iniPath = QDir(tempDir.path()).filePath(QStringLiteral("settings.ini"));
-    aimusic::core::Settings settings(iniPath);
+    linernotes::core::Settings settings(iniPath);
 
-    QCOMPARE(settings.value(aimusic::core::kLogLevel), QStringLiteral("info"));
+    QCOMPARE(settings.value(linernotes::core::kLogLevel), QStringLiteral("info"));
 
-    settings.setValue(aimusic::core::kLogLevel, QStringLiteral("debug"));
-    QCOMPARE(settings.value(aimusic::core::kLogLevel), QStringLiteral("debug"));
+    settings.setValue(linernotes::core::kLogLevel, QStringLiteral("debug"));
+    QCOMPARE(settings.value(linernotes::core::kLogLevel), QStringLiteral("debug"));
 }
 
 } // namespace

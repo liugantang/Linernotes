@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2026 AiMusic contributors
+// SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #include "TestSupport.h"
 
@@ -8,22 +8,23 @@
 #include <QString>
 #include <QtLogging>
 
-namespace aimusic::test {
+namespace linernotes::test {
 
 QString fixturePath(const QString &relative)
 {
-    if (!qEnvironmentVariableIsSet("AIMUSIC_TEST_FIXTURES")) {
-        qFatal("AIMUSIC_TEST_FIXTURES environment variable is not set. Please ensure it points to "
-               "the tests/fixtures directory.");
+    if (!qEnvironmentVariableIsSet("LINERNOTES_TEST_FIXTURES")) {
+        qFatal(
+            "LINERNOTES_TEST_FIXTURES environment variable is not set. Please ensure it points to "
+            "the tests/fixtures directory.");
     }
 
-    const QString baseDir = qEnvironmentVariable("AIMUSIC_TEST_FIXTURES");
+    const QString baseDir = qEnvironmentVariable("LINERNOTES_TEST_FIXTURES");
     if (baseDir.isEmpty()) {
-        qFatal("AIMUSIC_TEST_FIXTURES environment variable is empty. Please ensure it points to "
+        qFatal("LINERNOTES_TEST_FIXTURES environment variable is empty. Please ensure it points to "
                "the tests/fixtures directory.");
     }
 
     return QDir::cleanPath(QDir(baseDir).filePath(relative));
 }
 
-} // namespace aimusic::test
+} // namespace linernotes::test

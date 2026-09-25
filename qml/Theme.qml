@@ -1,6 +1,6 @@
 pragma Singleton
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2026 AiMusic contributors
+// SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 import QtQuick
 

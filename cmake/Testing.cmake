@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 AiMusic contributors
+# SPDX-FileCopyrightText: 2026 Linernotes contributors
 
-function(aimusic_add_test)
+function(linernotes_add_test)
     cmake_parse_arguments(
         TEST
         ""
@@ -11,11 +11,11 @@ function(aimusic_add_test)
     )
 
     if(NOT TEST_NAME)
-        message(FATAL_ERROR "aimusic_add_test: NAME is required")
+        message(FATAL_ERROR "linernotes_add_test: NAME is required")
     endif()
 
     if(NOT TEST_SOURCES)
-        message(FATAL_ERROR "aimusic_add_test: SOURCES is required")
+        message(FATAL_ERROR "linernotes_add_test: SOURCES is required")
     endif()
 
     if(NOT DEFINED TEST_TIMEOUT)
@@ -38,7 +38,7 @@ function(aimusic_add_test)
             ${TEST_LIBS}
     )
 
-    aimusic_set_target_options(${target_name})
+    linernotes_set_target_options(${target_name})
 
     add_test(NAME ${target_name} COMMAND ${target_name})
 
@@ -47,6 +47,6 @@ function(aimusic_add_test)
     set_property(TEST ${target_name} PROPERTY ENVIRONMENT
         "QT_QPA_PLATFORM=offscreen"
         "QT_LOGGING_RULES=*.debug=false"
-        "AIMUSIC_TEST_FIXTURES=${CMAKE_SOURCE_DIR}/tests/fixtures"
+        "LINERNOTES_TEST_FIXTURES=${CMAKE_SOURCE_DIR}/tests/fixtures"
     )
 endfunction()

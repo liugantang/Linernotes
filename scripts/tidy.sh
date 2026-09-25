@@ -47,7 +47,7 @@ fi
 
 if [[ ! -f "${BUILD_DIR}/compile_commands.json" ]]; then
     echo "Error: '${BUILD_DIR}/compile_commands.json' not found." >&2
-    echo "Please run 'cmake --preset debug' first." >&2
+    echo "Please run 'cmake --preset debug && cmake --build --preset debug' first (moc files are generated at build time)." >&2
     exit 1
 fi
 

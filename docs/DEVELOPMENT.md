@@ -96,14 +96,14 @@ Refs: ROADMAP 2.6
 | 成员变量 | `m_` 前缀 | `m_queue` |
 | 静态成员 / 全局常量 | `s_` 前缀 / `k` 前缀 | `s_instance`、`kMaxRetries` |
 | 枚举值 | PascalCase（使用 `enum class`） | `PlayMode::RepeatOne` |
-| 命名空间 | 小写 | `aimusic::library` |
+| 命名空间 | 小写 | `linernotes::library` |
 | 文件名 | 与主类同名 | `PlayQueue.h` / `PlayQueue.cpp` |
 | Qt 属性 / 信号 | 遵循 Qt 习惯 | `Q_PROPERTY(int volume ...)`、`volumeChanged()` |
 | QML 文件 | PascalCase | `PlayerBar.qml` |
 
 ### 2.3 头文件与依赖
 
-- 每个源文件（.h/.cpp/.in、CMakeLists.txt、*.cmake）顶部带 SPDX 许可证头：`SPDX-License-Identifier: GPL-3.0-or-later` 与 `SPDX-FileCopyrightText: 2026 AiMusic contributors`。
+- 每个源文件（.h/.cpp/.in、CMakeLists.txt、*.cmake）顶部带 SPDX 许可证头：`SPDX-License-Identifier: GPL-3.0-or-later` 与 `SPDX-FileCopyrightText: 2026 Linernotes contributors`。
 - 头文件使用 `#pragma once`。
 - include 路径：每个模块只把 `src/` 作为公共 include 根目录，外部一律写 `#include <模块/头文件.h>`（如 `<core/Logging.h>`）；模块内部 .cpp 包含自己的头文件可用 `"Logging.h"`。生成的头文件放在构建目录的 `generated/<模块>/` 下，包含方式相同。测试辅助库同理：`#include <common/TestSupport.h>`。
 - include 顺序：对应头文件 → 本项目 → Qt → 第三方 → 标准库，各组之间空一行（由 clang-format 自动排序）。
@@ -143,7 +143,7 @@ app / qml  →  features/*（butler, nlq, dj, guide, archive）  →  ai / audio
 
 ### 2.8 日志
 
-- 每个模块定义自己的 `QLoggingCategory`，如 `aimusic.library`。
+- 每个模块定义自己的 `QLoggingCategory`，如 `linernotes.library`。
 - 级别：`qCDebug` 调试细节；`qCInfo` 关键流程节点；`qCWarning` 可恢复的问题；`qCCritical` 功能不可用。
 - **日志中禁止出现 API Key、完整的用户瞬间内容**；LLM 请求/响应完整内容只在开发者模式下记录。
 

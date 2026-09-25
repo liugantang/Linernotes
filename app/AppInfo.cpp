@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2026 AiMusic contributors
+// SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #include "AppInfo.h"
 
@@ -12,10 +12,10 @@ AppInfo::AppInfo(QObject *parent)
 
 QString AppInfo::name() const
 {
-    return aimusic::core::applicationName();
+    return linernotes::core::applicationName();
 }
 
 QString AppInfo::version() const
 {
-    return aimusic::core::versionString();
+    return linernotes::core::versionString();
 }

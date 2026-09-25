@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 AiMusic contributors
+# SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 configure_file(
     Version.h.in
@@ -7,7 +7,7 @@ configure_file(
     @ONLY
 )
 
-add_library(aimusic_core STATIC
+add_library(linernotes_core STATIC
     CoreSettings.h
     Logging.cpp
     Logging.h
@@ -18,17 +18,17 @@ add_library(aimusic_core STATIC
     Version.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/generated/core/Version.h
 )
-add_library(AiMusic::core ALIAS aimusic_core)
+add_library(Linernotes::core ALIAS linernotes_core)
 
-target_include_directories(aimusic_core
+target_include_directories(linernotes_core
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/..
         ${CMAKE_CURRENT_BINARY_DIR}/generated
 )
 
-target_link_libraries(aimusic_core
+target_link_libraries(linernotes_core
     PUBLIC
         Qt6::Core
 )
 
-aimusic_set_target_options(aimusic_core)
+linernotes_set_target_options(linernotes_core)

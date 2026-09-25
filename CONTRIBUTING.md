@@ -1,6 +1,6 @@
-# 贡献指南 (Contributing to AiMusic)
+# 贡献指南 (Contributing to Linernotes)
 
-感谢关注与支持 AiMusic！我们欢迎并鼓励社区贡献代码、文档与反馈建议。
+感谢关注与支持 Linernotes！我们欢迎并鼓励社区贡献代码、文档与反馈建议。
 
 在参与贡献前，请通读以下内容及相关规范。
 
@@ -8,7 +8,7 @@
 
 ## 1. 开发流程
 
-AiMusic 采用基于任务（Task-based）的迭代开发模式：
+Linernotes 采用基于任务（Task-based）的迭代开发模式：
 
 - **开发规划**：所有规划中的功能均在 [ROADMAP.md](docs/ROADMAP.md) 中细化为编号任务（如 `0.8b`、`2.1` 等）。在着手实现前，请先确认任务范围与验收标准。
 - **开发规范**：详细的代码架构、命名规范、依赖边界、日志记录与测试规范请参见 **[开发规范 (docs/DEVELOPMENT.md)](docs/DEVELOPMENT.md)**。请务必遵守其中的技术约束（如 C++20 标准、模块单向依赖、音频不出本机等）。
@@ -80,5 +80,5 @@ ctest --preset debug
 
 - **报告 Bug**：请通过 GitHub Issues 提交 [Bug Report](.github/ISSUE_TEMPLATE/bug_report.yml)。
   - 请详细描述复现步骤、预期行为与实际行为。
-  - 请附上系统与版本信息，以及相关日志。日志目录位置可通过 `aimusic --print-paths` 命令输出查阅。
+  - 请附上系统与版本信息，以及相关日志。日志目录位置可通过 `linernotes --print-paths` 命令输出查阅。
 - **功能建议**：请通过 GitHub Issues 提交 [Feature Request](.github/ISSUE_TEMPLATE/feature_request.yml)，阐明应用场景与预期交互方式。

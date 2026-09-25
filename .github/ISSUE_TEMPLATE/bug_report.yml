@@ -1,5 +1,5 @@
 name: 缺陷报告 / Bug Report
-description: 提交 AiMusic 运行或使用中的问题与缺陷
+description: 提交 Linernotes 运行或使用中的问题与缺陷
 title: "[Bug]: "
 labels: ["bug"]
 body:
@@ -10,7 +10,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: AiMusic 版本 (Version)
+      label: Linernotes 版本 (Version)
       description: 请提供具体的软件版本号或 Git commit 哈希
       placeholder: 例如：0.1.0 或 commit 3e4a5b6
     validations:
@@ -29,7 +29,7 @@ body:
       label: 复现步骤 (Steps to Reproduce)
       description: 请详细描述重现问题的步骤
       placeholder: |
-        1. 启动 AiMusic
+        1. 启动 Linernotes
         2. 在曲库中扫描目录...
         3. 点击播放...
     validations:
@@ -55,7 +55,7 @@ body:
     attributes:
       label: 日志与输出信息 (Logs & Output)
       description: |
-        相关日志信息。日志目录可通过运行 `aimusic --print-paths` 查看（默认位于数据目录下的 `logs/` 目录中）。
+        相关日志信息。日志目录可通过运行 `linernotes --print-paths` 查看（默认位于数据目录下的 `logs/` 目录中）。
       placeholder: 粘贴控制台输出或日志文件中的相关片段...
       render: shell
     validations:

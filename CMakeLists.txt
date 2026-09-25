@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 AiMusic contributors
+# SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 cmake_minimum_required(VERSION 3.25)
 
@@ -8,7 +8,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
     message(FATAL_ERROR "In-source builds are not allowed. Please use a separate build directory.")
 endif()
 
-project(AiMusic
+project(Linernotes
     VERSION 0.1.0
     DESCRIPTION "AI music player"
     LANGUAGES CXX
@@ -29,17 +29,17 @@ include(cmake/Dependencies.cmake)
 include(cmake/CompilerOptions.cmake)
 qt_standard_project_setup()
 
-option(AIMUSIC_BUILD_TOOLS "Build developer tools" ON)
-option(AIMUSIC_BUILD_TESTS "Build tests" ON)
+option(LINERNOTES_BUILD_TOOLS "Build developer tools" ON)
+option(LINERNOTES_BUILD_TESTS "Build tests" ON)
 
 add_subdirectory(src)
 add_subdirectory(app)
 
-if(AIMUSIC_BUILD_TOOLS)
+if(LINERNOTES_BUILD_TOOLS)
     add_subdirectory(tools)
 endif()
 
-if(AIMUSIC_BUILD_TESTS)
+if(LINERNOTES_BUILD_TESTS)
     enable_testing()
     include(cmake/Testing.cmake)
     add_subdirectory(tests)

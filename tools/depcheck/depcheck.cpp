@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2026 AiMusic contributors
+// SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #include <QString>
 
@@ -75,7 +75,7 @@ int main()
     std::cout << "libebur128: " << ebMajor << "." << ebMinor << "." << ebPatch << "\n";
 
     // 8. QtKeychain
-    const QKeychain::ReadPasswordJob job(QStringLiteral("AiMusic"));
+    const QKeychain::ReadPasswordJob job(QStringLiteral("Linernotes"));
     std::cout << "QtKeychain: ok\n";
 
     return 0;

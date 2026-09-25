@@ -34,7 +34,7 @@
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "AIMUSIC_SANITIZE": "ON"
+        "LINERNOTES_SANITIZE": "ON"
       }
     },
     {
@@ -43,7 +43,7 @@
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "AIMUSIC_WARNINGS_AS_ERRORS": "ON"
+        "LINERNOTES_WARNINGS_AS_ERRORS": "ON"
       }
     }
   ],

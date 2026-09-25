@@ -1,21 +1,21 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# SPDX-FileCopyrightText: 2026 AiMusic contributors
+# SPDX-FileCopyrightText: 2026 Linernotes contributors
 
-add_executable(aimusic_depcheck
+add_executable(linernotes_depcheck
     depcheck.cpp
 )
 
-target_link_libraries(aimusic_depcheck
+target_link_libraries(linernotes_depcheck
     PRIVATE
         Qt6::Core
-        AiMusic::Deps::Mpv
-        AiMusic::Deps::TagLib
-        AiMusic::Deps::Uchardet
-        AiMusic::Deps::ICU
-        AiMusic::Deps::Chromaprint
-        AiMusic::Deps::FFmpeg
-        AiMusic::Deps::Ebur128
-        AiMusic::Deps::Keychain
+        Linernotes::Deps::Mpv
+        Linernotes::Deps::TagLib
+        Linernotes::Deps::Uchardet
+        Linernotes::Deps::ICU
+        Linernotes::Deps::Chromaprint
+        Linernotes::Deps::FFmpeg
+        Linernotes::Deps::Ebur128
+        Linernotes::Deps::Keychain
 )
 
-aimusic_set_target_options(aimusic_depcheck)
+linernotes_set_target_options(linernotes_depcheck)

@@ -1,6 +1,8 @@
-# AiMusic — Claude 工作指南
+# Linernotes — Claude 工作指南
 
-AI 音乐播放器，C++20 / Qt 6 / libmpv。先读：
+> 本地目录名仍为 `AiMusic`（历史原因），项目名与代码中统一使用 Linernotes。
+
+Linernotes：AI 音乐播放器，C++20 / Qt 6 / libmpv。先读：
 - 需求：`docs/REQUIREMENTS.md`
 - 分阶段计划：`docs/ROADMAP.md`
 - 开发规范（流程、提交、代码、单测）：`docs/DEVELOPMENT.md` —— 所有工作都必须遵守

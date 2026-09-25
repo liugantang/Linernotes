@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2026 AiMusic contributors
+// SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #include "Paths.h"
 
@@ -10,7 +10,7 @@
 
 #include <array>
 
-namespace aimusic::core {
+namespace linernotes::core {
 
 Paths Paths::standard()
 {
@@ -35,7 +35,7 @@ Paths Paths::underRoot(const QString &root)
 
 Paths Paths::fromEnvironment()
 {
-    const QString home = qEnvironmentVariable("AIMUSIC_HOME");
+    const QString home = qEnvironmentVariable("LINERNOTES_HOME");
     if (!home.isEmpty()) {
         return underRoot(home);
     }
@@ -84,4 +84,4 @@ bool Paths::ensureCreated() const
     return allOk;
 }
 
-} // namespace aimusic::core
+} // namespace linernotes::core
