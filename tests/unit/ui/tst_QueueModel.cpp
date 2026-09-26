@@ -105,7 +105,7 @@ void TstQueueModel::testQueueModel()
     const qint64 playlistId = actions->saveQueueAsPlaylist(QStringLiteral("x"));
     QVERIFY(playlistId > 0);
 
-    auto conn = ctx.database()->connection().value();
+    auto conn = ctx.database().connection().value();
     QSqlQuery q(conn);
     q.prepare(QStringLiteral("SELECT track_id, position FROM playlist_items WHERE playlist_id = ? "
                              "ORDER BY position ASC"));

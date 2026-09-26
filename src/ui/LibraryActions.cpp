@@ -29,7 +29,7 @@ LibraryActions::LibraryActions(library::Database &db, player::Player &player, QO
 
 void LibraryActions::playTracks(const QList<qint64> &trackIds, int startIndex)
 {
-    if (trackIds.isEmpty()) {
+    if (trackIds.isEmpty() || !m_db.isOpen()) {
         return;
     }
 
@@ -80,7 +80,7 @@ void LibraryActions::playTracks(const QList<qint64> &trackIds, int startIndex)
 
 void LibraryActions::playNext(const QList<qint64> &trackIds)
 {
-    if (trackIds.isEmpty()) {
+    if (trackIds.isEmpty() || !m_db.isOpen()) {
         return;
     }
 
@@ -116,7 +116,7 @@ void LibraryActions::playNext(const QList<qint64> &trackIds)
 
 void LibraryActions::enqueue(const QList<qint64> &trackIds)
 {
-    if (trackIds.isEmpty()) {
+    if (trackIds.isEmpty() || !m_db.isOpen()) {
         return;
     }
 
@@ -152,7 +152,7 @@ void LibraryActions::enqueue(const QList<qint64> &trackIds)
 
 QVariantMap LibraryActions::albumInfo(qint64 albumId) const
 {
-    if (albumId <= 0) {
+    if (albumId <= 0 || !m_db.isOpen()) {
         return { };
     }
 
@@ -186,7 +186,7 @@ QVariantMap LibraryActions::albumInfo(qint64 albumId) const
 
 QVariantMap LibraryActions::artistInfo(qint64 artistId) const
 {
-    if (artistId <= 0) {
+    if (artistId <= 0 || !m_db.isOpen()) {
         return { };
     }
 
@@ -214,7 +214,7 @@ QVariantMap LibraryActions::artistInfo(qint64 artistId) const
 
 void LibraryActions::showInFileManager(qint64 trackId) const
 {
-    if (trackId <= 0) {
+    if (trackId <= 0 || !m_db.isOpen()) {
         return;
     }
 
@@ -240,6 +240,11 @@ void LibraryActions::showInFileManager(qint64 trackId) const
 
 qint64 LibraryActions::saveQueueAsPlaylist(const QString &name)
 {
+    if (!m_db.isOpen()) {
+        qCWarning(lcUi, "Database not open for saveQueueAsPlaylist");
+        return 0;
+    }
+
     auto *queue = m_player.queue();
     if (queue == nullptr) {
         qCWarning(lcUi, "Queue not available for saveQueueAsPlaylist");

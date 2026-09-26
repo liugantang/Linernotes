@@ -102,7 +102,7 @@ std::optional<library::LibraryQuery> PagedListModel::makeQuery() const
     if (m_context == nullptr || !m_context->isLibraryReady()) {
         return std::nullopt;
     }
-    const auto connRes = m_context->database()->connection();
+    const auto connRes = m_context->database().connection();
     if (!connRes.ok()) {
         return std::nullopt;
     }

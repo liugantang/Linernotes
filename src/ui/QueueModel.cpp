@@ -17,21 +17,12 @@
 
 namespace linernotes::ui {
 
-QueueModel::QueueModel(library::Database *db, player::Player &player, QObject *parent)
+QueueModel::QueueModel(library::Database &db, player::Player &player, QObject *parent)
     : QIdentityProxyModel(parent)
     , m_db(db)
     , m_player(player)
 {
     setSourceModel(player.queue());
-}
-
-void QueueModel::setDatabase(library::Database *db)
-{
-    if (m_db == db) {
-        return;
-    }
-    m_db = db;
-    refresh();
 }
 
 void QueueModel::refresh()
@@ -53,8 +44,8 @@ const QueueModel::CachedTrackInfo &QueueModel::trackInfo(
 
     CachedTrackInfo info;
     bool found = false;
-    if (m_db != nullptr) {
-        const auto connOpt = m_db->connection();
+    if (m_db.isOpen()) {
+        const auto connOpt = m_db.connection();
         if (connOpt.ok()) {
             const library::LibraryQuery query(connOpt.value());
             const auto res = query.tracksByIds({ trackId });

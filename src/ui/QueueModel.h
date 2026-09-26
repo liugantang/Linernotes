@@ -34,10 +34,9 @@ public:
     };
     Q_ENUM(Role)
 
-    explicit QueueModel(library::Database *db, player::Player &player, QObject *parent = nullptr);
+    explicit QueueModel(library::Database &db, player::Player &player, QObject *parent = nullptr);
     ~QueueModel() override = default;
 
-    void setDatabase(library::Database *db);
     Q_INVOKABLE void refresh();
 
     [[nodiscard]] QVariant data(const QModelIndex &index, int role) const override;
@@ -59,7 +58,7 @@ private:
 
     [[nodiscard]] const CachedTrackInfo &trackInfo(qint64 trackId, const QString &source) const;
 
-    library::Database *m_db { nullptr };
+    library::Database &m_db;
     player::Player &m_player;
     mutable QHash<qint64, CachedTrackInfo> m_cache;
 };

@@ -12,12 +12,14 @@
 
 #include <library/Database.h>
 #include <library/Errors.h>
+#include <library/Migrator.h>
 
 #include <atomic>
 
 namespace {
 
 using linernotes::library::Database;
+using linernotes::library::Migrator;
 using linernotes::library::Transaction;
 namespace errc = linernotes::library::errc;
 
@@ -30,6 +32,7 @@ private slots:
     void threadConnectionAffinity();
     void transactionCommitAndRollback();
     void openFailsForUnwritablePath();
+    void isOpenState();
 };
 
 void TstDatabase::opensAndAppliesPragmas()
@@ -164,6 +167,24 @@ void TstDatabase::openFailsForUnwritablePath()
         QCOMPARE(connRes.error().code, errc::kDbOpen);
         QVERIFY2(connRes.error().detail.contains(blocker), qPrintable(connRes.error().detail));
     }
+}
+
+void TstDatabase::isOpenState()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+
+    Database db(tempDir.filePath(QStringLiteral("open_test.db")));
+    QCOMPARE(db.isOpen(), false);
+
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    QCOMPARE(db.isOpen(), false);
+
+    const Migrator migrator;
+    const auto openRes = db.open(migrator);
+    QVERIFY(openRes.ok());
+    QCOMPARE(db.isOpen(), true);
 }
 
 } // namespace

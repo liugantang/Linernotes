@@ -157,7 +157,7 @@ void TstTrackListModel::testTrackListModelAndSharedModels()
 
     // 4. 增加一首后 emit ctx.libraryChanged() → 发 rowsInserted 而不是 modelReset
     {
-        const auto conn = ctx.database()->connection().value();
+        const auto conn = ctx.database().connection().value();
         execSql(conn,
             QStringLiteral("INSERT INTO files (id, root_id, path, duration_ms, size, mtime, "
                            "first_seen_at, scanned_at) "

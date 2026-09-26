@@ -139,10 +139,8 @@ int main(int argc, char *argv[])
             },
             Qt::QueuedConnection);
 
-        if (appContext.coverStore() != nullptr) {
-            engine.addImageProvider(QStringLiteral("cover"),
-                new linernotes::ui::CoverImageProvider(appContext.coverStore()));
-        }
+        engine.addImageProvider(QStringLiteral("cover"),
+            new linernotes::ui::CoverImageProvider(appContext.coverStore()));
 
         engine.loadFromModule(QStringLiteral("Linernotes"), QStringLiteral("Main"));
 

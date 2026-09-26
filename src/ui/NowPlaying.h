@@ -32,10 +32,9 @@ class NowPlaying : public QObject {
     Q_PROPERTY(double durationSeconds READ durationSeconds NOTIFY changed)
 
 public:
-    NowPlaying(library::Database *db, player::Player &player, QObject *parent = nullptr);
+    NowPlaying(library::Database &db, player::Player &player, QObject *parent = nullptr);
     ~NowPlaying() override = default;
 
-    void setDatabase(library::Database *db);
     Q_INVOKABLE void refresh();
 
     [[nodiscard]] bool hasTrack() const;
@@ -51,7 +50,7 @@ signals:
     void changed();
 
 private:
-    library::Database *m_db { nullptr };
+    library::Database &m_db;
     player::Player &m_player;
 
     bool m_hasTrack { false };

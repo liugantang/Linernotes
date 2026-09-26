@@ -5,9 +5,12 @@
 
 #include <QObject>
 #include <QString>
+#include <QTimer>
 #include <QUrl>
 
 #include <core/Result.h>
+#include <library/CoverStore.h>
+#include <library/Database.h>
 #include <player/MpvHandle.h>
 #include <player/Player.h>
 #include <ui/LibraryActions.h>
@@ -17,11 +20,7 @@
 
 #include <memory>
 
-class QTimer;
-
 namespace linernotes::library {
-class Database;
-class CoverStore;
 class Scanner;
 class LibraryWatcher;
 } // namespace linernotes::library
@@ -36,11 +35,13 @@ class AppContext : public QObject {
     Q_OBJECT
     Q_DISABLE_COPY_MOVE(AppContext)
 
+    // QML 从 Q_PROPERTY 拿到的 QObject* 不会被 JS 引擎接管所有权（只有 Q_INVOKABLE
+    // 返回值才会），所以值成员是安全的
     Q_PROPERTY(linernotes::player::Player *player READ player CONSTANT)
     Q_PROPERTY(linernotes::ui::NowPlaying *nowPlaying READ nowPlaying CONSTANT)
     Q_PROPERTY(linernotes::ui::QueueModel *queueModel READ queueModel CONSTANT)
     Q_PROPERTY(linernotes::ui::SearchController *search READ search CONSTANT)
-    Q_PROPERTY(linernotes::ui::LibraryActions *actions READ actions NOTIFY libraryReadyChanged)
+    Q_PROPERTY(linernotes::ui::LibraryActions *actions READ actions CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
     Q_PROPERTY(QString startupError READ startupError NOTIFY startupErrorChanged)
     Q_PROPERTY(bool scanning READ isScanning NOTIFY scanningChanged)
@@ -67,13 +68,14 @@ public:
     /// 若配置了 playbackStatePath，将当前播放器状态保存至文件。
     void saveState() const;
 
-    [[nodiscard]] player::Player *player() const;
-    [[nodiscard]] NowPlaying *nowPlaying() const;
-    [[nodiscard]] QueueModel *queueModel() const;
-    [[nodiscard]] SearchController *search() const;
-    [[nodiscard]] library::Database *database();
-    [[nodiscard]] library::CoverStore *coverStore() const;
-    [[nodiscard]] LibraryActions *actions() const;
+    [[nodiscard]] player::Player *player();
+    [[nodiscard]] NowPlaying *nowPlaying();
+    [[nodiscard]] QueueModel *queueModel();
+    [[nodiscard]] SearchController *search();
+    [[nodiscard]] library::Database &database();
+    [[nodiscard]] const library::Database &database() const;
+    [[nodiscard]] library::CoverStore *coverStore();
+    [[nodiscard]] LibraryActions *actions();
     [[nodiscard]] bool isLibraryReady() const;
     [[nodiscard]] QString startupError() const;
     [[nodiscard]] bool isScanning() const;
@@ -86,18 +88,19 @@ signals:
     void libraryChanged();
 
 private:
+    // 声明顺序即依赖顺序，析构逆序进行，依赖方先于被依赖方析构
     Options m_options;
-    player::Player *m_player { nullptr };
+    library::Database m_db;
+    player::Player m_player;
+    library::CoverStore m_coverStore;
     std::unique_ptr<player::PlaybackStateStore> m_stateStore;
-    QTimer *m_saveTimer { nullptr };
-    std::unique_ptr<NowPlaying> m_nowPlaying;
-    std::unique_ptr<QueueModel> m_queueModel;
-    std::unique_ptr<SearchController> m_search;
-    std::unique_ptr<library::Database> m_db;
-    std::unique_ptr<library::CoverStore> m_coverStore;
-    std::unique_ptr<LibraryActions> m_actions;
+    NowPlaying m_nowPlaying;
+    QueueModel m_queueModel;
+    SearchController m_search;
+    LibraryActions m_actions;
     std::unique_ptr<library::Scanner> m_scanner;
     std::unique_ptr<library::LibraryWatcher> m_watcher;
+    QTimer m_saveTimer;
 
     bool m_libraryReady { false };
     QString m_startupError;

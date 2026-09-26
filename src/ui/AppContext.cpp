@@ -26,31 +26,32 @@ namespace linernotes::ui {
 AppContext::AppContext(Options options, QObject *parent)
     : QObject(parent)
     , m_options(std::move(options))
-    , m_player(new player::Player(m_options.playerOptions, this))
-    , m_nowPlaying(std::make_unique<NowPlaying>(nullptr, *m_player, this))
-    , m_queueModel(std::make_unique<QueueModel>(nullptr, *m_player, this))
-    , m_search(std::make_unique<SearchController>(nullptr, this))
+    , m_db(m_options.databasePath)
+    , m_player(m_options.playerOptions)
+    , m_coverStore(m_options.coverCacheDir)
+    , m_nowPlaying(m_db, m_player)
+    , m_queueModel(m_db, m_player)
+    , m_search(m_db)
+    , m_actions(m_db, m_player)
 {
-    connect(this, &AppContext::libraryChanged, m_nowPlaying.get(), &NowPlaying::refresh);
-    connect(this, &AppContext::libraryChanged, m_queueModel.get(), &QueueModel::refresh);
-    connect(this, &AppContext::libraryChanged, m_search.get(), &SearchController::refresh);
+    connect(this, &AppContext::libraryChanged, &m_nowPlaying, &NowPlaying::refresh);
+    connect(this, &AppContext::libraryChanged, &m_queueModel, &QueueModel::refresh);
+    connect(this, &AppContext::libraryChanged, &m_search, &SearchController::refresh);
 
     if (!m_options.playbackStatePath.isEmpty()) {
         m_stateStore = std::make_unique<player::PlaybackStateStore>(m_options.playbackStatePath);
         if (const auto snapshot = m_stateStore->load(); snapshot.has_value()) {
-            m_player->restore(*snapshot);
+            m_player.restore(*snapshot);
         }
 
-        m_saveTimer = new QTimer(this);
-        m_saveTimer->setInterval(std::chrono::seconds(30));
-        connect(m_saveTimer, &QTimer::timeout, this, [this]() {
+        m_saveTimer.setInterval(std::chrono::seconds(30));
+        connect(&m_saveTimer, &QTimer::timeout, this, [this]() {
             // 仅在播放器处于播放状态时定期保存，避免崩溃/被杀时丢失太多播放进度
-            if (m_player != nullptr
-                && m_player->state() == player::Player::PlaybackState::Playing) {
+            if (m_player.state() == player::Player::PlaybackState::Playing) {
                 saveState();
             }
         });
-        m_saveTimer->start();
+        m_saveTimer.start();
     }
 }
 
@@ -59,22 +60,13 @@ AppContext::~AppContext()
     if (m_scanner) {
         m_scanner->cancel();
     }
-    m_nowPlaying.reset();
-    m_queueModel.reset();
-    m_search.reset();
-    m_watcher.reset();
-    m_scanner.reset();
-    m_actions.reset();
-    m_coverStore.reset();
-    m_db.reset();
-    m_stateStore.reset();
 }
 
 void AppContext::saveState() const
 {
-    if (m_stateStore != nullptr && m_player != nullptr) {
+    if (m_stateStore != nullptr) {
         // 失败时 save 内部已告警
-        static_cast<void>(m_stateStore->save(m_player->snapshot()));
+        static_cast<void>(m_stateStore->save(m_player.snapshot()));
     }
 }
 
@@ -84,9 +76,8 @@ core::Result<void> AppContext::start()
         return { };
     }
 
-    auto db = std::make_unique<library::Database>(m_options.databasePath);
     const library::Migrator migrator;
-    const auto openRes = db->open(migrator);
+    const auto openRes = m_db.open(migrator);
     if (!openRes.ok()) {
         m_startupError = openRes.error().toString();
         m_libraryReady = false;
@@ -97,16 +88,13 @@ core::Result<void> AppContext::start()
         return openRes.error();
     }
 
-    m_db = std::move(db);
-    m_nowPlaying->setDatabase(m_db.get());
-    m_queueModel->setDatabase(m_db.get());
-    m_search->setDatabase(m_db.get());
-    m_coverStore = std::make_unique<library::CoverStore>(m_options.coverCacheDir);
-    m_actions = std::make_unique<LibraryActions>(*m_db, *m_player, this);
+    m_nowPlaying.refresh();
+    m_queueModel.refresh();
+    m_search.refresh();
 
     library::Scanner::Options scannerOpts;
-    scannerOpts.coverStore = m_coverStore.get();
-    m_scanner = std::make_unique<library::Scanner>(*m_db, scannerOpts, this);
+    scannerOpts.coverStore = &m_coverStore;
+    m_scanner = std::make_unique<library::Scanner>(m_db, scannerOpts);
 
     connect(m_scanner.get(), &library::Scanner::finished, this,
         [this](const library::ScanStats &stats) {
@@ -135,10 +123,10 @@ core::Result<void> AppContext::start()
         });
 
     m_watcher = std::make_unique<library::LibraryWatcher>(
-        *m_db, *m_scanner, library::LibraryWatcher::Options { }, this);
+        m_db, *m_scanner, library::LibraryWatcher::Options { });
 
     // If there are enabled library roots, start an incremental scan
-    const library::LibraryRoots roots(*m_db);
+    const library::LibraryRoots roots(m_db);
     const auto rootsListRes = roots.list();
     if (rootsListRes.ok()) {
         const auto &rootsList = rootsListRes.value();
@@ -162,39 +150,44 @@ core::Result<void> AppContext::start()
     return { };
 }
 
-player::Player *AppContext::player() const
+player::Player *AppContext::player()
 {
-    return m_player;
+    return &m_player;
 }
 
-NowPlaying *AppContext::nowPlaying() const
+NowPlaying *AppContext::nowPlaying()
 {
-    return m_nowPlaying.get();
+    return &m_nowPlaying;
 }
 
-QueueModel *AppContext::queueModel() const
+QueueModel *AppContext::queueModel()
 {
-    return m_queueModel.get();
+    return &m_queueModel;
 }
 
-SearchController *AppContext::search() const
+SearchController *AppContext::search()
 {
-    return m_search.get();
+    return &m_search;
 }
 
-library::Database *AppContext::database()
+library::Database &AppContext::database()
 {
-    return m_db.get();
+    return m_db;
 }
 
-library::CoverStore *AppContext::coverStore() const
+const library::Database &AppContext::database() const
 {
-    return m_coverStore.get();
+    return m_db;
 }
 
-LibraryActions *AppContext::actions() const
+library::CoverStore *AppContext::coverStore()
 {
-    return m_actions.get();
+    return &m_coverStore;
+}
+
+LibraryActions *AppContext::actions()
+{
+    return &m_actions;
 }
 
 bool AppContext::isLibraryReady() const

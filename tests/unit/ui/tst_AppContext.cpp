@@ -57,16 +57,16 @@ void TstAppContext::startSuccessNoRoots()
     QVERIFY(ctx.startupError().isEmpty());
     QCOMPARE(ctx.isScanning(), false);
     QVERIFY(ctx.player() != nullptr);
-    QVERIFY(ctx.database() == nullptr);
+    QCOMPARE(ctx.database().isOpen(), false);
 
     const auto res = ctx.start();
     QVERIFY(res.ok());
     QCOMPARE(ctx.isLibraryReady(), true);
     QVERIFY(ctx.startupError().isEmpty());
     QCOMPARE(ctx.isScanning(), false);
-    QVERIFY(ctx.database() != nullptr);
+    QCOMPARE(ctx.database().isOpen(), true);
 
-    const auto connRes = ctx.database()->connection();
+    const auto connRes = ctx.database().connection();
     QVERIFY(connRes.ok());
 
     const auto curVer = Migrator::currentVersion(connRes.value());
@@ -105,7 +105,7 @@ void TstAppContext::startFailureInvalidPath()
     QCOMPARE(ctx.isLibraryReady(), false);
     QVERIFY(!ctx.startupError().isEmpty());
     QVERIFY(ctx.player() != nullptr);
-    QVERIFY(ctx.database() == nullptr);
+    QCOMPARE(ctx.database().isOpen(), false);
     QCOMPARE(spyError.count(), 1);
     QCOMPARE(spyReady.count(), 1);
 }

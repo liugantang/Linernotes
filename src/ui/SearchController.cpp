@@ -14,24 +14,13 @@
 
 namespace linernotes::ui {
 
-SearchController::SearchController(library::Database *db, QObject *parent)
+SearchController::SearchController(library::Database &db, QObject *parent)
     : QObject(parent)
     , m_db(db)
     , m_debounceTimer(new QTimer(this))
 {
     m_debounceTimer->setSingleShot(true);
     connect(m_debounceTimer, &QTimer::timeout, this, &SearchController::performSearch);
-}
-
-void SearchController::setDatabase(library::Database *db)
-{
-    if (m_db == db) {
-        return;
-    }
-    m_db = db;
-    if (isActive()) {
-        performSearch();
-    }
 }
 
 QString SearchController::query() const
@@ -131,7 +120,7 @@ void SearchController::performSearch()
         return;
     }
 
-    if (m_db == nullptr) {
+    if (!m_db.isOpen()) {
         if (m_searching) {
             m_searching = false;
             emit searchingChanged();
@@ -139,7 +128,7 @@ void SearchController::performSearch()
         return;
     }
 
-    const auto connRes = m_db->connection();
+    const auto connRes = m_db.connection();
     if (!connRes.ok()) {
         if (m_searching) {
             m_searching = false;

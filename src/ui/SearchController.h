@@ -30,10 +30,8 @@ class SearchController : public QObject {
     Q_PROPERTY(bool searching READ isSearching NOTIFY searchingChanged)
 
 public:
-    explicit SearchController(library::Database *db, QObject *parent = nullptr);
+    explicit SearchController(library::Database &db, QObject *parent = nullptr);
     ~SearchController() override = default;
-
-    void setDatabase(library::Database *db);
 
     [[nodiscard]] QString query() const;
     void setQuery(const QString &q);
@@ -57,7 +55,7 @@ signals:
 private:
     void performSearch();
 
-    library::Database *m_db { nullptr };
+    library::Database &m_db;
     QString m_query;
     bool m_searching { false };
     QTimer *m_debounceTimer { nullptr };

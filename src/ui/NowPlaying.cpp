@@ -13,7 +13,7 @@
 
 namespace linernotes::ui {
 
-NowPlaying::NowPlaying(library::Database *db, player::Player &player, QObject *parent)
+NowPlaying::NowPlaying(library::Database &db, player::Player &player, QObject *parent)
     : QObject(parent)
     , m_db(db)
     , m_player(player)
@@ -23,15 +23,6 @@ NowPlaying::NowPlaying(library::Database *db, player::Player &player, QObject *p
         connect(queue, &player::PlayQueue::currentIndexChanged, this, &NowPlaying::refresh);
         connect(queue, &player::PlayQueue::modelReset, this, &NowPlaying::refresh);
     }
-    refresh();
-}
-
-void NowPlaying::setDatabase(library::Database *db)
-{
-    if (m_db == db) {
-        return;
-    }
-    m_db = db;
     refresh();
 }
 
@@ -55,8 +46,8 @@ void NowPlaying::refresh()
         newTrackId = item.trackId;
         newTitle = QFileInfo(item.source).fileName();
 
-        if (m_db != nullptr && newTrackId >= 0) {
-            const auto connOpt = m_db->connection();
+        if (m_db.isOpen() && newTrackId >= 0) {
+            const auto connOpt = m_db.connection();
             if (connOpt.ok()) {
                 const library::LibraryQuery query(connOpt.value());
                 const auto res = query.tracksByIds({ newTrackId });
