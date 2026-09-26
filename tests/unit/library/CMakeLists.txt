@@ -59,3 +59,11 @@ linernotes_add_test(
         Linernotes::library
 )
 
+linernotes_add_test(
+    NAME library_EntityLinker
+    SOURCES
+        tst_EntityLinker.cpp
+    LIBS
+        Linernotes::library
+)
+

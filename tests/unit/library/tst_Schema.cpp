@@ -380,8 +380,8 @@ void TstSchema::cascadeDeletes()
 
     // Insert album
     QSqlQuery q(conn);
-    QVERIFY(q.exec(
-        QStringLiteral("INSERT INTO albums (id, title, created_at) VALUES (10, 'Album X', 100);")));
+    QVERIFY(q.exec(QStringLiteral("INSERT INTO albums (id, grouping_key, title, created_at) VALUES "
+                                  "(10, 'k10', 'Album X', 100);")));
 
     // Insert artist
     QVERIFY(q.exec(QStringLiteral(

@@ -8,6 +8,8 @@ add_library(linernotes_library STATIC
     Database.h
     DirectoryWalker.cpp
     DirectoryWalker.h
+    EntityLinker.cpp
+    EntityLinker.h
     Errors.h
     FileFingerprint.cpp
     FileFingerprint.h

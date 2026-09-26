@@ -26,6 +26,8 @@ struct ScanStats {
     int missing = 0; // 本次新标记为缺失
     int restored = 0; // 之前缺失、本次在原路径重新出现
     int failed = 0; // 读取失败（仍写入 files 行并记录 scan_error）
+    int albumsRemoved = 0; // 清理的孤立专辑数
+    int artistsRemoved = 0; // 清理的孤立艺人数
     bool cancelled = false;
     qint64 elapsedMs = 0;
     QString error;

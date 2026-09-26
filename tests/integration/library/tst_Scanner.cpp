@@ -118,6 +118,9 @@ private slots:
     void asyncScanEmitsProgressAndFinished();
     void readsInParallel();
     void writeFailureRollsBackSingleFile();
+    void scanLinksAlbumsAndArtists();
+    void deletingFilesRemovesOrphans();
+    void movedFileRelinksAlbum();
 };
 
 void TstScanner::firstScanAddsAllAudioFiles()
@@ -973,6 +976,282 @@ void TstScanner::writeFailureRollsBackSingleFile()
         QVERIFY(q.value(0).toLongLong() > 0);
         QVERIFY(q.value(1).toLongLong() > 0);
         QVERIFY(q.value(2).toInt() > 0);
+    }
+}
+
+void TstScanner::scanLinksAlbumsAndArtists()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+
+    const QString musicDir = tempDir.filePath(QStringLiteral("music"));
+    setupTestLibrary(musicDir);
+
+    Database db(tempDir.filePath(QStringLiteral("library.db")));
+    const Migrator migrator;
+    QVERIFY(db.open(migrator).ok());
+
+    LibraryRoots roots(db);
+    QVERIFY(roots.add(musicDir).ok());
+
+    Scanner scanner(db, Scanner::Options { });
+    const auto res = scanner.scanBlocking();
+    QVERIFY(res.ok());
+
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &qDb = connRes.value();
+
+    // 1. mp3_id3v24_utf8.mp3: Has album_artist = "林晓风", album = "山谷的回响", year = 2003
+    {
+        QSqlQuery q(qDb);
+        QVERIFY(q.exec(QStringLiteral(
+            "SELECT t.id, a.id, a.grouping_key, a.title, a.album_artist, a.year FROM tracks t "
+            "JOIN files f ON t.file_id = f.id "
+            "JOIN albums a ON t.album_id = a.id "
+            "WHERE f.path LIKE '%mp3_id3v24_utf8.mp3'")));
+        QVERIFY(q.next());
+        const qint64 trackId = q.value(0).toLongLong();
+        const qint64 albumId = q.value(1).toLongLong();
+        QCOMPARE(q.value(2).toString(), QStringLiteral("aa:林晓风\x1f山谷的回响"));
+        QCOMPARE(q.value(3).toString(), QStringLiteral("山谷的回响"));
+        QCOMPARE(q.value(4).toString(), QStringLiteral("林晓风"));
+        QCOMPARE(q.value(5).toInt(), 2003);
+
+        // Check album_artists
+        QSqlQuery qAa(qDb);
+        qAa.prepare(QStringLiteral("SELECT ar.name, aa.position FROM album_artists aa "
+                                   "JOIN artists ar ON aa.artist_id = ar.id "
+                                   "WHERE aa.album_id = ? ORDER BY aa.position ASC"));
+        qAa.addBindValue(albumId);
+        QVERIFY(qAa.exec() && qAa.next());
+        QCOMPARE(qAa.value(0).toString(), QStringLiteral("林晓风"));
+        QCOMPARE(qAa.value(1).toInt(), 0);
+        QVERIFY(!qAa.next());
+
+        // Check track_artists
+        QSqlQuery qTa(qDb);
+        qTa.prepare(QStringLiteral("SELECT ar.name, ta.role, ta.position FROM track_artists ta "
+                                   "JOIN artists ar ON ta.artist_id = ar.id "
+                                   "WHERE ta.track_id = ? ORDER BY ta.role ASC, ta.position ASC"));
+        qTa.addBindValue(trackId);
+        QVERIFY(qTa.exec());
+
+        struct ArtRow {
+            QString name;
+            QString role;
+            int pos = 0;
+        };
+        QList<ArtRow> rows;
+        while (qTa.next()) {
+            rows.append(ArtRow { .name = qTa.value(0).toString(),
+                .role = qTa.value(1).toString(),
+                .pos = qTa.value(2).toInt() });
+        }
+        QCOMPARE(rows.size(), 3);
+        QCOMPARE(rows.at(0).name, QStringLiteral("林晓风"));
+        QCOMPARE(rows.at(0).role, QStringLiteral("artist"));
+        QCOMPARE(rows.at(0).pos, 0);
+        QCOMPARE(rows.at(1).name, QStringLiteral("夜行者"));
+        QCOMPARE(rows.at(1).role, QStringLiteral("artist"));
+        QCOMPARE(rows.at(1).pos, 1);
+        QCOMPARE(rows.at(2).name, QStringLiteral("林晓风"));
+        QCOMPARE(rows.at(2).role, QStringLiteral("composer"));
+        QCOMPARE(rows.at(2).pos, 0);
+    }
+
+    // 2. flac_no_tags.flac: Has no tags -> album_id is NULL
+    {
+        QSqlQuery q(qDb);
+        QVERIFY(q.exec(QStringLiteral("SELECT t.album_id FROM tracks t "
+                                      "JOIN files f ON t.file_id = f.id "
+                                      "WHERE f.path LIKE '%flac_no_tags.flac'")));
+        QVERIFY(q.next());
+        QVERIFY(q.value(0).isNull());
+    }
+
+    // 3. m4a_alac.m4a: No album_artist, album = "纯净之声", artist = "声学研究", year = 2020
+    {
+        QSqlQuery q(qDb);
+        QVERIFY(q.exec(QStringLiteral(
+            "SELECT t.id, a.id, a.grouping_key, a.title, a.album_artist, a.year FROM tracks t "
+            "JOIN files f ON t.file_id = f.id "
+            "JOIN albums a ON t.album_id = a.id "
+            "WHERE f.path LIKE '%m4a_alac.m4a'")));
+        QVERIFY(q.next());
+        const qint64 albumId = q.value(1).toLongLong();
+        QCOMPARE(q.value(2).toString(),
+            QStringLiteral("dir:") + musicDir + QStringLiteral("\x1f纯净之声"));
+        QCOMPARE(q.value(3).toString(), QStringLiteral("纯净之声"));
+        QVERIFY(q.value(4).isNull());
+        QCOMPARE(q.value(5).toInt(), 2020);
+
+        // Check album_artists has single artist "声学研究"
+        QSqlQuery qAa(qDb);
+        qAa.prepare(QStringLiteral("SELECT ar.name, aa.position FROM album_artists aa "
+                                   "JOIN artists ar ON aa.artist_id = ar.id "
+                                   "WHERE aa.album_id = ?"));
+        qAa.addBindValue(albumId);
+        QVERIFY(qAa.exec() && qAa.next());
+        QCOMPARE(qAa.value(0).toString(), QStringLiteral("声学研究"));
+        QCOMPARE(qAa.value(1).toInt(), 0);
+        QVERIFY(!qAa.next());
+    }
+}
+
+void TstScanner::deletingFilesRemovesOrphans()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+
+    const QString musicDir = tempDir.filePath(QStringLiteral("music"));
+    setupTestLibrary(musicDir);
+
+    Database db(tempDir.filePath(QStringLiteral("library.db")));
+    const Migrator migrator;
+    QVERIFY(db.open(migrator).ok());
+
+    LibraryRoots roots(db);
+    QVERIFY(roots.add(musicDir).ok());
+
+    Scanner scanner(db, Scanner::Options { });
+    const auto res1 = scanner.scanBlocking();
+    QVERIFY(res1.ok());
+
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &qDb = connRes.value();
+
+    // Verify "春の歌" and "花吹雪" from '中文 文件名.flac' exist
+    {
+        QSqlQuery q(qDb);
+        QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM albums WHERE title = '春の歌'")));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 1);
+
+        QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM artists WHERE name = '花吹雪'")));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 1);
+    }
+
+    // Step A: Delete file from disk, but do not delete from DB -> marked as missing
+    const QString zhFile = musicDir + QStringLiteral("/中文 文件名.flac");
+    QVERIFY(QFile::remove(zhFile));
+
+    const auto res2 = scanner.scanBlocking();
+    QVERIFY(res2.ok());
+    QCOMPARE(res2.value().missing, 1);
+    QCOMPARE(res2.value().albumsRemoved, 0);
+    QCOMPARE(res2.value().artistsRemoved, 0);
+
+    // Track is missing, but album and artist STILL exist in DB
+    {
+        QSqlQuery q(qDb);
+        QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM albums WHERE title = '春の歌'")));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 1);
+
+        QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM artists WHERE name = '花吹雪'")));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 1);
+    }
+
+    // Step B: Completely delete files row from DB (e.g. simulated removal)
+    {
+        QSqlQuery q(qDb);
+        QVERIFY(q.exec(QStringLiteral("DELETE FROM files WHERE path LIKE '%中文 文件名.flac'")));
+    }
+
+    // Rescan: removeOrphans will clean up the empty album "春の歌" and artist "花吹雪"
+    const auto res3 = scanner.scanBlocking();
+    QVERIFY(res3.ok());
+    QVERIFY(res3.value().albumsRemoved >= 1);
+    QVERIFY(res3.value().artistsRemoved >= 1);
+
+    {
+        QSqlQuery q(qDb);
+        QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM albums WHERE title = '春の歌'")));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 0);
+
+        QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM artists WHERE name = '花吹雪'")));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 0);
+    }
+}
+
+void TstScanner::movedFileRelinksAlbum()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+
+    const QString musicDir = tempDir.filePath(QStringLiteral("music"));
+    setupTestLibrary(musicDir);
+
+    Database db(tempDir.filePath(QStringLiteral("library.db")));
+    const Migrator migrator;
+    QVERIFY(db.open(migrator).ok());
+
+    LibraryRoots roots(db);
+    QVERIFY(roots.add(musicDir).ok());
+
+    Scanner scanner(db, Scanner::Options { });
+    const auto res1 = scanner.scanBlocking();
+    QVERIFY(res1.ok());
+
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &qDb = connRes.value();
+
+    // m4a_alac.m4a has no album_artist, album = "纯净之声"
+    const QString oldPath = musicDir + QStringLiteral("/m4a_alac.m4a");
+    const QString newDir = musicDir + QStringLiteral("/sub1");
+    const QString newPath = newDir + QStringLiteral("/moved_m4a_alac.m4a");
+
+    qint64 oldAlbumId = 0;
+    {
+        QSqlQuery q(qDb);
+        q.prepare(QStringLiteral(
+            "SELECT a.id, a.grouping_key FROM tracks t JOIN files f ON t.file_id = f.id JOIN "
+            "albums a ON t.album_id = a.id WHERE f.path = ?"));
+        q.bindValue(0, oldPath);
+        QVERIFY(q.exec() && q.next());
+        oldAlbumId = q.value(0).toLongLong();
+        QCOMPARE(q.value(1).toString(),
+            QStringLiteral("dir:") + musicDir + QStringLiteral("\x1f纯净之声"));
+    }
+
+    // Move file to sub1 directory
+    QVERIFY(QFile::rename(oldPath, newPath));
+
+    const auto res2 = scanner.scanBlocking();
+    QVERIFY(res2.ok());
+    const auto &stats2 = res2.value();
+
+    QCOMPARE(stats2.moved, 1);
+    QCOMPARE(stats2.albumsRemoved, 1);
+
+    // Verify track is linked to new album with new directory grouping key
+    {
+        QSqlQuery q(qDb);
+        q.prepare(QStringLiteral(
+            "SELECT a.id, a.grouping_key FROM tracks t JOIN files f ON t.file_id = f.id JOIN "
+            "albums a ON t.album_id = a.id WHERE f.path = ?"));
+        q.bindValue(0, newPath);
+        QVERIFY(q.exec() && q.next());
+        const qint64 newAlbumId = q.value(0).toLongLong();
+        QVERIFY(newAlbumId != oldAlbumId);
+        QCOMPARE(q.value(1).toString(),
+            QStringLiteral("dir:") + newDir + QStringLiteral("\x1f纯净之声"));
+    }
+
+    // Verify old album was deleted
+    {
+        QSqlQuery q(qDb);
+        q.prepare(QStringLiteral("SELECT COUNT(*) FROM albums WHERE id = ?"));
+        q.bindValue(0, oldAlbumId);
+        QVERIFY(q.exec() && q.next());
+        QCOMPARE(q.value(0).toInt(), 0);
     }
 }
 

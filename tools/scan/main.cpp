@@ -146,11 +146,19 @@ void printScanSummary(
     linernotes::library::Database &db, const linernotes::library::ScanStats &stats, bool verbose)
 {
     int totalTracks = 0;
+    int totalAlbums = 0;
+    int totalArtists = 0;
     const auto connRes = db.connection();
     if (connRes.ok()) {
         QSqlQuery q(connRes.value());
         if (q.exec(QStringLiteral("SELECT COUNT(*) FROM tracks")) && q.next()) {
             totalTracks = q.value(0).toInt();
+        }
+        if (q.exec(QStringLiteral("SELECT COUNT(*) FROM albums")) && q.next()) {
+            totalAlbums = q.value(0).toInt();
+        }
+        if (q.exec(QStringLiteral("SELECT COUNT(*) FROM artists")) && q.next()) {
+            totalArtists = q.value(0).toInt();
         }
     }
 
@@ -164,13 +172,15 @@ void printScanSummary(
 
     std::cout << QStringLiteral(
         "Found %1 files: %2 added, %3 updated, %4 unchanged, %5 moved, %6 missing, %7 "
-        "restored, %8 failed in %9 ms (%10 files/s). Total tracks in database: %11.\n")
+        "restored, %8 failed in %9 ms (%10 files/s). Total tracks in database: %11, albums: %12, "
+        "artists: %13.\n")
                      .arg(QString::number(stats.found), QString::number(stats.added),
                          QString::number(stats.updated), QString::number(stats.unchanged),
                          QString::number(stats.moved), QString::number(stats.missing),
                          QString::number(stats.restored), QString::number(stats.failed),
                          QString::number(stats.elapsedMs), QString::number(filesPerSec, 'f', 1),
-                         QString::number(totalTracks))
+                         QString::number(totalTracks), QString::number(totalAlbums),
+                         QString::number(totalArtists))
                      .toStdString();
 
     if (verbose && stats.failed > 0) {

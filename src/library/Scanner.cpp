@@ -15,6 +15,7 @@
 
 #include <library/Database.h>
 #include <library/DirectoryWalker.h>
+#include <library/EntityLinker.h>
 #include <library/Errors.h>
 #include <library/FileFingerprint.h>
 #include <library/LibraryLogging.h>
@@ -547,8 +548,8 @@ bool writeRawTags(qint64 trackId, const QList<RawTag> &tags, WriterStatements &s
     return stmts.updateTrackTagsReadAtStmt.exec();
 }
 
-bool writeSuccessfulFile(
-    const FileReadResult &res, WriterStatements &stmts, ScanStats &stats, qint64 now)
+bool writeSuccessfulFile(const FileReadResult &res, WriterStatements &stmts,
+    EntityLinker &entityLinker, ScanStats &stats, qint64 now)
 {
     if (!stmts.savepointStmt.exec()) {
         qCWarning(lcLibrary) << "Failed to create savepoint for" << res.scanned.path << ":"
@@ -597,6 +598,12 @@ bool writeSuccessfulFile(
 
     if (!writeRawTags(trackId, res.tagResult.value().tags, stmts, now)) {
         rollbackAndFail(QStringLiteral("writeRawTags"), stmts.insertRawTagStmt.lastError().text());
+        return false;
+    }
+
+    const auto linkRes = entityLinker.linkTrack(trackId);
+    if (!linkRes.ok()) {
+        rollbackAndFail(QStringLiteral("linkTrack"), linkRes.error().toString());
         return false;
     }
 
@@ -717,6 +724,7 @@ core::Result<void> processWriterQueue(const QSqlDatabase &db,
     const std::function<void(const ScanProgress &)> &onProgress, ScanStats &stats)
 {
     WriterStatements stmts(db);
+    EntityLinker entityLinker(db, getNow);
     std::unique_ptr<Transaction> tx;
     int batchCount = 0;
     int readDone = 0;
@@ -734,7 +742,7 @@ core::Result<void> processWriterQueue(const QSqlDatabase &db,
 
         const qint64 now = getNow();
         if (res.tagResult.ok()) {
-            writeSuccessfulFile(res, stmts, stats, now);
+            writeSuccessfulFile(res, stmts, entityLinker, stats, now);
         } else {
             writeFailedFile(res, stmts, stats, now);
         }
@@ -930,14 +938,6 @@ core::Result<ScanStats> Scanner::doScan(const QStringList &dirs)
     }
     stats.found = static_cast<int>(walkedMap.size());
 
-    if (!walkOk || m_cancelled.load()) {
-        stats.cancelled = true;
-        stats.elapsedMs = totalTimer.elapsed();
-        qCInfo(lcLibrary) << "Scan cancelled during walk: found=" << stats.found;
-        emit finished(stats);
-        return stats;
-    }
-
     const auto connRes = m_db.connection();
     if (!connRes.ok()) {
         stats.error = connRes.error().toString();
@@ -946,6 +946,33 @@ core::Result<ScanStats> Scanner::doScan(const QStringList &dirs)
         return connRes.error();
     }
     const QSqlDatabase &db = connRes.value();
+
+    auto cleanupOrphans = [&]() {
+        EntityLinker linker(db, [this]() { return getNow(); });
+        Transaction tx(db);
+        auto removeRes = linker.removeOrphans();
+        if (removeRes.ok()) {
+            auto commitRes = tx.commit();
+            if (commitRes.ok()) {
+                stats.albumsRemoved = removeRes.value().first;
+                stats.artistsRemoved = removeRes.value().second;
+            } else {
+                qCWarning(lcLibrary) << "Failed to commit removeOrphans transaction:"
+                                     << commitRes.error().toString();
+            }
+        } else {
+            qCWarning(lcLibrary) << "Failed to remove orphans:" << removeRes.error().toString();
+        }
+    };
+
+    if (!walkOk || m_cancelled.load()) {
+        stats.cancelled = true;
+        cleanupOrphans();
+        stats.elapsedMs = totalTimer.elapsed();
+        qCInfo(lcLibrary) << "Scan cancelled during walk: found=" << stats.found;
+        emit finished(stats);
+        return stats;
+    }
 
     const auto dbFilesRes = queryDbFiles(db, enabledRoots, dirs);
     if (!dbFilesRes.ok()) {
@@ -964,6 +991,7 @@ core::Result<ScanStats> Scanner::doScan(const QStringList &dirs)
 
     if (m_cancelled.load()) {
         stats.cancelled = true;
+        cleanupOrphans();
         stats.elapsedMs = totalTimer.elapsed();
         qCInfo(lcLibrary) << "Scan cancelled before missing update: found=" << stats.found;
         emit finished(stats);
@@ -979,6 +1007,7 @@ core::Result<ScanStats> Scanner::doScan(const QStringList &dirs)
     }
 
     if (filesToRead.isEmpty()) {
+        cleanupOrphans();
         emit progress(ScanProgress {
             .phase = ScanProgress::Phase::Finishing,
             .done = 0,
@@ -989,6 +1018,8 @@ core::Result<ScanStats> Scanner::doScan(const QStringList &dirs)
                           << "updated=" << stats.updated << "unchanged=" << stats.unchanged
                           << "moved=" << stats.moved << "missing=" << stats.missing
                           << "restored=" << stats.restored << "failed=" << stats.failed
+                          << "albumsRemoved=" << stats.albumsRemoved
+                          << "artistsRemoved=" << stats.artistsRemoved
                           << "cancelled=" << stats.cancelled << "elapsedMs=" << stats.elapsedMs;
         emit finished(stats);
         return stats;
@@ -1004,12 +1035,14 @@ core::Result<ScanStats> Scanner::doScan(const QStringList &dirs)
 
     if (!pipelineRes.ok()) {
         stats.error = pipelineRes.error().toString();
+        cleanupOrphans();
         stats.elapsedMs = totalTimer.elapsed();
         emit finished(stats);
         return pipelineRes.error();
     }
 
     stats.cancelled = m_cancelled.load();
+    cleanupOrphans();
 
     emit progress(ScanProgress {
         .phase = ScanProgress::Phase::Finishing,
@@ -1023,6 +1056,8 @@ core::Result<ScanStats> Scanner::doScan(const QStringList &dirs)
                       << "updated=" << stats.updated << "unchanged=" << stats.unchanged
                       << "moved=" << stats.moved << "missing=" << stats.missing
                       << "restored=" << stats.restored << "failed=" << stats.failed
+                      << "albumsRemoved=" << stats.albumsRemoved
+                      << "artistsRemoved=" << stats.artistsRemoved
                       << "cancelled=" << stats.cancelled << "elapsedMs=" << stats.elapsedMs;
 
     emit finished(stats);

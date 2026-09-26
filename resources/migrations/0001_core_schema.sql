@@ -50,6 +50,7 @@ CREATE INDEX idx_files_missing_since ON files(missing_since);
 
 CREATE TABLE albums (
     id INTEGER PRIMARY KEY,
+    grouping_key TEXT NOT NULL UNIQUE,
     title TEXT NOT NULL,
     album_artist TEXT,
     year INTEGER,
