@@ -11,6 +11,7 @@ find_package(Qt6 6.8 REQUIRED COMPONENTS
     DBus
     Concurrent
     Test
+    LinguistTools
 )
 
 find_package(Qt6Keychain REQUIRED)

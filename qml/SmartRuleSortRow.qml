@@ -135,6 +135,7 @@ ColumnLayout {
         }
 
         Label {
+            //: Unit label after number input in "Limit to [N] tracks"
             text: qsTr("tracks")
             font.pixelSize: Theme.fontSizeNormal
             color: Theme.textSecondary

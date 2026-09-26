@@ -104,9 +104,9 @@ Item {
                 }
 
                 Label {
-                    text: qsTr("%1 albums · %2 tracks")
-                        .arg(root.info ? (root.info.albumCount || 0) : 0)
-                        .arg(root.info ? (root.info.trackCount || 0) : 0)
+                    readonly property int albums: root.info ? (root.info.albumCount || 0) : 0
+                    readonly property int tracks: root.info ? (root.info.trackCount || 0) : 0
+                    text: qsTr("%n album(s)", "", albums) + " · " + qsTr("%n track(s)", "", tracks)
                     font.pixelSize: Theme.fontSizeNormal
                     color: Theme.textSecondary
                     Layout.fillWidth: true

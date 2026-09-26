@@ -39,7 +39,9 @@ Popup {
     }
 
     readonly property var matchModesModel: [
+        //: Smart playlist rule match mode: match all conditions
         { text: qsTr("All"), value: Library.SmartMatch.All },
+        //: Smart playlist rule match mode: match any condition
         { text: qsTr("Any"), value: Library.SmartMatch.Any }
     ]
 

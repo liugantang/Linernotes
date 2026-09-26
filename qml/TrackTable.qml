@@ -96,16 +96,27 @@ FocusScope {
         switch (key) {
         case "favorite": return ""
         case "trackNumber": return "#"
+        //: Track table column header
         case "title": return qsTr("Title")
+        //: Track table column header
         case "artist": return qsTr("Artist")
+        //: Track table column header
         case "album": return qsTr("Album")
+        //: Track table column header
         case "albumArtist": return qsTr("Album Artist")
+        //: Track table column header
         case "genre": return qsTr("Genre")
+        //: Track table column header
         case "year": return qsTr("Year")
+        //: Track table column header
         case "duration": return qsTr("Duration")
+        //: Track table column header
         case "rating": return qsTr("Rating")
+        //: Track table column header
         case "format": return qsTr("Format")
+        //: Track table column header
         case "bitrate": return qsTr("Bitrate")
+        //: Track table column header
         case "addedAt": return qsTr("Date Added")
         default: return ""
         }

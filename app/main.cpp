@@ -18,6 +18,7 @@
 #include <core/Version.h>
 #include <ui/AppContext.h>
 #include <ui/CoverImageProvider.h>
+#include <ui/Translations.h>
 
 int main(int argc, char *argv[])
 {
@@ -25,7 +26,7 @@ int main(int argc, char *argv[])
     QGuiApplication::setApplicationName(linernotes::core::applicationName());
     QGuiApplication::setApplicationVersion(linernotes::core::versionString());
 
-    const QGuiApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("AI music player"));
@@ -106,11 +107,17 @@ int main(int argc, char *argv[])
             qPrintable(startRes.error().toString()));
     }
 
+    linernotes::ui::Translations translations(app, *appContext.settings());
+    translations.apply(appContext.settings()->language());
+
     QQuickStyle::setStyle(QStringLiteral("Basic"));
 
     int exitCode = 0;
     {
         QQmlApplicationEngine engine;
+
+        QObject::connect(&translations, &linernotes::ui::Translations::retranslateRequested,
+            &engine, &QQmlApplicationEngine::retranslate);
 
         QObject::connect(
             &engine, &QQmlApplicationEngine::objectCreationFailed, &app,

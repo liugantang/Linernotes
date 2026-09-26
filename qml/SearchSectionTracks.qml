@@ -200,7 +200,7 @@ ColumnLayout {
     Controls.AppButton {
         visible: !root.showAll && totalTracks > 20
         Layout.alignment: Qt.AlignHCenter
-        text: qsTr("Show all %1 tracks").arg(totalTracks)
+        text: qsTr("Show all %n track(s)", "", totalTracks)
         onClicked: {
             root.showAll = true
         }

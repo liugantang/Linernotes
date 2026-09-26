@@ -27,7 +27,7 @@ endif()
 
 include(cmake/Dependencies.cmake)
 include(cmake/CompilerOptions.cmake)
-qt_standard_project_setup()
+qt_standard_project_setup(I18N_TRANSLATED_LANGUAGES zh_CN)
 
 option(LINERNOTES_BUILD_TOOLS "Build developer tools" ON)
 option(LINERNOTES_BUILD_TESTS "Build tests" ON)

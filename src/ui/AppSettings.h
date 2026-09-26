@@ -23,6 +23,9 @@ inline const core::SettingKey<QString> kPlaybackAudioDevice { u"playback/audioDe
 inline const core::SettingKey<bool> kPlaybackExclusive { u"playback/exclusive", false };
 // NOLINTNEXTLINE(bugprone-throwing-static-initialization) - QString constructor is non-noexcept in
 // Qt6
+inline const core::SettingKey<QString> kAppearanceLanguage { u"appearance/language", u"system"_s };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization) - QString constructor is non-noexcept in
+// Qt6
 inline const core::SettingKey<QString> kAppearanceTheme { u"appearance/theme", u"system"_s };
 // NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 inline const core::SettingKey<bool> kAppearanceAccentFromCover { u"appearance/accentFromCover",

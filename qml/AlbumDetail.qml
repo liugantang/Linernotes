@@ -232,6 +232,7 @@ Item {
             }
 
             Label {
+                //: Track title header
                 text: qsTr("Title")
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.textSecondary
@@ -239,6 +240,7 @@ Item {
             }
 
             Label {
+                //: Track duration header
                 text: qsTr("Duration")
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.textSecondary

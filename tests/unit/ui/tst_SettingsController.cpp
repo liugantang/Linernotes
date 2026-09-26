@@ -24,6 +24,7 @@ private slots:
     void testThemeAndReplayGainSettings();
     void testAudioDeviceAndGaplessSettings();
     void testFirstRunCompletedSettings();
+    void testLanguageSettings();
 };
 
 void TstSettingsController::testThemeAndReplayGainSettings()
@@ -117,6 +118,36 @@ void TstSettingsController::testFirstRunCompletedSettings()
     Player player2({ { QStringLiteral("ao"), QStringLiteral("null") } });
     SettingsController ctrl2(settings, player2);
     QCOMPARE(ctrl2.firstRunCompleted(), true);
+}
+
+void TstSettingsController::testLanguageSettings()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString iniPath = tempDir.filePath(QStringLiteral("settings.ini"));
+
+    Settings settings(iniPath);
+    Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
+
+    SettingsController ctrl1(settings, player);
+    QCOMPARE(ctrl1.language(), SettingsController::Language::System);
+
+    QSignalSpy languageSpy(&ctrl1, &SettingsController::languageChanged);
+
+    ctrl1.setLanguage(SettingsController::Language::Chinese);
+    QCOMPARE(languageSpy.count(), 1);
+    QCOMPARE(ctrl1.language(), SettingsController::Language::Chinese);
+
+    Player player2({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    SettingsController ctrl2(settings, player2);
+
+    QCOMPARE(ctrl2.language(), SettingsController::Language::Chinese);
+
+    ctrl2.setLanguage(SettingsController::Language::English);
+    QCOMPARE(ctrl2.language(), SettingsController::Language::English);
+
+    SettingsController ctrl3(settings, player2);
+    QCOMPARE(ctrl3.language(), SettingsController::Language::English);
 }
 
 } // namespace

@@ -203,9 +203,7 @@ Item {
                                     }
 
                                     Label {
-                                        text: qsTr("%1 albums · %2 tracks")
-                                            .arg(artistDelegate.albumCount)
-                                            .arg(artistDelegate.trackCount)
+                                        text: qsTr("%n album(s)", "", artistDelegate.albumCount) + " · " + qsTr("%n track(s)", "", artistDelegate.trackCount)
                                         font.pixelSize: Theme.fontSizeSmall
                                         color: Theme.textSecondary
                                         elide: Text.ElideRight

@@ -79,9 +79,13 @@ Item {
             Controls.AppComboBox {
                 id: sortCombo
                 model: [
+                    //: Album sort criterion
                     { text: qsTr("Title"), key: AlbumGridModel.Title },
+                    //: Album sort criterion
                     { text: qsTr("Artist"), key: AlbumGridModel.Artist },
+                    //: Album sort criterion
                     { text: qsTr("Year"), key: AlbumGridModel.Year },
+                    //: Album sort criterion
                     { text: qsTr("Date Added"), key: AlbumGridModel.DateAdded }
                 ]
                 textRole: "text"

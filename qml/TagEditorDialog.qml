@@ -64,7 +64,7 @@ Popup {
 
                 Label {
                     text: (AppContext.tagEditor && AppContext.tagEditor.trackCount > 1)
-                        ? qsTr("(%1 tracks)").arg(AppContext.tagEditor.trackCount)
+                        ? qsTr("(%n track(s))", "", AppContext.tagEditor.trackCount)
                         : ""
                     font.pixelSize: Theme.fontSizeNormal
                     color: Theme.textSecondary

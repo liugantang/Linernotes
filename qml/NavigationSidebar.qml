@@ -25,14 +25,13 @@ Rectangle {
     border.color: Theme.divider
     border.width: 1
 
-    ListModel {
-        id: navModel
-        ListElement { pageId: NavigationSidebar.Tracks; title: qsTr("Tracks"); iconSource: "library"; subtitle: "" }
-        ListElement { pageId: NavigationSidebar.Albums; title: qsTr("Albums"); iconSource: "disc-3"; subtitle: "" }
-        ListElement { pageId: NavigationSidebar.Artists; title: qsTr("Artists"); iconSource: "mic-vocal"; subtitle: "" }
-        ListElement { pageId: NavigationSidebar.Playlists; title: qsTr("Playlists"); iconSource: "list-music"; subtitle: "" }
-        ListElement { pageId: NavigationSidebar.Ai; title: qsTr("AI"); iconSource: "sparkles"; subtitle: qsTr("Coming soon") }
-    }
+    readonly property var navModel: [
+        { pageId: NavigationSidebar.Tracks, title: qsTr("Tracks"), iconSource: "library", subtitle: "" },
+        { pageId: NavigationSidebar.Albums, title: qsTr("Albums"), iconSource: "disc-3", subtitle: "" },
+        { pageId: NavigationSidebar.Artists, title: qsTr("Artists"), iconSource: "mic-vocal", subtitle: "" },
+        { pageId: NavigationSidebar.Playlists, title: qsTr("Playlists"), iconSource: "list-music", subtitle: "" },
+        { pageId: NavigationSidebar.Ai, title: qsTr("AI"), iconSource: "sparkles", subtitle: qsTr("Coming soon") }
+    ]
 
     ColumnLayout {
         anchors.fill: parent
@@ -59,7 +58,7 @@ Rectangle {
             id: listView
             Layout.fillWidth: true
             Layout.fillHeight: true
-            model: navModel
+            model: root.navModel
             clip: true
             focus: true
             keyNavigationEnabled: true
@@ -69,10 +68,12 @@ Rectangle {
             delegate: Rectangle {
                 id: itemDelegate
                 required property int index
-                required property int pageId
-                required property string title
-                required property string subtitle
-                required property string iconSource
+                required property var modelData
+
+                readonly property int pageId: modelData.pageId
+                readonly property string title: modelData.title
+                readonly property string subtitle: modelData.subtitle
+                readonly property string iconSource: modelData.iconSource
 
                 width: ListView.view.width
                 height: Theme.navItemHeight
@@ -163,12 +164,12 @@ Rectangle {
 
             Keys.onReturnPressed: {
                 if (currentIndex >= 0 && currentIndex < count) {
-                    root.currentPage = navModel.get(currentIndex).pageId
+                    root.currentPage = root.navModel[currentIndex].pageId
                 }
             }
             Keys.onEnterPressed: {
                 if (currentIndex >= 0 && currentIndex < count) {
-                    root.currentPage = navModel.get(currentIndex).pageId
+                    root.currentPage = root.navModel[currentIndex].pageId
                 }
             }
         }

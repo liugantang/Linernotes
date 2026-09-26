@@ -20,14 +20,27 @@ ColumnLayout {
         }
     }
 
+    function syncLanguageIndex() {
+        if (AppContext.settings) {
+            const idx = languageCombo.indexOfValue(AppContext.settings.language)
+            if (idx >= 0 && idx !== languageCombo.currentIndex) {
+                languageCombo.currentIndex = idx
+            }
+        }
+    }
+
     Component.onCompleted: {
         syncThemeIndex()
+        syncLanguageIndex()
     }
 
     Connections {
         target: AppContext.settings
         function onThemeModeChanged() {
             root.syncThemeIndex()
+        }
+        function onLanguageChanged() {
+            root.syncLanguageIndex()
         }
     }
 
@@ -38,6 +51,40 @@ ColumnLayout {
         font.bold: true
         color: Theme.text
         Layout.fillWidth: true
+    }
+
+    // Language
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: Theme.spacingMedium
+
+        Label {
+            text: qsTr("Language")
+            font.pixelSize: Theme.fontSizeNormal
+            color: Theme.text
+            Layout.preferredWidth: 140
+        }
+
+        Controls.AppComboBox {
+            id: languageCombo
+            Layout.preferredWidth: 200
+            textRole: "text"
+            valueRole: "value"
+            model: [
+                { text: qsTr("System"), value: SettingsController.System },
+                { text: "English", value: SettingsController.English },
+                { text: "中文", value: SettingsController.Chinese }
+            ]
+            onActivated: {
+                if (AppContext.settings) {
+                    AppContext.settings.language = currentValue
+                }
+            }
+        }
+
+        Item {
+            Layout.fillWidth: true
+        }
     }
 
     // Theme mode

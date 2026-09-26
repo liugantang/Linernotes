@@ -41,6 +41,8 @@ add_library(linernotes_ui STATIC
     TagEditorModel.h
     TrackListModel.cpp
     TrackListModel.h
+    Translations.cpp
+    Translations.h
     UiLogging.cpp
     UiLogging.h
 )

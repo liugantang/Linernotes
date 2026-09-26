@@ -568,4 +568,11 @@ target_link_libraries(linernotes
         Qt6::QuickControls2
 )
 
+qt_add_translations(linernotes
+    TS_FILE_BASE linernotes
+    TS_FILE_DIR ${CMAKE_SOURCE_DIR}/i18n
+    RESOURCE_PREFIX /i18n
+    SOURCE_TARGETS linernotes linernotes_ui
+)
+
 linernotes_set_target_options(linernotes)

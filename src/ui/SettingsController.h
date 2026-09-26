@@ -24,12 +24,16 @@ public:
     enum class ThemeMode : std::uint8_t { System, Light, Dark };
     Q_ENUM(ThemeMode)
 
+    enum class Language : std::uint8_t { System, English, Chinese };
+    Q_ENUM(Language)
+
     Q_PROPERTY(linernotes::player::Player::ReplayGainMode replayGainMode READ replayGainMode WRITE
             setReplayGainMode NOTIFY replayGainModeChanged)
     Q_PROPERTY(bool gapless READ gapless WRITE setGapless NOTIFY gaplessChanged)
     Q_PROPERTY(QString audioDevice READ audioDevice WRITE setAudioDevice NOTIFY audioDeviceChanged)
     Q_PROPERTY(
         bool exclusiveMode READ exclusiveMode WRITE setExclusiveMode NOTIFY exclusiveModeChanged)
+    Q_PROPERTY(Language language READ language WRITE setLanguage NOTIFY languageChanged)
     Q_PROPERTY(ThemeMode themeMode READ themeMode WRITE setThemeMode NOTIFY themeModeChanged)
     Q_PROPERTY(bool accentFromCover READ accentFromCover WRITE setAccentFromCover NOTIFY
             accentFromCoverChanged)
@@ -52,6 +56,9 @@ public:
     [[nodiscard]] bool exclusiveMode() const;
     void setExclusiveMode(bool exclusive);
 
+    [[nodiscard]] Language language() const;
+    void setLanguage(Language lang);
+
     [[nodiscard]] ThemeMode themeMode() const;
     void setThemeMode(ThemeMode mode);
 
@@ -66,6 +73,7 @@ signals:
     void gaplessChanged();
     void audioDeviceChanged();
     void exclusiveModeChanged();
+    void languageChanged();
     void themeModeChanged();
     void accentFromCoverChanged();
     void firstRunCompletedChanged();
@@ -78,6 +86,7 @@ private:
     bool m_gapless { true };
     QString m_audioDevice;
     bool m_exclusiveMode { false };
+    Language m_language { Language::System };
     ThemeMode m_themeMode { ThemeMode::System };
     bool m_accentFromCover { false };
     bool m_firstRunCompleted { false };

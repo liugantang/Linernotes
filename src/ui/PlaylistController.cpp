@@ -229,26 +229,37 @@ QString PlaylistController::fieldLabel(library::SmartField field) const
 {
     switch (field) {
     case library::SmartField::Title:
+        //: Smart playlist condition field: Track title
         return tr("Title");
     case library::SmartField::Artist:
+        //: Smart playlist condition field: Track artist
         return tr("Artist");
     case library::SmartField::Album:
+        //: Smart playlist condition field: Album name
         return tr("Album");
     case library::SmartField::AlbumArtist:
+        //: Smart playlist condition field: Album artist
         return tr("Album Artist");
     case library::SmartField::Genre:
+        //: Smart playlist condition field: Music genre
         return tr("Genre");
     case library::SmartField::Year:
+        //: Smart playlist condition field: Release year
         return tr("Year");
     case library::SmartField::Codec:
+        //: Smart playlist condition field: Audio codec
         return tr("Codec");
     case library::SmartField::Rating:
+        //: Smart playlist condition field: Track rating
         return tr("Rating");
     case library::SmartField::Favorite:
+        //: Smart playlist condition field: Favorite / loved status
         return tr("Favorite");
     case library::SmartField::DateAdded:
+        //: Smart playlist condition field: Date added to library
         return tr("Date Added");
     case library::SmartField::DurationSec:
+        //: Smart playlist condition field: Track duration
         return tr("Duration");
     }
     Q_UNREACHABLE_RETURN(QString());
@@ -293,20 +304,28 @@ QString PlaylistController::sortKeyLabel(library::TrackSortKey key) const
 {
     switch (key) {
     case library::TrackSortKey::Default:
+        //: Default track sorting order
         return tr("Default");
     case library::TrackSortKey::Title:
+        //: Sort by track title
         return tr("Title");
     case library::TrackSortKey::Artist:
+        //: Sort by track artist
         return tr("Artist");
     case library::TrackSortKey::Album:
+        //: Sort by album name
         return tr("Album");
     case library::TrackSortKey::Year:
+        //: Sort by release year
         return tr("Year");
     case library::TrackSortKey::Duration:
+        //: Sort by track duration
         return tr("Duration");
     case library::TrackSortKey::DateAdded:
+        //: Sort by date added
         return tr("Date Added");
     case library::TrackSortKey::PlaylistOrder:
+        //: Sort by custom playlist order
         return tr("Playlist Order");
     }
     Q_UNREACHABLE_RETURN(QString());

@@ -13,6 +13,30 @@ namespace linernotes::ui {
 
 namespace {
 
+QString languageToString(SettingsController::Language lang)
+{
+    switch (lang) {
+    case SettingsController::Language::System:
+        return QStringLiteral("system");
+    case SettingsController::Language::English:
+        return QStringLiteral("en");
+    case SettingsController::Language::Chinese:
+        return QStringLiteral("zh_CN");
+    }
+    return QStringLiteral("system");
+}
+
+SettingsController::Language languageFromString(const QString &str)
+{
+    if (str == QStringLiteral("en")) {
+        return SettingsController::Language::English;
+    }
+    if (str == QStringLiteral("zh_CN") || str == QStringLiteral("zh")) {
+        return SettingsController::Language::Chinese;
+    }
+    return SettingsController::Language::System;
+}
+
 QString themeModeToString(SettingsController::ThemeMode mode)
 {
     switch (mode) {
@@ -72,6 +96,7 @@ SettingsController::SettingsController(
     , m_gapless(m_settings.value(kPlaybackGapless))
     , m_audioDevice(m_settings.value(kPlaybackAudioDevice))
     , m_exclusiveMode(m_settings.value(kPlaybackExclusive))
+    , m_language(languageFromString(m_settings.value(kAppearanceLanguage)))
     , m_themeMode(themeModeFromString(m_settings.value(kAppearanceTheme)))
     , m_accentFromCover(m_settings.value(kAppearanceAccentFromCover))
     , m_firstRunCompleted(m_settings.value(kAppFirstRunCompleted))
@@ -156,6 +181,21 @@ void SettingsController::setExclusiveMode(bool exclusive)
     m_player.setExclusiveMode(exclusive);
     m_settings.setValue(kPlaybackExclusive, exclusive);
     emit exclusiveModeChanged();
+}
+
+SettingsController::Language SettingsController::language() const
+{
+    return m_language;
+}
+
+void SettingsController::setLanguage(Language lang)
+{
+    if (lang == m_language) {
+        return;
+    }
+    m_language = lang;
+    m_settings.setValue(kAppearanceLanguage, languageToString(lang));
+    emit languageChanged();
 }
 
 SettingsController::ThemeMode SettingsController::themeMode() const
