@@ -132,6 +132,7 @@ app / qml  →  features/*（butler, nlq, dj, guide, archive）  →  ai / audio
 - 预期内的失败（文件不存在、网络超时、模型返回格式错误）用返回值表达：`std::optional<T>` 或 `std::expected<T, Error>`（若编译器不支持则用项目内的 `Result<T>`）。
 - 不使用异常作为控制流；第三方库抛出的异常在封装边界处捕获并转换。
 - 错误要带上下文：`Error{code, message, detail}`，日志中能定位到哪个文件/哪次请求。
+- 错误码 `Error::code` 为字符串，格式 `<领域>.<原因>`（小写、点分，如 `db.too_new`）。每个模块在自己的 `Errors.h`（命名空间 `<模块>::errc`）中集中定义常量（`k` 前缀，如 `library::errc::kDbTooNew`），代码与测试只使用常量，不手写字面量。选字符串而非集中枚举，是因为 `core` 不能依赖上层模块，而各模块需要各自扩展错误码。
 - 用户可见的错误走统一的通知机制，不直接弹 `QMessageBox`。
 
 ### 2.7 线程
