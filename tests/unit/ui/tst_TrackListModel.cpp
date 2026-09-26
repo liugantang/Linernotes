@@ -9,6 +9,7 @@
 #include <QTemporaryDir>
 #include <QTest>
 
+#include <core/Settings.h>
 #include <library/Database.h>
 #include <library/Migrator.h>
 #include <ui/AlbumGridModel.h>
@@ -16,6 +17,7 @@
 #include <ui/ArtistListModel.h>
 #include <ui/TrackListModel.h>
 
+using linernotes::core::Settings;
 using linernotes::library::Database;
 using linernotes::library::Migrator;
 using linernotes::ui::AlbumGridModel;
@@ -101,6 +103,8 @@ void TstTrackListModel::testTrackListModelAndSharedModels()
                            "NULL WHERE track_id = 3;"));
     }
 
+    Settings settings(tempDir.filePath(QStringLiteral("settings.ini")));
+
     AppContext::Options options {
         .databasePath = dbPath,
         .coverCacheDir = tempDir.filePath(QStringLiteral("covers")),
@@ -109,7 +113,7 @@ void TstTrackListModel::testTrackListModelAndSharedModels()
         .playbackStatePath = { },
     };
 
-    AppContext ctx(options);
+    AppContext ctx(settings, options);
     QVERIFY(ctx.start().ok());
 
     TrackListModel model;

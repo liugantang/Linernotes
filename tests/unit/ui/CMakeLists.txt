@@ -101,3 +101,34 @@ linernotes_add_test(
         Linernotes::TestSupport
         Qt6::Sql
 )
+
+linernotes_add_test(
+    NAME ui_CoverAccent
+    SOURCES
+        tst_CoverAccent.cpp
+    LIBS
+        Linernotes::ui
+        Qt6::Gui
+)
+
+linernotes_add_test(
+    NAME ui_SettingsController
+    SOURCES
+        tst_SettingsController.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::core
+        Linernotes::player
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
+    NAME ui_LibraryRootsModel
+    SOURCES
+        tst_LibraryRootsModel.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Sql
+)

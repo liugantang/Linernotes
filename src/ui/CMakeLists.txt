@@ -6,13 +6,18 @@ add_library(linernotes_ui STATIC
     AlbumGridModel.h
     AppContext.cpp
     AppContext.h
+    AppSettings.h
     ArtistListModel.cpp
     ArtistListModel.h
+    CoverAccent.cpp
+    CoverAccent.h
     CoverImageProvider.cpp
     CoverImageProvider.h
     Format.h
     LibraryActions.cpp
     LibraryActions.h
+    LibraryRootsModel.cpp
+    LibraryRootsModel.h
     MarksController.cpp
     MarksController.h
     NowPlaying.cpp
@@ -30,6 +35,8 @@ add_library(linernotes_ui STATIC
     RowSelection.h
     SearchController.cpp
     SearchController.h
+    SettingsController.cpp
+    SettingsController.h
     TrackListModel.cpp
     TrackListModel.h
     UiLogging.cpp

@@ -1,22 +1,28 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Linernotes contributors
 
+#include <QFile>
 #include <QFileInfo>
+#include <QImage>
 
+#include <library/CoverStore.h>
 #include <library/Database.h>
 #include <library/LibraryQuery.h>
 #include <player/PlayQueue.h>
 #include <player/Player.h>
+#include <ui/CoverAccent.h>
 #include <ui/NowPlaying.h>
 
 #include <cmath>
 
 namespace linernotes::ui {
 
-NowPlaying::NowPlaying(library::Database &db, player::Player &player, QObject *parent)
+NowPlaying::NowPlaying(
+    library::Database &db, player::Player &player, library::CoverStore &coverStore, QObject *parent)
     : QObject(parent)
     , m_db(db)
     , m_player(player)
+    , m_coverStore(coverStore)
 {
     auto *queue = m_player.queue();
     if (queue != nullptr) {
@@ -24,6 +30,24 @@ NowPlaying::NowPlaying(library::Database &db, player::Player &player, QObject *p
         connect(queue, &player::PlayQueue::modelReset, this, &NowPlaying::refresh);
     }
     refresh();
+}
+
+QColor NowPlaying::updateCoverAccent(const QString &coverHash) const
+{
+    if (coverHash.isEmpty()) {
+        return { };
+    }
+    if (coverHash == m_coverHash) {
+        return m_coverAccent;
+    }
+
+    const QString thumbPath
+        = m_coverStore.thumbnailPath(coverHash, library::CoverStore::kSizes.at(0));
+    if (!thumbPath.isEmpty() && QFile::exists(thumbPath)) {
+        const QImage img(thumbPath);
+        return coverAccentColor(img);
+    }
+    return { };
 }
 
 void NowPlaying::refresh()
@@ -70,10 +94,13 @@ void NowPlaying::refresh()
         }
     }
 
+    const QColor newCoverAccent = updateCoverAccent(newCoverHash);
+
     const bool changedValues = (m_hasTrack != newHasTrack || m_trackId != newTrackId
         || m_title != newTitle || m_artist != newArtist || m_album != newAlbum
-        || m_albumId != newAlbumId || m_coverHash != newCoverHash || m_favorite != newFavorite
-        || m_rating != newRating || std::abs(m_durationSeconds - newDurationSeconds) > 1e-4);
+        || m_albumId != newAlbumId || m_coverHash != newCoverHash || m_coverAccent != newCoverAccent
+        || m_favorite != newFavorite || m_rating != newRating
+        || std::abs(m_durationSeconds - newDurationSeconds) > 1e-4);
 
     if (changedValues) {
         m_hasTrack = newHasTrack;
@@ -83,6 +110,7 @@ void NowPlaying::refresh()
         m_album = newAlbum;
         m_albumId = newAlbumId;
         m_coverHash = newCoverHash;
+        m_coverAccent = newCoverAccent;
         m_durationSeconds = newDurationSeconds;
         m_favorite = newFavorite;
         m_rating = newRating;
@@ -123,6 +151,11 @@ qint64 NowPlaying::albumId() const
 QString NowPlaying::coverHash() const
 {
     return m_coverHash;
+}
+
+QColor NowPlaying::coverAccent() const
+{
+    return m_coverAccent;
 }
 
 double NowPlaying::durationSeconds() const

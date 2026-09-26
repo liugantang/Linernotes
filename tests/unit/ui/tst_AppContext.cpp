@@ -8,6 +8,7 @@
 #include <QTest>
 
 #include <common/TestSupport.h>
+#include <core/Settings.h>
 #include <library/Database.h>
 #include <library/LibraryRoots.h>
 #include <library/Migrator.h>
@@ -18,6 +19,7 @@
 
 namespace {
 
+using linernotes::core::Settings;
 using linernotes::library::Database;
 using linernotes::library::LibraryRoots;
 using linernotes::library::Migrator;
@@ -43,6 +45,8 @@ void TstAppContext::startSuccessNoRoots()
     QTemporaryDir tempDir;
     QVERIFY(tempDir.isValid());
 
+    Settings settings(tempDir.filePath(QStringLiteral("settings.ini")));
+
     AppContext::Options options {
         .databasePath = tempDir.filePath(QStringLiteral("library.db")),
         .coverCacheDir = tempDir.filePath(QStringLiteral("covers")),
@@ -51,7 +55,7 @@ void TstAppContext::startSuccessNoRoots()
         .playbackStatePath = { },
     };
 
-    AppContext ctx(options);
+    AppContext ctx(settings, options);
 
     QCOMPARE(ctx.isLibraryReady(), false);
     QVERIFY(ctx.startupError().isEmpty());
@@ -87,6 +91,8 @@ void TstAppContext::startFailureInvalidPath()
     f.write("data");
     f.close();
 
+    Settings settings(tempDir.filePath(QStringLiteral("settings.ini")));
+
     AppContext::Options options {
         .databasePath = filePath + QStringLiteral("/sub/library.db"),
         .coverCacheDir = tempDir.filePath(QStringLiteral("covers")),
@@ -95,7 +101,7 @@ void TstAppContext::startFailureInvalidPath()
         .playbackStatePath = { },
     };
 
-    AppContext ctx(options);
+    AppContext ctx(settings, options);
 
     QSignalSpy spyError(&ctx, &AppContext::startupErrorChanged);
     QSignalSpy spyReady(&ctx, &AppContext::libraryReadyChanged);
@@ -128,6 +134,8 @@ void TstAppContext::startWithLibraryRootScansAndEmitsChanged()
         QVERIFY(addRes.ok());
     }
 
+    Settings settings(tempDir.filePath(QStringLiteral("settings.ini")));
+
     AppContext::Options options {
         .databasePath = dbPath,
         .coverCacheDir = cacheDir,
@@ -136,7 +144,7 @@ void TstAppContext::startWithLibraryRootScansAndEmitsChanged()
         .playbackStatePath = { },
     };
 
-    AppContext ctx(options);
+    AppContext ctx(settings, options);
     QSignalSpy spyScanning(&ctx, &AppContext::scanningChanged);
     QSignalSpy spyLibrary(&ctx, &AppContext::libraryChanged);
 
@@ -149,7 +157,7 @@ void TstAppContext::startWithLibraryRootScansAndEmitsChanged()
     QVERIFY(spyScanning.count() >= 2); // Transitioned to true, then to false
 
     // Create a second AppContext instance opening the same database
-    AppContext ctx2(options);
+    AppContext ctx2(settings, options);
     QSignalSpy spyLibrary2(&ctx2, &AppContext::libraryChanged);
 
     const auto res2 = ctx2.start();
@@ -178,6 +186,8 @@ void TstAppContext::destructorCancelsScanningGracefully()
         QVERIFY(addRes.ok());
     }
 
+    Settings settings(tempDir.filePath(QStringLiteral("settings.ini")));
+
     AppContext::Options options {
         .databasePath = dbPath,
         .coverCacheDir = cacheDir,
@@ -186,7 +196,7 @@ void TstAppContext::destructorCancelsScanningGracefully()
         .playbackStatePath = { },
     };
 
-    auto ctx = std::make_unique<AppContext>(options);
+    auto ctx = std::make_unique<AppContext>(settings, options);
     const auto res = ctx->start();
     QVERIFY(res.ok());
 
@@ -200,6 +210,8 @@ void TstAppContext::playerOptionsAoNull()
     QTemporaryDir tempDir;
     QVERIFY(tempDir.isValid());
 
+    Settings settings(tempDir.filePath(QStringLiteral("settings.ini")));
+
     AppContext::Options options {
         .databasePath = tempDir.filePath(QStringLiteral("library.db")),
         .coverCacheDir = tempDir.filePath(QStringLiteral("covers")),
@@ -208,7 +220,7 @@ void TstAppContext::playerOptionsAoNull()
         .playbackStatePath = { },
     };
 
-    AppContext ctx(options);
+    AppContext ctx(settings, options);
     QVERIFY(ctx.player() != nullptr);
     QVERIFY(ctx.player()->isValid());
     QCOMPARE(ctx.player()->state(), Player::PlaybackState::Stopped);
@@ -220,6 +232,7 @@ void TstAppContext::playbackStatePersistence()
     QVERIFY(tempDir.isValid());
 
     const QString statePath = tempDir.filePath(QStringLiteral("playback-state.json"));
+    Settings settings(tempDir.filePath(QStringLiteral("settings.ini")));
 
     AppContext::Options options {
         .databasePath = tempDir.filePath(QStringLiteral("library.db")),
@@ -230,7 +243,7 @@ void TstAppContext::playbackStatePersistence()
     };
 
     {
-        AppContext ctx1(options);
+        AppContext ctx1(settings, options);
         QVERIFY(ctx1.player() != nullptr);
         QVERIFY(ctx1.player()->queue() != nullptr);
 
@@ -247,7 +260,7 @@ void TstAppContext::playbackStatePersistence()
     }
 
     {
-        AppContext ctx2(options);
+        AppContext ctx2(settings, options);
         QVERIFY(ctx2.player() != nullptr);
         QVERIFY(ctx2.player()->queue() != nullptr);
 

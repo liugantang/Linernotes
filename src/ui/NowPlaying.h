@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <QColor>
 #include <QObject>
 #include <QString>
 
@@ -10,6 +11,7 @@
 
 namespace linernotes::library {
 class Database;
+class CoverStore;
 } // namespace linernotes::library
 
 namespace linernotes::player {
@@ -29,12 +31,14 @@ class NowPlaying : public QObject {
     Q_PROPERTY(QString album READ album NOTIFY changed)
     Q_PROPERTY(qint64 albumId READ albumId NOTIFY changed)
     Q_PROPERTY(QString coverHash READ coverHash NOTIFY changed)
+    Q_PROPERTY(QColor coverAccent READ coverAccent NOTIFY changed)
     Q_PROPERTY(double durationSeconds READ durationSeconds NOTIFY changed)
     Q_PROPERTY(bool favorite READ favorite NOTIFY changed)
     Q_PROPERTY(int rating READ rating NOTIFY changed)
 
 public:
-    NowPlaying(library::Database &db, player::Player &player, QObject *parent = nullptr);
+    NowPlaying(library::Database &db, player::Player &player, library::CoverStore &coverStore,
+        QObject *parent = nullptr);
     ~NowPlaying() override = default;
 
     Q_INVOKABLE void refresh();
@@ -46,6 +50,7 @@ public:
     [[nodiscard]] QString album() const;
     [[nodiscard]] qint64 albumId() const;
     [[nodiscard]] QString coverHash() const;
+    [[nodiscard]] QColor coverAccent() const;
     [[nodiscard]] double durationSeconds() const;
     [[nodiscard]] bool favorite() const;
     [[nodiscard]] int rating() const;
@@ -54,8 +59,11 @@ signals:
     void changed();
 
 private:
+    [[nodiscard]] QColor updateCoverAccent(const QString &coverHash) const;
+
     library::Database &m_db;
     player::Player &m_player;
+    library::CoverStore &m_coverStore;
 
     bool m_hasTrack { false };
     qint64 m_trackId { -1 };
@@ -64,6 +72,7 @@ private:
     QString m_album;
     qint64 m_albumId { 0 };
     QString m_coverHash;
+    QColor m_coverAccent;
     double m_durationSeconds { 0.0 };
     bool m_favorite { false };
     int m_rating { 0 };

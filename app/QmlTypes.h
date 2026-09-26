@@ -16,6 +16,7 @@
 #include <ui/AppContext.h>
 #include <ui/ArtistListModel.h>
 #include <ui/LibraryActions.h>
+#include <ui/LibraryRootsModel.h>
 #include <ui/MarksController.h>
 #include <ui/NowPlaying.h>
 #include <ui/PlaylistController.h>
@@ -23,6 +24,7 @@
 #include <ui/QueueModel.h>
 #include <ui/RowSelection.h>
 #include <ui/SearchController.h>
+#include <ui/SettingsController.h>
 #include <ui/TrackListModel.h>
 
 struct AppContextForeign {
@@ -123,6 +125,20 @@ struct MarksControllerForeign {
     QML_FOREIGN(linernotes::ui::MarksController)
     QML_NAMED_ELEMENT(MarksController)
     QML_UNCREATABLE("MarksController is managed by AppContext")
+};
+
+struct SettingsControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::SettingsController)
+    QML_NAMED_ELEMENT(SettingsController)
+    QML_UNCREATABLE("SettingsController is managed by AppContext")
+};
+
+struct LibraryRootsModelForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::LibraryRootsModel)
+    QML_NAMED_ELEMENT(LibraryRootsModel)
+    QML_UNCREATABLE("LibraryRootsModel is managed by AppContext")
 };
 
 struct PlaylistListModelForeign {

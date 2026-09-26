@@ -155,21 +155,6 @@ QString Player::currentSource() const
     return m_currentSource;
 }
 
-QVariantList Player::audioDevices() const
-{
-    return m_audioOutput.audioDevices();
-}
-
-QString Player::audioDevice() const
-{
-    return m_audioOutput.audioDevice();
-}
-
-bool Player::exclusiveMode() const
-{
-    return m_audioOutput.exclusiveMode();
-}
-
 PlaybackSnapshot Player::snapshot() const
 {
     PlaybackSnapshot snap;
@@ -415,21 +400,6 @@ void Player::duckTo(double gain, int rampMs)
 void Player::unduck(int rampMs)
 {
     m_ducker.unduck(rampMs);
-}
-
-void Player::refreshAudioDevices()
-{
-    m_audioOutput.refreshAudioDevices();
-}
-
-bool Player::selectAudioDevice(const QString &name)
-{
-    return m_audioOutput.selectAudioDevice(name);
-}
-
-void Player::setExclusiveMode(bool exclusive)
-{
-    m_audioOutput.setExclusiveMode(exclusive);
 }
 
 void Player::handleIdleActiveChanged(const QVariant &value)

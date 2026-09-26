@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
     paths.ensureCreated();
 
     const QString iniFilePath = QDir(paths.configDir()).filePath(QStringLiteral("settings.ini"));
-    const linernotes::core::Settings settings(iniFilePath);
+    linernotes::core::Settings settings(iniFilePath);
 
     const QString logLevelStr = settings.value(linernotes::core::kLogLevel).trimmed().toLower();
     QtMsgType minimumLevel = QtInfoMsg;
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
         appOptions.playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } };
     }
 
-    linernotes::ui::AppContext appContext(appOptions);
+    linernotes::ui::AppContext appContext(settings, appOptions);
     AppContextForeign::setInstance(&appContext);
 
     QObject::connect(

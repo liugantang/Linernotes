@@ -39,10 +39,16 @@ class Player : public QObject {
     Q_PROPERTY(QString audioDevice READ audioDevice NOTIFY audioDeviceChanged)
     Q_PROPERTY(
         bool exclusiveMode READ exclusiveMode WRITE setExclusiveMode NOTIFY exclusiveModeChanged)
+    Q_PROPERTY(linernotes::player::Player::ReplayGainMode replayGainMode READ replayGainMode WRITE
+            setReplayGainMode NOTIFY replayGainModeChanged)
+    Q_PROPERTY(bool gapless READ gapless WRITE setGapless NOTIFY gaplessChanged)
 
 public:
     enum class PlaybackState : std::uint8_t { Stopped, Playing, Paused };
     Q_ENUM(PlaybackState)
+
+    enum class ReplayGainMode : std::uint8_t { Off, Track, Album };
+    Q_ENUM(ReplayGainMode)
 
     /// extraOptions 透传给 MpvHandle（测试中传 {{"ao","null"}}）
     explicit Player(const MpvHandle::OptionList &extraOptions = { }, QObject *parent = nullptr);
@@ -60,6 +66,8 @@ public:
     [[nodiscard]] QVariantList audioDevices() const;
     [[nodiscard]] QString audioDevice() const;
     [[nodiscard]] bool exclusiveMode() const;
+    [[nodiscard]] ReplayGainMode replayGainMode() const;
+    [[nodiscard]] bool gapless() const;
 
     [[nodiscard]] PlaybackSnapshot snapshot() const;
     /// 用快照替换当前队列与设置；若 currentIndex 有效，则加载该项、定位到 position 并保持暂停
@@ -103,6 +111,8 @@ public slots:
     /// 切换输出设备。name 不在当前 audioDevices 列表中时返回 false 且不做任何改变（记 qCWarning）。
     bool selectAudioDevice(const QString &name);
     void setExclusiveMode(bool exclusive);
+    void setReplayGainMode(ReplayGainMode mode);
+    void setGapless(bool gapless);
 
 signals:
     void stateChanged(linernotes::player::Player::PlaybackState state);
@@ -116,6 +126,8 @@ signals:
     void audioDevicesChanged();
     void audioDeviceChanged(const QString &name);
     void exclusiveModeChanged(bool exclusive);
+    void replayGainModeChanged(linernotes::player::Player::ReplayGainMode mode);
+    void gaplessChanged(bool gapless);
     /// 语义：队列播放结束（最后一首自然播完且没有下一首）
     void playbackFinished();
     /// 某项无法播放（文件不存在、格式无法识别/解码失败）。source 为该项路径，message
@@ -161,6 +173,8 @@ private:
     QString m_currentSource;
     bool m_idleActive = true;
     bool m_pause = false;
+    ReplayGainMode m_replayGainMode = ReplayGainMode::Track;
+    bool m_gapless = true;
 
     qint64 m_currentEntryId = -1;
     quint64 m_currentUid = 0;

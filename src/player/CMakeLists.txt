@@ -14,6 +14,7 @@ add_library(linernotes_player STATIC
     PlaybackSnapshot.h
     Player.cpp
     Player.h
+    PlayerAudioOptions.cpp
     PlayerLogging.cpp
     PlayerLogging.h
     PlayMode.h

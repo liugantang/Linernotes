@@ -7,6 +7,7 @@
 
 #include <QTimer>
 
+#include <core/Settings.h>
 #include <library/CoverStore.h>
 #include <library/Database.h>
 #include <library/LibraryRoots.h>
@@ -23,14 +24,17 @@
 
 namespace linernotes::ui {
 
-AppContext::AppContext(Options options, QObject *parent)
+AppContext::AppContext(core::Settings &settings, Options options, QObject *parent)
     : QObject(parent)
+    , m_settings(settings)
     , m_options(std::move(options))
     , m_db(m_options.databasePath)
+    , m_roots(m_db)
     , m_marks(m_db)
     , m_player(m_options.playerOptions)
+    , m_settingsController(m_settings, m_player)
     , m_coverStore(m_options.coverCacheDir)
-    , m_nowPlaying(m_db, m_player)
+    , m_nowPlaying(m_db, m_player, m_coverStore)
     , m_queueModel(m_db, m_player)
     , m_search(m_db)
     , m_playlists(m_db, m_player)
@@ -41,6 +45,12 @@ AppContext::AppContext(Options options, QObject *parent)
     connect(this, &AppContext::libraryChanged, &m_queueModel, &QueueModel::refresh);
     connect(this, &AppContext::libraryChanged, &m_search, &SearchController::refresh);
     connect(this, &AppContext::libraryChanged, &m_playlists, &PlaylistController::refresh);
+    connect(&m_roots, &LibraryRootsModel::rootsChanged, this, [this]() {
+        if (m_watcher) {
+            m_watcher->reload();
+        }
+        rescan();
+    });
 
     if (!m_options.playbackStatePath.isEmpty()) {
         m_stateStore = std::make_unique<player::PlaybackStateStore>(m_options.playbackStatePath);
@@ -96,6 +106,7 @@ core::Result<void> AppContext::start()
     m_queueModel.refresh();
     m_search.refresh();
     m_playlists.refresh();
+    m_roots.refresh();
 
     library::Scanner::Options scannerOpts;
     scannerOpts.coverStore = &m_coverStore;
@@ -130,29 +141,37 @@ core::Result<void> AppContext::start()
     m_watcher = std::make_unique<library::LibraryWatcher>(
         m_db, *m_scanner, library::LibraryWatcher::Options { });
 
-    // If there are enabled library roots, start an incremental scan
-    const library::LibraryRoots roots(m_db);
-    const auto rootsListRes = roots.list();
-    if (rootsListRes.ok()) {
-        const auto &rootsList = rootsListRes.value();
-        const bool hasEnabledRoot = std::ranges::any_of(
-            rootsList, [](const library::LibraryRoot &r) { return r.enabled; });
-        if (hasEnabledRoot) {
-            if (m_scanner->start()) {
-                m_scanning = true;
-                emit scanningChanged();
-            }
-        }
-    }
-
-    m_watcher->reload();
-
     m_libraryReady = true;
     m_startupError.clear();
     emit libraryReadyChanged();
     emit startupErrorChanged();
 
+    m_watcher->reload();
+    rescan();
+
     return { };
+}
+
+void AppContext::rescan()
+{
+    if (!m_libraryReady || !m_scanner) {
+        return;
+    }
+    if (!m_scanning) {
+        const library::LibraryRoots roots(m_db);
+        const auto rootsListRes = roots.list();
+        if (rootsListRes.ok()) {
+            const auto &rootsList = rootsListRes.value();
+            const bool hasEnabledRoot = std::ranges::any_of(
+                rootsList, [](const library::LibraryRoot &r) { return r.enabled; });
+            if (hasEnabledRoot) {
+                if (m_scanner->start()) {
+                    m_scanning = true;
+                    emit scanningChanged();
+                }
+            }
+        }
+    }
 }
 
 player::Player *AppContext::player()
@@ -183,6 +202,16 @@ PlaylistController *AppContext::playlists()
 MarksController *AppContext::marks()
 {
     return &m_marks;
+}
+
+SettingsController *AppContext::settings()
+{
+    return &m_settingsController;
+}
+
+LibraryRootsModel *AppContext::libraryRoots()
+{
+    return &m_roots;
 }
 
 library::Database &AppContext::database()

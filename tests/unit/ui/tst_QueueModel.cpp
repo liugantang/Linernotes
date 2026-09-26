@@ -6,6 +6,7 @@
 #include <QTemporaryDir>
 #include <QTest>
 
+#include <core/Settings.h>
 #include <library/Database.h>
 #include <library/Migrator.h>
 #include <player/PlayQueue.h>
@@ -14,6 +15,7 @@
 #include <ui/LibraryActions.h>
 #include <ui/QueueModel.h>
 
+using linernotes::core::Settings;
 using linernotes::library::Database;
 using linernotes::library::Migrator;
 using linernotes::ui::AppContext;
@@ -52,6 +54,8 @@ void TstQueueModel::testQueueModel()
                                       "'Artist 2' WHERE track_id = 2;")));
     }
 
+    Settings settings(tempDir.filePath(QStringLiteral("settings.ini")));
+
     AppContext::Options options {
         .databasePath = dbPath,
         .coverCacheDir = tempDir.filePath(QStringLiteral("covers")),
@@ -60,7 +64,7 @@ void TstQueueModel::testQueueModel()
         .playbackStatePath = { },
     };
 
-    AppContext ctx(options);
+    AppContext ctx(settings, options);
     QVERIFY(ctx.start().ok());
     auto *model = ctx.queueModel();
     auto *actions = ctx.actions();

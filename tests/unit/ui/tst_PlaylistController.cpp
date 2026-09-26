@@ -7,6 +7,7 @@
 #include <QTemporaryDir>
 #include <QTest>
 
+#include <core/Settings.h>
 #include <library/Database.h>
 #include <library/Migrator.h>
 #include <player/PlayQueue.h>
@@ -15,6 +16,7 @@
 #include <ui/PlaylistController.h>
 #include <ui/PlaylistListModel.h>
 
+using linernotes::core::Settings;
 using linernotes::library::Database;
 using linernotes::library::Migrator;
 using linernotes::ui::AppContext;
@@ -63,6 +65,8 @@ void TstPlaylistController::testPlaylistController()
             QStringLiteral("UPDATE effective_metadata SET title = 'Track 3' WHERE track_id = 3;")));
     }
 
+    Settings settings(tempDir.filePath(QStringLiteral("settings.ini")));
+
     AppContext::Options options {
         .databasePath = dbPath,
         .coverCacheDir = tempDir.filePath(QStringLiteral("covers")),
@@ -71,7 +75,7 @@ void TstPlaylistController::testPlaylistController()
         .playbackStatePath = { },
     };
 
-    AppContext ctx(options);
+    AppContext ctx(settings, options);
     QVERIFY(ctx.start().ok());
     auto *controller = ctx.playlists();
     QVERIFY(controller != nullptr);
