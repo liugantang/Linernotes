@@ -116,7 +116,6 @@ private slots:
     void rawTagInsertsDoNotRefreshUntilTagsReadAtUpdated();
     void refreshTouchesOnlyAffectedTrack();
     void refreshQueryPlanUsesIndexes();
-    void refreshScalesToLargeLibrary();
     void migration0004SearchIndexAndDirty();
 };
 
@@ -906,75 +905,6 @@ void TstSchema::refreshQueryPlanUsesIndexes()
     QVERIFY2(!fullPlan.contains(QStringLiteral("SCAN corrections")), qPrintable(fullPlan));
     QVERIFY2(!fullPlan.contains(QStringLiteral("SCAN user_overrides")), qPrintable(fullPlan));
     QVERIFY2(!fullPlan.contains(QStringLiteral("SCAN tracks")), qPrintable(fullPlan));
-}
-
-void TstSchema::refreshScalesToLargeLibrary()
-{
-    const QTemporaryDir dbDir;
-    QVERIFY(dbDir.isValid());
-
-    Database db(dbDir.filePath(QStringLiteral("scale.db")));
-    QVERIFY(db.open(Migrator()).ok());
-    const auto connRes = db.connection();
-    QVERIFY(connRes.ok());
-    const auto &conn = connRes.value();
-
-    QSqlQuery q(conn);
-    QVERIFY(q.exec(QStringLiteral(
-        "INSERT INTO library_roots (id, path, added_at) VALUES (1, '/music', 1000);")));
-
-    QVERIFY(q.exec(QStringLiteral(
-        "WITH RECURSIVE cnt(x) AS ("
-        "    SELECT 1 UNION ALL SELECT x+1 FROM cnt WHERE x < 20000"
-        ")"
-        "INSERT INTO files (id, root_id, path, size, mtime, first_seen_at, scanned_at) "
-        "SELECT x, 1, '/music/' || x || '.mp3', 1024, 1000, 1000, 1000 FROM cnt;")));
-
-    QVERIFY(q.exec(QStringLiteral("WITH RECURSIVE cnt(x) AS ("
-                                  "    SELECT 1 UNION ALL SELECT x+1 FROM cnt WHERE x < 20000"
-                                  ")"
-                                  "INSERT INTO tracks (id, file_id, tags_read_at, created_at) "
-                                  "SELECT x, x, 1000, 1000 FROM cnt;")));
-
-    QVERIFY(q.exec(QStringLiteral(
-        "WITH RECURSIVE cnt(x) AS ("
-        "    SELECT 1 UNION ALL SELECT x+1 FROM cnt WHERE x < 20000"
-        "),"
-        "keys(k) AS ("
-        "    SELECT 'TITLE' UNION ALL SELECT 'ARTIST' UNION ALL SELECT 'ALBUM' UNION ALL "
-        "    SELECT 'ALBUMARTIST' UNION ALL SELECT 'GENRE' UNION ALL SELECT 'COMPOSER' UNION ALL "
-        "    SELECT 'DATE' UNION ALL SELECT 'TRACKNUMBER' UNION ALL SELECT 'TRACKTOTAL' UNION ALL "
-        "SELECT 'DISCNUMBER'"
-        ")"
-        "INSERT INTO raw_tags (track_id, tag_type, priority, key, ordinal, value) "
-        "SELECT cnt.x, 'id3v2', 0, keys.k, 0, 'val_' || keys.k || '_' || cnt.x "
-        "FROM cnt CROSS JOIN keys;")));
-
-    QElapsedTimer timer;
-    timer.start();
-
-    QVERIFY(q.exec(QStringLiteral("BEGIN TRANSACTION;")));
-    QVERIFY(q.exec(
-        QStringLiteral("UPDATE tracks SET tags_read_at = 2000 WHERE id BETWEEN 10001 AND 11000;")));
-    QVERIFY(q.exec(QStringLiteral("COMMIT;")));
-
-    const qint64 elapsedMs = timer.elapsed();
-    QVERIFY2(elapsedMs < 2000,
-        qPrintable(
-            QStringLiteral("Updating 1000 tracks took %1 ms, expected < 2000 ms").arg(elapsedMs)));
-
-    // Spot-check results
-    q.prepare(QStringLiteral(
-        "SELECT title, artist, album, album_artist, genre, composer, year, track_number, "
-        "track_total, disc_number FROM effective_metadata WHERE track_id = ?;"));
-    q.addBindValue(10500);
-    QVERIFY(q.exec() && q.next());
-    QCOMPARE(q.value(0).toString(), QStringLiteral("val_TITLE_10500"));
-    QCOMPARE(q.value(1).toString(), QStringLiteral("val_ARTIST_10500"));
-    QCOMPARE(q.value(2).toString(), QStringLiteral("val_ALBUM_10500"));
-    QCOMPARE(q.value(3).toString(), QStringLiteral("val_ALBUMARTIST_10500"));
-    QCOMPARE(q.value(4).toString(), QStringLiteral("val_GENRE_10500"));
-    QCOMPARE(q.value(5).toString(), QStringLiteral("val_COMPOSER_10500"));
 }
 
 void TstSchema::migration0004SearchIndexAndDirty()

@@ -57,7 +57,9 @@ CREATE TABLE effective_metadata (
 
 CREATE INDEX idx_effective_metadata_album_disc_track ON effective_metadata(album, disc_number, track_number);
 CREATE INDEX idx_effective_metadata_artist ON effective_metadata(artist);
-CREATE INDEX idx_effective_metadata_album_artist ON effective_metadata(album_artist);
+-- 曲目列表的默认排序（专辑艺人 → 专辑 → 碟号 → 音轨号）；同时覆盖按 album_artist 的查找。
+-- 没有它时 10 万曲目分页排序要全表排序（基准 p95 约 147 ms，有索引约 5 ms）
+CREATE INDEX idx_effective_metadata_album_artist_album ON effective_metadata(album_artist, album, disc_number, track_number);
 CREATE INDEX idx_effective_metadata_year ON effective_metadata(year);
 CREATE INDEX idx_effective_metadata_genre ON effective_metadata(genre);
 
