@@ -86,6 +86,7 @@ Refs: ROADMAP 2.6
 - 格式：以仓库根目录的 `.clang-format` 为准（基于 Qt/WebKit 风格，4 空格缩进，行宽 100）。**不要手动争论格式，交给工具。**
 - 静态检查：以 `.clang-tidy` 为准；确需豁免时用 `// NOLINT(<检查名>)` 并写明原因。
 - 编译警告视为错误（CI 中 `-Werror`）。
+- 文件规模：单个 `.cpp` 超过约 500 行就该审视是否职责过多或有重复代码（重复的 SQL 列清单、相似的查询函数），按职责拆出类或内部辅助文件，而不是继续追加；超过约 800 行必须拆。
 
 ### 2.2 命名
 
@@ -125,6 +126,8 @@ app / qml  →  features/*（butler, nlq, dj, guide, archive）  →  ai / audio
 - 默认使用 RAII：`std::unique_ptr` 表达独占所有权；仅在确实共享时用 `std::shared_ptr`。
 - QObject 对象使用 Qt 父子关系管理生命周期；不要对有 parent 的 QObject 再套智能指针。
 - 禁止裸 `new`/`delete`（QObject 带 parent 的 `new` 除外）。
+- 依赖通过构造函数以引用注入，被依赖对象在依赖方构造前就已存在（“尚未就绪”由被依赖对象自己表达，如 `Database::isOpen()`）；不要用 `setXxx(裸指针)` 事后注入可空依赖。
+- 同一个 QObject 只有一种所有权：值成员 / `unique_ptr`（不传 parent），或只靠 parent；不要混用。持有者用成员声明顺序保证“依赖方先析构”，不在析构函数里手写 `reset()` 序列。
 - C 库句柄（`mpv_handle*`、`AVFormatContext*` 等）必须用 RAII 包装（自定义 deleter 的 `unique_ptr`）。
 
 ### 2.6 错误处理
