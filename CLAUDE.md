@@ -50,4 +50,5 @@ Claude 的调用成本高，Gemini 便宜。因此：
 - 较大的技术选型或验证（spike）也可以交给 Gemini 调研，但结论由 Claude 审查后写入 `docs/decisions/`。
 - 可用模型用 `agy models` 查看。
 - 重复运行测试（查偶发失败、稳定性验证）最多 10 次。
+- **界面审查自己截图**：`scripts/ui-shot.sh` 在 Xvfb 虚拟显示中启动程序、按步骤点击/按键并截图（不影响用户的 Wayland 桌面），用 Read 查看 PNG。步骤坐标是物理像素（`--scale 2` 时为逻辑坐标 ×2）。用真实数据时 `--home` 指向 scratchpad 中用 `linernotes-scan --db <home>/data/library.db --cache <home>/cache/covers <曲库目录>` 建好的目录。涉及 UI 的任务，提交前至少截图检查一次，不要让用户代为截图。
 - 不维护性能基准代码，也不写临时压测脚本；性能只在真实使用中感到卡顿时再排查。
