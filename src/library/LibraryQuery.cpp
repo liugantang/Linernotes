@@ -441,6 +441,51 @@ core::Result<QList<TrackRow>> LibraryQuery::tracks(
     return rows;
 }
 
+core::Result<QList<qint64>> LibraryQuery::trackIds(
+    const TrackFilter &filter, TrackSortKey key, Qt::SortOrder order) const
+{
+    if (!m_db.isOpen()) {
+        return core::Error {
+            .code = QString(errc::kDbOpen),
+            .message = QStringLiteral("Database is not open"),
+            .detail = QString(),
+        };
+    }
+
+    const bool isAsc = (order == Qt::AscendingOrder);
+    const OrderClauses orderClauses = buildTrackOrderClauses(key, isAsc);
+
+    QList<QVariant> binds;
+    const QString whereSql = buildTrackFilterWhereSql(filter, binds);
+
+    const QString sql = QStringLiteral("SELECT ts.track_id "
+                                       "FROM track_sort ts "
+                                       "WHERE ts.visible = 1 %1 "
+                                       "ORDER BY %2;")
+                            .arg(whereSql, orderClauses.pageOrder);
+
+    QSqlQuery q(m_db);
+    q.prepare(sql);
+    for (int i = 0; i < binds.size(); ++i) {
+        q.bindValue(i, binds.at(i));
+    }
+
+    if (!q.exec()) {
+        return core::Error {
+            .code = QString(errc::kDbQuery),
+            .message = QStringLiteral("trackIds query failed"),
+            .detail = q.lastError().text(),
+        };
+    }
+
+    QList<qint64> ids;
+    while (q.next()) {
+        ids.append(q.value(0).toLongLong());
+    }
+
+    return ids;
+}
+
 core::Result<QList<TrackRow>> LibraryQuery::tracksByIds(const QList<qint64> &ids) const
 {
     if (!m_db.isOpen()) {

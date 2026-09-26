@@ -9,7 +9,10 @@
 
 #include <player/PlayQueue.h>
 #include <player/Player.h>
+#include <ui/AlbumGridModel.h>
 #include <ui/AppContext.h>
+#include <ui/ArtistListModel.h>
+#include <ui/TrackListModel.h>
 
 struct AppContextForeign {
     Q_GADGET
@@ -37,4 +40,22 @@ struct PlayQueueForeign {
     QML_FOREIGN(linernotes::player::PlayQueue)
     QML_NAMED_ELEMENT(PlayQueue)
     QML_UNCREATABLE("PlayQueue is managed by Player")
+};
+
+struct TrackListModelForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::TrackListModel)
+    QML_NAMED_ELEMENT(TrackListModel)
+};
+
+struct AlbumGridModelForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::AlbumGridModel)
+    QML_NAMED_ELEMENT(AlbumGridModel)
+};
+
+struct ArtistListModelForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::ArtistListModel)
+    QML_NAMED_ELEMENT(ArtistListModel)
 };

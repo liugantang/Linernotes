@@ -130,6 +130,10 @@ public:
     core::Result<QList<TrackRow>> tracks(const TrackFilter &filter, TrackSortKey key,
         Qt::SortOrder order, int offset, int limit) const;
 
+    /// 查询符合条件的全部曲目 ID（按指定排序）。
+    core::Result<QList<qint64>> trackIds(
+        const TrackFilter &filter, TrackSortKey key, Qt::SortOrder order) const;
+
     /// 按给定顺序返回存在的曲目（不存在或文件缺失的 id 跳过），供搜索结果、播放队列使用。
     core::Result<QList<TrackRow>> tracksByIds(const QList<qint64> &ids) const;
 

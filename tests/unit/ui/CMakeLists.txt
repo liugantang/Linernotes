@@ -12,3 +12,24 @@ linernotes_add_test(
         Linernotes::TestSupport
         Qt6::Sql
 )
+
+linernotes_add_test(
+    NAME ui_PageCache
+    SOURCES
+        tst_PageCache.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::core
+)
+
+linernotes_add_test(
+    NAME ui_TrackListModel
+    SOURCES
+        tst_TrackListModel.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::library
+        Linernotes::player
+        Linernotes::TestSupport
+        Qt6::Sql
+)

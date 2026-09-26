@@ -9,6 +9,11 @@ import Linernotes
 Item {
     id: root
 
+    TrackListModel {
+        id: trackModel
+        context: AppContext
+    }
+
     ColumnLayout {
         anchors.centerIn: parent
         spacing: Theme.spacingSmall

@@ -215,6 +215,15 @@ private slots:
         QCOMPARE(artList.size(), 1);
         QCOMPARE(artList.at(0).trackCount, 1);
         QCOMPARE(artList.at(0).coverHash, QStringLiteral("hash_abc"));
+
+        // 8. trackIds matches tracks() order
+        auto allIdsAsc = q.trackIds({ }, TrackSortKey::Title, Qt::AscendingOrder).value();
+        auto allTracksAsc = q.tracks({ }, TrackSortKey::Title, Qt::AscendingOrder, 0, 100).value();
+        QList<qint64> expectedAsc;
+        for (const auto &trk : allTracksAsc) {
+            expectedAsc.append(trk.trackId);
+        }
+        QCOMPARE(allIdsAsc, expectedAsc);
     }
 
     void migrationFillsTrackSort()

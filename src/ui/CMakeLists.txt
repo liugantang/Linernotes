@@ -2,8 +2,17 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 add_library(linernotes_ui STATIC
+    AlbumGridModel.cpp
+    AlbumGridModel.h
     AppContext.cpp
     AppContext.h
+    ArtistListModel.cpp
+    ArtistListModel.h
+    PageCache.h
+    PagedListModel.cpp
+    PagedListModel.h
+    TrackListModel.cpp
+    TrackListModel.h
     UiLogging.cpp
     UiLogging.h
 )

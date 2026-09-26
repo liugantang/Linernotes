@@ -9,6 +9,11 @@ import Linernotes
 Item {
     id: root
 
+    AlbumGridModel {
+        id: albumModel
+        context: AppContext
+    }
+
     ColumnLayout {
         anchors.centerIn: parent
         spacing: Theme.spacingSmall
