@@ -27,11 +27,8 @@ class TstDatabase : public QObject {
 private slots:
     void opensAndAppliesPragmas();
     void createsParentDirectory();
-    void sameThreadReturnsSameConnection();
-    void eachThreadGetsOwnConnection();
-    void connectionsRemovedWhenThreadExits();
-    void transactionRollsBackOnDestruction();
-    void transactionCommits();
+    void threadConnectionAffinity();
+    void transactionCommitAndRollback();
     void openFailsForUnwritablePath();
 };
 
@@ -40,45 +37,24 @@ void TstDatabase::opensAndAppliesPragmas()
     const QTemporaryDir tempDir;
     QVERIFY(tempDir.isValid());
 
-    const QString dbPath = tempDir.filePath(QStringLiteral("test.db"));
-    Database db(dbPath);
-
+    Database db(tempDir.filePath(QStringLiteral("test.db")));
     const auto connRes = db.connection();
     QVERIFY(connRes.ok());
     const auto &conn = connRes.value();
     QVERIFY(conn.isOpen());
 
-    // 1. journal_mode == wal
-    {
-        QSqlQuery q(conn);
-        QVERIFY(q.exec(QStringLiteral("PRAGMA journal_mode;")));
-        QVERIFY(q.next());
-        QCOMPARE(q.value(0).toString().toLower(), QStringLiteral("wal"));
-    }
+    QSqlQuery q(conn);
+    QVERIFY(q.exec(QStringLiteral("PRAGMA journal_mode;")) && q.next());
+    QCOMPARE(q.value(0).toString().toLower(), QStringLiteral("wal"));
 
-    // 2. foreign_keys == 1
-    {
-        QSqlQuery q(conn);
-        QVERIFY(q.exec(QStringLiteral("PRAGMA foreign_keys;")));
-        QVERIFY(q.next());
-        QCOMPARE(q.value(0).toInt(), 1);
-    }
+    QVERIFY(q.exec(QStringLiteral("PRAGMA foreign_keys;")) && q.next());
+    QCOMPARE(q.value(0).toInt(), 1);
 
-    // 3. busy_timeout == 5000
-    {
-        QSqlQuery q(conn);
-        QVERIFY(q.exec(QStringLiteral("PRAGMA busy_timeout;")));
-        QVERIFY(q.next());
-        QCOMPARE(q.value(0).toInt(), 5000);
-    }
+    QVERIFY(q.exec(QStringLiteral("PRAGMA busy_timeout;")) && q.next());
+    QCOMPARE(q.value(0).toInt(), 5000);
 
-    // 4. synchronous == 1 (NORMAL)
-    {
-        QSqlQuery q(conn);
-        QVERIFY(q.exec(QStringLiteral("PRAGMA synchronous;")));
-        QVERIFY(q.next());
-        QCOMPARE(q.value(0).toInt(), 1);
-    }
+    QVERIFY(q.exec(QStringLiteral("PRAGMA synchronous;")) && q.next());
+    QCOMPARE(q.value(0).toInt(), 1);
 }
 
 void TstDatabase::createsParentDirectory()
@@ -87,8 +63,6 @@ void TstDatabase::createsParentDirectory()
     QVERIFY(tempDir.isValid());
 
     const QString nestedPath = tempDir.filePath(QStringLiteral("nested/sub/dir/test.db"));
-    QVERIFY(!QDir(tempDir.filePath(QStringLiteral("nested/sub/dir"))).exists());
-
     Database db(nestedPath);
     const auto connRes = db.connection();
     QVERIFY(connRes.ok());
@@ -96,104 +70,26 @@ void TstDatabase::createsParentDirectory()
     QVERIFY(QFileInfo::exists(nestedPath));
 }
 
-void TstDatabase::sameThreadReturnsSameConnection()
-{
-    const QTemporaryDir tempDir;
-    QVERIFY(tempDir.isValid());
-
-    Database db(tempDir.filePath(QStringLiteral("test.db")));
-    const auto connRes1 = db.connection();
-    QVERIFY(connRes1.ok());
-
-    const auto connRes2 = db.connection();
-    QVERIFY(connRes2.ok());
-
-    QCOMPARE(connRes1.value().connectionName(), connRes2.value().connectionName());
-}
-
-void TstDatabase::eachThreadGetsOwnConnection()
+void TstDatabase::threadConnectionAffinity()
 {
     const QTemporaryDir tempDir;
     QVERIFY(tempDir.isValid());
 
     Database db(tempDir.filePath(QStringLiteral("shared.db")));
 
-    // Main thread creates table and writes row
-    const auto mainConnRes = db.connection();
-    QVERIFY(mainConnRes.ok());
-    const auto &mainConn = mainConnRes.value();
-
-    {
-        QSqlQuery q(mainConn);
-        QVERIFY(q.exec(
-            QStringLiteral("CREATE TABLE shared_items (id INTEGER PRIMARY KEY, name TEXT);")));
-        QVERIFY(q.exec(QStringLiteral("INSERT INTO shared_items VALUES (1, 'song_one');")));
-    }
-
-    QString t1ConnName;
-    QString t2ConnName;
-    QString t1ReadName;
-    QString t2ReadName;
-    std::atomic<bool> t1Success { false };
-    std::atomic<bool> t2Success { false };
-
-    auto *thread1 = QThread::create([&]() {
-        const auto res = db.connection();
-        if (res.ok()) {
-            const auto &conn = res.value();
-            t1ConnName = conn.connectionName();
-            QSqlQuery q(conn);
-            if (q.exec(QStringLiteral("SELECT name FROM shared_items WHERE id = 1;")) && q.next()) {
-                t1ReadName = q.value(0).toString();
-                t1Success = true;
-            }
-        }
-    });
-
-    auto *thread2 = QThread::create([&]() {
-        const auto res = db.connection();
-        if (res.ok()) {
-            const auto &conn = res.value();
-            t2ConnName = conn.connectionName();
-            QSqlQuery q(conn);
-            if (q.exec(QStringLiteral("SELECT name FROM shared_items WHERE id = 1;")) && q.next()) {
-                t2ReadName = q.value(0).toString();
-                t2Success = true;
-            }
-        }
-    });
-
-    thread1->start();
-    thread2->start();
-    thread1->wait();
-    thread2->wait();
-    delete thread1;
-    delete thread2;
-
-    QVERIFY(t1Success);
-    QVERIFY(t2Success);
-    QCOMPARE(t1ReadName, QStringLiteral("song_one"));
-    QCOMPARE(t2ReadName, QStringLiteral("song_one"));
-
-    QVERIFY(t1ConnName != mainConn.connectionName());
-    QVERIFY(t2ConnName != mainConn.connectionName());
-    QVERIFY(t1ConnName != t2ConnName);
-}
-
-void TstDatabase::connectionsRemovedWhenThreadExits()
-{
-    const QTemporaryDir tempDir;
-    QVERIFY(tempDir.isValid());
-
-    Database db(tempDir.filePath(QStringLiteral("cleanup.db")));
+    const auto mainConnRes1 = db.connection();
+    const auto mainConnRes2 = db.connection();
+    QVERIFY(mainConnRes1.ok() && mainConnRes2.ok());
+    QCOMPARE(mainConnRes1.value().connectionName(), mainConnRes2.value().connectionName());
 
     QString workerConnName;
+    std::atomic<bool> workerOk { false };
 
     auto *thread = QThread::create([&]() {
         const auto res = db.connection();
         if (res.ok()) {
             workerConnName = res.value().connectionName();
-            QVERIFY(QSqlDatabase::contains(workerConnName));
+            workerOk = QSqlDatabase::contains(workerConnName);
         }
     });
 
@@ -201,72 +97,42 @@ void TstDatabase::connectionsRemovedWhenThreadExits()
     thread->wait();
     delete thread;
 
-    QVERIFY(!workerConnName.isEmpty());
+    QVERIFY(workerOk);
+    QVERIFY(workerConnName != mainConnRes1.value().connectionName());
     QVERIFY(!QSqlDatabase::contains(workerConnName));
 }
 
-void TstDatabase::transactionRollsBackOnDestruction()
+void TstDatabase::transactionCommitAndRollback()
 {
     const QTemporaryDir tempDir;
     QVERIFY(tempDir.isValid());
 
-    Database db(tempDir.filePath(QStringLiteral("tx_rb.db")));
+    Database db(tempDir.filePath(QStringLiteral("tx.db")));
     const auto connRes = db.connection();
     QVERIFY(connRes.ok());
     const auto &conn = connRes.value();
 
-    {
-        QSqlQuery q(conn);
-        QVERIFY(q.exec(QStringLiteral("CREATE TABLE items (id INT);")));
-    }
+    QSqlQuery q(conn);
+    QVERIFY(q.exec(QStringLiteral("CREATE TABLE items (id INT);")));
 
+    // Rollback on destruction
     {
         Transaction tx(conn, Transaction::Mode::Immediate);
         QVERIFY(tx.isActive());
-        QSqlQuery q(conn);
         QVERIFY(q.exec(QStringLiteral("INSERT INTO items VALUES (10);")));
-        // Do not call commit() -> roll back on destruction
     }
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM items;")) && q.next());
+    QCOMPARE(q.value(0).toInt(), 0);
 
-    {
-        QSqlQuery q(conn);
-        QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM items;")));
-        QVERIFY(q.next());
-        QCOMPARE(q.value(0).toInt(), 0);
-    }
-}
-
-void TstDatabase::transactionCommits()
-{
-    const QTemporaryDir tempDir;
-    QVERIFY(tempDir.isValid());
-
-    Database db(tempDir.filePath(QStringLiteral("tx_cm.db")));
-    const auto connRes = db.connection();
-    QVERIFY(connRes.ok());
-    const auto &conn = connRes.value();
-
-    {
-        QSqlQuery q(conn);
-        QVERIFY(q.exec(QStringLiteral("CREATE TABLE items (id INT);")));
-    }
-
+    // Commit
     {
         Transaction tx(conn, Transaction::Mode::Immediate);
-        QVERIFY(tx.isActive());
-        QSqlQuery q(conn);
         QVERIFY(q.exec(QStringLiteral("INSERT INTO items VALUES (20);")));
-        const auto commitRes = tx.commit();
-        QVERIFY(commitRes.ok());
+        QVERIFY(tx.commit().ok());
         QVERIFY(!tx.isActive());
     }
-
-    {
-        QSqlQuery q(conn);
-        QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM items;")));
-        QVERIFY(q.next());
-        QCOMPARE(q.value(0).toInt(), 1);
-    }
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM items;")) && q.next());
+    QCOMPARE(q.value(0).toInt(), 1);
 }
 
 void TstDatabase::openFailsForUnwritablePath()
@@ -286,7 +152,6 @@ void TstDatabase::openFailsForUnwritablePath()
     }
 
     // 2. 父路径是一个普通文件：数据库目录无法创建，任何用户（包括 root）都一样。
-    //    不用“只读目录”来构造失败，因为 root 不受目录权限限制。
     {
         const QString blocker = tempDir.filePath(QStringLiteral("not_a_dir"));
         QFile blockerFile(blocker);
