@@ -16,3 +16,11 @@ linernotes_add_test(
     LIBS
         Linernotes::library
 )
+
+linernotes_add_test(
+    NAME library_Schema
+    SOURCES
+        tst_Schema.cpp
+    LIBS
+        Linernotes::library
+)

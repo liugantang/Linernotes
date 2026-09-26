@@ -396,7 +396,13 @@ void TstMigrator::defaultResourceMigrationsLoad()
     const Migrator defaultMigrator;
     const auto res = defaultMigrator.migrations();
     QVERIFY(res.ok());
-    QVERIFY(res.value().isEmpty());
+    const auto &migrations = res.value();
+    QVERIFY(!migrations.isEmpty());
+    QCOMPARE(migrations.first().version, 1);
+    QCOMPARE(migrations.first().name, QStringLiteral("core_schema"));
+    for (int i = 0; i < migrations.size(); ++i) {
+        QCOMPARE(migrations.at(i).version, i + 1);
+    }
 }
 
 } // namespace
