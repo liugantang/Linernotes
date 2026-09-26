@@ -16,6 +16,7 @@ FocusScope {
     property alias currentIndex: listView.currentIndex
 
     property bool persistSort: true
+    property bool reorderable: false
     property string emptyText: qsTr("No tracks in library")
     property var playlistId: 0
 
@@ -290,5 +291,11 @@ FocusScope {
                 event.accepted = true;
             }
         }
+    }
+
+    TrackTableReorder {
+        anchors.fill: parent
+        table: root
+        listView: listView
     }
 }

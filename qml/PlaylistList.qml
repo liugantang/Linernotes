@@ -11,12 +11,42 @@ Item {
     id: root
 
     property int selectedPlaylistId: 0
-
     property string targetPlaylistName: ""
     property int targetPlaylistId: 0
+    property bool targetIsSmart: false
     property bool isRenaming: false
+    property string feedbackText: ""
 
     readonly property var playlistModel: AppContext.playlists ? AppContext.playlists.model : null
+
+    function openSmartRuleDialog(id, name) {
+        smartRuleDialog.openEdit(id, name)
+    }
+
+    function openNewSmartRuleDialog() {
+        smartRuleDialog.openNew()
+    }
+
+    function showFeedback(text) {
+        feedbackText = text
+        feedbackTimer.restart()
+    }
+
+    Timer {
+        id: feedbackTimer
+        interval: 2000
+        repeat: false
+        onTriggered: {
+            root.feedbackText = ""
+        }
+    }
+
+    SmartRuleDialog {
+        id: smartRuleDialog
+        onPlaylistCreated: (newId) => {
+            root.selectedPlaylistId = newId
+        }
+    }
 
     PlaylistNameDialog {
         id: nameDialog
@@ -112,6 +142,15 @@ Item {
         id: playlistItemMenu
 
         Controls.AppMenuItem {
+            text: qsTr("Edit Rules...")
+            visible: root.targetIsSmart
+            height: visible ? implicitHeight : 0
+            onTriggered: {
+                smartRuleDialog.openEdit(root.targetPlaylistId, root.targetPlaylistName)
+            }
+        }
+
+        Controls.AppMenuItem {
             text: qsTr("Rename...")
             onTriggered: {
                 root.isRenaming = true
@@ -123,6 +162,27 @@ Item {
             text: qsTr("Delete...")
             onTriggered: {
                 deleteDialog.open()
+            }
+        }
+    }
+
+    Controls.AppMenu {
+        id: newPlaylistMenu
+
+        Controls.AppMenuItem {
+            text: qsTr("New Playlist...")
+            icon.source: "icons/list-music.svg"
+            onTriggered: {
+                root.isRenaming = false
+                nameDialog.openWithText("")
+            }
+        }
+
+        Controls.AppMenuItem {
+            text: qsTr("New Smart Playlist...")
+            icon.source: "icons/sparkles.svg"
+            onTriggered: {
+                smartRuleDialog.openNew()
             }
         }
     }
@@ -151,12 +211,25 @@ Item {
             }
 
             Controls.AppButton {
-                text: qsTr("New Playlist")
+                text: qsTr("New")
                 icon.source: "icons/list-plus.svg"
-                onClicked: {
-                    root.isRenaming = false
-                    nameDialog.openWithText("")
-                }
+                onClicked: newPlaylistMenu.popup(this, 0, height)
+            }
+        }
+
+        // Notification / Feedback banner
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: root.feedbackText.length > 0 ? 28 : 0
+            visible: root.feedbackText.length > 0
+            color: Theme.surfaceVariant
+            clip: true
+
+            Label {
+                anchors.centerIn: parent
+                text: root.feedbackText
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.accent
             }
         }
 
@@ -188,7 +261,28 @@ Item {
                     width: playlistListView.width
                     height: Theme.tableRowHeight
                     radius: Theme.radiusSmall
-                    color: isSelected ? Theme.itemSelected : (itemMouseArea.containsMouse ? Theme.hoverOverlay : "transparent")
+                    color: isSelected ? Theme.itemSelected
+                        : (playlistDropArea.containsDrag ? Theme.accentHover
+                        : (itemMouseArea.containsMouse ? Theme.hoverOverlay : "transparent"))
+
+                    DropArea {
+                        id: playlistDropArea
+                        anchors.fill: parent
+                        keys: ["application/x-linernotes-track-ids"]
+                        enabled: !playlistDelegate.model.isSmart
+
+                        onDropped: (drop) => {
+                            const raw = drop.getDataAsString("application/x-linernotes-track-ids")
+                            const ids = raw ? raw.split(",").map(Number).filter(id => !isNaN(id) && id > 0) : []
+                            if (ids.length > 0 && AppContext.playlists) {
+                                const added = AppContext.playlists.addTracks(playlistDelegate.model.playlistId, ids)
+                                if (added > 0) {
+                                    root.showFeedback(qsTr("Added %n track(s)", "", added))
+                                }
+                            }
+                            drop.acceptProposedAction()
+                        }
+                    }
 
                     RowLayout {
                         anchors.fill: parent
@@ -225,6 +319,7 @@ Item {
                                 root.selectedPlaylistId = playlistDelegate.model.playlistId
                                 root.targetPlaylistId = playlistDelegate.model.playlistId
                                 root.targetPlaylistName = playlistDelegate.model.name
+                                root.targetIsSmart = playlistDelegate.model.isSmart
                                 playlistItemMenu.popup(playlistDelegate, mouse.x, mouse.y)
                             }
                         }

@@ -6,8 +6,12 @@
 #include <QList>
 #include <QObject>
 #include <QString>
+#include <QStringList>
+#include <QVariantList>
 
+#include <library/LibraryEnums.h>
 #include <library/PlaylistStore.h>
+#include <library/SmartRule.h>
 #include <ui/PlaylistListModel.h>
 
 #include <cstdint>
@@ -37,11 +41,23 @@ public:
 
     Q_INVOKABLE void refresh();
     Q_INVOKABLE qint64 createManual(const QString &name, const QList<qint64> &trackIds = { });
+    Q_INVOKABLE qint64 createSmart(const QString &name, const library::SmartRule &rule);
     Q_INVOKABLE qint64 saveQueue(const QString &name);
     Q_INVOKABLE bool rename(qint64 id, const QString &name);
     Q_INVOKABLE bool remove(qint64 id);
     Q_INVOKABLE int addTracks(qint64 id, const QList<qint64> &trackIds);
     Q_INVOKABLE bool removeTracks(qint64 id, const QList<qint64> &trackIds);
+    Q_INVOKABLE bool moveTracks(qint64 id, const QList<qint64> &trackIds, int beforePosition);
+    Q_INVOKABLE bool setRule(qint64 id, const library::SmartRule &rule);
+    [[nodiscard]] Q_INVOKABLE library::SmartRule rule(qint64 id) const;
+    [[nodiscard]] Q_INVOKABLE QVariantList smartFields() const;
+    [[nodiscard]] Q_INVOKABLE QVariantList smartOps(library::SmartField field) const;
+    [[nodiscard]] Q_INVOKABLE library::SmartFieldKind smartFieldKind(
+        library::SmartField field) const;
+    [[nodiscard]] Q_INVOKABLE QVariantList smartSortKeys() const;
+    [[nodiscard]] Q_INVOKABLE QString fieldLabel(library::SmartField field) const;
+    [[nodiscard]] Q_INVOKABLE QString opLabel(library::SmartOp op) const;
+    [[nodiscard]] Q_INVOKABLE QString sortKeyLabel(library::TrackSortKey key) const;
     [[nodiscard]] std::optional<library::PlaylistInfo> info(qint64 id) const;
     [[nodiscard]] Q_INVOKABLE bool isManual(qint64 id) const;
 

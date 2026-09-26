@@ -22,6 +22,7 @@ using linernotes::library::PlaylistKind;
 using linernotes::library::PlaylistStore;
 using linernotes::library::SmartCondition;
 using linernotes::library::SmartField;
+using linernotes::library::SmartMatch;
 using linernotes::library::SmartOp;
 using linernotes::library::SmartRule;
 using linernotes::library::TrackSortKey;
@@ -126,7 +127,7 @@ void TstPlaylistStore::smartPlaylistLifecycle()
     PlaylistStore store(db);
 
     SmartRule rule;
-    rule.match = SmartRule::Match::All;
+    rule.match = SmartMatch::All;
     rule.conditions = {
         SmartCondition {
             .field = SmartField::Year,

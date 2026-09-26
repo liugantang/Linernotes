@@ -424,7 +424,7 @@ private slots:
         // 1. SmartRule Match::All (year > 2010 AND genre contains 'Rock') -> matches t1 (2015,
         // Classic Rock) and t3 (2022, Hard Rock)
         SmartRule ruleAll;
-        ruleAll.match = SmartRule::Match::All;
+        ruleAll.match = SmartMatch::All;
         ruleAll.conditions = {
             SmartCondition {
                 .field = SmartField::Year,
@@ -450,7 +450,7 @@ private slots:
         // 2. SmartRule Match::Any (year > 2021 OR genre contains 'Pop') -> matches t2 (Pop) and t3
         // (2022)
         SmartRule ruleAny;
-        ruleAny.match = SmartRule::Match::Any;
+        ruleAny.match = SmartMatch::Any;
         ruleAny.conditions = {
             SmartCondition {
                 .field = SmartField::Year,

@@ -20,6 +20,7 @@ using linernotes::library::Migrator;
 using linernotes::ui::AppContext;
 using linernotes::ui::PlaylistController;
 using linernotes::ui::PlaylistListModel;
+namespace library = linernotes::library;
 
 namespace {
 
@@ -138,6 +139,83 @@ void TstPlaylistController::testPlaylistController()
     QCOMPARE(model->count(), 1);
     QVERIFY(!model->contains(id1));
     QVERIFY(!controller->info(id1).has_value());
+
+    // 7. createSmart & rule()
+    library::SmartRule rule;
+    rule.match = library::SmartMatch::All;
+    library::SmartCondition c1;
+    c1.field = library::SmartField::Year;
+    c1.op = library::SmartOp::Between;
+    c1.value = 1990;
+    c1.value2 = 2000;
+    rule.conditions.append(c1);
+    rule.sortKey = library::TrackSortKey::Title;
+    rule.sortOrder = Qt::DescendingOrder;
+    rule.limit = 20;
+
+    // Invalid map (unknown field) returns 0
+    library::SmartRule invalidRule = rule;
+    library::SmartCondition invC;
+    invC.field = library::SmartField::Year;
+    invC.op = library::SmartOp::Contains; // Invalid for Year
+    invC.value = 123;
+    invalidRule.conditions.append(invC);
+    QCOMPARE(controller->createSmart(QStringLiteral("Invalid Smart"), invalidRule), 0LL);
+
+    // Valid createSmart
+    spyPlaylistsChanged.clear();
+    const qint64 smartId = controller->createSmart(QStringLiteral("90s Hits"), rule);
+    QVERIFY(smartId > 0);
+    QCOMPARE(spyPlaylistsChanged.count(), 1);
+    QVERIFY(!controller->isManual(smartId));
+    QCOMPARE(model->nameOf(smartId), QStringLiteral("90s Hits"));
+
+    // rule(id) read back equals input
+    const library::SmartRule readRule = controller->rule(smartId);
+    QCOMPARE(readRule.match, library::SmartMatch::All);
+    QCOMPARE(readRule.sortKey, library::TrackSortKey::Title);
+    QCOMPARE(readRule.sortOrder, Qt::DescendingOrder);
+    QCOMPARE(readRule.limit.value_or(0), 20);
+    QCOMPARE(readRule.conditions.size(), 1);
+    QCOMPARE(readRule.conditions.at(0).field, library::SmartField::Year);
+    QCOMPARE(readRule.conditions.at(0).op, library::SmartOp::Between);
+    QCOMPARE(readRule.conditions.at(0).value.toInt(), 1990);
+    QCOMPARE(readRule.conditions.at(0).value2.toInt(), 2000);
+
+    // Non-smart playlist rule() returns empty
+    QCOMPARE(controller->rule(queuePlaylistId).conditions.size(), 0);
+
+    // 8. setRule emits playlistContentChanged(id)
+    spyContentChanged.clear();
+    library::SmartRule updatedRule = readRule;
+    updatedRule.limit = 50;
+    QVERIFY(controller->setRule(smartId, updatedRule));
+    QCOMPARE(spyContentChanged.count(), 1);
+    QCOMPARE(spyContentChanged.takeFirst().at(0).toLongLong(), smartId);
+    QCOMPARE(controller->rule(smartId).limit.value_or(0), 50);
+
+    // 9. moveTracks reorders and emits playlistContentChanged(id)
+    spyContentChanged.clear();
+    QVERIFY(controller->moveTracks(queuePlaylistId, { 2 }, 0));
+    QCOMPARE(spyContentChanged.count(), 1);
+    QCOMPARE(spyContentChanged.takeFirst().at(0).toLongLong(), queuePlaylistId);
+
+    // 10. smartOps, smartFieldType, smartFields, smartSortKeys
+    const auto yearOps = controller->smartOps(library::SmartField::Year);
+    QVERIFY(yearOps.contains(QVariant::fromValue(library::SmartOp::Between)));
+    QVERIFY(!yearOps.contains(QVariant::fromValue(library::SmartOp::Contains)));
+    QCOMPARE(
+        controller->smartFieldKind(library::SmartField::Favorite), library::SmartFieldKind::Bool);
+    QCOMPARE(controller->smartFieldKind(library::SmartField::Title), library::SmartFieldKind::Text);
+    QCOMPARE(
+        controller->smartFieldKind(library::SmartField::Year), library::SmartFieldKind::Number);
+    QCOMPARE(
+        controller->smartFieldKind(library::SmartField::DateAdded), library::SmartFieldKind::Date);
+    QVERIFY(controller->smartFields().contains(QVariant::fromValue(library::SmartField::Title)));
+    QVERIFY(
+        controller->smartSortKeys().contains(QVariant::fromValue(library::TrackSortKey::Title)));
+    QVERIFY(!controller->smartSortKeys().contains(
+        QVariant::fromValue(library::TrackSortKey::PlaylistOrder)));
 }
 
 } // namespace

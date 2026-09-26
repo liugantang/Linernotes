@@ -88,6 +88,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS controls/SeekBar.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/controls/AppCheckBox.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS controls/AppCheckBox.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/controls/AppComboBox.qml
     PROPERTIES
         QT_RESOURCE_ALIAS controls/AppComboBox.qml
@@ -148,6 +153,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS TrackTable.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/TrackTableReorder.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS TrackTableReorder.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/AlbumTrackRow.qml
     PROPERTIES
         QT_RESOURCE_ALIAS AlbumTrackRow.qml
@@ -171,6 +181,21 @@ set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/PlaylistList.qml
     PROPERTIES
         QT_RESOURCE_ALIAS PlaylistList.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SmartConditionRow.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SmartConditionRow.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SmartRuleSortRow.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SmartRuleSortRow.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SmartRuleDialog.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SmartRuleDialog.qml
 )
 set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/QueueRow.qml
@@ -355,6 +380,7 @@ qt_add_qml_module(linernotes
     RESOURCE_PREFIX "/qt/qml"
     QML_FILES
         ${CMAKE_SOURCE_DIR}/qml/controls/AppButton.qml
+        ${CMAKE_SOURCE_DIR}/qml/controls/AppCheckBox.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/IconButton.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/SeekBar.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/AppComboBox.qml
@@ -375,6 +401,9 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/QueueRow.qml
         ${CMAKE_SOURCE_DIR}/qml/PlaylistNameDialog.qml
         ${CMAKE_SOURCE_DIR}/qml/PlaylistList.qml
+        ${CMAKE_SOURCE_DIR}/qml/SmartConditionRow.qml
+        ${CMAKE_SOURCE_DIR}/qml/SmartRuleSortRow.qml
+        ${CMAKE_SOURCE_DIR}/qml/SmartRuleDialog.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumGrid.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumDetail.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumTrackRow.qml
@@ -389,6 +418,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/TrackTableHeader.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackTableRow.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackTable.qml
+        ${CMAKE_SOURCE_DIR}/qml/TrackTableReorder.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/TracksPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/AlbumsPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/ArtistsPage.qml

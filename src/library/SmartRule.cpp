@@ -7,6 +7,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QMetaEnum>
 
 #include <library/Errors.h>
 #include <library/LibraryQuery.h>
@@ -15,7 +16,29 @@ namespace linernotes::library {
 
 namespace {
 
-QString fieldToString(SmartField f)
+core::Error ruleError(const QString &message, const QString &detail = QString())
+{
+    return core::Error {
+        .code = QString(errc::kPlaylistRuleInvalid),
+        .message = message,
+        .detail = detail,
+    };
+}
+
+/// 按名字反查枚举值：遍历 Q_ENUM_NS 登记的全部取值，与 toJson 用的名字函数比对，保证两个方向一致。
+template <typename E> std::optional<E> enumFromName(const QString &name, QString (*nameOf)(E))
+{
+    const QMetaEnum meta = QMetaEnum::fromType<E>();
+    for (int i = 0; i < meta.keyCount(); ++i) {
+        const auto value = static_cast<E>(meta.value(i));
+        if (nameOf(value) == name) {
+            return value;
+        }
+    }
+    return std::nullopt;
+}
+
+QString smartFieldName(SmartField f)
 {
     switch (f) {
     case SmartField::Title:
@@ -44,45 +67,7 @@ QString fieldToString(SmartField f)
     return QStringLiteral("title");
 }
 
-std::optional<SmartField> fieldFromString(const QString &s)
-{
-    if (s == QStringLiteral("title")) {
-        return SmartField::Title;
-    }
-    if (s == QStringLiteral("artist")) {
-        return SmartField::Artist;
-    }
-    if (s == QStringLiteral("album")) {
-        return SmartField::Album;
-    }
-    if (s == QStringLiteral("albumArtist")) {
-        return SmartField::AlbumArtist;
-    }
-    if (s == QStringLiteral("genre")) {
-        return SmartField::Genre;
-    }
-    if (s == QStringLiteral("codec")) {
-        return SmartField::Codec;
-    }
-    if (s == QStringLiteral("year")) {
-        return SmartField::Year;
-    }
-    if (s == QStringLiteral("rating")) {
-        return SmartField::Rating;
-    }
-    if (s == QStringLiteral("durationSec")) {
-        return SmartField::DurationSec;
-    }
-    if (s == QStringLiteral("favorite")) {
-        return SmartField::Favorite;
-    }
-    if (s == QStringLiteral("dateAdded")) {
-        return SmartField::DateAdded;
-    }
-    return std::nullopt;
-}
-
-QString opToString(SmartOp op)
+QString smartOpName(SmartOp op)
 {
     switch (op) {
     case SmartOp::Contains:
@@ -117,54 +102,7 @@ QString opToString(SmartOp op)
     return QStringLiteral("contains");
 }
 
-std::optional<SmartOp> opFromString(const QString &s)
-{
-    if (s == QStringLiteral("contains")) {
-        return SmartOp::Contains;
-    }
-    if (s == QStringLiteral("notContains")) {
-        return SmartOp::NotContains;
-    }
-    if (s == QStringLiteral("is")) {
-        return SmartOp::Is;
-    }
-    if (s == QStringLiteral("isNot")) {
-        return SmartOp::IsNot;
-    }
-    if (s == QStringLiteral("startsWith")) {
-        return SmartOp::StartsWith;
-    }
-    if (s == QStringLiteral("equals")) {
-        return SmartOp::Equals;
-    }
-    if (s == QStringLiteral("notEquals")) {
-        return SmartOp::NotEquals;
-    }
-    if (s == QStringLiteral("greater")) {
-        return SmartOp::Greater;
-    }
-    if (s == QStringLiteral("less")) {
-        return SmartOp::Less;
-    }
-    if (s == QStringLiteral("between")) {
-        return SmartOp::Between;
-    }
-    if (s == QStringLiteral("isTrue")) {
-        return SmartOp::IsTrue;
-    }
-    if (s == QStringLiteral("isFalse")) {
-        return SmartOp::IsFalse;
-    }
-    if (s == QStringLiteral("inLastDays")) {
-        return SmartOp::InLastDays;
-    }
-    if (s == QStringLiteral("notInLastDays")) {
-        return SmartOp::NotInLastDays;
-    }
-    return std::nullopt;
-}
-
-QString sortKeyToString(TrackSortKey k)
+QString trackSortKeyName(TrackSortKey k)
 {
     switch (k) {
     case TrackSortKey::Default:
@@ -187,108 +125,54 @@ QString sortKeyToString(TrackSortKey k)
     return QStringLiteral("default");
 }
 
-std::optional<TrackSortKey> sortKeyFromString(const QString &s)
-{
-    if (s == QStringLiteral("default")) {
-        return TrackSortKey::Default;
-    }
-    if (s == QStringLiteral("title")) {
-        return TrackSortKey::Title;
-    }
-    if (s == QStringLiteral("artist")) {
-        return TrackSortKey::Artist;
-    }
-    if (s == QStringLiteral("album")) {
-        return TrackSortKey::Album;
-    }
-    if (s == QStringLiteral("year")) {
-        return TrackSortKey::Year;
-    }
-    if (s == QStringLiteral("duration")) {
-        return TrackSortKey::Duration;
-    }
-    if (s == QStringLiteral("dateAdded")) {
-        return TrackSortKey::DateAdded;
-    }
-    if (s == QStringLiteral("playlistOrder")) {
-        return TrackSortKey::PlaylistOrder;
-    }
-    return std::nullopt;
-}
-
-core::Error ruleError(const QString &message, const QString &detail = QString())
-{
-    return core::Error {
-        .code = QString(errc::kPlaylistRuleInvalid),
-        .message = message,
-        .detail = detail,
-    };
-}
-
 core::Result<SmartCondition> parseCondition(const QJsonObject &cObj)
 {
-    const auto fieldOpt = fieldFromString(cObj.value(QStringLiteral("field")).toString());
+    const auto fieldOpt
+        = enumFromName(cObj.value(QStringLiteral("field")).toString(), smartFieldName);
     if (!fieldOpt.has_value()) {
         return ruleError(QStringLiteral("Unknown smart rule field"),
             cObj.value(QStringLiteral("field")).toString());
     }
 
-    const auto opOpt = opFromString(cObj.value(QStringLiteral("op")).toString());
+    const auto opOpt = enumFromName(cObj.value(QStringLiteral("op")).toString(), smartOpName);
     if (!opOpt.has_value()) {
         return ruleError(QStringLiteral("Unknown smart rule operator"),
             cObj.value(QStringLiteral("op")).toString());
     }
 
-    const SmartField field = fieldOpt.value();
-    const SmartOp op = opOpt.value();
-    if (!smartOpsFor(field).contains(op)) {
-        return ruleError(QStringLiteral("Operator not applicable to field"),
-            QStringLiteral("%1 %2").arg(fieldToString(field), opToString(op)));
-    }
-
     SmartCondition cond;
-    cond.field = field;
-    cond.op = op;
+    cond.field = fieldOpt.value();
+    cond.op = opOpt.value();
 
-    if (op == SmartOp::IsTrue || op == SmartOp::IsFalse) {
-        return cond;
+    if (cond.op == SmartOp::Between) {
+        cond.value = cObj.value(QStringLiteral("value")).toVariant();
+        cond.value2 = cObj.value(QStringLiteral("value2")).toVariant();
+    } else if (cond.op != SmartOp::IsTrue && cond.op != SmartOp::IsFalse) {
+        cond.value = cObj.value(QStringLiteral("value")).toVariant();
     }
 
-    if (!cObj.contains(QStringLiteral("value"))) {
-        return ruleError(QStringLiteral("Condition requires value"));
-    }
-
-    if (op == SmartOp::Between) {
-        if (!cObj.contains(QStringLiteral("value2"))) {
-            return ruleError(QStringLiteral("Between operator requires value and value2"));
-        }
-        const QJsonValue val1 = cObj.value(QStringLiteral("value"));
-        const QJsonValue val2 = cObj.value(QStringLiteral("value2"));
-        if (!val1.isDouble() || !val2.isDouble()) {
-            return ruleError(QStringLiteral("Between values must be numbers"));
-        }
-        cond.value = val1.toVariant();
-        cond.value2 = val2.toVariant();
-        return cond;
-    }
-
-    if (op == SmartOp::Equals || op == SmartOp::NotEquals || op == SmartOp::Greater
-        || op == SmartOp::Less || op == SmartOp::InLastDays || op == SmartOp::NotInLastDays) {
-        const QJsonValue val = cObj.value(QStringLiteral("value"));
-        if (!val.isDouble()) {
-            return ruleError(QStringLiteral("Numeric value required"));
-        }
-        cond.value = val.toVariant();
-        return cond;
-    }
-
-    // Text operators
-    const QJsonValue val = cObj.value(QStringLiteral("value"));
-    if (!val.isString()) {
-        return ruleError(QStringLiteral("Text value required"));
-    }
-    cond.value = val.toString();
     return cond;
+}
+
+core::Result<QList<SmartCondition>> parseConditions(const QJsonValue &value)
+{
+    if (!value.isArray()) {
+        return ruleError(QStringLiteral("Conditions must be an array"), QString());
+    }
+    const QJsonArray condArray = value.toArray();
+    QList<SmartCondition> conditions;
+    conditions.reserve(condArray.size());
+    for (const auto &item : condArray) {
+        if (!item.isObject()) {
+            return ruleError(QStringLiteral("Condition item must be an object"), QString());
+        }
+        auto condRes = parseCondition(item.toObject());
+        if (!condRes.ok()) {
+            return condRes.error();
+        }
+        conditions.append(condRes.value());
+    }
+    return conditions;
 }
 
 } // namespace
@@ -333,18 +217,105 @@ QList<SmartOp> smartOpsFor(SmartField field)
     return { };
 }
 
+SmartFieldKind smartFieldKind(SmartField field)
+{
+    switch (field) {
+    case SmartField::Title:
+    case SmartField::Artist:
+    case SmartField::Album:
+    case SmartField::AlbumArtist:
+    case SmartField::Genre:
+    case SmartField::Codec:
+        return SmartFieldKind::Text;
+    case SmartField::Year:
+    case SmartField::Rating:
+    case SmartField::DurationSec:
+        return SmartFieldKind::Number;
+    case SmartField::Favorite:
+        return SmartFieldKind::Bool;
+    case SmartField::DateAdded:
+        return SmartFieldKind::Date;
+    }
+    Q_UNREACHABLE_RETURN(SmartFieldKind::Text);
+}
+
+namespace {
+
+core::Result<void> validateCondition(const SmartCondition &cond)
+{
+    if (!smartOpsFor(cond.field).contains(cond.op)) {
+        return ruleError(QStringLiteral("Operator not applicable to field"),
+            QStringLiteral("%1 %2").arg(smartFieldName(cond.field), smartOpName(cond.op)));
+    }
+
+    if (cond.op == SmartOp::IsTrue || cond.op == SmartOp::IsFalse) {
+        return { };
+    }
+
+    if (cond.op == SmartOp::Between) {
+        if (!cond.value.isValid() || !cond.value2.isValid()) {
+            return ruleError(QStringLiteral("Between operator requires value and value2"));
+        }
+        if (!cond.value.canConvert<double>() || !cond.value2.canConvert<double>()) {
+            return ruleError(QStringLiteral("Between values must be numbers"));
+        }
+        return { };
+    }
+
+    if (!cond.value.isValid()) {
+        return ruleError(QStringLiteral("Condition requires value"));
+    }
+
+    if (cond.op == SmartOp::Equals || cond.op == SmartOp::NotEquals || cond.op == SmartOp::Greater
+        || cond.op == SmartOp::Less || cond.op == SmartOp::InLastDays
+        || cond.op == SmartOp::NotInLastDays) {
+        if (!cond.value.canConvert<double>()) {
+            return ruleError(QStringLiteral("Numeric value required"));
+        }
+        return { };
+    }
+
+    // Text operators
+    if (!cond.value.canConvert<QString>()) {
+        return ruleError(QStringLiteral("Text value required"));
+    }
+    return { };
+}
+
+} // namespace
+
+core::Result<void> SmartRule::validate() const
+{
+    for (const auto &cond : conditions) {
+        if (auto res = validateCondition(cond); !res.ok()) {
+            return res;
+        }
+    }
+
+    if (sortKey == TrackSortKey::PlaylistOrder) {
+        return ruleError(QStringLiteral("Unknown or invalid sort key in smart rule"),
+            QStringLiteral("playlistOrder"));
+    }
+
+    if (limit.has_value() && limit.value() <= 0) {
+        return ruleError(QStringLiteral("Limit must be a positive integer"));
+    }
+
+    return { };
+}
+
 QString SmartRule::toJson() const
 {
     QJsonObject root;
     root.insert(QStringLiteral("version"), 1);
     root.insert(QStringLiteral("match"),
-        match == Match::All ? QStringLiteral("all") : QStringLiteral("any"));
+        match == SmartMatch::All ? QStringLiteral("all") : QStringLiteral("any"));
 
     QJsonArray condArray;
     for (const auto &cond : conditions) {
         QJsonObject cObj;
-        cObj.insert(QStringLiteral("field"), fieldToString(cond.field));
-        cObj.insert(QStringLiteral("op"), opToString(cond.op));
+        cObj.insert(QStringLiteral("field"), smartFieldName(cond.field));
+        cObj.insert(QStringLiteral("op"), smartOpName(cond.op));
         if (cond.op == SmartOp::IsTrue || cond.op == SmartOp::IsFalse) {
             // No value needed
         } else if (cond.op == SmartOp::Between) {
@@ -357,7 +328,7 @@ QString SmartRule::toJson() const
     }
     root.insert(QStringLiteral("conditions"), condArray);
 
-    root.insert(QStringLiteral("sortKey"), sortKeyToString(sortKey));
+    root.insert(QStringLiteral("sortKey"), trackSortKeyName(sortKey));
     root.insert(QStringLiteral("sortOrder"),
         sortOrder == Qt::AscendingOrder ? QStringLiteral("asc") : QStringLiteral("desc"));
 
@@ -368,31 +339,6 @@ QString SmartRule::toJson() const
     const QJsonDocument doc(root);
     return QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
 }
-
-namespace {
-
-core::Result<QList<SmartCondition>> parseConditions(const QJsonValue &value)
-{
-    if (!value.isArray()) {
-        return ruleError(QStringLiteral("Conditions must be an array"), QString());
-    }
-    const QJsonArray condArray = value.toArray();
-    QList<SmartCondition> conditions;
-    conditions.reserve(condArray.size());
-    for (const auto &item : condArray) {
-        if (!item.isObject()) {
-            return ruleError(QStringLiteral("Condition item must be an object"), QString());
-        }
-        auto condRes = parseCondition(item.toObject());
-        if (!condRes.ok()) {
-            return condRes.error();
-        }
-        conditions.append(condRes.value());
-    }
-    return conditions;
-}
-
-} // namespace
 
 core::Result<SmartRule> SmartRule::fromJson(const QString &json)
 {
@@ -413,9 +359,9 @@ core::Result<SmartRule> SmartRule::fromJson(const QString &json)
 
     const QString matchStr = root.value(QStringLiteral("match")).toString();
     if (matchStr == QStringLiteral("all")) {
-        rule.match = Match::All;
+        rule.match = SmartMatch::All;
     } else if (matchStr == QStringLiteral("any")) {
-        rule.match = Match::Any;
+        rule.match = SmartMatch::Any;
     } else {
         return ruleError(QStringLiteral("Invalid match mode in smart rule"), matchStr);
     }
@@ -427,8 +373,9 @@ core::Result<SmartRule> SmartRule::fromJson(const QString &json)
     rule.conditions = condsRes.value();
 
     if (root.contains(QStringLiteral("sortKey"))) {
-        const auto keyOpt = sortKeyFromString(root.value(QStringLiteral("sortKey")).toString());
-        if (!keyOpt.has_value() || keyOpt.value() == TrackSortKey::PlaylistOrder) {
+        const auto keyOpt
+            = enumFromName(root.value(QStringLiteral("sortKey")).toString(), trackSortKeyName);
+        if (!keyOpt.has_value()) {
             return ruleError(QStringLiteral("Unknown or invalid sort key in smart rule"),
                 root.value(QStringLiteral("sortKey")).toString());
         }
@@ -448,10 +395,15 @@ core::Result<SmartRule> SmartRule::fromJson(const QString &json)
 
     if (root.contains(QStringLiteral("limit"))) {
         const QJsonValue limVal = root.value(QStringLiteral("limit"));
-        if (!limVal.isDouble() || limVal.toInt() <= 0) {
+        if (!limVal.isDouble()) {
             return ruleError(QStringLiteral("Limit must be a positive integer"), json);
         }
         rule.limit = limVal.toInt();
+    }
+
+    auto valRes = rule.validate();
+    if (!valRes.ok()) {
+        return valRes.error();
     }
 
     return rule;

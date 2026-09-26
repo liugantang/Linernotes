@@ -7,6 +7,8 @@
 #include <QObject>
 #include <QQmlEngine>
 
+#include <library/LibraryEnums.h>
+#include <library/SmartRule.h>
 #include <player/PlayMode.h>
 #include <player/PlayQueue.h>
 #include <player/Player.h>
@@ -120,4 +122,24 @@ struct PlaylistListModelForeign {
     QML_FOREIGN(linernotes::ui::PlaylistListModel)
     QML_NAMED_ELEMENT(PlaylistListModel)
     QML_UNCREATABLE("PlaylistListModel is managed by PlaylistController")
+};
+
+struct LibraryForeign {
+    Q_GADGET
+    QML_FOREIGN_NAMESPACE(linernotes::library)
+    QML_NAMED_ELEMENT(Library)
+};
+
+struct SmartConditionForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::library::SmartCondition)
+    QML_VALUE_TYPE(smartCondition)
+    QML_STRUCTURED_VALUE
+};
+
+struct SmartRuleForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::library::SmartRule)
+    QML_VALUE_TYPE(smartRule)
+    QML_STRUCTURED_VALUE
 };

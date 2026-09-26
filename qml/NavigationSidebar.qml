@@ -88,6 +88,29 @@ Rectangle {
                     }
                 }
 
+                DropArea {
+                    anchors.fill: parent
+                    keys: ["application/x-linernotes-track-ids"]
+                    enabled: itemDelegate.pageId === "playlists"
+
+                    onEntered: {
+                        hoverTimer.restart()
+                    }
+                    onExited: {
+                        hoverTimer.stop()
+                    }
+
+                    Timer {
+                        id: hoverTimer
+                        interval: 600
+                        repeat: false
+                        onTriggered: {
+                            listView.currentIndex = itemDelegate.index
+                            root.currentPage = itemDelegate.pageId
+                        }
+                    }
+                }
+
                 RowLayout {
                     anchors.fill: parent
                     anchors.leftMargin: Theme.spacingMedium

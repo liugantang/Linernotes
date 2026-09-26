@@ -34,6 +34,59 @@ ApplicationWindow {
         artistsPage.openArtist(artistId)
     }
 
+    function startTrackDrag(ids) {
+        if (!ids || ids.length === 0) return
+        dragGhostContainer.currentTrackIds = ids
+        ghostRect.grabToImage((result) => {
+            dragSourceItem.Drag.imageSource = result.url
+            dragSourceItem.Drag.mimeData = {
+                "application/x-linernotes-track-ids": ids.join(",")
+            }
+            dragSourceItem.Drag.active = true
+        })
+    }
+
+    Item {
+        id: dragGhostContainer
+        x: -9999
+        y: -9999
+        width: ghostRect.width
+        height: ghostRect.height
+        visible: true
+        z: -100
+
+        property var currentTrackIds: []
+
+        Rectangle {
+            id: ghostRect
+            width: ghostLabel.implicitWidth + Theme.spacingMedium * 2
+            height: Theme.controlHeight
+            radius: Theme.radiusMedium
+            color: Theme.surface
+            border.color: Theme.accent
+            border.width: 1
+
+            Label {
+                id: ghostLabel
+                anchors.centerIn: parent
+                text: qsTr("%n track(s)", "", dragGhostContainer.currentTrackIds ? dragGhostContainer.currentTrackIds.length : 0)
+                font.pixelSize: Theme.fontSizeNormal
+                color: Theme.text
+            }
+        }
+
+        Item {
+            id: dragSourceItem
+            Drag.dragType: Drag.Automatic
+            Drag.supportedActions: Qt.CopyAction | Qt.MoveAction
+            Drag.mimeData: {
+                "application/x-linernotes-track-ids": dragGhostContainer.currentTrackIds.join(",")
+            }
+            Drag.hotSpot.x: ghostRect.width / 2
+            Drag.hotSpot.y: ghostRect.height / 2
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0

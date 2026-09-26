@@ -15,6 +15,7 @@
 #   click:<x>,<y>    左键单击        dclick:<x>,<y>  双击
 #   move:<x>,<y>     鼠标移动（悬停）  rclick:<x>,<y>  右键单击
 #   drag:<x1>,<y1>,<x2>,<y2>  按住左键从 (x1,y1) 拖到 (x2,y2)
+#   down:<x>,<y> / up:<x>,<y>  在该点按下/松开左键（中间用 move 分步移动，可在拖动中途停留）
 #   key:<按键>       xdotool 按键名，如 Return、Escape、ctrl+alt+p、Down
 #   type:<文本>      输入文本
 #   sleep:<秒>       等待
@@ -79,6 +80,8 @@ run_steps() {
             click) xdotool mousemove ${arg/,/ } click 1; sleep 0.5 ;;
             dclick) xdotool mousemove ${arg/,/ } click --repeat 2 --delay 80 1; sleep 0.5 ;;
             move) xdotool mousemove ${arg/,/ }; sleep 0.5 ;;
+            down) xdotool mousemove ${arg/,/ } mousedown 1; sleep 0.2 ;;
+            up) xdotool mousemove ${arg/,/ } mouseup 1; sleep 0.5 ;;
             rclick) xdotool mousemove ${arg/,/ } click 3; sleep 0.5 ;;
             drag) IFS=, read -r x1 y1 x2 y2 <<< "${arg}"
                   xdotool mousemove "${x1}" "${y1}" mousedown 1; sleep 0.2

@@ -46,6 +46,7 @@ add_library(linernotes_library STATIC
     SearchText.cpp
     SearchText.h
     SmartRule.cpp
+    LibraryEnums.h
     SmartRule.h
     SmartRuleSql.cpp
     SmartRuleSql.h
@@ -53,6 +54,7 @@ add_library(linernotes_library STATIC
     TagReader.h
 )
 add_library(Linernotes::library ALIAS linernotes_library)
+qt6_extract_metatypes(linernotes_library)
 
 if(MIGRATION_FILES)
     qt_add_resources(linernotes_library "migrations"

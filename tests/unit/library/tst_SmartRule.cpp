@@ -19,12 +19,13 @@ private slots:
     void roundtrip();
     void rejectInvalid_data();
     void rejectInvalid();
+    void validateInvalid();
 };
 
 void TstSmartRule::roundtrip()
 {
     SmartRule rule;
-    rule.match = SmartRule::Match::All;
+    rule.match = SmartMatch::All;
     rule.conditions = {
         SmartCondition {
             .field = SmartField::Title,
@@ -98,6 +99,20 @@ void TstSmartRule::rejectInvalid_data()
         R"({"version": 1, "match": "all", "conditions": [], "sortKey": "playlistOrder"})");
     QTest::newRow("invalid_sort_order") << QStringLiteral(
         R"({"version": 1, "match": "all", "conditions": [], "sortOrder": "sideways"})");
+}
+
+void TstSmartRule::validateInvalid()
+{
+    SmartRule rule;
+    rule.match = SmartMatch::All;
+    SmartCondition cond;
+    cond.field = SmartField::Title;
+    cond.op = SmartOp::Between;
+    cond.value = 1;
+    cond.value2 = 2;
+    rule.conditions.append(cond);
+    auto res = rule.validate();
+    QVERIFY(!res.ok());
 }
 
 void TstSmartRule::rejectInvalid()

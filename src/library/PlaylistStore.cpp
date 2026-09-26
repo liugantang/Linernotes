@@ -382,6 +382,10 @@ core::Result<qint64> PlaylistStore::createManual(const QString &name, const QLis
 
 core::Result<qint64> PlaylistStore::createSmart(const QString &name, const SmartRule &rule)
 {
+    if (auto valRes = rule.validate(); !valRes.ok()) {
+        return valRes.error();
+    }
+
     auto nameRes = validatePlaylistName(name);
     if (!nameRes.ok()) {
         return nameRes.error();
@@ -419,6 +423,10 @@ core::Result<void> PlaylistStore::rename(qint64 id, const QString &name)
 core::Result<void> PlaylistStore::setRule(qint64 id, const SmartRule &rule)
 {
     return inTransaction(m_db, [&](const QSqlDatabase &conn) -> core::Result<void> {
+        if (auto valRes = rule.validate(); !valRes.ok()) {
+            return valRes.error();
+        }
+
         if (auto res = requireKind(conn, id, PlaylistKind::Smart,
                 QStringLiteral("Cannot set rule on a non-smart playlist"));
             !res.ok()) {

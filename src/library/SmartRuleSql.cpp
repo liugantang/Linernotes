@@ -169,7 +169,7 @@ QString buildSmartRuleWhereSql(const SmartRule &rule, QList<QVariant> &binds)
     }
 
     const QString joiner
-        = (rule.match == SmartRule::Match::All) ? QStringLiteral(" AND ") : QStringLiteral(" OR ");
+        = (rule.match == SmartMatch::All) ? QStringLiteral(" AND ") : QStringLiteral(" OR ");
     return QStringLiteral(" AND (%1)").arg(condSqls.join(joiner));
 }
 

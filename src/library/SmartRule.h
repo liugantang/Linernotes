@@ -9,46 +9,20 @@
 #include <Qt>
 
 #include <core/Result.h>
+#include <library/LibraryEnums.h>
 
 #include <cstdint>
 #include <optional>
 
 namespace linernotes::library {
 
-enum class TrackSortKey : std::uint8_t;
-
-enum class SmartField : std::uint8_t {
-    Title,
-    Artist,
-    Album,
-    AlbumArtist,
-    Genre,
-    Codec, // 文本
-    Year,
-    Rating,
-    DurationSec, // 数值
-    Favorite, // 布尔
-    DateAdded // 日期（files.first_seen_at）
-};
-
-enum class SmartOp : std::uint8_t {
-    Contains,
-    NotContains,
-    Is,
-    IsNot,
-    StartsWith, // 文本
-    Equals,
-    NotEquals,
-    Greater,
-    Less,
-    Between, // 数值
-    IsTrue,
-    IsFalse, // 布尔
-    InLastDays,
-    NotInLastDays // 日期
-};
-
 struct SmartCondition {
+    Q_GADGET
+    Q_PROPERTY(linernotes::library::SmartField field MEMBER field)
+    Q_PROPERTY(linernotes::library::SmartOp op MEMBER op)
+    Q_PROPERTY(QVariant value MEMBER value)
+    Q_PROPERTY(QVariant value2 MEMBER value2)
+public:
     SmartField field = SmartField::Title;
     SmartOp op = SmartOp::Contains;
     QVariant value; // 文本：QString；数值/天数：数字；Between 的下界
@@ -57,19 +31,32 @@ struct SmartCondition {
 };
 
 struct SmartRule {
-    enum class Match : std::uint8_t { All, Any };
-    Match match = Match::All;
+    Q_GADGET
+    Q_PROPERTY(linernotes::library::SmartMatch match MEMBER match)
+    Q_PROPERTY(QList<linernotes::library::SmartCondition> conditions MEMBER conditions)
+    Q_PROPERTY(linernotes::library::TrackSortKey sortKey MEMBER sortKey)
+    Q_PROPERTY(Qt::SortOrder sortOrder MEMBER sortOrder)
+    Q_PROPERTY(int limit READ getLimit WRITE setLimit)
+public:
+    SmartMatch match = SmartMatch::All;
     QList<SmartCondition> conditions; // 为空表示匹配全部曲目
-    TrackSortKey sortKey = static_cast<TrackSortKey>(0);
+    TrackSortKey sortKey = TrackSortKey::Default;
     Qt::SortOrder sortOrder = Qt::AscendingOrder;
     std::optional<int> limit; // 例：“最近添加的 50 首”= DateAdded 降序 + limit 50
     bool operator==(const SmartRule &) const = default;
 
+    [[nodiscard]] int getLimit() const { return limit.value_or(0); }
+    void setLimit(int v) { limit = (v > 0) ? std::optional<int>(v) : std::nullopt; }
+
     [[nodiscard]] QString toJson() const; // 存入 playlists.rule
     static core::Result<SmartRule> fromJson(const QString &json);
+    [[nodiscard]] core::Result<void> validate() const;
 };
 
 /// 该字段允许的运算符（UI 编辑器据此填下拉框；fromJson 据此校验）
 QList<SmartOp> smartOpsFor(SmartField field);
+
+/// 返回指定字段的类型，用于 UI 根据类型渲染不同输入控件
+SmartFieldKind smartFieldKind(SmartField field);
 
 } // namespace linernotes::library

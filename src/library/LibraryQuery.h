@@ -9,27 +9,11 @@
 #include <Qt>
 
 #include <core/Result.h>
+#include <library/LibraryEnums.h>
+#include <library/SmartRule.h>
 
 #include <cstdint>
 #include <optional>
-
-namespace linernotes::library {
-
-/// 曲目排序列。
-enum class TrackSortKey : std::uint8_t {
-    Default,
-    Title,
-    Artist,
-    Album,
-    Year,
-    Duration,
-    DateAdded,
-    PlaylistOrder,
-};
-
-} // namespace linernotes::library
-
-#include <library/SmartRule.h>
 
 namespace linernotes::library {
 

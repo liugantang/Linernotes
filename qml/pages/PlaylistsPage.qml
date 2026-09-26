@@ -18,6 +18,10 @@ Item {
         && playlistModel !== null && playlistModel.contains(root.selectedPlaylistId)
     readonly property string selectedPlaylistName: hasSelectedPlaylist
         ? playlistModel.nameOf(root.selectedPlaylistId) : ""
+    readonly property bool isManualPlaylist: root.hasSelectedPlaylist
+        && AppContext.playlists && AppContext.playlists.isManual(root.selectedPlaylistId)
+    readonly property bool isPlaylistOrderAscending: trackTable.model.sortKey === TrackListModel.PlaylistOrder
+        && trackTable.model.sortOrder === Qt.AscendingOrder
 
     Settings {
         id: pageSettings
@@ -65,7 +69,7 @@ Item {
                 anchors.fill: parent
                 spacing: 0
                 visible: root.hasSelectedPlaylist
-
+                
                 // Header
                 RowLayout {
                     Layout.fillWidth: true
@@ -93,8 +97,17 @@ Item {
                     }
 
                     Controls.AppButton {
+                        text: qsTr("Edit Rules")
+                        icon.source: "../icons/sparkles.svg"
+                        visible: root.hasSelectedPlaylist && !root.isManualPlaylist
+                        onClicked: {
+                            playlistList.openSmartRuleDialog(root.selectedPlaylistId, root.selectedPlaylistName)
+                        }
+                    }
+
+                    Controls.AppButton {
                         text: qsTr("Playlist Order")
-                        visible: trackTable.model.sortKey !== TrackListModel.PlaylistOrder
+                        visible: root.isManualPlaylist && trackTable.model.sortKey !== TrackListModel.PlaylistOrder
                         onClicked: {
                             trackTable.model.sortKey = TrackListModel.PlaylistOrder
                             trackTable.model.sortOrder = Qt.AscendingOrder
@@ -126,6 +139,7 @@ Item {
                     Layout.fillHeight: true
                     playlistId: root.selectedPlaylistId
                     persistSort: false
+                    reorderable: root.isManualPlaylist && root.isPlaylistOrderAscending
                     emptyText: qsTr("This playlist is empty")
                 }
             }

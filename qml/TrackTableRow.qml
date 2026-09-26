@@ -115,7 +115,51 @@ Rectangle {
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton | Qt.RightButton
 
+        property point pressPos: Qt.point(0, 0)
+        property bool dragStarted: false
+
+        onPressed: (mouse) => {
+            if (mouse.button === Qt.LeftButton) {
+                pressPos = Qt.point(mouse.x, mouse.y)
+                dragStarted = false
+                preventStealing = true
+            }
+        }
+
+        onPositionChanged: (mouse) => {
+            if ((mouse.buttons & Qt.LeftButton) && !dragStarted) {
+                const dx = mouse.x - pressPos.x
+                const dy = mouse.y - pressPos.y
+                const threshold = Qt.styleHints.startDragDistance
+                if (dx * dx + dy * dy >= threshold * threshold) {
+                    dragStarted = true
+                    if (!rootRow.selection.isSelected(rootRow.index)) {
+                        rootRow.selection.select(rootRow.index, Qt.NoModifier)
+                        rootRow.table.currentIndex = rootRow.index
+                    }
+                    const ids = rootRow.table.model.trackIds(rootRow.selection.selectedRows())
+                    if (ids.length > 0 && rootRow.Window.window && rootRow.Window.window.startTrackDrag) {
+                        rootRow.Window.window.startTrackDrag(ids)
+                    }
+                }
+            }
+        }
+
+        onReleased: (mouse) => {
+            preventStealing = false
+            if (dragStarted) {
+                dragStarted = false
+                return
+            }
+        }
+
+        onCanceled: () => {
+            preventStealing = false
+            dragStarted = false
+        }
+
         onClicked: (mouse) => {
+            if (dragStarted) return
             rootRow.table.forceActiveFocus()
             if (mouse.button === Qt.LeftButton) {
                 rootRow.selection.select(rootRow.index, mouse.modifiers)
@@ -130,6 +174,7 @@ Rectangle {
         }
 
         onDoubleClicked: (mouse) => {
+            if (dragStarted) return
             if (mouse.button === Qt.LeftButton) {
                 if (AppContext.actions) {
                     AppContext.actions.playTracks(rootRow.table.model.allTrackIds(), rootRow.index)
