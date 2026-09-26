@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2026 Linernotes contributors
+
+#pragma once
+
+#include <QJSEngine>
+#include <QObject>
+#include <QQmlEngine>
+
+#include <player/PlayQueue.h>
+#include <player/Player.h>
+#include <ui/AppContext.h>
+
+struct AppContextForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::AppContext)
+    QML_NAMED_ELEMENT(AppContext)
+    QML_SINGLETON
+
+public:
+    static void setInstance(linernotes::ui::AppContext *instance);
+    static linernotes::ui::AppContext *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
+
+private:
+    static linernotes::ui::AppContext *s_instance;
+};
+
+struct PlayerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::player::Player)
+    QML_NAMED_ELEMENT(Player)
+    QML_UNCREATABLE("Player is managed by AppContext")
+};
+
+struct PlayQueueForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::player::PlayQueue)
+    QML_NAMED_ELEMENT(PlayQueue)
+    QML_UNCREATABLE("PlayQueue is managed by Player")
+};

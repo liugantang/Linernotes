@@ -12,9 +12,19 @@ QtObject {
     // Colors
     readonly property color background: isDark ? "#1e1e2e" : "#f8f9fa"
     readonly property color surface: isDark ? "#2a2a3c" : "#ffffff"
+    readonly property color surfaceVariant: isDark ? "#313244" : "#eef0f3"
     readonly property color text: isDark ? "#cdd6f4" : "#1e1e2e"
     readonly property color textSecondary: isDark ? "#a6adc8" : "#6c757d"
     readonly property color accent: isDark ? "#89b4fa" : "#0066cc"
+    readonly property color accentHover: isDark ? "#b4befe" : "#0052a3"
+    readonly property color divider: isDark ? "#313244" : "#dee2e6"
+    readonly property color itemHover: isDark ? "#313244" : "#e9ecef"
+    readonly property color itemSelected: isDark ? "#45475a" : "#dee2e6"
+
+    // Error banner colors
+    readonly property color errorBackground: isDark ? "#3b1e24" : "#fde8e8"
+    readonly property color errorBorder: isDark ? "#6e2a34" : "#f8b4b4"
+    readonly property color errorText: isDark ? "#f38ba8" : "#9b1c1c"
 
     // Font sizes
     readonly property int fontSizeSmall: 12
@@ -23,6 +33,7 @@ QtObject {
     readonly property int fontSizeTitle: 28
 
     // Spacing
+    readonly property int spacingTiny: 4
     readonly property int spacingSmall: 8
     readonly property int spacingMedium: 16
     readonly property int spacingLarge: 24
@@ -33,4 +44,13 @@ QtObject {
     readonly property int windowDefaultHeight: 800
     readonly property int windowMinWidth: 800
     readonly property int windowMinHeight: 500
+
+    // Component dimensions
+    readonly property int sidebarWidth: 200
+    readonly property int navItemHeight: 40
+    readonly property int navItemHeightWithSubtitle: 56
+    readonly property int iconSizeSmall: 20
+    readonly property int playerBarHeight: 64
+    readonly property int sidePanelWidth: 280
+    readonly property int topBarHeight: 40
 }

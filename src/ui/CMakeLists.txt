@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Linernotes contributors
+
+add_library(linernotes_ui STATIC
+    AppContext.cpp
+    AppContext.h
+    UiLogging.cpp
+    UiLogging.h
+)
+add_library(Linernotes::ui ALIAS linernotes_ui)
+
+qt6_extract_metatypes(linernotes_ui)
+
+target_include_directories(linernotes_ui
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/..
+)
+
+target_link_libraries(linernotes_ui
+    PUBLIC
+        Linernotes::core
+        Linernotes::library
+        Linernotes::player
+        Qt6::Core
+)
+
+linernotes_set_target_options(linernotes_ui)

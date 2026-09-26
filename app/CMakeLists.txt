@@ -16,6 +16,46 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS Theme.qml
         QT_QML_SINGLETON_TYPE TRUE
 )
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/NavigationSidebar.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS NavigationSidebar.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/PlayerBar.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS PlayerBar.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SidePanel.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SidePanel.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/pages/TracksPage.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS pages/TracksPage.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/pages/AlbumsPage.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS pages/AlbumsPage.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/pages/ArtistsPage.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS pages/ArtistsPage.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/pages/PlaylistsPage.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS pages/PlaylistsPage.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/pages/AiPage.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS pages/AiPage.qml
+)
 
 qt_add_qml_module(linernotes
     URI Linernotes
@@ -24,15 +64,29 @@ qt_add_qml_module(linernotes
     QML_FILES
         ${CMAKE_SOURCE_DIR}/qml/Main.qml
         ${CMAKE_SOURCE_DIR}/qml/Theme.qml
+        ${CMAKE_SOURCE_DIR}/qml/NavigationSidebar.qml
+        ${CMAKE_SOURCE_DIR}/qml/PlayerBar.qml
+        ${CMAKE_SOURCE_DIR}/qml/SidePanel.qml
+        ${CMAKE_SOURCE_DIR}/qml/pages/TracksPage.qml
+        ${CMAKE_SOURCE_DIR}/qml/pages/AlbumsPage.qml
+        ${CMAKE_SOURCE_DIR}/qml/pages/ArtistsPage.qml
+        ${CMAKE_SOURCE_DIR}/qml/pages/PlaylistsPage.qml
+        ${CMAKE_SOURCE_DIR}/qml/pages/AiPage.qml
     SOURCES
-        AppInfo.h
         AppInfo.cpp
+        AppInfo.h
+        QmlTypes.cpp
+        QmlTypes.h
 )
 
 target_link_libraries(linernotes
     PRIVATE
         Linernotes::core
+        Linernotes::library
+        Linernotes::player
+        Linernotes::ui
         Qt6::Gui
+        Qt6::Qml
         Qt6::Quick
         Qt6::QuickControls2
 )

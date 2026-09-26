@@ -4,3 +4,4 @@
 add_subdirectory(core)
 add_subdirectory(library)
 add_subdirectory(player)
+add_subdirectory(ui)

@@ -22,6 +22,9 @@ add_library(linernotes_player STATIC
 )
 add_library(Linernotes::player ALIAS linernotes_player)
 
+qt6_extract_metatypes(linernotes_player)
+
+
 target_include_directories(linernotes_player
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/..

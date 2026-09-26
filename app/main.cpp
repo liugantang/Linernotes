@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Linernotes contributors
 
+#include "QmlTypes.h"
+
 #include <QCommandLineOption>
 #include <QCommandLineParser>
 #include <QDir>
@@ -14,6 +16,7 @@
 #include <core/Paths.h>
 #include <core/Settings.h>
 #include <core/Version.h>
+#include <ui/AppContext.h>
 
 int main(int argc, char *argv[])
 {
@@ -77,43 +80,66 @@ int main(int argc, char *argv[])
         qPrintable(linernotes::core::versionString()), qPrintable(paths.configDir()),
         qPrintable(paths.dataDir()), qPrintable(paths.cacheDir()), qPrintable(paths.logDir()));
 
-    QQuickStyle::setStyle(QStringLiteral("Fusion"));
-
-    QQmlApplicationEngine engine;
-
     const bool isSmokeTest = parser.isSet(smokeTestOption);
 
-    QObject::connect(
-        &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
-        [](const QUrl &url) {
-            qCCritical(linernotes::core::lcCore, "Failed to create QML root object: %s",
-                qPrintable(url.toString()));
-            QCoreApplication::exit(EXIT_FAILURE);
-        },
-        Qt::QueuedConnection);
+    linernotes::ui::AppContext::Options appOptions {
+        .databasePath = QDir(paths.dataDir()).filePath(QStringLiteral("library.db")),
+        .coverCacheDir = QDir(paths.cacheDir()).filePath(QStringLiteral("covers")),
+        .playerOptions = { },
+        .uiStatePath = QDir(paths.configDir()).filePath(QStringLiteral("ui-state.ini")),
+    };
+    if (isSmokeTest) {
+        appOptions.playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } };
+    }
 
-    QObject::connect(
-        &engine, &QQmlApplicationEngine::objectCreated, &app,
-        [isSmokeTest](QObject *object, const QUrl &url) {
-            if (!object) {
-                qCCritical(linernotes::core::lcCore, "Failed to load QML root object from: %s",
+    linernotes::ui::AppContext appContext(appOptions);
+    AppContextForeign::setInstance(&appContext);
+
+    const auto startRes = appContext.start();
+    if (!startRes.ok()) {
+        qCWarning(linernotes::core::lcCore, "AppContext start error: %s",
+            qPrintable(startRes.error().toString()));
+    }
+
+    QQuickStyle::setStyle(QStringLiteral("Fusion"));
+
+    int exitCode = 0;
+    {
+        QQmlApplicationEngine engine;
+
+        QObject::connect(
+            &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
+            [](const QUrl &url) {
+                qCCritical(linernotes::core::lcCore, "Failed to create QML root object: %s",
                     qPrintable(url.toString()));
                 QCoreApplication::exit(EXIT_FAILURE);
-                return;
-            }
-            if (isSmokeTest) {
-                qCInfo(linernotes::core::lcCore,
-                    "Smoke test: QML root object created successfully from %s",
-                    qPrintable(url.toString()));
-                QCoreApplication::exit(0);
-            }
-        },
-        Qt::QueuedConnection);
+            },
+            Qt::QueuedConnection);
 
-    engine.loadFromModule(QStringLiteral("Linernotes"), QStringLiteral("Main"));
+        QObject::connect(
+            &engine, &QQmlApplicationEngine::objectCreated, &app,
+            [isSmokeTest](QObject *object, const QUrl &url) {
+                if (!object) {
+                    qCCritical(linernotes::core::lcCore, "Failed to load QML root object from: %s",
+                        qPrintable(url.toString()));
+                    QCoreApplication::exit(EXIT_FAILURE);
+                    return;
+                }
+                if (isSmokeTest) {
+                    qCInfo(linernotes::core::lcCore,
+                        "Smoke test: QML root object created successfully from %s",
+                        qPrintable(url.toString()));
+                    QCoreApplication::exit(0);
+                }
+            },
+            Qt::QueuedConnection);
 
-    const int exitCode = QGuiApplication::exec();
+        engine.loadFromModule(QStringLiteral("Linernotes"), QStringLiteral("Main"));
 
+        exitCode = QGuiApplication::exec();
+    }
+
+    AppContextForeign::setInstance(nullptr);
     linernotes::core::uninstallLogging();
     return exitCode;
 }
