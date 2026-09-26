@@ -23,6 +23,7 @@ Icons are from Lucide (https://lucide.dev/), licensed under the ISC License, com
 - `repeat.svg`
 - `repeat-1.svg`
 - `search.svg`
+- `settings.svg`
 - `shuffle.svg`
 - `skip-back.svg`
 - `skip-forward.svg`

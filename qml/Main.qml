@@ -24,13 +24,23 @@ ApplicationWindow {
         onActivated: sidePanel.collapsed = !sidePanel.collapsed
     }
 
+    Shortcut {
+        sequence: StandardKey.Preferences
+        onActivated: sidebar.currentPage = NavigationSidebar.Settings
+    }
+
+    Shortcut {
+        sequence: "Ctrl+,"
+        onActivated: sidebar.currentPage = NavigationSidebar.Settings
+    }
+
     function openAlbum(albumId) {
-        sidebar.currentPage = "albums"
+        sidebar.currentPage = NavigationSidebar.Albums
         albumsPage.openAlbum(albumId)
     }
 
     function openArtist(artistId) {
-        sidebar.currentPage = "artists"
+        sidebar.currentPage = NavigationSidebar.Artists
         artistsPage.openArtist(artistId)
     }
 
@@ -182,22 +192,14 @@ ApplicationWindow {
                         id: contentStack
                         anchors.fill: parent
                         visible: !searchResults.visible
-                        currentIndex: {
-                            switch (sidebar.currentPage) {
-                            case "tracks": return 0
-                            case "albums": return 1
-                            case "artists": return 2
-                            case "playlists": return 3
-                            case "ai": return 4
-                            default: return 0
-                            }
-                        }
+                        currentIndex: sidebar.currentPage
 
                         TracksPage {}
                         AlbumsPage { id: albumsPage }
                         ArtistsPage { id: artistsPage }
                         PlaylistsPage {}
                         AiPage {}
+                        SettingsPage {}
                     }
 
                     SearchResults {

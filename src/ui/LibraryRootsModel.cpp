@@ -52,7 +52,7 @@ QHash<int, QByteArray> LibraryRootsModel::roleNames() const
     return {
         { RootIdRole, "rootId" },
         { PathRole, "path" },
-        { EnabledRole, "enabled" },
+        { EnabledRole, "rootEnabled" },
     };
 }
 

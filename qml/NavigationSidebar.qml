@@ -10,7 +10,16 @@ import Linernotes
 Rectangle {
     id: root
 
-    property string currentPage: "tracks"
+    enum Page {
+        Tracks,
+        Albums,
+        Artists,
+        Playlists,
+        Ai,
+        Settings
+    }
+
+    property int currentPage: NavigationSidebar.Tracks
 
     color: Theme.surface
     border.color: Theme.divider
@@ -18,11 +27,11 @@ Rectangle {
 
     ListModel {
         id: navModel
-        ListElement { pageId: "tracks"; title: qsTr("Tracks"); iconSource: "library"; subtitle: "" }
-        ListElement { pageId: "albums"; title: qsTr("Albums"); iconSource: "disc-3"; subtitle: "" }
-        ListElement { pageId: "artists"; title: qsTr("Artists"); iconSource: "mic-vocal"; subtitle: "" }
-        ListElement { pageId: "playlists"; title: qsTr("Playlists"); iconSource: "list-music"; subtitle: "" }
-        ListElement { pageId: "ai"; title: qsTr("AI"); iconSource: "sparkles"; subtitle: qsTr("Coming soon") }
+        ListElement { pageId: NavigationSidebar.Tracks; title: qsTr("Tracks"); iconSource: "library"; subtitle: "" }
+        ListElement { pageId: NavigationSidebar.Albums; title: qsTr("Albums"); iconSource: "disc-3"; subtitle: "" }
+        ListElement { pageId: NavigationSidebar.Artists; title: qsTr("Artists"); iconSource: "mic-vocal"; subtitle: "" }
+        ListElement { pageId: NavigationSidebar.Playlists; title: qsTr("Playlists"); iconSource: "list-music"; subtitle: "" }
+        ListElement { pageId: NavigationSidebar.Ai; title: qsTr("AI"); iconSource: "sparkles"; subtitle: qsTr("Coming soon") }
     }
 
     ColumnLayout {
@@ -60,7 +69,7 @@ Rectangle {
             delegate: Rectangle {
                 id: itemDelegate
                 required property int index
-                required property string pageId
+                required property int pageId
                 required property string title
                 required property string subtitle
                 required property string iconSource
@@ -91,7 +100,7 @@ Rectangle {
                 DropArea {
                     anchors.fill: parent
                     keys: ["application/x-linernotes-track-ids"]
-                    enabled: itemDelegate.pageId === "playlists"
+                    enabled: itemDelegate.pageId === NavigationSidebar.Playlists
 
                     onEntered: {
                         hoverTimer.restart()
@@ -190,6 +199,62 @@ Rectangle {
                 color: Theme.textSecondary
                 Layout.fillWidth: true
                 elide: Text.ElideRight
+            }
+        }
+
+        // Settings item at bottom
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Theme.divider
+        }
+
+        Rectangle {
+            id: settingsItem
+            Layout.fillWidth: true
+            Layout.preferredHeight: Theme.navItemHeight
+            radius: 6
+            color: {
+                if (root.currentPage === NavigationSidebar.Settings) {
+                    return Theme.itemSelected
+                }
+                if (settingsMouseArea.containsMouse) {
+                    return Theme.itemHover
+                }
+                return "transparent"
+            }
+
+            MouseArea {
+                id: settingsMouseArea
+                anchors.fill: parent
+                hoverEnabled: true
+                onClicked: {
+                    listView.currentIndex = -1
+                    root.currentPage = NavigationSidebar.Settings
+                }
+            }
+
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: Theme.spacingMedium
+                anchors.rightMargin: Theme.spacingMedium
+                spacing: Theme.spacingSmall
+
+                IconImage {
+                    source: "icons/settings.svg"
+                    Layout.preferredWidth: Theme.iconSize
+                    Layout.preferredHeight: Theme.iconSize
+                    sourceSize: Qt.size(Theme.iconSize, Theme.iconSize)
+                    color: root.currentPage === NavigationSidebar.Settings ? Theme.accent : Theme.text
+                }
+
+                Label {
+                    text: qsTr("Settings")
+                    font.pixelSize: Theme.fontSizeNormal
+                    font.bold: root.currentPage === NavigationSidebar.Settings
+                    color: root.currentPage === NavigationSidebar.Settings ? Theme.accent : Theme.text
+                    Layout.fillWidth: true
+                }
             }
         }
     }

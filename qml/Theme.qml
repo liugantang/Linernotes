@@ -3,11 +3,50 @@ pragma Singleton
 // SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 import QtQuick
+import Linernotes
 
 QtObject {
     id: root
 
-    readonly property bool isDark: Application.styleHints.colorScheme === Qt.ColorScheme.Dark
+    readonly property int themeMode: (typeof AppContext !== "undefined" && AppContext && AppContext.settings)
+        ? AppContext.settings.themeMode
+        : SettingsController.System
+
+    readonly property bool isDark: {
+        if (themeMode === SettingsController.Dark) {
+            return true
+        }
+        if (themeMode === SettingsController.Light) {
+            return false
+        }
+        return Application.styleHints.colorScheme === Qt.ColorScheme.Dark
+    }
+
+    readonly property color defaultAccent: isDark ? "#89b4fa" : "#0066cc"
+    readonly property color defaultAccentHover: isDark ? "#b4befe" : "#0052a3"
+
+    readonly property bool useCoverAccent: (typeof AppContext !== "undefined" && AppContext
+        && AppContext.settings && AppContext.settings.accentFromCover
+        && AppContext.nowPlaying && AppContext.nowPlaying.coverAccent
+        && AppContext.nowPlaying.coverAccent.valid)
+
+    readonly property color coverAccentBase: {
+        if (!useCoverAccent) return defaultAccent
+        const c = AppContext.nowPlaying.coverAccent
+        const h = c.hslHue >= 0 ? c.hslHue : 0
+        const s = Math.max(0.35, Math.min(0.8, c.hslSaturation))
+        const l = isDark ? 0.72 : 0.42
+        return Qt.hsla(h, s, l, 1.0)
+    }
+
+    readonly property color coverAccentHoverBase: {
+        if (!useCoverAccent) return defaultAccentHover
+        const c = AppContext.nowPlaying.coverAccent
+        const h = c.hslHue >= 0 ? c.hslHue : 0
+        const s = Math.max(0.35, Math.min(0.8, c.hslSaturation))
+        const l = isDark ? (0.72 + 0.08) : (0.42 - 0.08)
+        return Qt.hsla(h, s, l, 1.0)
+    }
 
     // Colors
     readonly property color background: isDark ? "#1e1e2e" : "#f8f9fa"
@@ -15,8 +54,8 @@ QtObject {
     readonly property color surfaceVariant: isDark ? "#313244" : "#eef0f3"
     readonly property color text: isDark ? "#cdd6f4" : "#1e1e2e"
     readonly property color textSecondary: isDark ? "#a6adc8" : "#6c757d"
-    readonly property color accent: isDark ? "#89b4fa" : "#0066cc"
-    readonly property color accentHover: isDark ? "#b4befe" : "#0052a3"
+    readonly property color accent: useCoverAccent ? coverAccentBase : defaultAccent
+    readonly property color accentHover: useCoverAccent ? coverAccentHoverBase : defaultAccentHover
     readonly property color divider: isDark ? "#313244" : "#dee2e6"
     readonly property color itemHover: isDark ? "#313244" : "#e9ecef"
     readonly property color itemSelected: isDark ? "#45475a" : "#dee2e6"

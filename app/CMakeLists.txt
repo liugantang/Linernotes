@@ -71,6 +71,11 @@ set_source_files_properties(
     PROPERTIES
         QT_RESOURCE_ALIAS pages/AiPage.qml
 )
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/pages/SettingsPage.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS pages/SettingsPage.qml
+)
 
 set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/controls/AppButton.qml
@@ -242,6 +247,21 @@ set_source_files_properties(
     PROPERTIES
         QT_RESOURCE_ALIAS SearchSectionTracks.qml
 )
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SettingsLibrarySection.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SettingsLibrarySection.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SettingsPlaybackSection.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SettingsPlaybackSection.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SettingsAppearanceSection.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SettingsAppearanceSection.qml
+)
 
 set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/resources/icons/play.svg
@@ -374,6 +394,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS icons/search.svg
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/resources/icons/settings.svg
+    PROPERTIES
+        QT_RESOURCE_ALIAS icons/settings.svg
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/resources/icons/grip-vertical.svg
     PROPERTIES
         QT_RESOURCE_ALIAS icons/grip-vertical.svg
@@ -445,6 +470,9 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/SearchSectionArtists.qml
         ${CMAKE_SOURCE_DIR}/qml/SearchSectionAlbums.qml
         ${CMAKE_SOURCE_DIR}/qml/SearchSectionTracks.qml
+        ${CMAKE_SOURCE_DIR}/qml/SettingsLibrarySection.qml
+        ${CMAKE_SOURCE_DIR}/qml/SettingsPlaybackSection.qml
+        ${CMAKE_SOURCE_DIR}/qml/SettingsAppearanceSection.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackColumns.js
         ${CMAKE_SOURCE_DIR}/qml/TrackContextMenu.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackTableHeader.qml
@@ -456,6 +484,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/pages/ArtistsPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/PlaylistsPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/AiPage.qml
+        ${CMAKE_SOURCE_DIR}/qml/pages/SettingsPage.qml
     RESOURCES
         ${CMAKE_SOURCE_DIR}/resources/icons/play.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/pause.svg
@@ -476,6 +505,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/resources/icons/repeat.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/repeat-1.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/search.svg
+        ${CMAKE_SOURCE_DIR}/resources/icons/settings.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/sparkles.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/library.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/heart.svg
