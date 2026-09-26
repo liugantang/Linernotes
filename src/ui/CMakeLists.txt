@@ -25,6 +25,8 @@ add_library(linernotes_ui STATIC
     PageCache.h
     PagedListModel.cpp
     PagedListModel.h
+    PlayEventRecorder.cpp
+    PlayEventRecorder.h
     PlaylistController.cpp
     PlaylistController.h
     PlaylistListModel.cpp

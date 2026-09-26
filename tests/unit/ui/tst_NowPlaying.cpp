@@ -7,6 +7,7 @@
 #include <QTemporaryDir>
 #include <QTest>
 
+#include <core/PlaySource.h>
 #include <core/Settings.h>
 #include <library/Database.h>
 #include <library/Migrator.h>
@@ -16,6 +17,7 @@
 #include <ui/LibraryActions.h>
 #include <ui/NowPlaying.h>
 
+using linernotes::core::PlaySource;
 using linernotes::core::Settings;
 using linernotes::library::Database;
 using linernotes::library::Migrator;
@@ -81,7 +83,7 @@ void TstNowPlaying::testNowPlaying()
     QSignalSpy spy(nowPlaying, &NowPlaying::changed);
 
     // 1. playTracks({1, 2}, 1) -> nowPlaying reflects track 2 data and changed is emitted
-    actions->playTracks({ 1, 2 }, 1);
+    actions->playTracks({ 1, 2 }, 1, PlaySource::Library);
     QVERIFY(spy.count() > 0);
     QVERIFY(nowPlaying->hasTrack());
     QCOMPARE(nowPlaying->trackId(), 2LL);

@@ -33,6 +33,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_roots(m_db)
     , m_marks(m_db)
     , m_player(m_options.playerOptions)
+    , m_recorder(m_player, m_db, m_clock)
     , m_settingsController(m_settings, m_player)
     , m_coverStore(m_options.coverCacheDir)
     , m_nowPlaying(m_db, m_player, m_coverStore)

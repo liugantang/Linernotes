@@ -204,7 +204,7 @@ Rectangle {
             if (dragStarted) return
             if (mouse.button === Qt.LeftButton) {
                 if (AppContext.actions) {
-                    AppContext.actions.playTracks(rootRow.table.model.allTrackIds(), rootRow.index)
+                    AppContext.actions.playTracks(rootRow.table.model.allTrackIds(), rootRow.index, rootRow.table.playSource)
                 }
             }
         }

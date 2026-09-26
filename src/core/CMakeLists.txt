@@ -8,11 +8,14 @@ configure_file(
 )
 
 add_library(linernotes_core STATIC
+    Clock.h
     CoreSettings.h
     Logging.cpp
     Logging.h
     Paths.cpp
     Paths.h
+    PlaySource.cpp
+    PlaySource.h
     Result.h
     Settings.cpp
     Settings.h
@@ -20,6 +23,8 @@ add_library(linernotes_core STATIC
     ${CMAKE_CURRENT_BINARY_DIR}/generated/core/Version.h
 )
 add_library(Linernotes::core ALIAS linernotes_core)
+
+qt6_extract_metatypes(linernotes_core)
 
 target_include_directories(linernotes_core
     PUBLIC

@@ -63,6 +63,12 @@ std::optional<QList<PlaybackSnapshot::Item>> parseItems(const QJsonObject &json)
             }
             item.trackId = trackIdVal.toInteger(-1);
         }
+        if (elemObj.contains(QStringLiteral("playSource"))) {
+            const QJsonValue playSourceVal = elemObj.value(QStringLiteral("playSource"));
+            if (playSourceVal.isString()) {
+                item.playSource = core::playSourceFromString(playSourceVal.toString());
+            }
+        }
         items.append(item);
     }
     return items;
@@ -184,6 +190,7 @@ QJsonObject PlaybackSnapshot::toJson() const
         QJsonObject itemObj;
         itemObj.insert(QStringLiteral("source"), item.source);
         itemObj.insert(QStringLiteral("trackId"), item.trackId);
+        itemObj.insert(QStringLiteral("playSource"), core::playSourceToString(item.playSource));
         itemsArray.append(itemObj);
     }
     json.insert(QStringLiteral("items"), itemsArray);

@@ -128,6 +128,9 @@ signals:
     void exclusiveModeChanged(bool exclusive);
     void replayGainModeChanged(linernotes::player::Player::ReplayGainMode mode);
     void gaplessChanged(bool gapless);
+    /// 队列中的一项开始播放时发出一次：loadItem 正常加载、gapless 无缝切到预加载项、
+    /// 单曲循环重播（无论是否走预加载）都要发。restore() 恢复（暂停在某位置）也发。
+    void trackStarted(const linernotes::player::QueueItem &item);
     /// 语义：队列播放结束（最后一首自然播完且没有下一首）
     void playbackFinished();
     /// 某项无法播放（文件不存在、格式无法识别/解码失败）。source 为该项路径，message

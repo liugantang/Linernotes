@@ -11,6 +11,7 @@ Controls.AppMenu {
 
     property var trackIds: []
     property var playlistId: 0
+    property int playSource: PlaySource.Library
 
     function popupFor(ids) {
         if (!ids || ids.length === 0) {
@@ -47,7 +48,7 @@ Controls.AppMenu {
         text: qsTr("Play")
         onTriggered: {
             if (AppContext.actions && root.trackIds.length > 0) {
-                AppContext.actions.playTracks(root.trackIds, 0)
+                AppContext.actions.playTracks(root.trackIds, 0, root.playSource)
             }
         }
     }

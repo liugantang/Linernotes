@@ -32,3 +32,12 @@ linernotes_add_test(
     LIBS
         Linernotes::player
 )
+
+linernotes_add_test(
+    NAME player_ListenSession
+    SOURCES
+        tst_ListenSession.cpp
+    LIBS
+        Linernotes::player
+)
+

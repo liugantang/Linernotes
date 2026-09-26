@@ -7,6 +7,8 @@
 #include <QObject>
 #include <QVariantMap>
 
+#include <core/PlaySource.h>
+
 #include <cstdint>
 
 namespace linernotes::library {
@@ -28,7 +30,8 @@ public:
     ~LibraryActions() override = default;
 
     /// 用这些曲目替换播放队列，从 startIndex 开始播放
-    Q_INVOKABLE void playTracks(const QList<qint64> &trackIds, int startIndex = 0);
+    Q_INVOKABLE void playTracks(
+        const QList<qint64> &trackIds, int startIndex, linernotes::core::PlaySource source);
     Q_INVOKABLE void playNext(const QList<qint64> &trackIds); // 插到当前曲目之后
     Q_INVOKABLE void enqueue(const QList<qint64> &trackIds); // 加到队尾
 

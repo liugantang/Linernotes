@@ -23,6 +23,9 @@ Rectangle {
 
     TrackContextMenu {
         id: trackContextMenu
+        Component.onCompleted: {
+            playSource = PlaySource.Search
+        }
     }
 
     TrackListModel {
@@ -39,7 +42,7 @@ Rectangle {
         helperTrackModel.sortOrder = Qt.AscendingOrder
         const ids = helperTrackModel.allTrackIds()
         if (ids.length > 0) {
-            AppContext.actions.playTracks(ids, 0)
+            AppContext.actions.playTracks(ids, 0, PlaySource.Search)
         }
     }
 
@@ -112,7 +115,7 @@ Rectangle {
                     Layout.fillWidth: true
                     onPlayTrackRequested: (index) => {
                         if (AppContext.actions) {
-                            AppContext.actions.playTracks(AppContext.search.trackIds(), index)
+                            AppContext.actions.playTracks(AppContext.search.trackIds(), index, PlaySource.Search)
                         }
                     }
                     onTrackContextMenuRequested: (trackId) => {

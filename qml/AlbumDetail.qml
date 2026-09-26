@@ -45,6 +45,9 @@ Item {
 
     TrackContextMenu {
         id: albumContextMenu
+        Component.onCompleted: {
+            playSource = PlaySource.Album
+        }
     }
 
     function playAlbum(shuffle) {
@@ -55,7 +58,7 @@ Item {
         if (shuffle && AppContext.player && AppContext.player.queue) {
             AppContext.player.queue.mode = PlayMode.Shuffle
         }
-        AppContext.actions.playTracks(ids, 0)
+        AppContext.actions.playTracks(ids, 0, PlaySource.Album)
     }
 
     function playTrackAt(index) {
@@ -63,7 +66,7 @@ Item {
         if (ids.length === 0 || !AppContext.actions) {
             return
         }
-        AppContext.actions.playTracks(ids, index)
+        AppContext.actions.playTracks(ids, index, PlaySource.Album)
     }
 
     function formatMeta(info) {

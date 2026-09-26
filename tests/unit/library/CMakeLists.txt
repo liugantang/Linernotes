@@ -154,6 +154,15 @@ linernotes_add_test(
         Linernotes::TestSupport
 )
 
+linernotes_add_test(
+    NAME library_PlayEventStore
+    SOURCES
+        tst_PlayEventStore.cpp
+    LIBS
+        Linernotes::library
+)
+
+
 
 
 

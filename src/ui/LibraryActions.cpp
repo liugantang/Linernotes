@@ -26,7 +26,8 @@ LibraryActions::LibraryActions(library::Database &db, player::Player &player, QO
 {
 }
 
-void LibraryActions::playTracks(const QList<qint64> &trackIds, int startIndex)
+void LibraryActions::playTracks(
+    const QList<qint64> &trackIds, int startIndex, core::PlaySource source)
 {
     if (trackIds.isEmpty() || !m_db.isOpen()) {
         return;
@@ -54,6 +55,7 @@ void LibraryActions::playTracks(const QList<qint64> &trackIds, int startIndex)
         items.append(player::QueueItem {
             .source = row.path,
             .trackId = row.trackId,
+            .playSource = source,
         });
         validIds.insert(row.trackId);
     }
@@ -102,6 +104,7 @@ void LibraryActions::playNext(const QList<qint64> &trackIds)
         items.append(player::QueueItem {
             .source = row.path,
             .trackId = row.trackId,
+            .playSource = core::PlaySource::Queue,
         });
     }
 
@@ -138,6 +141,7 @@ void LibraryActions::enqueue(const QList<qint64> &trackIds)
         items.append(player::QueueItem {
             .source = row.path,
             .trackId = row.trackId,
+            .playSource = core::PlaySource::Queue,
         });
     }
 

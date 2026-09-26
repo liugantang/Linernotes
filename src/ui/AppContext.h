@@ -8,6 +8,7 @@
 #include <QTimer>
 #include <QUrl>
 
+#include <core/Clock.h>
 #include <core/Result.h>
 #include <library/CoverStore.h>
 #include <library/Database.h>
@@ -17,6 +18,7 @@
 #include <ui/LibraryRootsModel.h>
 #include <ui/MarksController.h>
 #include <ui/NowPlaying.h>
+#include <ui/PlayEventRecorder.h>
 #include <ui/PlaylistController.h>
 #include <ui/QueueModel.h>
 #include <ui/SearchController.h>
@@ -113,11 +115,13 @@ private:
     // 声明顺序即依赖顺序，析构逆序进行，依赖方先于被依赖方析构
     core::Settings &m_settings;
     Options m_options;
+    core::SystemClock m_clock;
     library::Database m_db;
     TagEditorModel m_tagEditor;
     LibraryRootsModel m_roots;
     MarksController m_marks;
     player::Player m_player;
+    PlayEventRecorder m_recorder;
     SettingsController m_settingsController;
     library::CoverStore m_coverStore;
     std::unique_ptr<player::PlaybackStateStore> m_stateStore;

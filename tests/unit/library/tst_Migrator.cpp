@@ -40,6 +40,7 @@ private slots:
     void refusesNewerDatabase();
     void backsUpBeforeUpgrade();
     void defaultResourceMigrationsLoad();
+    void upgradesTo0006AddsPlayEventDetails();
 };
 
 void TstMigrator::appliesMigrationsInOrder()
@@ -216,6 +217,66 @@ void TstMigrator::defaultResourceMigrationsLoad()
     for (int i = 0; i < migrations.size(); ++i) {
         QCOMPARE(migrations.at(i).version, i + 1);
     }
+}
+
+void TstMigrator::upgradesTo0006AddsPlayEventDetails()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 6);
+
+    // Write migrations 1..5
+    for (int i = 0; i < 5; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 5);
+
+    // Insert row in v5 play_events table
+    {
+        QSqlQuery q(conn);
+        QVERIFY(q.exec(QStringLiteral(
+            "INSERT INTO play_events (id, track_id, started_at, played_ms, track_duration_ms, "
+            "completed, skipped, source) VALUES (1, NULL, 1000, 500, 1000, 0, 0, 'local');")));
+    }
+
+    // Add migration 6
+    const auto &m6 = allMigrations.at(5);
+    const QString fileName6
+        = QStringLiteral("%1_%2.sql").arg(m6.version, 4, 10, QLatin1Char('0')).arg(m6.name);
+    writeSqlFile(migDir.path(), fileName6, m6.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 6);
+
+    // Verify default values on existing row
+    QSqlQuery q(conn);
+    QVERIFY(q.exec(QStringLiteral("SELECT play_source, skip_position_ms, paused_ms, device "
+                                  "FROM play_events WHERE id = 1;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toString(), QStringLiteral("unknown"));
+    QVERIFY(q.value(1).isNull());
+    QCOMPARE(q.value(2).toLongLong(), 0LL);
+    QVERIFY(q.value(3).isNull());
 }
 
 } // namespace

@@ -19,6 +19,7 @@ FocusScope {
     property bool reorderable: false
     property string emptyText: qsTr("No tracks in library")
     property var playlistId: 0
+    property int playSource: PlaySource.Library
 
     property var visibleColumnKeys: TrackColumns.defaultVisibleKeys()
     property var columnWidths: TrackColumns.defaultColumnWidths()
@@ -150,6 +151,7 @@ FocusScope {
     TrackContextMenu {
         id: trackContextMenu
         playlistId: root.playlistId
+        playSource: root.playSource
     }
 
     Settings {
@@ -288,7 +290,7 @@ FocusScope {
                 event.accepted = true;
             } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                 if (listView.currentIndex >= 0 && listView.currentIndex < trackModel.count && AppContext.actions) {
-                    AppContext.actions.playTracks(trackModel.allTrackIds(), listView.currentIndex);
+                    AppContext.actions.playTracks(trackModel.allTrackIds(), listView.currentIndex, root.playSource);
                 }
                 event.accepted = true;
             } else if (event.key === Qt.Key_Menu || (event.key === Qt.Key_F10 && (event.modifiers & Qt.ShiftModifier))) {
