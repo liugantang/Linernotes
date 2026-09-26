@@ -16,6 +16,8 @@ add_library(linernotes_ui STATIC
     PageCache.h
     PagedListModel.cpp
     PagedListModel.h
+    RowSelection.cpp
+    RowSelection.h
     TrackListModel.cpp
     TrackListModel.h
     UiLogging.cpp
@@ -36,6 +38,7 @@ target_link_libraries(linernotes_ui
         Linernotes::library
         Linernotes::player
         Qt6::Core
+        Qt6::Gui
         Qt6::Quick # Required by CoverImageProvider (QQuickImageProvider)
 )
 

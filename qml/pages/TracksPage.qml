@@ -9,28 +9,51 @@ import Linernotes
 Item {
     id: root
 
-    TrackListModel {
-        id: trackModel
-        context: AppContext
-    }
-
     ColumnLayout {
-        anchors.centerIn: parent
-        spacing: Theme.spacingSmall
+        anchors.fill: parent
+        spacing: 0
 
-        Label {
-            text: qsTr("Tracks")
-            font.pixelSize: Theme.fontSizeTitle
-            font.bold: true
-            color: Theme.text
-            Layout.alignment: Qt.AlignHCenter
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.preferredHeight: Theme.topBarHeight
+            Layout.leftMargin: Theme.spacingMedium
+            Layout.rightMargin: Theme.spacingMedium
+            spacing: Theme.spacingSmall
+
+            Label {
+                text: qsTr("Library")
+                font.pixelSize: Theme.fontSizeLarge
+                font.bold: true
+                color: Theme.text
+            }
+
+            Label {
+                text: "·"
+                font.pixelSize: Theme.fontSizeLarge
+                color: Theme.textSecondary
+            }
+
+            Label {
+                text: qsTr("%n track(s)", "", trackTable.count)
+                font.pixelSize: Theme.fontSizeNormal
+                color: Theme.textSecondary
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
         }
 
-        Label {
-            text: qsTr("View and manage your music tracks.")
-            font.pixelSize: Theme.fontSizeNormal
-            color: Theme.textSecondary
-            Layout.alignment: Qt.AlignHCenter
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Theme.divider
+        }
+
+        TrackTable {
+            id: trackTable
+            Layout.fillWidth: true
+            Layout.fillHeight: true
         }
     }
 }

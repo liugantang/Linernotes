@@ -22,6 +22,10 @@ Item {
         artistId: root.artistId
     }
 
+    TrackContextMenu {
+        id: contextMenu
+    }
+
     function playAll() {
         const ids = artistTracksModel.allTrackIds()
         if (ids.length > 0 && AppContext.actions) {
@@ -163,6 +167,17 @@ Item {
                         event.accepted = true
                     }
                 }
+                Keys.onPressed: (event) => {
+                    if (event.key === Qt.Key_Menu || (event.key === Qt.Key_F10 && (event.modifiers & Qt.ShiftModifier))) {
+                        if (currentIndex >= 0 && currentIndex < artistTracksModel.count) {
+                            const id = artistTracksModel.trackIdAt(currentIndex)
+                            if (id > 0) {
+                                contextMenu.popupAt([id], currentItem || artistTracksListView)
+                                event.accepted = true
+                            }
+                        }
+                    }
+                }
 
                 delegate: Rectangle {
                     id: trackRowDelegate
@@ -228,11 +243,19 @@ Item {
                         id: rowMouse
                         anchors.fill: parent
                         hoverEnabled: true
-                        onClicked: {
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+
+                        onClicked: (mouse) => {
+                            artistTracksListView.forceActiveFocus()
                             artistTracksListView.currentIndex = trackRowDelegate.index
+                            if (mouse.button === Qt.RightButton && trackRowDelegate.trackId > 0) {
+                                contextMenu.popupFor([trackRowDelegate.trackId])
+                            }
                         }
-                        onDoubleClicked: {
-                            root.playTrackAt(trackRowDelegate.index)
+                        onDoubleClicked: (mouse) => {
+                            if (mouse.button === Qt.LeftButton) {
+                                root.playTrackAt(trackRowDelegate.index)
+                            }
                         }
                     }
                 }

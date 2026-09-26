@@ -35,6 +35,14 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME ui_RowSelection
+    SOURCES
+        tst_RowSelection.cpp
+    LIBS
+        Linernotes::ui
+)
+
+linernotes_add_test(
     NAME ui_TrackListModel
     SOURCES
         tst_TrackListModel.cpp

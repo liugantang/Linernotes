@@ -38,6 +38,9 @@ public:
     [[nodiscard]] Q_INVOKABLE QVariantMap albumInfo(qint64 albumId) const;
     [[nodiscard]] Q_INVOKABLE QVariantMap artistInfo(qint64 artistId) const;
 
+    /// 在系统文件管理器中打开该曲目所在目录。
+    Q_INVOKABLE void showInFileManager(qint64 trackId) const;
+
 private:
     library::Database &m_db;
     player::Player &m_player;

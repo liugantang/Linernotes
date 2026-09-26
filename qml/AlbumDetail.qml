@@ -14,6 +14,7 @@ Item {
     signal backRequested()
 
     readonly property var info: AppContext.actions ? AppContext.actions.albumInfo(albumId) : ({})
+    property alias currentIndex: listView.currentIndex
 
     Shortcut {
         sequence: "Esc"
@@ -29,6 +30,10 @@ Item {
         id: trackModel
         context: AppContext
         albumId: root.albumId
+    }
+
+    TrackContextMenu {
+        id: contextMenu
     }
 
     function playAlbum(shuffle) {
@@ -252,87 +257,21 @@ Item {
                     event.accepted = true
                 }
             }
-
-            delegate: Rectangle {
-                id: trackDelegate
-                required property int index
-                required property var trackId
-                required property var trackNumber
-                required property string title
-                required property string artist
-                required property string durationText
-
-                width: ListView.view.width
-                height: Theme.trackRowHeight
-                radius: Theme.coverBorderRadius
-                color: {
-                    if (listView.currentIndex === trackDelegate.index && listView.activeFocus) {
-                        return Theme.itemSelected
-                    }
-                    if (rowMouseArea.containsMouse) {
-                        return Theme.itemHover
-                    }
-                    return "transparent"
-                }
-
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: Theme.spacingMedium
-                    anchors.rightMargin: Theme.spacingMedium
-                    spacing: Theme.spacingMedium
-
-                    Label {
-                        text: (trackDelegate.trackNumber !== undefined && trackDelegate.trackNumber !== null)
-                            ? trackDelegate.trackNumber : (trackDelegate.index + 1)
-                        font.pixelSize: Theme.fontSizeNormal
-                        color: Theme.textSecondary
-                        Layout.preferredWidth: 32
-                        horizontalAlignment: Text.AlignHCenter
-                    }
-
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: 2
-
-                        Label {
-                            text: trackDelegate.title || qsTr("Unknown Title")
-                            font.pixelSize: Theme.fontSizeNormal
-                            color: Theme.text
-                            elide: Text.ElideRight
-                            Layout.fillWidth: true
-                        }
-
-                        Label {
-                            visible: trackDelegate.artist.length > 0 &&
-                                trackDelegate.artist !== (root.info ? root.info.albumArtist : "")
-                            text: trackDelegate.artist
-                            font.pixelSize: Theme.fontSizeSmall
-                            color: Theme.textSecondary
-                            elide: Text.ElideRight
-                            Layout.fillWidth: true
+            Keys.onPressed: (event) => {
+                if (event.key === Qt.Key_Menu || (event.key === Qt.Key_F10 && (event.modifiers & Qt.ShiftModifier))) {
+                    if (currentIndex >= 0 && currentIndex < trackModel.count) {
+                        const id = trackModel.trackIdAt(currentIndex)
+                        if (id > 0) {
+                            contextMenu.popupAt([id], currentItem || listView)
+                            event.accepted = true
                         }
                     }
-
-                    Label {
-                        text: trackDelegate.durationText
-                        font.pixelSize: Theme.fontSizeNormal
-                        color: Theme.textSecondary
-                        Layout.preferredWidth: 60
-                        horizontalAlignment: Text.AlignRight
-                    }
                 }
+            }
 
-                MouseArea {
-                    id: rowMouseArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onClicked: {
-                        listView.currentIndex = trackDelegate.index
-                    }
-                    onDoubleClicked: {
-                        root.playTrackAt(trackDelegate.index)
-                    }
-                }
+            delegate: AlbumTrackRow {
+                albumDetail: root
+                contextMenu: contextMenu
             }
         }
     }

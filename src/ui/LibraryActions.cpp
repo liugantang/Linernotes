@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Linernotes contributors
 
+#include <QDesktopServices>
+#include <QDir>
+#include <QFileInfo>
 #include <QSet>
+#include <QUrl>
 
 #include <library/Database.h>
 #include <library/LibraryQuery.h>
@@ -205,6 +209,32 @@ QVariantMap LibraryActions::artistInfo(qint64 artistId) const
     map.insert(QStringLiteral("albumCount"), row.albumCount);
     map.insert(QStringLiteral("coverHash"), row.coverHash);
     return map;
+}
+
+void LibraryActions::showInFileManager(qint64 trackId) const
+{
+    if (trackId <= 0) {
+        return;
+    }
+
+    const auto connOpt = m_db.connection();
+    if (!connOpt.ok()) {
+        qCWarning(lcUi, "Database connection not available for showInFileManager");
+        return;
+    }
+
+    const library::LibraryQuery query(connOpt.value());
+    const auto res = query.tracksByIds({ trackId });
+    if (!res.ok() || res.value().isEmpty()) {
+        qCWarning(
+            lcUi, "Track not found for showInFileManager: %lld", static_cast<long long>(trackId));
+        return;
+    }
+
+    const QString &filePath = res.value().constFirst().path;
+    const QFileInfo fileInfo(filePath);
+    const QString dirPath = fileInfo.dir().absolutePath();
+    QDesktopServices::openUrl(QUrl::fromLocalFile(dirPath));
 }
 
 } // namespace linernotes::ui

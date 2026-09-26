@@ -97,6 +97,51 @@ set_source_files_properties(
     PROPERTIES
         QT_RESOURCE_ALIAS controls/AppTabButton.qml
 )
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/controls/AppMenu.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS controls/AppMenu.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/controls/AppMenuItem.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS controls/AppMenuItem.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/controls/AppMenuSeparator.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS controls/AppMenuSeparator.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/TrackColumns.js
+    PROPERTIES
+        QT_RESOURCE_ALIAS TrackColumns.js
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/TrackContextMenu.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS TrackContextMenu.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/TrackTableHeader.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS TrackTableHeader.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/TrackTableRow.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS TrackTableRow.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/TrackTable.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS TrackTable.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/AlbumTrackRow.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS AlbumTrackRow.qml
+)
 
 set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/resources/icons/play.svg
@@ -184,6 +229,9 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/controls/AppComboBox.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/AppTabBar.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/AppTabButton.qml
+        ${CMAKE_SOURCE_DIR}/qml/controls/AppMenu.qml
+        ${CMAKE_SOURCE_DIR}/qml/controls/AppMenuItem.qml
+        ${CMAKE_SOURCE_DIR}/qml/controls/AppMenuSeparator.qml
         ${CMAKE_SOURCE_DIR}/qml/Main.qml
         ${CMAKE_SOURCE_DIR}/qml/Theme.qml
         ${CMAKE_SOURCE_DIR}/qml/NavigationSidebar.qml
@@ -191,7 +239,13 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/SidePanel.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumGrid.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumDetail.qml
+        ${CMAKE_SOURCE_DIR}/qml/AlbumTrackRow.qml
         ${CMAKE_SOURCE_DIR}/qml/ArtistDetail.qml
+        ${CMAKE_SOURCE_DIR}/qml/TrackColumns.js
+        ${CMAKE_SOURCE_DIR}/qml/TrackContextMenu.qml
+        ${CMAKE_SOURCE_DIR}/qml/TrackTableHeader.qml
+        ${CMAKE_SOURCE_DIR}/qml/TrackTableRow.qml
+        ${CMAKE_SOURCE_DIR}/qml/TrackTable.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/TracksPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/AlbumsPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/ArtistsPage.qml

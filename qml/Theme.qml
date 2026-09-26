@@ -72,4 +72,6 @@ QtObject {
     readonly property int coverBorderRadius: 6
     readonly property int cardBorderRadius: 8
     readonly property int trackRowHeight: 44
+    readonly property int menuMinWidth: 220
+    readonly property int tableRowHeight: 32
 }
