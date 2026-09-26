@@ -41,14 +41,17 @@ void Translations::apply(SettingsController::Language language)
         break;
     }
 
-    if (!isChinese) {
-        return;
-    }
-
-    if (m_appTranslator.load(QStringLiteral(":/i18n/linernotes_zh_CN.qm"))) {
+    // 英文是源语言，但 “%n track(s)” 的单复数形式来自 linernotes_en.qm
+    const QString appQm = isChinese ? QStringLiteral(":/i18n/linernotes_zh_CN.qm")
+                                    : QStringLiteral(":/i18n/linernotes_en.qm");
+    if (m_appTranslator.load(appQm)) {
         QCoreApplication::installTranslator(&m_appTranslator);
     } else {
-        qCInfo(lcUi) << "Could not load application translation :/i18n/linernotes_zh_CN.qm";
+        qCInfo(lcUi) << "Could not load application translation" << appQm;
+    }
+
+    if (!isChinese) {
+        return;
     }
 
     const QString qtTranslationsPath = QLibraryInfo::path(QLibraryInfo::TranslationsPath);
