@@ -330,6 +330,22 @@ int Player::duckApplyCount() const
     return m_duckApplyCount;
 }
 
+void Player::testInjectStartFile(qint64 entryId)
+{
+    onStartFile(entryId);
+}
+
+void Player::testInjectEndFile(
+    qint64 entryId, MpvHandle::EndFileReason reason, const QString &error)
+{
+    onEndFile(entryId, reason, error);
+}
+
+void Player::testInjectFileLoaded()
+{
+    onFileLoaded();
+}
+
 void Player::openFile(const QString &path)
 {
     qCDebug(lcPlayer) << "openFile:" << path;
@@ -983,10 +999,15 @@ void Player::onEndFile(qint64 entryId, MpvHandle::EndFileReason reason, const QS
 
     if (reason == MpvHandle::EndFileReason::Eof) {
         if (m_preloadEntryId == -1 && (entryId == m_currentEntryId || m_currentEntryId == -1)) {
-            m_queue->advance(PlayOrder::Advance::Auto);
-            m_currentEntryId = -1;
-            m_currentUid = 0;
-            emit playbackFinished();
+            const auto nextItem = m_queue->advance(PlayOrder::Advance::Auto);
+            if (nextItem.has_value()) {
+                loadCurrentItem(*nextItem);
+            } else {
+                m_currentEntryId = -1;
+                m_currentUid = 0;
+                stop();
+                emit playbackFinished();
+            }
         }
     } else if (reason == MpvHandle::EndFileReason::Error) {
         handleEndFileError(entryId, failedSource, error);
@@ -1011,10 +1032,12 @@ void Player::handleEndFileError(qint64 entryId, const QString &failedSource, con
         return;
     }
 
-    if (m_preloadIsRepeatOne && m_preloadEntryId != -1) {
+    if (m_preloadEntryId != -1) {
         m_inInternalSync = true;
         m_ignoredEntryIds.insert(m_preloadEntryId);
-        m_mpv->command({ QStringLiteral("playlist-remove"), QStringLiteral("1") });
+        if (m_mpv != nullptr && m_mpv->isValid()) {
+            m_mpv->command({ QStringLiteral("playlist-remove"), QStringLiteral("1") });
+        }
         m_entrySources.remove(m_preloadEntryId);
         m_preloadEntryId = -1;
         m_preloadUid = 0;
@@ -1022,19 +1045,15 @@ void Player::handleEndFileError(qint64 entryId, const QString &failedSource, con
         m_inInternalSync = false;
     }
 
-    if (entryId == m_currentEntryId || m_currentEntryId == -1) {
-        if (m_preloadEntryId != -1) {
-            // mpv has preloaded next item and will automatically transition to it.
+    if (entryId == m_currentEntryId || m_currentEntryId == -1 || m_idleActive) {
+        const auto nextItem = m_queue->advance(PlayOrder::Advance::User);
+        if (nextItem.has_value()) {
+            loadCurrentItem(*nextItem);
         } else {
-            const auto nextItem = m_queue->advance(PlayOrder::Advance::User);
-            if (nextItem.has_value()) {
-                loadCurrentItem(*nextItem);
-            } else {
-                m_currentEntryId = -1;
-                m_currentUid = 0;
-                stop();
-                emit playbackFinished();
-            }
+            m_currentEntryId = -1;
+            m_currentUid = 0;
+            stop();
+            emit playbackFinished();
         }
     }
 }
