@@ -17,45 +17,45 @@
 <context>
     <name>AlbumDetail</name>
     <message numerus="yes">
-        <location filename="../qml/AlbumDetail.qml" line="75"/>
+        <location filename="../qml/AlbumDetail.qml" line="78"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n 首</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="96"/>
+        <location filename="../qml/AlbumDetail.qml" line="99"/>
         <source>Back</source>
         <translation>返回</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="157"/>
+        <location filename="../qml/AlbumDetail.qml" line="160"/>
         <source>Unknown Album</source>
         <translation>未知专辑</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="166"/>
+        <location filename="../qml/AlbumDetail.qml" line="169"/>
         <source>Unknown Artist</source>
         <translation>未知艺人</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="187"/>
+        <location filename="../qml/AlbumDetail.qml" line="190"/>
         <source>Play</source>
         <translation>播放</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="194"/>
+        <location filename="../qml/AlbumDetail.qml" line="197"/>
         <source>Shuffle</source>
         <translation>随机播放</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="236"/>
+        <location filename="../qml/AlbumDetail.qml" line="239"/>
         <source>Title</source>
         <extracomment>Track title header</extracomment>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="244"/>
+        <location filename="../qml/AlbumDetail.qml" line="247"/>
         <source>Duration</source>
         <extracomment>Track duration header</extracomment>
         <translation>时长</translation>
@@ -270,41 +270,41 @@
 <context>
     <name>ArtistDetail</name>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="98"/>
+        <location filename="../qml/ArtistDetail.qml" line="101"/>
         <source>Unknown Artist</source>
         <translation>未知艺人</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/ArtistDetail.qml" line="109"/>
+        <location filename="../qml/ArtistDetail.qml" line="112"/>
         <source>%n album(s)</source>
         <translation>
             <numerusform>%n 张专辑</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/ArtistDetail.qml" line="109"/>
+        <location filename="../qml/ArtistDetail.qml" line="112"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n 首</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="119"/>
+        <location filename="../qml/ArtistDetail.qml" line="122"/>
         <source>Play All</source>
         <translation>播放全部</translation>
     </message>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="142"/>
+        <location filename="../qml/ArtistDetail.qml" line="145"/>
         <source>Albums (%1)</source>
         <translation>专辑 (%1)</translation>
     </message>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="146"/>
+        <location filename="../qml/ArtistDetail.qml" line="149"/>
         <source>All Tracks (%1)</source>
         <translation>全部歌曲 (%1)</translation>
     </message>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="240"/>
+        <location filename="../qml/ArtistDetail.qml" line="243"/>
         <source>Unknown Title</source>
         <translation>未知标题</translation>
     </message>
@@ -737,7 +737,7 @@
         <translation>此歌单为空</translation>
     </message>
     <message>
-        <location filename="../qml/pages/PlaylistsPage.qml" line="151"/>
+        <location filename="../qml/pages/PlaylistsPage.qml" line="154"/>
         <source>Select a playlist</source>
         <translation>选择歌单</translation>
     </message>
@@ -842,12 +842,12 @@
 <context>
     <name>SearchResults</name>
     <message>
-        <location filename="../qml/SearchResults.qml" line="56"/>
+        <location filename="../qml/SearchResults.qml" line="59"/>
         <source>Search &quot;%1&quot;</source>
         <translation>搜索“%1”</translation>
     </message>
     <message>
-        <location filename="../qml/SearchResults.qml" line="66"/>
+        <location filename="../qml/SearchResults.qml" line="69"/>
         <source>No results found for &quot;%1&quot;</source>
         <translation>未找到“%1”的相关结果</translation>
     </message>
@@ -1031,49 +1031,74 @@
         <translation>未知设备</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsPlaybackSection.qml" line="87"/>
+        <location filename="../qml/SettingsPlaybackSection.qml" line="106"/>
         <source>Playback</source>
         <translation>播放</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsPlaybackSection.qml" line="100"/>
+        <location filename="../qml/SettingsPlaybackSection.qml" line="119"/>
         <source>ReplayGain</source>
         <translation>ReplayGain</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsPlaybackSection.qml" line="112"/>
+        <location filename="../qml/SettingsPlaybackSection.qml" line="131"/>
         <source>Off</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsPlaybackSection.qml" line="113"/>
+        <location filename="../qml/SettingsPlaybackSection.qml" line="132"/>
         <source>Track</source>
         <translation>单曲</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsPlaybackSection.qml" line="114"/>
+        <location filename="../qml/SettingsPlaybackSection.qml" line="133"/>
         <source>Album</source>
         <translation>专辑</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsPlaybackSection.qml" line="131"/>
+        <location filename="../qml/SettingsPlaybackSection.qml" line="150"/>
         <source>Gapless playback</source>
         <translation>无缝播放</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsPlaybackSection.qml" line="153"/>
+        <location filename="../qml/SettingsPlaybackSection.qml" line="172"/>
         <source>Output Device</source>
         <translation>输出设备</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsPlaybackSection.qml" line="182"/>
+        <location filename="../qml/SettingsPlaybackSection.qml" line="201"/>
         <source>Exclusive mode</source>
         <translation>独占模式</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsPlaybackSection.qml" line="199"/>
+        <location filename="../qml/SettingsPlaybackSection.qml" line="218"/>
         <source>Bypass the system mixer (may not be supported by all devices)</source>
         <translation>绕过系统混音器（并非所有设备都支持）</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsPlaybackSection.qml" line="237"/>
+        <source>Play Count</source>
+        <translation>播放计数</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsPlaybackSection.qml" line="247"/>
+        <source>Played at least</source>
+        <translation>至少听过</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsPlaybackSection.qml" line="271"/>
+        <source>or at least</source>
+        <translation>或至少</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsPlaybackSection.qml" line="290"/>
+        <source>min</source>
+        <translation>分钟</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsPlaybackSection.qml" line="302"/>
+        <source>Criteria for counting a track as played (0 minutes disables duration threshold)</source>
+        <translation>满足任一条件即计为一次播放（0 分钟表示只按百分比）</translation>
     </message>
 </context>
 <context>
@@ -1339,72 +1364,72 @@
 <context>
     <name>TrackContextMenu</name>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="33"/>
+        <location filename="../qml/TrackContextMenu.qml" line="34"/>
         <source>New Playlist</source>
         <translation>新建歌单</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="34"/>
+        <location filename="../qml/TrackContextMenu.qml" line="35"/>
         <source>Create</source>
         <translation>创建</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="47"/>
+        <location filename="../qml/TrackContextMenu.qml" line="48"/>
         <source>Play</source>
         <translation>播放</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="56"/>
+        <location filename="../qml/TrackContextMenu.qml" line="57"/>
         <source>Play Next</source>
         <translation>下一首播放</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="65"/>
+        <location filename="../qml/TrackContextMenu.qml" line="66"/>
         <source>Add to Queue</source>
         <translation>添加到播放队列</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="75"/>
+        <location filename="../qml/TrackContextMenu.qml" line="76"/>
         <source>Add to Playlist</source>
         <translation>添加到歌单</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="78"/>
+        <location filename="../qml/TrackContextMenu.qml" line="79"/>
         <source>New Playlist...</source>
         <translation>新建歌单…</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="117"/>
+        <location filename="../qml/TrackContextMenu.qml" line="118"/>
         <source>Remove from Playlist</source>
         <translation>从歌单中移除</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="132"/>
+        <location filename="../qml/TrackContextMenu.qml" line="133"/>
         <source>Remove from Loved</source>
         <translation>取消收藏</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="132"/>
+        <location filename="../qml/TrackContextMenu.qml" line="133"/>
         <source>Love</source>
         <translation>收藏</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="142"/>
+        <location filename="../qml/TrackContextMenu.qml" line="143"/>
         <source>Rating</source>
         <translation>评分</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="145"/>
+        <location filename="../qml/TrackContextMenu.qml" line="146"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="202"/>
+        <location filename="../qml/TrackContextMenu.qml" line="203"/>
         <source>Show in File Manager</source>
         <translation>在文件管理器中显示</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="212"/>
+        <location filename="../qml/TrackContextMenu.qml" line="213"/>
         <source>Edit Tags...</source>
         <translation>编辑标签…</translation>
     </message>
@@ -1417,67 +1442,67 @@
         <translation>曲库中暂无歌曲</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="100"/>
+        <location filename="../qml/TrackTable.qml" line="101"/>
         <source>Title</source>
         <extracomment>Track table column header</extracomment>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="102"/>
+        <location filename="../qml/TrackTable.qml" line="103"/>
         <source>Artist</source>
         <extracomment>Track table column header</extracomment>
         <translation>艺人</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="104"/>
+        <location filename="../qml/TrackTable.qml" line="105"/>
         <source>Album</source>
         <extracomment>Track table column header</extracomment>
         <translation>专辑</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="106"/>
+        <location filename="../qml/TrackTable.qml" line="107"/>
         <source>Album Artist</source>
         <extracomment>Track table column header</extracomment>
         <translation>专辑艺人</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="108"/>
+        <location filename="../qml/TrackTable.qml" line="109"/>
         <source>Genre</source>
         <extracomment>Track table column header</extracomment>
         <translation>流派</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="110"/>
+        <location filename="../qml/TrackTable.qml" line="111"/>
         <source>Year</source>
         <extracomment>Track table column header</extracomment>
         <translation>年份</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="112"/>
+        <location filename="../qml/TrackTable.qml" line="113"/>
         <source>Duration</source>
         <extracomment>Track table column header</extracomment>
         <translation>时长</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="114"/>
+        <location filename="../qml/TrackTable.qml" line="115"/>
         <source>Rating</source>
         <extracomment>Track table column header</extracomment>
         <translation>评分</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="116"/>
+        <location filename="../qml/TrackTable.qml" line="117"/>
         <source>Format</source>
         <extracomment>Track table column header</extracomment>
         <translation>格式</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="118"/>
+        <location filename="../qml/TrackTable.qml" line="119"/>
         <source>Bitrate</source>
         <extracomment>Track table column header</extracomment>
         <translation>比特率</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="120"/>
+        <location filename="../qml/TrackTable.qml" line="121"/>
         <source>Date Added</source>
         <extracomment>Track table column header</extracomment>
         <translation>添加日期</translation>

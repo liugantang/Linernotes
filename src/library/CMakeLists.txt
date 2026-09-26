@@ -36,6 +36,8 @@ add_library(linernotes_library STATIC
     Migrator.h
     OverrideStore.cpp
     OverrideStore.h
+    PlayCountRule.cpp
+    PlayCountRule.h
     PlayEventStore.cpp
     PlayEventStore.h
     PlaylistStore.cpp

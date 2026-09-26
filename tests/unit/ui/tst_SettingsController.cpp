@@ -7,6 +7,7 @@
 #include <QTest>
 
 #include <core/Settings.h>
+#include <library/PlayCountRule.h>
 #include <player/Player.h>
 #include <ui/AppSettings.h>
 #include <ui/SettingsController.h>
@@ -14,6 +15,7 @@
 namespace {
 
 using linernotes::core::Settings;
+using linernotes::library::PlayCountRule;
 using linernotes::player::Player;
 using linernotes::ui::SettingsController;
 
@@ -25,6 +27,7 @@ private slots:
     void testAudioDeviceAndGaplessSettings();
     void testFirstRunCompletedSettings();
     void testLanguageSettings();
+    void testPlayCountRuleSettings();
 };
 
 void TstSettingsController::testThemeAndReplayGainSettings()
@@ -148,6 +151,80 @@ void TstSettingsController::testLanguageSettings()
 
     SettingsController ctrl3(settings, player2);
     QCOMPARE(ctrl3.language(), SettingsController::Language::English);
+}
+
+void TstSettingsController::testPlayCountRuleSettings()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString iniPath = tempDir.filePath(QStringLiteral("settings.ini"));
+
+    Settings settings(iniPath);
+    Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
+
+    SettingsController ctrl1(settings, player);
+
+    // 1. Defaults
+    QCOMPARE(ctrl1.countMinPercent(), 50);
+    QCOMPARE(ctrl1.countMinSeconds(), 240);
+    const PlayCountRule defaultRule { .minPercent = 50, .minSeconds = 240 };
+    QCOMPARE(ctrl1.playCountRule(), defaultRule);
+
+    QSignalSpy percentSpy(&ctrl1, &SettingsController::countMinPercentChanged);
+    QSignalSpy secondsSpy(&ctrl1, &SettingsController::countMinSecondsChanged);
+    QSignalSpy ruleSpy(&ctrl1, &SettingsController::playCountRuleChanged);
+
+    // 2. Out-of-bounds clamping
+    // minPercent > 100 clamped to 100
+    ctrl1.setCountMinPercent(150);
+    QCOMPARE(ctrl1.countMinPercent(), 100);
+    QCOMPARE(percentSpy.count(), 1);
+    QCOMPARE(ruleSpy.count(), 1);
+
+    // Setting same clamped value -> no signal emitted
+    ctrl1.setCountMinPercent(100);
+    QCOMPARE(percentSpy.count(), 1);
+    QCOMPARE(ruleSpy.count(), 1);
+
+    // minPercent < 1 clamped to 1
+    ctrl1.setCountMinPercent(0);
+    QCOMPARE(ctrl1.countMinPercent(), 1);
+    QCOMPARE(percentSpy.count(), 2);
+    QCOMPARE(ruleSpy.count(), 2);
+
+    // minSeconds < 0 clamped to 0
+    ctrl1.setCountMinSeconds(-50);
+    QCOMPARE(ctrl1.countMinSeconds(), 0);
+    QCOMPARE(secondsSpy.count(), 1);
+    QCOMPARE(ruleSpy.count(), 3);
+
+    // minSeconds > 3600 clamped to 3600
+    ctrl1.setCountMinSeconds(9999);
+    QCOMPARE(ctrl1.countMinSeconds(), 3600);
+    QCOMPARE(secondsSpy.count(), 2);
+    QCOMPARE(ruleSpy.count(), 4);
+
+    // Setting valid custom values
+    ctrl1.setCountMinPercent(70);
+    QCOMPARE(ctrl1.countMinPercent(), 70);
+    QCOMPARE(percentSpy.count(), 3);
+    QCOMPARE(ruleSpy.count(), 5);
+
+    ctrl1.setCountMinSeconds(180);
+    QCOMPARE(ctrl1.countMinSeconds(), 180);
+    QCOMPARE(secondsSpy.count(), 3);
+    QCOMPARE(ruleSpy.count(), 6);
+
+    const PlayCountRule customRule { .minPercent = 70, .minSeconds = 180 };
+    QCOMPARE(ctrl1.playCountRule(), customRule);
+
+    // 3. Persistence
+    Player player2({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    SettingsController ctrl2(settings, player2);
+
+    QCOMPARE(ctrl2.countMinPercent(), 70);
+    QCOMPARE(ctrl2.countMinSeconds(), 180);
+    QCOMPARE(ctrl2.playCountRule(), customRule);
 }
 
 } // namespace

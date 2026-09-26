@@ -96,6 +96,14 @@ SettingsController::SettingsController(
     , m_gapless(m_settings.value(kPlaybackGapless))
     , m_audioDevice(m_settings.value(kPlaybackAudioDevice))
     , m_exclusiveMode(m_settings.value(kPlaybackExclusive))
+    , m_countMinPercent(
+          library::PlayCountRule { .minPercent = m_settings.value(kPlaybackCountMinPercent) }
+              .normalized()
+              .minPercent)
+    , m_countMinSeconds(
+          library::PlayCountRule { .minSeconds = m_settings.value(kPlaybackCountMinSeconds) }
+              .normalized()
+              .minSeconds)
     , m_language(languageFromString(m_settings.value(kAppearanceLanguage)))
     , m_themeMode(themeModeFromString(m_settings.value(kAppearanceTheme)))
     , m_accentFromCover(m_settings.value(kAppearanceAccentFromCover))
@@ -181,6 +189,48 @@ void SettingsController::setExclusiveMode(bool exclusive)
     m_player.setExclusiveMode(exclusive);
     m_settings.setValue(kPlaybackExclusive, exclusive);
     emit exclusiveModeChanged();
+}
+
+int SettingsController::countMinPercent() const
+{
+    return m_countMinPercent;
+}
+
+void SettingsController::setCountMinPercent(int percent)
+{
+    const int clamped = library::PlayCountRule { .minPercent = percent }.normalized().minPercent;
+    if (clamped == m_countMinPercent) {
+        return;
+    }
+    m_countMinPercent = clamped;
+    m_settings.setValue(kPlaybackCountMinPercent, clamped);
+    emit countMinPercentChanged();
+    emit playCountRuleChanged();
+}
+
+int SettingsController::countMinSeconds() const
+{
+    return m_countMinSeconds;
+}
+
+void SettingsController::setCountMinSeconds(int seconds)
+{
+    const int clamped = library::PlayCountRule { .minSeconds = seconds }.normalized().minSeconds;
+    if (clamped == m_countMinSeconds) {
+        return;
+    }
+    m_countMinSeconds = clamped;
+    m_settings.setValue(kPlaybackCountMinSeconds, clamped);
+    emit countMinSecondsChanged();
+    emit playCountRuleChanged();
+}
+
+library::PlayCountRule SettingsController::playCountRule() const
+{
+    return library::PlayCountRule {
+        .minPercent = m_countMinPercent,
+        .minSeconds = m_countMinSeconds,
+    };
 }
 
 SettingsController::Language SettingsController::language() const

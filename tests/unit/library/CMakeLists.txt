@@ -155,6 +155,14 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME library_PlayCountRule
+    SOURCES
+        tst_PlayCountRule.cpp
+    LIBS
+        Linernotes::library
+)
+
+linernotes_add_test(
     NAME library_PlayEventStore
     SOURCES
         tst_PlayEventStore.cpp

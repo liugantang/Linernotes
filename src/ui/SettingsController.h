@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QString>
 
+#include <library/PlayCountRule.h>
 #include <player/Player.h>
 
 #include <cstdint>
@@ -33,6 +34,10 @@ public:
     Q_PROPERTY(QString audioDevice READ audioDevice WRITE setAudioDevice NOTIFY audioDeviceChanged)
     Q_PROPERTY(
         bool exclusiveMode READ exclusiveMode WRITE setExclusiveMode NOTIFY exclusiveModeChanged)
+    Q_PROPERTY(int countMinPercent READ countMinPercent WRITE setCountMinPercent NOTIFY
+            countMinPercentChanged)
+    Q_PROPERTY(int countMinSeconds READ countMinSeconds WRITE setCountMinSeconds NOTIFY
+            countMinSecondsChanged)
     Q_PROPERTY(Language language READ language WRITE setLanguage NOTIFY languageChanged)
     Q_PROPERTY(ThemeMode themeMode READ themeMode WRITE setThemeMode NOTIFY themeModeChanged)
     Q_PROPERTY(bool accentFromCover READ accentFromCover WRITE setAccentFromCover NOTIFY
@@ -56,6 +61,14 @@ public:
     [[nodiscard]] bool exclusiveMode() const;
     void setExclusiveMode(bool exclusive);
 
+    [[nodiscard]] int countMinPercent() const;
+    void setCountMinPercent(int percent);
+
+    [[nodiscard]] int countMinSeconds() const;
+    void setCountMinSeconds(int seconds);
+
+    [[nodiscard]] library::PlayCountRule playCountRule() const;
+
     [[nodiscard]] Language language() const;
     void setLanguage(Language lang);
 
@@ -73,6 +86,9 @@ signals:
     void gaplessChanged();
     void audioDeviceChanged();
     void exclusiveModeChanged();
+    void countMinPercentChanged();
+    void countMinSecondsChanged();
+    void playCountRuleChanged();
     void languageChanged();
     void themeModeChanged();
     void accentFromCoverChanged();
@@ -86,6 +102,8 @@ private:
     bool m_gapless { true };
     QString m_audioDevice;
     bool m_exclusiveMode { false };
+    int m_countMinPercent { 50 };
+    int m_countMinSeconds { 240 };
     Language m_language { Language::System };
     ThemeMode m_themeMode { ThemeMode::System };
     bool m_accentFromCover { false };
