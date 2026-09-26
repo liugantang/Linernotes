@@ -3,6 +3,9 @@
 InheritParentConfig: true
 
 # QFETCH 宏展开为非 const 局部变量，无法加 const
+# clang-analyzer-*：Qt Test 宏展开后路径爆炸，单个测试文件分析要 30 s 左右，
+#   占整个 tidy 耗时的大头；测试代码由 ASan/UBSan 运行时检查兜底，产品代码仍保留静态分析
 Checks: >-
-  -misc-const-correctness
+  -misc-const-correctness,
+  -clang-analyzer-*
 ...

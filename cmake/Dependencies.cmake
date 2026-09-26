@@ -24,6 +24,7 @@ pkg_check_modules(ICU REQUIRED IMPORTED_TARGET "icu-uc>=70" "icu-i18n>=70")
 pkg_check_modules(CHROMAPRINT REQUIRED IMPORTED_TARGET "libchromaprint>=1.5")
 pkg_check_modules(FFMPEG REQUIRED IMPORTED_TARGET "libavformat" "libavcodec" "libavutil" "libswresample")
 pkg_check_modules(EBUR128 REQUIRED IMPORTED_TARGET "libebur128>=1.2")
+pkg_check_modules(SQLITE3 REQUIRED IMPORTED_TARGET "sqlite3>=3.40")
 
 # Aliases for third-party dependencies
 add_library(linernotes_dep_mpv INTERFACE)
@@ -65,6 +66,10 @@ if(QTKEYCHAIN_INCLUDE_DIR)
 endif()
 add_library(Linernotes::Deps::Keychain ALIAS linernotes_dep_keychain)
 
+add_library(linernotes_dep_sqlite3 INTERFACE)
+target_link_libraries(linernotes_dep_sqlite3 INTERFACE PkgConfig::SQLITE3)
+add_library(Linernotes::Deps::SQLite3 ALIAS linernotes_dep_sqlite3)
+
 # Format ICU and FFmpeg versions for display
 if(NOT ICU_VERSION)
     if(ICU_icu-uc_VERSION)
@@ -91,4 +96,5 @@ message(STATUS "  icu                  : ${ICU_VERSION}")
 message(STATUS "  libchromaprint       : ${CHROMAPRINT_VERSION}")
 message(STATUS "  ffmpeg               : ${FFMPEG_VERSION}")
 message(STATUS "  libebur128           : ${EBUR128_VERSION}")
+message(STATUS "  sqlite3              : ${SQLITE3_VERSION}")
 message(STATUS "==============================================================")

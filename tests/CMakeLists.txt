@@ -2,5 +2,12 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 add_subdirectory(common)
-add_subdirectory(unit)
-add_subdirectory(integration)
+
+if(LINERNOTES_BUILD_TESTS)
+    add_subdirectory(unit)
+    add_subdirectory(integration)
+endif()
+
+if(LINERNOTES_BUILD_BENCHMARKS)
+    add_subdirectory(benchmarks)
+endif()

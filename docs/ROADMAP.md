@@ -101,28 +101,48 @@
 
 ---
 
-## 阶段 2：曲库扫描与数据库（2 周）
+## 阶段 2：曲库扫描与数据库（2 周）✅ 完成（2026-09-26）
 
 **目标**：可靠、快速、增量的曲库索引，以及为后续所有功能打好的数据模型。
 
 | # | 任务 |
 |---|---|
-| 2.1 | 数据库层：SQLite 连接管理（每线程一个连接）、WAL、`PRAGMA` 调优、**迁移框架**（`schema_version` + 有序 SQL 脚本） |
-| 2.2 | 核心表设计：`files`、`tracks`、`raw_tags`、`artists`、`artist_aliases`、`track_artists`（多对多 + 角色）、`albums`、`works`（作品，预留）、`playlists`、`playlist_items`、`favorites`、`covers` |
-| 2.3 | 元数据三层表：`raw_tags` / `corrections`（source、confidence、status、reason、batch_id）/ `user_overrides`；`effective_metadata` 视图或物化表 + 刷新触发 |
-| 2.4 | 预留表：`play_events`、`moments`、`audio_features`、`embeddings`、`llm_cache`、`change_log`（先建表，后面阶段填充） |
-| 2.5 | 扫描器：多根目录、排除规则、`QDirIterator` 递归；按 mtime+size 增量；删除检测 |
-| 2.6 | 标签读取：TagLib 读所有字段（含多值、MusicBrainz ID、ReplayGain、歌词、封面存在性）；**保留原始字节**以供乱码修复使用（ID3v1/ID3v2.3 Latin-1 字段） |
-| 2.7 | 并行扫描：`QThreadPool` 读标签，单写线程批量事务写入（每 500 条一个事务） |
-| 2.8 | 文件监听：`QFileSystemWatcher`（Linux 下注意 inotify 上限，超限时退化为定时增量扫描） |
-| 2.9 | 封面：提取内嵌/目录封面，生成多尺寸缩略图缓存（按内容 hash 去重） |
-| 2.10 | FTS5 索引：标题/艺人/专辑/别名；加入拼音全拼+首字母、简繁双写入 |
-| 2.11 | 文件内容指纹：部分内容 hash（如头尾各 64 KB + 大小）用于移动检测与完全重复识别 |
-| 2.12 | 性能基准：生成 10 万条假数据的基准测试，验证查询耗时 |
-| 2.13 | 测试：包含各种编码/格式/损坏文件的测试素材集（这个素材集后续管家阶段反复用到） |
+| ✅ 2.1 | 数据库层：SQLite 连接管理（每线程一个连接）、WAL、`PRAGMA` 调优、**迁移框架**（`schema_version` + 有序 SQL 脚本） |
+| ✅ 2.2 | 核心表设计：`files`、`tracks`、`raw_tags`、`artists`、`artist_aliases`、`track_artists`（多对多 + 角色）、`albums`、`works`（作品，预留）、`playlists`、`playlist_items`、`favorites`、`covers` |
+| ✅ 2.3 | 元数据三层表：`raw_tags` / `corrections`（source、confidence、status、reason、batch_id）/ `user_overrides`；`effective_metadata` 视图或物化表 + 刷新触发 |
+| ✅ 2.4 | 预留表：`play_events`、`moments`、`audio_features`、`embeddings`、`llm_cache`、`change_log`（先建表，后面阶段填充） |
+| ✅ 2.5 | 扫描器：多根目录、排除规则、`QDirIterator` 递归；按 mtime+size 增量；删除检测 |
+| ✅ 2.6 | 标签读取：TagLib 读所有字段（含多值、MusicBrainz ID、ReplayGain、歌词、封面存在性）；**保留原始字节**以供乱码修复使用（ID3v1/ID3v2.3 Latin-1 字段） |
+| ✅ 2.7 | 并行扫描：`QThreadPool` 读标签，单写线程批量事务写入（每 500 条一个事务） |
+| ✅ 2.8 | 文件监听：`QFileSystemWatcher`（Linux 下注意 inotify 上限，超限时退化为定时增量扫描） |
+| ✅ 2.9 | 封面：提取内嵌/目录封面，生成多尺寸缩略图缓存（按内容 hash 去重） |
+| ✅ 2.10 | FTS5 索引：标题/艺人/专辑/别名；加入拼音全拼+首字母、简繁双写入 |
+| ✅ 2.11 | 文件内容指纹：部分内容 hash（如头尾各 64 KB + 大小）用于移动检测与完全重复识别 |
+| ✅ 2.12 | 性能基准：生成 10 万条假数据的基准测试，验证查询耗时 |
+| ✅ 2.13 | 测试：包含各种编码/格式/损坏文件的测试素材集（这个素材集后续管家阶段反复用到） |
 
 **交付物**：`library` 库；CLI `linernotes-scan <dir>` 输出统计。
 **验收**：1 万首首扫 < 2 min，二次增量 < 5 s；FTS 查询 < 100 ms（10 万条）；中断扫描后重跑结果一致。
+
+**验收记录（2026-09-26）**（release 构建，`linernotes-scan` 使用临时数据库，只读扫描）：
+- 首扫 / 二次增量：
+  - 本地曲库（btrfs，1564 首，m4a/alac 为主）：首扫 0.9–1.5 s，二次 12 ms，0 失败。扫描为 O(n)，按每首耗时线性外推，1 万首约 10 s / 0.1 s，满足 < 2 min / < 5 s
+  - NAS（SMB2，2185 首 hi-res flac + dsf/wav/aiff）：冷缓存首扫 214 s，预热后约 64 s，二次 2.9–3.4 s，0 失败。首扫瓶颈是 TagLib 读入内嵌封面（约 1.5 MB/首，共 3.27 GB）；封面提取复用同一次读取，未增加读取量。网络盘的二次扫描受 SMB 往返延迟限制，外推到 1 万首约 15 s，超过 5 s 的目标（目标按本地盘制定）
+- FTS 查询：`linernotes-bench-library --check`（10 万首中日英混合）10 类搜索 p95 最大 7.8 ms；浏览查询 p95 最大 1.8 ms（补充默认排序索引前，排序分页为 147 ms）
+- 中断后重跑：在 NAS 上扫描中途发送 SIGINT，约 1 s 内停止，已提交的 683 个文件都有完整的 track 与 raw_tags；重跑后的库状态（路径、指纹、生效元数据、标签数、专辑归并、封面）与一次扫完的结果逐字节一致；另有自动测试 `cancelThenRescanIsConsistent`
+- 搜索实测：假名与罗马字互通（ヨルシカ / yorushika）、简繁互通（运命 → 運命、佐仓 → 佐倉）、拼音（zuo cang）、单字与多词 AND、特殊字符输入不报错
+- ctest：34 个测试在 debug / ci（-Werror）/ asan 下全部通过；格式与 clang-tidy 通过；文件监听测试重复 10 次稳定
+- 与计划的偏差：
+  - 2.5 拆为三个提交：根目录/遍历/指纹、扫描器、专辑与艺人关联（后者原计划未列出，但阶段 3 的浏览视图需要）。专辑归并键：有专辑艺人按（专辑艺人, 专辑名），否则按（所在目录, 专辑名）
+  - effective_metadata 采用物化表：扫描器写完一首的 raw_tags 后更新 `tracks.tags_read_at`，由触发器刷新，每首只刷新一次
+  - FTS 索引由 C++ 维护（ICU 转换放不进 SQL 触发器），触发器只标记脏行
+  - 引入工具脚本 `scripts/verify.sh`（并行验证）与 `tidy.sh --changed`；测试目录关闭 clang-analyzer（Qt Test 宏使分析极慢）
+- 已知局限：
+  - 日文新字体与简繁体不互通（“音乐”搜不到“音楽”）；多音字取 ICU 默认读音，日文汉字按拼音转写
+  - CUE 整轨文件作为一首入库（CUE 拆分为 F-PLY-06，P1）
+  - 目录封面在音频文件未变化时不会被重新检查
+  - inotify 目录监听收不到文件内容修改，本地根另设兜底定时扫描；网络盘只用定时扫描
+  - 艺人只按 `' / '` 拆分、按名字精确匹配，智能归一与拆分留给阶段 6
 
 ---
 

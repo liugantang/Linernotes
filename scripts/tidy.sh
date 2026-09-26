@@ -4,6 +4,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${REPO_ROOT}/build/debug"
 STRICT_MODE=false
+CHANGED_ONLY=false
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -23,10 +24,16 @@ while [[ $# -gt 0 ]]; do
             STRICT_MODE=true
             shift
             ;;
+        --changed)
+            CHANGED_ONLY=true
+            shift
+            ;;
         -h|--help)
-            echo "Usage: $0 [-p <build_dir>] [--strict]"
+            echo "Usage: $0 [-p <build_dir>] [--strict] [--changed]"
             echo "  -p <build_dir>   Path to build directory (default: build/debug)"
             echo "  --strict         Treat warnings as errors (exit non-zero on warnings)"
+            echo "  --changed        Only check .cpp files changed relative to main (committed, staged,"
+            echo "                   unstaged and untracked); falls back to all files if main is unknown"
             exit 0
             ;;
         *)
@@ -52,6 +59,22 @@ if [[ ! -f "${BUILD_DIR}/compile_commands.json" ]]; then
 fi
 
 FILES_REGEX='^(?!.*autogen|.*build).*(app|src|tools|tests)/.*\.cpp$'
+
+if [[ "${CHANGED_ONLY}" == true ]] && git -C "${REPO_ROOT}" rev-parse --verify -q main >/dev/null; then
+    BASE="$(git -C "${REPO_ROOT}" merge-base main HEAD)"
+    mapfile -t CHANGED < <(
+        {
+            git -C "${REPO_ROOT}" diff --name-only --diff-filter=d "${BASE}"
+            git -C "${REPO_ROOT}" ls-files --others --exclude-standard
+        } | grep -E '^(app|src|tools|tests)/.*\.cpp$' | sort -u
+    )
+    if [[ ${#CHANGED[@]} -eq 0 ]]; then
+        echo "No changed .cpp files; skipping clang-tidy."
+        exit 0
+    fi
+    # run-clang-tidy 的文件参数是正则，按完整路径逐个匹配
+    FILES_REGEX="^${REPO_ROOT}/($(printf '%s|' "${CHANGED[@]}" | sed 's/|$//; s/\./\\./g'))$"
+fi
 
 if command -v run-clang-tidy >/dev/null 2>&1; then
     RUN_ARGS=("-removed-arg=-mno-direct-extern-access")
