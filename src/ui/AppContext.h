@@ -13,6 +13,7 @@
 #include <ui/LibraryActions.h>
 #include <ui/NowPlaying.h>
 #include <ui/QueueModel.h>
+#include <ui/SearchController.h>
 
 #include <memory>
 
@@ -38,6 +39,7 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::player::Player *player READ player CONSTANT)
     Q_PROPERTY(linernotes::ui::NowPlaying *nowPlaying READ nowPlaying CONSTANT)
     Q_PROPERTY(linernotes::ui::QueueModel *queueModel READ queueModel CONSTANT)
+    Q_PROPERTY(linernotes::ui::SearchController *search READ search CONSTANT)
     Q_PROPERTY(linernotes::ui::LibraryActions *actions READ actions NOTIFY libraryReadyChanged)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
     Q_PROPERTY(QString startupError READ startupError NOTIFY startupErrorChanged)
@@ -68,6 +70,7 @@ public:
     [[nodiscard]] player::Player *player() const;
     [[nodiscard]] NowPlaying *nowPlaying() const;
     [[nodiscard]] QueueModel *queueModel() const;
+    [[nodiscard]] SearchController *search() const;
     [[nodiscard]] library::Database *database();
     [[nodiscard]] library::CoverStore *coverStore() const;
     [[nodiscard]] LibraryActions *actions() const;
@@ -89,6 +92,7 @@ private:
     QTimer *m_saveTimer { nullptr };
     std::unique_ptr<NowPlaying> m_nowPlaying;
     std::unique_ptr<QueueModel> m_queueModel;
+    std::unique_ptr<SearchController> m_search;
     std::unique_ptr<library::Database> m_db;
     std::unique_ptr<library::CoverStore> m_coverStore;
     std::unique_ptr<LibraryActions> m_actions;

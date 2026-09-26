@@ -22,6 +22,8 @@ add_library(linernotes_ui STATIC
     QueueModel.h
     RowSelection.cpp
     RowSelection.h
+    SearchController.cpp
+    SearchController.h
     TrackListModel.cpp
     TrackListModel.h
     UiLogging.cpp

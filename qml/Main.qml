@@ -29,6 +29,11 @@ ApplicationWindow {
         albumsPage.openAlbum(albumId)
     }
 
+    function openArtist(artistId) {
+        sidebar.currentPage = "artists"
+        artistsPage.openArtist(artistId)
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -63,6 +68,16 @@ ApplicationWindow {
                     Layout.leftMargin: Theme.spacingMedium
                     Layout.rightMargin: Theme.spacingMedium
                     spacing: Theme.spacingMedium
+
+                    SearchBox {
+                        id: searchBox
+                        Layout.preferredWidth: 280
+                        onFocusTrackListRequested: {
+                            if (searchResults.visible) {
+                                searchResults.focusTrackList()
+                            }
+                        }
+                    }
 
                     Item {
                         Layout.fillWidth: true
@@ -106,26 +121,40 @@ ApplicationWindow {
                     }
                 }
 
-                StackLayout {
-                    id: contentStack
-                    currentIndex: {
-                        switch (sidebar.currentPage) {
-                        case "tracks": return 0
-                        case "albums": return 1
-                        case "artists": return 2
-                        case "playlists": return 3
-                        case "ai": return 4
-                        default: return 0
-                        }
-                    }
+                Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
 
-                    TracksPage {}
-                    AlbumsPage { id: albumsPage }
-                    ArtistsPage {}
-                    PlaylistsPage {}
-                    AiPage {}
+                    StackLayout {
+                        id: contentStack
+                        anchors.fill: parent
+                        visible: !searchResults.visible
+                        currentIndex: {
+                            switch (sidebar.currentPage) {
+                            case "tracks": return 0
+                            case "albums": return 1
+                            case "artists": return 2
+                            case "playlists": return 3
+                            case "ai": return 4
+                            default: return 0
+                            }
+                        }
+
+                        TracksPage {}
+                        AlbumsPage { id: albumsPage }
+                        ArtistsPage { id: artistsPage }
+                        PlaylistsPage {}
+                        AiPage {}
+                    }
+
+                    SearchResults {
+                        id: searchResults
+                        anchors.fill: parent
+                        visible: AppContext.search && AppContext.search.active
+                        onOpenAlbumRequested: (albumId) => window.openAlbum(albumId)
+                        onOpenArtistRequested: (artistId) => window.openArtist(artistId)
+                        onFocusSearchBoxRequested: searchBox.focusInput()
+                    }
                 }
             }
 

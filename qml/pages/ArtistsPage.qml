@@ -4,12 +4,24 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Effects
 import Linernotes
 
 Item {
     id: root
 
     property var selectedArtistId: 0
+
+    function openArtist(artistId) {
+        root.selectedArtistId = artistId
+        for (let i = 0; i < artistModel.count; ++i) {
+            const id = artistModel.data(artistModel.index(i, 0), ArtistListModel.ArtistIdRole)
+            if (id === artistId) {
+                artistListView.currentIndex = i
+                break
+            }
+        }
+    }
 
     ArtistListModel {
         id: artistModel
@@ -124,6 +136,24 @@ Item {
                                     radius: Theme.artistAvatarSizeSmall / 2
                                     color: Theme.surfaceVariant
                                     clip: true
+                                    layer.enabled: true
+                                    layer.effect: MultiEffect {
+                                        maskEnabled: true
+                                        maskSource: artistListAvatarMask
+                                    }
+
+                                    Item {
+                                        id: artistListAvatarMask
+                                        anchors.fill: parent
+                                        layer.enabled: true
+                                        visible: false
+
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            radius: width / 2
+                                            color: "black"
+                                        }
+                                    }
 
                                     Label {
                                         anchors.centerIn: parent

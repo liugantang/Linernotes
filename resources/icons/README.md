@@ -20,6 +20,7 @@ Icons are from Lucide (https://lucide.dev/), licensed under the ISC License, com
 - `play.svg`
 - `repeat.svg`
 - `repeat-1.svg`
+- `search.svg`
 - `shuffle.svg`
 - `skip-back.svg`
 - `skip-forward.svg`

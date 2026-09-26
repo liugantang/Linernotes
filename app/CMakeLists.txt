@@ -177,6 +177,31 @@ set_source_files_properties(
     PROPERTIES
         QT_RESOURCE_ALIAS QueuePanel.qml
 )
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SearchBox.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SearchBox.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SearchResults.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SearchResults.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SearchSectionArtists.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SearchSectionArtists.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SearchSectionAlbums.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SearchSectionAlbums.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SearchSectionTracks.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SearchSectionTracks.qml
+)
 
 set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/resources/icons/play.svg
@@ -304,6 +329,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS icons/x.svg
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/resources/icons/search.svg
+    PROPERTIES
+        QT_RESOURCE_ALIAS icons/search.svg
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/resources/icons/grip-vertical.svg
     PROPERTIES
         QT_RESOURCE_ALIAS icons/grip-vertical.svg
@@ -343,6 +373,11 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/AlbumDetail.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumTrackRow.qml
         ${CMAKE_SOURCE_DIR}/qml/ArtistDetail.qml
+        ${CMAKE_SOURCE_DIR}/qml/SearchBox.qml
+        ${CMAKE_SOURCE_DIR}/qml/SearchResults.qml
+        ${CMAKE_SOURCE_DIR}/qml/SearchSectionArtists.qml
+        ${CMAKE_SOURCE_DIR}/qml/SearchSectionAlbums.qml
+        ${CMAKE_SOURCE_DIR}/qml/SearchSectionTracks.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackColumns.js
         ${CMAKE_SOURCE_DIR}/qml/TrackContextMenu.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackTableHeader.qml
@@ -372,6 +407,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/resources/icons/list-plus.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/repeat.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/repeat-1.svg
+        ${CMAKE_SOURCE_DIR}/resources/icons/search.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/sparkles.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/library.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/trash-2.svg

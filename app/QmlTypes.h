@@ -17,6 +17,7 @@
 #include <ui/NowPlaying.h>
 #include <ui/QueueModel.h>
 #include <ui/RowSelection.h>
+#include <ui/SearchController.h>
 #include <ui/TrackListModel.h>
 
 struct AppContextForeign {
@@ -96,4 +97,11 @@ struct ArtistListModelForeign {
     Q_GADGET
     QML_FOREIGN(linernotes::ui::ArtistListModel)
     QML_NAMED_ELEMENT(ArtistListModel)
+};
+
+struct SearchControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::SearchController)
+    QML_NAMED_ELEMENT(SearchController)
+    QML_UNCREATABLE("SearchController is managed by AppContext")
 };

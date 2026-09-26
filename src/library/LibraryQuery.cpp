@@ -42,6 +42,7 @@
 #include <QVariant>
 
 #include <library/Errors.h>
+#include <library/SearchIndex.h>
 
 #include <algorithm>
 
@@ -953,6 +954,300 @@ core::Result<std::optional<ArtistRow>> LibraryQuery::artist(qint64 artistId) con
     }
 
     return std::optional<ArtistRow> { std::nullopt };
+}
+
+namespace {
+
+template <typename T>
+QList<T> reorderByOrderedIds(const QList<qint64> &orderedIds, const QHash<qint64, T> &itemsMap)
+{
+    QList<T> result;
+    result.reserve(orderedIds.size());
+    for (const qint64 id : orderedIds) {
+        const auto it = itemsMap.constFind(id);
+        if (it != itemsMap.constEnd()) {
+            result.append(*it);
+        }
+    }
+    return result;
+}
+
+core::Result<QList<TrackRow>> fetchHitTracks(
+    const LibraryQuery &query, const QSqlDatabase &db, const QString &userInput, int trackLimit)
+{
+    if (userInput.trimmed().isEmpty() || trackLimit <= 0) {
+        return QList<TrackRow> { };
+    }
+
+    const SearchIndex searchIndex(db);
+    const auto hitsRes = searchIndex.search(userInput, trackLimit);
+    if (!hitsRes.ok()) {
+        return hitsRes.error();
+    }
+
+    const auto &hits = hitsRes.value();
+    if (hits.isEmpty()) {
+        return QList<TrackRow> { };
+    }
+
+    QList<qint64> trackIds;
+    trackIds.reserve(hits.size());
+    for (const auto &hit : hits) {
+        trackIds.append(hit.trackId);
+    }
+
+    return query.tracksByIds(trackIds);
+}
+
+QList<qint64> orderedUniqueAlbumIds(const QList<TrackRow> &tracks, int limit)
+{
+    QList<qint64> albumIds;
+    if (limit <= 0) {
+        return albumIds;
+    }
+    albumIds.reserve(limit);
+    QSet<qint64> seenAlbumIds;
+    for (const auto &track : tracks) {
+        if (track.albumId.has_value() && track.albumId.value() > 0) {
+            const qint64 aid = track.albumId.value();
+            if (!seenAlbumIds.contains(aid)) {
+                seenAlbumIds.insert(aid);
+                albumIds.append(aid);
+                if (albumIds.size() >= limit) {
+                    break;
+                }
+            }
+        }
+    }
+    return albumIds;
+}
+
+core::Result<QList<AlbumRow>> fetchAlbumsByIds(
+    const QSqlDatabase &db, const QList<qint64> &albumIds)
+{
+    if (albumIds.isEmpty()) {
+        return QList<AlbumRow> { };
+    }
+
+    QStringList placeholders;
+    placeholders.reserve(albumIds.size());
+    for (int i = 0; i < albumIds.size(); ++i) {
+        placeholders.append(QStringLiteral("?"));
+    }
+
+    const QString sql = QStringLiteral(
+        "SELECT a.id, a.title, "
+        "COALESCE(NULLIF(a.album_artist, ''), (SELECT ts.artist FROM track_sort ts WHERE "
+        "ts.album_id = a.id AND ts.visible = 1 GROUP BY ts.artist ORDER BY COUNT(*) DESC, "
+        "ts.artist ASC LIMIT 1)), "
+        "a.year, "
+        "(SELECT COUNT(*) FROM track_sort ts WHERE ts.album_id = a.id AND ts.visible = 1) AS "
+        "track_count, "
+        "(SELECT COALESCE(SUM(ts.duration_ms), 0) FROM track_sort ts WHERE ts.album_id = a.id "
+        "AND ts.visible = 1) AS total_duration, "
+        "(SELECT c.hash FROM covers c WHERE c.id = a.cover_id) AS cover_hash, "
+        "(fav.entity_id IS NOT NULL) AS is_fav "
+        "FROM albums a "
+        "LEFT JOIN favorites fav ON fav.entity_type = 'album' AND fav.entity_id = a.id "
+        "WHERE a.id IN (%1) "
+        "AND EXISTS (SELECT 1 FROM track_sort ts WHERE ts.album_id = a.id AND ts.visible = 1)")
+                            .arg(placeholders.join(QStringLiteral(", ")));
+
+    QSqlQuery q(db);
+    q.prepare(sql);
+    for (int i = 0; i < albumIds.size(); ++i) {
+        q.bindValue(i, albumIds.at(i));
+    }
+
+    if (!q.exec()) {
+        return core::Error {
+            .code = QString(errc::kDbQuery),
+            .message = QStringLiteral("searchGrouped album query failed"),
+            .detail = q.lastError().text(),
+        };
+    }
+
+    QHash<qint64, AlbumRow> albumMap;
+    while (q.next()) {
+        const AlbumRow row = parseAlbumRow(q);
+        albumMap.insert(row.albumId, row);
+    }
+
+    return reorderByOrderedIds(albumIds, albumMap);
+}
+
+core::Result<QList<qint64>> orderedArtistIdsForTracks(
+    const QSqlDatabase &db, const QList<TrackRow> &tracks, int limit)
+{
+    QList<qint64> artistIds;
+    if (tracks.isEmpty() || limit <= 0) {
+        return artistIds;
+    }
+
+    QList<qint64> trackIds;
+    trackIds.reserve(tracks.size());
+    for (const auto &t : tracks) {
+        trackIds.append(t.trackId);
+    }
+
+    QStringList trackPlaceholders;
+    trackPlaceholders.reserve(trackIds.size());
+    for (int i = 0; i < trackIds.size(); ++i) {
+        trackPlaceholders.append(QStringLiteral("?"));
+    }
+
+    const QString taSql = QStringLiteral("SELECT track_id, artist_id FROM track_artists "
+                                         "WHERE track_id IN (%1) AND role = 'artist' "
+                                         "ORDER BY position ASC")
+                              .arg(trackPlaceholders.join(QStringLiteral(", ")));
+
+    QSqlQuery qTa(db);
+    qTa.prepare(taSql);
+    for (int i = 0; i < trackIds.size(); ++i) {
+        qTa.bindValue(i, trackIds.at(i));
+    }
+
+    if (!qTa.exec()) {
+        return core::Error {
+            .code = QString(errc::kDbQuery),
+            .message = QStringLiteral("searchGrouped track_artists query failed"),
+            .detail = qTa.lastError().text(),
+        };
+    }
+
+    QHash<qint64, QList<qint64>> trackArtistsMap;
+    while (qTa.next()) {
+        const qint64 tid = qTa.value(0).toLongLong();
+        const qint64 aid = qTa.value(1).toLongLong();
+        auto it = trackArtistsMap.find(tid);
+        if (it == trackArtistsMap.end()) {
+            it = trackArtistsMap.insert(tid, { });
+        }
+        it.value().append(aid);
+    }
+
+    artistIds.reserve(limit);
+    QSet<qint64> seenArtistIds;
+    for (const auto &t : tracks) {
+        const auto it = trackArtistsMap.constFind(t.trackId);
+        if (it != trackArtistsMap.constEnd()) {
+            for (const qint64 aid : *it) {
+                if (aid > 0 && !seenArtistIds.contains(aid)) {
+                    seenArtistIds.insert(aid);
+                    artistIds.append(aid);
+                    if (artistIds.size() >= limit) {
+                        return artistIds;
+                    }
+                }
+            }
+        }
+    }
+
+    return artistIds;
+}
+
+core::Result<QList<ArtistRow>> fetchArtistsByIds(
+    const QSqlDatabase &db, const QList<qint64> &artistIds)
+{
+    if (artistIds.isEmpty()) {
+        return QList<ArtistRow> { };
+    }
+
+    QStringList artPlaceholders;
+    artPlaceholders.reserve(artistIds.size());
+    for (int i = 0; i < artistIds.size(); ++i) {
+        artPlaceholders.append(QStringLiteral("?"));
+    }
+
+    const QString artSql = QStringLiteral(
+        "SELECT ar.id, ar.name, "
+        "(SELECT COUNT(DISTINCT ta.track_id) FROM track_artists ta JOIN track_sort ts ON "
+        "ta.track_id = ts.track_id WHERE ta.artist_id = ar.id AND ta.role = 'artist' AND "
+        "ts.visible = 1) AS track_count, "
+        "(SELECT COUNT(DISTINCT a.id) FROM albums a JOIN album_artists aa ON a.id = "
+        "aa.album_id WHERE aa.artist_id = ar.id AND EXISTS (SELECT 1 FROM track_sort ts WHERE "
+        "ts.album_id = a.id AND ts.visible = 1)) AS album_count, "
+        "(SELECT c.hash FROM albums a JOIN album_artists aa ON a.id = aa.album_id JOIN covers "
+        "c ON a.cover_id = c.id WHERE aa.artist_id = ar.id AND a.cover_id IS NOT NULL AND "
+        "EXISTS (SELECT 1 FROM track_sort ts WHERE ts.album_id = a.id AND ts.visible = 1) "
+        "ORDER BY a.year ASC NULLS LAST, a.id ASC LIMIT 1) AS cover_hash, "
+        "(fav.entity_id IS NOT NULL) AS is_fav "
+        "FROM artists ar "
+        "LEFT JOIN favorites fav ON fav.entity_type = 'artist' AND fav.entity_id = ar.id "
+        "WHERE ar.id IN (%1) "
+        "AND ("
+        "  EXISTS (SELECT 1 FROM track_artists ta JOIN track_sort ts ON ta.track_id = "
+        "ts.track_id WHERE ta.artist_id = ar.id AND ta.role = 'artist' AND ts.visible = 1) "
+        "  OR EXISTS (SELECT 1 FROM album_artists aa JOIN track_sort ts ON aa.album_id = "
+        "ts.album_id WHERE aa.artist_id = ar.id AND ts.visible = 1)"
+        ")")
+                               .arg(artPlaceholders.join(QStringLiteral(", ")));
+
+    QSqlQuery qArt(db);
+    qArt.prepare(artSql);
+    for (int i = 0; i < artistIds.size(); ++i) {
+        qArt.bindValue(i, artistIds.at(i));
+    }
+
+    if (!qArt.exec()) {
+        return core::Error {
+            .code = QString(errc::kDbQuery),
+            .message = QStringLiteral("searchGrouped artist query failed"),
+            .detail = qArt.lastError().text(),
+        };
+    }
+
+    QHash<qint64, ArtistRow> artistMap;
+    while (qArt.next()) {
+        const ArtistRow row = parseArtistRow(qArt);
+        artistMap.insert(row.artistId, row);
+    }
+
+    return reorderByOrderedIds(artistIds, artistMap);
+}
+
+} // namespace
+
+core::Result<SearchResults> LibraryQuery::searchGrouped(
+    const QString &userInput, int trackLimit, int groupLimit) const
+{
+    if (!m_db.isOpen()) {
+        return core::Error {
+            .code = QString(errc::kDbOpen),
+            .message = QStringLiteral("Database is not open"),
+            .detail = QString(),
+        };
+    }
+
+    const auto tracksRes = fetchHitTracks(*this, m_db, userInput, trackLimit);
+    if (!tracksRes.ok()) {
+        return tracksRes.error();
+    }
+
+    SearchResults results;
+    results.tracks = tracksRes.value();
+    if (results.tracks.isEmpty() || groupLimit <= 0) {
+        return results;
+    }
+
+    const QList<qint64> albumIds = orderedUniqueAlbumIds(results.tracks, groupLimit);
+    const auto albumsRes = fetchAlbumsByIds(m_db, albumIds);
+    if (!albumsRes.ok()) {
+        return albumsRes.error();
+    }
+    results.albums = albumsRes.value();
+
+    const auto artistIdsRes = orderedArtistIdsForTracks(m_db, results.tracks, groupLimit);
+    if (!artistIdsRes.ok()) {
+        return artistIdsRes.error();
+    }
+    const auto artistsRes = fetchArtistsByIds(m_db, artistIdsRes.value());
+    if (!artistsRes.ok()) {
+        return artistsRes.error();
+    }
+    results.artists = artistsRes.value();
+
+    return results;
 }
 
 } // namespace linernotes::library

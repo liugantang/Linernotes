@@ -120,4 +120,14 @@ linernotes_add_test(
         Linernotes::library
 )
 
+linernotes_add_test(
+    NAME library_LibrarySearch
+    SOURCES
+        tst_LibrarySearch.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+)
+
+
 
