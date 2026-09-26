@@ -70,7 +70,7 @@
 
 ---
 
-## 阶段 1：播放内核（1.5 周）
+## 阶段 1：播放内核（1.5 周）✅ 完成（2026-09-26）
 
 **目标**：一个无界面也能稳定工作的播放引擎。
 
@@ -90,6 +90,13 @@
 
 **交付物**：`player` 库 + 一个命令行测试程序（传入若干文件即可顺序播放）。
 **验收**：连续播放一张 gapless 专辑无缝隙；长时间播放（4 h）无内存增长；ducking 渐变无爆音。
+
+**验收记录（2026-09-26）**：
+- gapless：用 playcli 播放一张现场专辑（namie amuro LIVE STYLE 2014，96 kHz FLAC），人工试听，曲目交界处无停顿、无咔哒声；自动测试 `gaplessTransitionDoesNotStop` 验证切换期间不进入 Stopped、两首 1 s 曲目总耗时无额外间隙
+- 4 h 内存：`scripts/soak-player.sh tests/fixtures/audio 4`（`ao=null`、列表循环、5 个 1–5 s 素材含一个坏文件，约 1 万次切换）。RSS 96.4 MB → 114.2 MB，前几分钟一次性上涨约 14 MB，之后增速递减，2.5 h 后走平（最后 1.5 h 在 114.2–114.3 MB），判定无持续增长
+- ducking：playcli 的 `d <gain> [ms]` 命令人工试听 300/500/50 ms 渐变，无爆音；另用 `ao=pcm` 录音确认 `af-command` 实际改变输出电平（峰值 0.125 → 0.012）
+- ctest：18 个测试在 debug / ci（-Werror）/ asan 下全部通过；格式检查通过
+- 与计划的偏差：1.5 拆为 PlayQueue 模型与 Player 集成两个提交；1.1–1.3 合为一个提交；ducking 采用 lavfi volume 滤镜 + `af-command`，不改用户音量。已知局限：gapless 且前后音频格式不同时，滤镜链重建到重新应用增益之间可能有极短的全音量窗口；在曲目切换瞬间修改队列可能多一次切换（状态随后自愈）
 
 ---
 
