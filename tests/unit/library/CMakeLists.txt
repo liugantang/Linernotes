@@ -2,6 +2,16 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 linernotes_add_test(
+    NAME library_CoverStore
+    SOURCES
+        tst_CoverStore.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Concurrent
+)
+
+linernotes_add_test(
     NAME library_Database
     SOURCES
         tst_Database.cpp

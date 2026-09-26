@@ -33,6 +33,7 @@ class TstScanCli : public QObject {
 private slots:
     void scanCliSuccessfulRun();
     void noArgumentsPrintsUsageAndReturns2();
+    void scanCliWithCacheGeneratesThumbnails();
 };
 
 void TstScanCli::scanCliSuccessfulRun()
@@ -89,6 +90,37 @@ void TstScanCli::noArgumentsPrintsUsageAndReturns2()
     QVERIFY(proc.waitForFinished(5000));
     QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
     QCOMPARE(proc.exitCode(), 2);
+}
+
+void TstScanCli::scanCliWithCacheGeneratesThumbnails()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+
+    const QString musicDir = tempDir.filePath(QStringLiteral("music"));
+    copyDirContents(fixturePath(QStringLiteral("library")), musicDir);
+
+    const QString dbPath = tempDir.filePath(QStringLiteral("test.db"));
+    const QString cacheDir = tempDir.filePath(QStringLiteral("cache"));
+
+    QProcess proc;
+    proc.setProgram(QString::fromUtf8(SCANCLI_PATH));
+    proc.setArguments(
+        { QStringLiteral("--db"), dbPath, QStringLiteral("--cache"), cacheDir, musicDir });
+    proc.start();
+
+    QVERIFY(proc.waitForFinished(30000));
+    QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
+    QCOMPARE(proc.exitCode(), 0);
+
+    // Verify cache directory has generated files
+    QDirIterator it(cacheDir, QDir::Files, QDirIterator::Subdirectories);
+    int fileCount = 0;
+    while (it.hasNext()) {
+        it.next();
+        fileCount++;
+    }
+    QVERIFY(fileCount > 0);
 }
 
 } // namespace

@@ -41,3 +41,7 @@
 | `library/corrupt_garbage.flac` | FLAC / 垃圾数据损坏 | 504 B / 0 s | `generate.py` 自行合成，CC0 | `fLaC` 开头后接伪随机垃圾字节的损坏样本 |
 | `library/empty.mp3` | MP3 / 空文件 | 0 B / 0 s | `generate.py` 自行合成，CC0 | 0 字节空文件 |
 | `library/not_audio.ogg` | 非音频 / 文本伪装 | 520 B / 0 s | `generate.py` 自行合成，CC0 | 纯文本重命名为 .ogg 的伪装文件 |
+| `library/cover_1600_embed.mp3` | MP3 / ID3v2.4 APIC 1600×1600 JPEG | ~56 KB / 1.0 s | `generate.py` 自行合成，CC0 | 内嵌 1600×1600 大封面 JPEG 样本 (MP3) |
+| `library/cover_1600_embed.flac` | FLAC / Picture 1600×1600 JPEG | ~63 KB / 1.0 s | `generate.py` 自行合成，CC0 | 内嵌 1600×1600 大封面 JPEG 样本 (FLAC，与 MP3 封面完全一致) |
+| `library/dir_folder_cover/` | 目录样本 / Cover.JPG + FLAC | ~26 KB | `generate.py` 自行合成，CC0 | 带 `Cover.JPG` (800×800) 的目录样本，音频文件无内嵌封面 |
+| `library/dir_embed_and_folder/` | 目录样本 / folder.png + 内嵌封面 FLAC | ~20 KB | `generate.py` 自行合成，CC0 | 同时包含内嵌封面音频与 `folder.png` 的目录样本，用于验证内嵌优先 |

@@ -4,6 +4,8 @@
 file(GLOB MIGRATION_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/migrations/*.sql")
 
 add_library(linernotes_library STATIC
+    CoverStore.cpp
+    CoverStore.h
     Database.cpp
     Database.h
     DirectoryWalker.cpp
@@ -43,6 +45,8 @@ target_link_libraries(linernotes_library
     PUBLIC
         Linernotes::core
         Qt6::Core
+        # Qt6::Gui is needed for QImage, QImageReader in CoverStore
+        Qt6::Gui
         Qt6::Sql
     PRIVATE
         Linernotes::Deps::SQLite3

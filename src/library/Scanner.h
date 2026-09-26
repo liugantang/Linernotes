@@ -16,6 +16,7 @@
 namespace linernotes::library {
 
 class Database;
+class CoverStore;
 
 struct ScanStats {
     int found = 0; // 遍历到的音频文件数
@@ -54,6 +55,7 @@ public:
     struct Options {
         int batchSize = 500; // 每个写事务的文件数
         int maxThreads = 0; // 0 = QThread::idealThreadCount()
+        CoverStore *coverStore = nullptr; // 封面缩略图存储（为空时不提取与缓存封面）
         std::function<qint64()> nowMs; // 可注入时钟；为空时用当前 UTC 毫秒
     };
 

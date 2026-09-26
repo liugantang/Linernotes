@@ -8,6 +8,7 @@
 #include <QSqlQuery>
 
 #include <core/Paths.h>
+#include <library/CoverStore.h>
 #include <library/Database.h>
 #include <library/LibraryRoots.h>
 #include <library/Migrator.h>
@@ -37,6 +38,7 @@ void signalHandler(int /*sig*/)
 
 struct CliConfig {
     QString dbPath;
+    QString cacheDir;
     QStringList excludes;
     QStringList dirs;
     int maxThreads = 0;
@@ -46,6 +48,8 @@ struct CliConfig {
 struct CliOptions {
     QCommandLineOption dbOption { QStringLiteral("db"),
         QStringLiteral("Path to SQLite database file."), QStringLiteral("path") };
+    QCommandLineOption cacheOption { QStringLiteral("cache"),
+        QStringLiteral("Path to cache directory for covers/thumbnails."), QStringLiteral("dir") };
     QCommandLineOption excludeOption { QStringLiteral("exclude"),
         QStringLiteral(
             "Exclude glob pattern for newly added library roots (can be specified multiple "
@@ -63,6 +67,7 @@ void setupParser(QCommandLineParser &parser, const CliOptions &opts)
     parser.addHelpOption();
     parser.addVersionOption();
     parser.addOption(opts.dbOption);
+    parser.addOption(opts.cacheOption);
     parser.addOption(opts.excludeOption);
     parser.addOption(opts.threadsOption);
     parser.addOption(opts.verboseOption);
@@ -115,8 +120,18 @@ std::optional<CliConfig> parseArgs(
         dbPath = paths.dataDir() + QStringLiteral("/library.db");
     }
 
+    QString cacheDir;
+    if (parser.isSet(opts.cacheOption)) {
+        cacheDir = parser.value(opts.cacheOption);
+    } else {
+        const auto paths = linernotes::core::Paths::fromEnvironment();
+        paths.ensureCreated();
+        cacheDir = paths.cacheDir() + QStringLiteral("/covers");
+    }
+
     return CliConfig {
         .dbPath = dbPath,
+        .cacheDir = cacheDir,
         .excludes = parser.values(opts.excludeOption),
         .dirs = dirs,
         .maxThreads = maxThreads,
@@ -208,8 +223,10 @@ int runCli(const CliConfig &cfg)
         }
     }
 
+    linernotes::library::CoverStore coverStore(cfg.cacheDir);
     linernotes::library::Scanner::Options opts;
     opts.maxThreads = cfg.maxThreads;
+    opts.coverStore = &coverStore;
     linernotes::library::Scanner scanner(db, opts);
 
     if (::pipe(s_sigPipe.data()) == 0) {

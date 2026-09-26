@@ -9,6 +9,8 @@
 
 #include <core/Result.h>
 
+#include <optional>
+
 namespace linernotes::library {
 
 struct RawTag {
@@ -33,10 +35,16 @@ struct AudioProperties {
     int channels = 0;
 };
 
+struct EmbeddedPicture {
+    QByteArray data;
+    QString mimeType;
+};
+
 struct TagReadResult {
     AudioProperties audio;
     QList<RawTag> tags;
     bool hasEmbeddedCover = false;
+    std::optional<EmbeddedPicture> frontCover;
 };
 
 /// 读取一个音频文件的全部标签。可在任意线程并发调用（每次调用独立打开文件，无共享状态）。

@@ -68,12 +68,14 @@ private:
     QSqlQuery m_insertAlbumStmt;
     QSqlQuery m_updateTrackAlbumStmt;
     QSqlQuery m_updateAlbumYearStmt;
+    QSqlQuery m_updateAlbumCoverStmt;
     QSqlQuery m_deleteAlbumArtistsStmt;
     QSqlQuery m_insertAlbumArtistStmt;
     QSqlQuery m_getAlbumTracksFirstArtistsStmt;
     QSqlQuery m_getAlbumArtistFieldStmt;
     QSqlQuery m_deleteOrphanAlbumsStmt;
     QSqlQuery m_deleteOrphanArtistsStmt;
+    QSqlQuery m_deleteOrphanCoversStmt;
 };
 
 } // namespace linernotes::library

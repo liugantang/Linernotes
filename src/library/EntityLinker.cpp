@@ -30,12 +30,14 @@ EntityLinker::EntityLinker(const QSqlDatabase &db, std::function<qint64()> nowMs
     , m_insertAlbumStmt(m_db)
     , m_updateTrackAlbumStmt(m_db)
     , m_updateAlbumYearStmt(m_db)
+    , m_updateAlbumCoverStmt(m_db)
     , m_deleteAlbumArtistsStmt(m_db)
     , m_insertAlbumArtistStmt(m_db)
     , m_getAlbumTracksFirstArtistsStmt(m_db)
     , m_getAlbumArtistFieldStmt(m_db)
     , m_deleteOrphanAlbumsStmt(m_db)
     , m_deleteOrphanArtistsStmt(m_db)
+    , m_deleteOrphanCoversStmt(m_db)
 {
     m_findTrackMetadataStmt.prepare(QStringLiteral(
         "SELECT artist, album, album_artist, composer FROM effective_metadata WHERE track_id = ?"));
@@ -58,6 +60,15 @@ EntityLinker::EntityLinker(const QSqlDatabase &db, std::function<qint64()> nowMs
     m_updateAlbumYearStmt.prepare(QStringLiteral(
         "UPDATE albums SET year = (SELECT MIN(em.year) FROM tracks t JOIN effective_metadata em ON "
         "t.id = em.track_id WHERE t.album_id = ? AND em.year IS NOT NULL) WHERE id = ?"));
+    m_updateAlbumCoverStmt.prepare(QStringLiteral(
+        "UPDATE albums SET cover_id = ("
+        "SELECT f.cover_id FROM tracks t "
+        "JOIN files f ON t.file_id = f.id "
+        "LEFT JOIN effective_metadata em ON t.id = em.track_id "
+        "WHERE t.album_id = ? AND f.cover_id IS NOT NULL "
+        "ORDER BY em.disc_number ASC NULLS LAST, em.track_number ASC NULLS LAST, f.path ASC "
+        "LIMIT 1"
+        ") WHERE id = ?"));
     m_deleteAlbumArtistsStmt.prepare(
         QStringLiteral("DELETE FROM album_artists WHERE album_id = ?"));
     m_insertAlbumArtistStmt.prepare(QStringLiteral(
@@ -74,6 +85,10 @@ EntityLinker::EntityLinker(const QSqlDatabase &db, std::function<qint64()> nowMs
     m_deleteOrphanArtistsStmt.prepare(
         QStringLiteral("DELETE FROM artists WHERE id NOT IN (SELECT artist_id FROM track_artists) "
                        "AND id NOT IN (SELECT artist_id FROM album_artists)"));
+    m_deleteOrphanCoversStmt.prepare(
+        QStringLiteral("DELETE FROM covers WHERE id NOT IN (SELECT cover_id FROM files WHERE "
+                       "cover_id IS NOT NULL) "
+                       "AND id NOT IN (SELECT cover_id FROM albums WHERE cover_id IS NOT NULL)"));
 }
 
 qint64 EntityLinker::getNow() const
@@ -243,6 +258,17 @@ core::Result<void> EntityLinker::updateAlbumYearAndArtists(qint64 albumId, qint6
             .code = QString(errc::kDbQuery),
             .message = m_updateAlbumYearStmt.lastError().text(),
             .detail = QStringLiteral("updateAlbumYear"),
+        };
+    }
+
+    // Update cover_id to first track's cover_id by (disc_number, track_number, path)
+    m_updateAlbumCoverStmt.bindValue(0, albumId);
+    m_updateAlbumCoverStmt.bindValue(1, albumId);
+    if (!m_updateAlbumCoverStmt.exec()) {
+        return core::Error {
+            .code = QString(errc::kDbQuery),
+            .message = m_updateAlbumCoverStmt.lastError().text(),
+            .detail = QStringLiteral("updateAlbumCover"),
         };
     }
 
@@ -512,6 +538,15 @@ core::Result<std::pair<int, int>> EntityLinker::removeOrphans()
         };
     }
     const int artistsRemoved = std::max(0, m_deleteOrphanArtistsStmt.numRowsAffected());
+
+    // 3. Delete orphan covers (covers not referenced by any file or album).
+    if (!m_deleteOrphanCoversStmt.exec()) {
+        return core::Error {
+            .code = QString(errc::kDbQuery),
+            .message = m_deleteOrphanCoversStmt.lastError().text(),
+            .detail = QStringLiteral("deleteOrphanCovers"),
+        };
+    }
 
     m_artistCache.clear();
 

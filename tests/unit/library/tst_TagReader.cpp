@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #include <QByteArray>
+#include <QImage>
 #include <QList>
 #include <QObject>
 #include <QString>
@@ -37,6 +38,10 @@ private slots:
     void readsOggAndOpus();
     void noTagsFileHasEmptyTagList();
     void readsNonAsciiPath();
+    void readsEmbeddedFrontCover_data();
+    void readsEmbeddedFrontCover();
+    void noCoverFilesHaveNulloptFrontCover_data();
+    void noCoverFilesHaveNulloptFrontCover();
     void failsGracefully_data();
     void failsGracefully();
     void concurrentReadsAreSafe();
@@ -539,6 +544,73 @@ void TstTagReader::readsNonAsciiPath()
     QCOMPARE(title, QStringLiteral("さくら咲く頃"));
     QCOMPARE(artist, QStringLiteral("花吹雪"));
     QCOMPARE(album, QStringLiteral("春の歌"));
+}
+
+void TstTagReader::readsEmbeddedFrontCover_data()
+{
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<QString>("expectedMime");
+    QTest::addColumn<int>("expectedMinSize");
+
+    QTest::newRow("mp3_1600") << QStringLiteral("library/cover_1600_embed.mp3")
+                              << QStringLiteral("image/jpeg") << 1000;
+    QTest::newRow("flac_1600") << QStringLiteral("library/cover_1600_embed.flac")
+                               << QStringLiteral("image/jpeg") << 1000;
+    QTest::newRow("mp3_utf8") << QStringLiteral("library/mp3_id3v24_utf8.mp3")
+                              << QStringLiteral("image/png") << 50;
+    QTest::newRow("flac_vorbis") << QStringLiteral("library/flac_vorbis.flac")
+                                 << QStringLiteral("image/png") << 50;
+    QTest::newRow("m4a_aac") << QStringLiteral("library/m4a_aac.m4a") << QStringLiteral("image/png")
+                             << 50;
+}
+
+void TstTagReader::readsEmbeddedFrontCover()
+{
+    QFETCH(QString, fileName);
+    QFETCH(QString, expectedMime);
+    QFETCH(int, expectedMinSize);
+
+    const QString path = fixturePath(fileName);
+    const auto res = TagReader::read(path);
+    QVERIFY(res.ok());
+
+    const auto &val = res.value();
+    QVERIFY(val.hasEmbeddedCover);
+    QVERIFY(val.frontCover.has_value());
+    if (!val.frontCover.has_value()) {
+        return;
+    }
+
+    const auto &cover = *val.frontCover;
+    QCOMPARE(cover.mimeType, expectedMime);
+    QVERIFY(cover.data.size() >= expectedMinSize);
+
+    QImage img;
+    QVERIFY(img.loadFromData(cover.data));
+    QVERIFY(!img.isNull());
+}
+
+void TstTagReader::noCoverFilesHaveNulloptFrontCover_data()
+{
+    QTest::addColumn<QString>("fileName");
+
+    QTest::newRow("flac_no_tags") << QStringLiteral("library/flac_no_tags.flac");
+    QTest::newRow("ogg_vorbis") << QStringLiteral("library/ogg_vorbis.ogg");
+    QTest::newRow("opus") << QStringLiteral("library/opus.opus");
+    QTest::newRow("wav_id3") << QStringLiteral("library/wav_id3.wav");
+}
+
+void TstTagReader::noCoverFilesHaveNulloptFrontCover()
+{
+    QFETCH(QString, fileName);
+
+    const QString path = fixturePath(fileName);
+    const auto res = TagReader::read(path);
+    QVERIFY(res.ok());
+
+    const auto &val = res.value();
+    QVERIFY(!val.hasEmbeddedCover);
+    QVERIFY(!val.frontCover.has_value());
 }
 
 void TstTagReader::failsGracefully_data()

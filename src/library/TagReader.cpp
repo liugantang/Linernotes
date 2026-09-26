@@ -48,6 +48,7 @@
 #include <xiphcomment.h>
 
 #include <mutex>
+#include <optional>
 
 namespace linernotes::library {
 
@@ -258,78 +259,47 @@ void extractGenericProperties(const TagLib::PropertyMap &propMap, const QString 
     }
 }
 
-bool checkFlacCover(TagLib::FLAC::File *flac)
+std::optional<EmbeddedPicture> extractFrontCover(TagLib::File *file)
 {
-    return flac != nullptr && !flac->pictureList().isEmpty();
-}
-
-bool checkMpegCover(TagLib::MPEG::File *mpeg)
-{
-    if (mpeg == nullptr) {
-        return false;
+    if (file == nullptr) {
+        return std::nullopt;
     }
-    if (mpeg->hasID3v2Tag() && mpeg->ID3v2Tag() != nullptr) {
-        if (!mpeg->ID3v2Tag()->frameList("APIC").isEmpty()
-            || mpeg->ID3v2Tag()->complexPropertyKeys().contains("PICTURE")) {
-            return true;
+
+    const auto pictures = file->complexProperties("PICTURE");
+    if (pictures.isEmpty()) {
+        return std::nullopt;
+    }
+
+    const TagLib::VariantMap *chosen = nullptr;
+    for (const auto &pic : pictures) {
+        const TagLib::ByteVector dataBv = pic.value("data").toByteVector();
+        if (dataBv.isEmpty()) {
+            continue;
+        }
+        const QString picType
+            = QString::fromUtf8(pic.value("pictureType").toString().toCString(true));
+        if (picType.compare(QLatin1StringView("Front Cover"), Qt::CaseInsensitive) == 0) {
+            chosen = &pic;
+            break;
+        }
+        if (chosen == nullptr) {
+            chosen = &pic;
         }
     }
-    return mpeg->hasAPETag() && mpeg->APETag() != nullptr
-        && mpeg->APETag()->complexPropertyKeys().contains("PICTURE");
-}
 
-bool checkMp4Cover(TagLib::MP4::File *mp4)
-{
-    return mp4 != nullptr && mp4->hasMP4Tag() && mp4->tag() != nullptr
-        && (mp4->tag()->contains("covr") || mp4->tag()->complexPropertyKeys().contains("PICTURE"));
-}
+    if (chosen == nullptr) {
+        return std::nullopt;
+    }
 
-bool checkApeCover(TagLib::File *file)
-{
-    if (auto *wv = dynamic_cast<TagLib::WavPack::File *>(file); wv != nullptr) {
-        return wv->hasAPETag() && wv->APETag() != nullptr
-            && wv->APETag()->complexPropertyKeys().contains("PICTURE");
+    const TagLib::ByteVector dataBv = chosen->value("data").toByteVector();
+    if (dataBv.isEmpty()) {
+        return std::nullopt;
     }
-    if (auto *ape = dynamic_cast<TagLib::APE::File *>(file); ape != nullptr) {
-        return ape->hasAPETag() && ape->APETag() != nullptr
-            && ape->APETag()->complexPropertyKeys().contains("PICTURE");
-    }
-    return false;
-}
 
-bool checkAsfCover(TagLib::ASF::File *asf)
-{
-    return asf != nullptr && asf->tag() != nullptr
-        && (asf->tag()->attributeListMap().contains("WM/Picture")
-            || asf->tag()->complexPropertyKeys().contains("PICTURE"));
-}
-
-bool checkEmbeddedCover(TagLib::FileRef &fileRef, TagLib::File *file)
-{
-    if (fileRef.complexPropertyKeys().contains("PICTURE")) {
-        return true;
-    }
-    if (file != nullptr) {
-        if (file->complexPropertyKeys().contains("PICTURE")) {
-            return true;
-        }
-        if (file->tag() != nullptr && file->tag()->complexPropertyKeys().contains("PICTURE")) {
-            return true;
-        }
-    }
-    if (checkFlacCover(dynamic_cast<TagLib::FLAC::File *>(file))) {
-        return true;
-    }
-    if (checkMpegCover(dynamic_cast<TagLib::MPEG::File *>(file))) {
-        return true;
-    }
-    if (checkMp4Cover(dynamic_cast<TagLib::MP4::File *>(file))) {
-        return true;
-    }
-    if (checkApeCover(file)) {
-        return true;
-    }
-    return checkAsfCover(dynamic_cast<TagLib::ASF::File *>(file));
+    EmbeddedPicture result;
+    result.data = QByteArray(dataBv.data(), static_cast<qsizetype>(dataBv.size()));
+    result.mimeType = QString::fromUtf8(chosen->value("mimeType").toString().toCString(true));
+    return result;
 }
 
 bool detectLossyAudio(TagLib::File *file, AudioProperties &outAudio)
@@ -683,7 +653,8 @@ core::Result<TagReadResult> TagReader::read(const QString &path)
 
     detectAudioProperties(file, props, fileInfo, result.audio);
     extractAllTags(file, fileRef, path, result.tags);
-    result.hasEmbeddedCover = checkEmbeddedCover(fileRef, file);
+    result.frontCover = extractFrontCover(file);
+    result.hasEmbeddedCover = result.frontCover.has_value();
 
     return result;
 }

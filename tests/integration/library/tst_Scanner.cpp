@@ -14,6 +14,7 @@
 #include <QTest>
 
 #include <common/TestSupport.h>
+#include <library/CoverStore.h>
 #include <library/Database.h>
 #include <library/LibraryRoots.h>
 #include <library/Migrator.h>
@@ -21,6 +22,7 @@
 
 namespace {
 
+using linernotes::library::CoverStore;
 using linernotes::library::Database;
 using linernotes::library::LibraryRoots;
 using linernotes::library::Migrator;
@@ -121,6 +123,9 @@ private slots:
     void scanLinksAlbumsAndArtists();
     void deletingFilesRemovesOrphans();
     void movedFileRelinksAlbum();
+    void scanEmbeddedCoversAndDeduplication();
+    void scanFolderCoverFallbackAndPrecedence();
+    void orphanCoverCleanupRemovesFromDbAndDisk();
 };
 
 void TstScanner::firstScanAddsAllAudioFiles()
@@ -1253,6 +1258,239 @@ void TstScanner::movedFileRelinksAlbum()
         QVERIFY(q.exec() && q.next());
         QCOMPARE(q.value(0).toInt(), 0);
     }
+}
+
+void TstScanner::scanEmbeddedCoversAndDeduplication()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+
+    const QString musicDir = tempDir.filePath(QStringLiteral("music"));
+    QDir().mkpath(musicDir);
+    const QString cacheDir = tempDir.filePath(QStringLiteral("cache"));
+    QDir().mkpath(cacheDir);
+
+    const QString src = fixturePath(QStringLiteral("library"));
+    QVERIFY(QFile::copy(src + QStringLiteral("/cover_1600_embed.mp3"),
+        musicDir + QStringLiteral("/cover_1600_embed.mp3")));
+    QVERIFY(QFile::copy(src + QStringLiteral("/cover_1600_embed.flac"),
+        musicDir + QStringLiteral("/cover_1600_embed.flac")));
+
+    Database db(tempDir.filePath(QStringLiteral("library.db")));
+    const Migrator migrator;
+    QVERIFY(db.open(migrator).ok());
+
+    LibraryRoots roots(db);
+    QVERIFY(roots.add(musicDir).ok());
+
+    CoverStore coverStore(cacheDir);
+    Scanner::Options opts;
+    opts.coverStore = &coverStore;
+    Scanner scanner(db, opts);
+
+    const auto res = scanner.scanBlocking();
+    QVERIFY(res.ok());
+    const auto &stats = res.value();
+    QCOMPARE(stats.added, 2);
+
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &qDb = connRes.value();
+
+    // 1. Verify covers table has exactly 1 row due to deduplication
+    qint64 coverId = 0;
+    QString coverHash;
+    {
+        QSqlQuery q(qDb);
+        QVERIFY(
+            q.exec(QStringLiteral("SELECT id, hash, mime, width, height, source, source_path FROM "
+                                  "covers")));
+        QVERIFY(q.next());
+        coverId = q.value(0).toLongLong();
+        coverHash = q.value(1).toString();
+        QVERIFY(coverHash.startsWith(QStringLiteral("v1:")));
+        QCOMPARE(q.value(2).toString(), QStringLiteral("image/jpeg"));
+        QCOMPARE(q.value(3).toInt(), 1600);
+        QCOMPARE(q.value(4).toInt(), 1600);
+        QCOMPARE(q.value(5).toString(), QStringLiteral("embedded"));
+        QVERIFY(q.value(6).isNull());
+        QVERIFY(!q.next()); // Exactly 1 row
+    }
+
+    // 2. Both files reference the same cover_id
+    {
+        QSqlQuery q(qDb);
+        QVERIFY(q.exec(QStringLiteral("SELECT cover_id FROM files ORDER BY path ASC")));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toLongLong(), coverId);
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toLongLong(), coverId);
+        QVERIFY(!q.next());
+    }
+
+    // 3. Album has cover_id set to the same cover
+    {
+        QSqlQuery q(qDb);
+        QVERIFY(q.exec(QStringLiteral("SELECT cover_id FROM albums WHERE title = '大封面专辑'")));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toLongLong(), coverId);
+    }
+
+    // 4. Thumbnails exist on disk
+    for (int size : { 128, 512, 1024 }) {
+        const QString thumb = coverStore.thumbnailPath(coverHash, size);
+        QVERIFY2(QFile::exists(thumb),
+            qPrintable(QStringLiteral("Thumbnail missing for size %1: %2").arg(size).arg(thumb)));
+    }
+}
+
+void TstScanner::scanFolderCoverFallbackAndPrecedence()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+
+    const QString musicDir = tempDir.filePath(QStringLiteral("music"));
+    const QString cacheDir = tempDir.filePath(QStringLiteral("cache"));
+    QDir().mkpath(musicDir);
+    QDir().mkpath(cacheDir);
+
+    const QString src = fixturePath(QStringLiteral("library"));
+    copyDirContents(
+        src + QStringLiteral("/dir_folder_cover"), musicDir + QStringLiteral("/dir_folder_cover"));
+    copyDirContents(src + QStringLiteral("/dir_embed_and_folder"),
+        musicDir + QStringLiteral("/dir_embed_and_folder"));
+
+    // Add a file without embedded cover to dir_embed_and_folder
+    QVERIFY(QFile::copy(src + QStringLiteral("/flac_no_tags.flac"),
+        musicDir + QStringLiteral("/dir_embed_and_folder/no_embed.flac")));
+
+    Database db(tempDir.filePath(QStringLiteral("library.db")));
+    const Migrator migrator;
+    QVERIFY(db.open(migrator).ok());
+
+    LibraryRoots roots(db);
+    QVERIFY(roots.add(musicDir).ok());
+
+    CoverStore coverStore(cacheDir);
+    Scanner::Options opts;
+    opts.coverStore = &coverStore;
+    Scanner scanner(db, opts);
+
+    const auto res = scanner.scanBlocking();
+    QVERIFY(res.ok());
+
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &qDb = connRes.value();
+
+    // 1. dir_folder_cover: tracks without embedded cover fallback to Cover.JPG
+    {
+        QSqlQuery q(qDb);
+        QVERIFY(q.exec(QStringLiteral("SELECT f.path, c.source, c.source_path, c.mime "
+                                      "FROM files f "
+                                      "JOIN covers c ON f.cover_id = c.id "
+                                      "WHERE f.path LIKE '%dir_folder_cover%'")));
+        int count = 0;
+        while (q.next()) {
+            count++;
+            QCOMPARE(q.value(1).toString(), QStringLiteral("folder"));
+            QVERIFY(q.value(2).toString().endsWith(QStringLiteral("Cover.JPG")));
+            QCOMPARE(q.value(3).toString(), QStringLiteral("image/jpeg"));
+        }
+        QVERIFY(count >= 1);
+    }
+
+    // 2. dir_embed_and_folder: track_embed_and_folder.flac uses embedded cover, no_embed.flac falls
+    // back to folder.png
+    {
+        QSqlQuery qEmbed(qDb);
+        QVERIFY(qEmbed.exec(QStringLiteral(
+            "SELECT c.source, c.source_path, c.mime "
+            "FROM files f "
+            "JOIN covers c ON f.cover_id = c.id "
+            "WHERE f.path LIKE '%dir_embed_and_folder%track_embed_and_folder.flac'")));
+        QVERIFY(qEmbed.next());
+        QCOMPARE(qEmbed.value(0).toString(), QStringLiteral("embedded"));
+        QVERIFY(qEmbed.value(1).isNull());
+        QCOMPARE(qEmbed.value(2).toString(), QStringLiteral("image/png"));
+
+        QSqlQuery qNoEmbed(qDb);
+        QVERIFY(qNoEmbed.exec(
+            QStringLiteral("SELECT c.source, c.source_path, c.mime "
+                           "FROM files f "
+                           "JOIN covers c ON f.cover_id = c.id "
+                           "WHERE f.path LIKE '%dir_embed_and_folder%no_embed.flac'")));
+        QVERIFY(qNoEmbed.next());
+        QCOMPARE(qNoEmbed.value(0).toString(), QStringLiteral("folder"));
+        QVERIFY(qNoEmbed.value(1).toString().endsWith(QStringLiteral("folder.png")));
+        QCOMPARE(qNoEmbed.value(2).toString(), QStringLiteral("image/png"));
+    }
+}
+
+void TstScanner::orphanCoverCleanupRemovesFromDbAndDisk()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+
+    const QString musicDir = tempDir.filePath(QStringLiteral("music"));
+    const QString cacheDir = tempDir.filePath(QStringLiteral("cache"));
+    QDir().mkpath(musicDir);
+    QDir().mkpath(cacheDir);
+
+    const QString src = fixturePath(QStringLiteral("library"));
+    QVERIFY(QFile::copy(src + QStringLiteral("/cover_1600_embed.mp3"),
+        musicDir + QStringLiteral("/cover_1600_embed.mp3")));
+
+    Database db(tempDir.filePath(QStringLiteral("library.db")));
+    const Migrator migrator;
+    QVERIFY(db.open(migrator).ok());
+
+    LibraryRoots roots(db);
+    QVERIFY(roots.add(musicDir).ok());
+
+    CoverStore coverStore(cacheDir);
+    Scanner::Options opts;
+    opts.coverStore = &coverStore;
+    Scanner scanner(db, opts);
+
+    const auto res1 = scanner.scanBlocking();
+    QVERIFY(res1.ok());
+
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &qDb = connRes.value();
+
+    QString coverHash;
+    {
+        QSqlQuery q(qDb);
+        QVERIFY(q.exec(QStringLiteral("SELECT hash FROM covers")));
+        QVERIFY(q.next());
+        coverHash = q.value(0).toString();
+    }
+
+    const QString thumb128 = coverStore.thumbnailPath(coverHash, 128);
+    QVERIFY(QFile::exists(thumb128));
+
+    // Remove the file from disk and database to orphan the cover and album
+    QVERIFY(QFile::remove(musicDir + QStringLiteral("/cover_1600_embed.mp3")));
+    {
+        QSqlQuery q(qDb);
+        QVERIFY(q.exec(QStringLiteral("DELETE FROM files")));
+    }
+
+    // Rescan: cleanupOrphans will remove orphan albums and covers, then prune thumbnails
+    const auto res2 = scanner.scanBlocking();
+    QVERIFY(res2.ok());
+
+    {
+        QSqlQuery q(qDb);
+        QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM covers")));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 0);
+    }
+
+    // Verify thumbnail is pruned from disk
+    QVERIFY(!QFile::exists(thumb128));
 }
 
 } // namespace

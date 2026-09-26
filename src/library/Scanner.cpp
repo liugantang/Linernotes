@@ -13,6 +13,7 @@
 #include <QThread>
 #include <QThreadPool>
 
+#include <library/CoverStore.h>
 #include <library/Database.h>
 #include <library/DirectoryWalker.h>
 #include <library/EntityLinker.h>
@@ -101,12 +102,135 @@ struct DbFile {
     std::optional<qint64> missingSince;
 };
 
+struct CoverInfo {
+    enum class Source : std::uint8_t { None, Embedded, Folder };
+    Source source = Source::None;
+    QString sourcePath;
+    CoverStore::Info info;
+};
+
+// Known limitation: When audio files have not changed (mtime/size unchanged),
+// the scanner will not re-check folder covers. Therefore, a newly added cover.jpg
+// in an existing folder will only take effect when an audio file in that folder
+// changes or is re-scanned (can be improved with file watching in task 2.8).
+
+struct FolderCoverEntry {
+    bool found = false;
+    QString filePath;
+    std::optional<CoverStore::Info> info;
+};
+
+class FolderCoverCache {
+public:
+    explicit FolderCoverCache(CoverStore *store)
+        : m_store(store)
+    {
+    }
+
+    FolderCoverEntry findAndIngest(const QString &dirPath)
+    {
+        if (m_store == nullptr) {
+            return { };
+        }
+
+        {
+            const std::scoped_lock lock(m_mutex);
+            const auto it = m_cache.constFind(dirPath);
+            if (it != m_cache.constEnd()) {
+                return it.value();
+            }
+        }
+
+        FolderCoverEntry entry = doFindAndIngest(dirPath);
+
+        {
+            const std::scoped_lock lock(m_mutex);
+            m_cache.insert(dirPath, entry);
+        }
+        return entry;
+    }
+
+private:
+    FolderCoverEntry doFindAndIngest(const QString &dirPath)
+    {
+        static const QStringList s_baseNames = {
+            QStringLiteral("cover"),
+            QStringLiteral("folder"),
+            QStringLiteral("front"),
+            QStringLiteral("albumart"),
+            QStringLiteral("album"),
+        };
+        static const QStringList s_extensions = {
+            QStringLiteral("jpg"),
+            QStringLiteral("jpeg"),
+            QStringLiteral("png"),
+            QStringLiteral("webp"),
+        };
+
+        const QDir dir(dirPath);
+        const QFileInfoList fileList = dir.entryInfoList(QDir::Files | QDir::Readable);
+        if (fileList.isEmpty()) {
+            return { };
+        }
+
+        QString chosenFilePath;
+        bool found = false;
+        for (const auto &baseName : s_baseNames) {
+            for (const auto &ext : s_extensions) {
+                const QString expectedName = baseName + u'.' + ext;
+                for (const auto &fi : fileList) {
+                    if (fi.fileName().compare(expectedName, Qt::CaseInsensitive) == 0) {
+                        chosenFilePath = fi.absoluteFilePath();
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    break;
+                }
+            }
+            if (found) {
+                break;
+            }
+        }
+
+        if (!found || chosenFilePath.isEmpty()) {
+            return { };
+        }
+
+        QFile file(chosenFilePath);
+        if (!file.open(QIODevice::ReadOnly)) {
+            qCDebug(lcLibrary) << "Failed to open folder cover image:" << chosenFilePath;
+            return { .found = true, .filePath = chosenFilePath, .info = std::nullopt };
+        }
+
+        const QByteArray data = file.readAll();
+        const auto ingestRes = m_store->ingest(data);
+        if (!ingestRes.ok()) {
+            qCDebug(lcLibrary) << "Folder cover decode failed for" << chosenFilePath << ":"
+                               << ingestRes.error().toString();
+            return { .found = true, .filePath = chosenFilePath, .info = std::nullopt };
+        }
+
+        return FolderCoverEntry {
+            .found = true,
+            .filePath = chosenFilePath,
+            .info = ingestRes.value(),
+        };
+    }
+
+    CoverStore *m_store = nullptr;
+    std::mutex m_mutex;
+    QHash<QString, FolderCoverEntry> m_cache;
+};
+
 struct FileReadResult {
     ScannedFile scanned;
     bool isNew = true;
     DbFile existingDbFile;
     core::Result<TagReadResult> tagResult = core::Error { };
     core::Result<QString> fingerprintResult = core::Error { };
+    CoverInfo cover;
 };
 
 struct WalkTarget {
@@ -345,6 +469,8 @@ struct WriterStatements {
     QSqlQuery deleteRawTagsStmt;
     QSqlQuery insertRawTagStmt;
     QSqlQuery updateTrackTagsReadAtStmt;
+    QSqlQuery findCoverStmt;
+    QSqlQuery insertCoverStmt;
 
     explicit WriterStatements(const QSqlDatabase &db)
         : savepointStmt(db)
@@ -361,6 +487,8 @@ struct WriterStatements {
         , deleteRawTagsStmt(db)
         , insertRawTagStmt(db)
         , updateTrackTagsReadAtStmt(db)
+        , findCoverStmt(db)
+        , insertCoverStmt(db)
     {
         savepointStmt.prepare(QStringLiteral("SAVEPOINT scan_file;"));
         releaseStmt.prepare(QStringLiteral("RELEASE scan_file;"));
@@ -375,12 +503,13 @@ struct WriterStatements {
         insertNewFileStmt.prepare(QStringLiteral(
             "INSERT INTO files (root_id, path, size, mtime, content_hash, container, codec, "
             "duration_ms, bitrate, sample_rate, bit_depth, channels, has_embedded_cover, "
-            "scan_error, first_seen_at, scanned_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)"));
+            "cover_id, scan_error, first_seen_at, scanned_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)"));
         updateFileStmt.prepare(QStringLiteral(
             "UPDATE files SET root_id = ?, size = ?, mtime = ?, content_hash = ?, container = ?, "
             "codec = ?, duration_ms = ?, bitrate = ?, sample_rate = ?, bit_depth = ?, channels "
-            "= ?, has_embedded_cover = ?, scan_error = NULL, scanned_at = ?, missing_since = NULL "
+            "= ?, has_embedded_cover = ?, cover_id = ?, scan_error = NULL, scanned_at = ?, "
+            "missing_since = NULL "
             "WHERE id = ?"));
         insertNewFileFailedStmt.prepare(QStringLiteral(
             "INSERT INTO files (root_id, path, size, mtime, content_hash, scan_error, "
@@ -401,6 +530,10 @@ struct WriterStatements {
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"));
         updateTrackTagsReadAtStmt.prepare(
             QStringLiteral("UPDATE tracks SET tags_read_at = ? WHERE id = ?"));
+        findCoverStmt.prepare(QStringLiteral("SELECT id FROM covers WHERE hash = ? LIMIT 1"));
+        insertCoverStmt.prepare(QStringLiteral(
+            "INSERT INTO covers (hash, mime, width, height, source, source_path, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT(hash) DO NOTHING"));
     }
 };
 
@@ -437,6 +570,45 @@ MoveLookupResult tryResolveMovedRecord(
     return MoveLookupResult::FoundAndMoved;
 }
 
+std::optional<qint64> resolveCoverId(const CoverInfo &cover, WriterStatements &stmts, qint64 now)
+{
+    if (cover.source == CoverInfo::Source::None || cover.info.hash.isEmpty()) {
+        return std::nullopt;
+    }
+
+    const QString sourceStr = (cover.source == CoverInfo::Source::Embedded)
+        ? QStringLiteral("embedded")
+        : QStringLiteral("folder");
+    const QVariant sourcePathVal
+        = (cover.source == CoverInfo::Source::Folder && !cover.sourcePath.isEmpty())
+        ? QVariant(cover.sourcePath)
+        : QVariant();
+
+    stmts.insertCoverStmt.bindValue(0, cover.info.hash);
+    stmts.insertCoverStmt.bindValue(1, cover.info.mime);
+    stmts.insertCoverStmt.bindValue(
+        2, cover.info.width > 0 ? QVariant(cover.info.width) : QVariant());
+    stmts.insertCoverStmt.bindValue(
+        3, cover.info.height > 0 ? QVariant(cover.info.height) : QVariant());
+    stmts.insertCoverStmt.bindValue(4, sourceStr);
+    stmts.insertCoverStmt.bindValue(5, sourcePathVal);
+    stmts.insertCoverStmt.bindValue(6, now);
+    if (!stmts.insertCoverStmt.exec()) {
+        qCWarning(lcLibrary) << "Failed to insert cover:"
+                             << stmts.insertCoverStmt.lastError().text();
+        return std::nullopt;
+    }
+
+    stmts.findCoverStmt.bindValue(0, cover.info.hash);
+    if (!stmts.findCoverStmt.exec() || !stmts.findCoverStmt.next()) {
+        qCWarning(lcLibrary) << "Failed to find cover id after insert:"
+                             << stmts.findCoverStmt.lastError().text();
+        return std::nullopt;
+    }
+
+    return stmts.findCoverStmt.value(0).toLongLong();
+}
+
 bool insertNewRecord(
     const FileReadResult &res, WriterStatements &stmts, qint64 now, qint64 &outFileId)
 {
@@ -444,6 +616,7 @@ bool insertNewRecord(
     const auto &audio = tagRes.audio;
     const QString contentHash
         = res.fingerprintResult.ok() ? res.fingerprintResult.value() : QString();
+    const std::optional<qint64> coverId = resolveCoverId(res.cover, stmts, now);
 
     stmts.insertNewFileStmt.bindValue(0, res.scanned.rootId);
     stmts.insertNewFileStmt.bindValue(1, res.scanned.path);
@@ -458,8 +631,10 @@ bool insertNewRecord(
     stmts.insertNewFileStmt.bindValue(10, audio.bitDepth);
     stmts.insertNewFileStmt.bindValue(11, audio.channels);
     stmts.insertNewFileStmt.bindValue(12, tagRes.hasEmbeddedCover ? 1 : 0);
-    stmts.insertNewFileStmt.bindValue(13, now);
+    stmts.insertNewFileStmt.bindValue(
+        13, coverId.has_value() ? QVariant(coverId.value()) : QVariant());
     stmts.insertNewFileStmt.bindValue(14, now);
+    stmts.insertNewFileStmt.bindValue(15, now);
     if (!stmts.insertNewFileStmt.exec()) {
         return false;
     }
@@ -474,6 +649,7 @@ bool updateExistingRecord(
     const auto &audio = tagRes.audio;
     const QString contentHash
         = res.fingerprintResult.ok() ? res.fingerprintResult.value() : QString();
+    const std::optional<qint64> coverId = resolveCoverId(res.cover, stmts, now);
     outFileId = res.existingDbFile.id;
 
     stmts.updateFileStmt.bindValue(0, res.scanned.rootId);
@@ -488,8 +664,10 @@ bool updateExistingRecord(
     stmts.updateFileStmt.bindValue(9, audio.bitDepth);
     stmts.updateFileStmt.bindValue(10, audio.channels);
     stmts.updateFileStmt.bindValue(11, tagRes.hasEmbeddedCover ? 1 : 0);
-    stmts.updateFileStmt.bindValue(12, now);
-    stmts.updateFileStmt.bindValue(13, outFileId);
+    stmts.updateFileStmt.bindValue(
+        12, coverId.has_value() ? QVariant(coverId.value()) : QVariant());
+    stmts.updateFileStmt.bindValue(13, now);
+    stmts.updateFileStmt.bindValue(14, outFileId);
     return stmts.updateFileStmt.exec();
 }
 
@@ -682,39 +860,89 @@ void writeFailedFile(
     stats.failed++;
 }
 
-void startReaderWorkers(QThreadPool &pool, const QList<ScannedFile> &filesToRead,
+CoverInfo extractCover(const QString &filePath, const TagReadResult &tagRes, CoverStore *coverStore,
+    const std::shared_ptr<FolderCoverCache> &folderCoverCache)
+{
+    CoverInfo cover;
+    if (coverStore == nullptr) {
+        return cover;
+    }
+
+    if (tagRes.frontCover.has_value()) {
+        const auto &pic = tagRes.frontCover.value();
+        const auto ingestRes = coverStore->ingest(pic.data);
+        if (ingestRes.ok()) {
+            cover.source = CoverInfo::Source::Embedded;
+            cover.info = ingestRes.value();
+            if (!pic.mimeType.isEmpty()) {
+                cover.info.mime = pic.mimeType;
+            }
+        } else {
+            qCDebug(lcLibrary) << "Embedded cover ingest failed for" << filePath << ":"
+                               << ingestRes.error().toString();
+        }
+    } else {
+        const QString dirPath = QFileInfo(filePath).absolutePath();
+        const auto folderCover = folderCoverCache->findAndIngest(dirPath);
+        if (folderCover.found && folderCover.info.has_value()) {
+            cover.source = CoverInfo::Source::Folder;
+            cover.sourcePath = folderCover.filePath;
+            cover.info = folderCover.info.value();
+        }
+    }
+    return cover;
+}
+
+void runReaderWorker(const QList<ScannedFile> &filesToRead,
     const QHash<QString, DbFile> &dbFilesByPath, BoundedQueue<FileReadResult> &resultQueue,
-    int workerCount, const std::atomic<bool> &cancelled, std::atomic<int> &activeWorkers,
+    CoverStore *coverStore, const std::shared_ptr<FolderCoverCache> &folderCoverCache,
+    const std::atomic<bool> &cancelled, std::atomic<int> &activeWorkers,
     std::atomic<size_t> &nextIndex)
 {
+    const auto totalFiles = static_cast<size_t>(filesToRead.size());
+    while (!cancelled.load()) {
+        const size_t idx = nextIndex.fetch_add(1);
+        if (idx >= totalFiles) {
+            break;
+        }
+        const auto &item = filesToRead.at(static_cast<qsizetype>(idx));
+        FileReadResult res;
+        res.scanned = item;
+        if (dbFilesByPath.contains(item.path)) {
+            res.isNew = false;
+            res.existingDbFile = dbFilesByPath.value(item.path);
+        } else {
+            res.isNew = true;
+        }
+
+        res.tagResult = TagReader::read(item.path);
+        res.fingerprintResult = FileFingerprint::compute(item.path);
+
+        if (res.tagResult.ok()) {
+            res.cover
+                = extractCover(item.path, res.tagResult.value(), coverStore, folderCoverCache);
+        }
+
+        resultQueue.push(std::move(res));
+    }
+    if (activeWorkers.fetch_sub(1) == 1) {
+        resultQueue.stop();
+    }
+}
+
+void startReaderWorkers(QThreadPool &pool, const QList<ScannedFile> &filesToRead,
+    const QHash<QString, DbFile> &dbFilesByPath, BoundedQueue<FileReadResult> &resultQueue,
+    int workerCount, CoverStore *coverStore, const std::atomic<bool> &cancelled,
+    std::atomic<int> &activeWorkers, std::atomic<size_t> &nextIndex)
+{
+    auto folderCoverCache = std::make_shared<FolderCoverCache>(coverStore);
+
     for (int i = 0; i < workerCount; ++i) {
-        pool.start(
-            [&filesToRead, &dbFilesByPath, &resultQueue, &cancelled, &activeWorkers, &nextIndex]() {
-                const auto totalFiles = static_cast<size_t>(filesToRead.size());
-                while (!cancelled.load()) {
-                    const size_t idx = nextIndex.fetch_add(1);
-                    if (idx >= totalFiles) {
-                        break;
-                    }
-                    const auto &item = filesToRead.at(static_cast<qsizetype>(idx));
-                    FileReadResult res;
-                    res.scanned = item;
-                    if (dbFilesByPath.contains(item.path)) {
-                        res.isNew = false;
-                        res.existingDbFile = dbFilesByPath.value(item.path);
-                    } else {
-                        res.isNew = true;
-                    }
-
-                    res.tagResult = TagReader::read(item.path);
-                    res.fingerprintResult = FileFingerprint::compute(item.path);
-
-                    resultQueue.push(std::move(res));
-                }
-                if (activeWorkers.fetch_sub(1) == 1) {
-                    resultQueue.stop();
-                }
-            });
+        pool.start([&filesToRead, &dbFilesByPath, &resultQueue, coverStore, folderCoverCache,
+                       &cancelled, &activeWorkers, &nextIndex]() {
+            runReaderWorker(filesToRead, dbFilesByPath, resultQueue, coverStore, folderCoverCache,
+                cancelled, activeWorkers, nextIndex);
+        });
     }
 }
 
@@ -788,7 +1016,7 @@ core::Result<void> processWriterQueue(const QSqlDatabase &db,
 
 core::Result<void> executeReadAndWritePipeline(const QSqlDatabase &db,
     const QList<ScannedFile> &filesToRead, const QHash<QString, DbFile> &dbFilesByPath,
-    int batchSize, int maxThreads, std::atomic<bool> &cancelled,
+    int batchSize, int maxThreads, CoverStore *coverStore, std::atomic<bool> &cancelled,
     const std::function<qint64()> &getNow,
     const std::function<void(const ScanProgress &)> &onProgress, ScanStats &stats)
 {
@@ -801,8 +1029,8 @@ core::Result<void> executeReadAndWritePipeline(const QSqlDatabase &db,
     QThreadPool pool;
     pool.setMaxThreadCount(maxThreads);
 
-    startReaderWorkers(pool, filesToRead, dbFilesByPath, resultQueue, workerCount, cancelled,
-        activeWorkers, nextIndex);
+    startReaderWorkers(pool, filesToRead, dbFilesByPath, resultQueue, workerCount, coverStore,
+        cancelled, activeWorkers, nextIndex);
 
     const auto writeRes = processWriterQueue(db, resultQueue, batchSize,
         static_cast<int>(filesToRead.size()), getNow, onProgress, stats);
@@ -903,6 +1131,41 @@ qint64 Scanner::getNow() const
     return QDateTime::currentMSecsSinceEpoch();
 }
 
+namespace {
+
+void performCleanupOrphans(const QSqlDatabase &db, CoverStore *coverStore,
+    const std::function<qint64()> &getNow, bool isCancelled, ScanStats &stats)
+{
+    EntityLinker linker(db, getNow);
+    Transaction tx(db);
+    auto removeRes = linker.removeOrphans();
+    if (removeRes.ok()) {
+        auto commitRes = tx.commit();
+        if (commitRes.ok()) {
+            stats.albumsRemoved = removeRes.value().first;
+            stats.artistsRemoved = removeRes.value().second;
+        } else {
+            qCWarning(lcLibrary) << "Failed to commit removeOrphans transaction:"
+                                 << commitRes.error().toString();
+        }
+    } else {
+        qCWarning(lcLibrary) << "Failed to remove orphans:" << removeRes.error().toString();
+    }
+
+    if (!isCancelled && coverStore != nullptr) {
+        QSqlQuery qHashes(db);
+        if (qHashes.exec(QStringLiteral("SELECT hash FROM covers"))) {
+            QSet<QString> keepHashes;
+            while (qHashes.next()) {
+                keepHashes.insert(qHashes.value(0).toString());
+            }
+            coverStore->prune(keepHashes);
+        }
+    }
+}
+
+} // namespace
+
 core::Result<ScanStats> Scanner::doScan(const QStringList &dirs)
 {
     QElapsedTimer totalTimer;
@@ -948,21 +1211,9 @@ core::Result<ScanStats> Scanner::doScan(const QStringList &dirs)
     const QSqlDatabase &db = connRes.value();
 
     auto cleanupOrphans = [&]() {
-        EntityLinker linker(db, [this]() { return getNow(); });
-        Transaction tx(db);
-        auto removeRes = linker.removeOrphans();
-        if (removeRes.ok()) {
-            auto commitRes = tx.commit();
-            if (commitRes.ok()) {
-                stats.albumsRemoved = removeRes.value().first;
-                stats.artistsRemoved = removeRes.value().second;
-            } else {
-                qCWarning(lcLibrary) << "Failed to commit removeOrphans transaction:"
-                                     << commitRes.error().toString();
-            }
-        } else {
-            qCWarning(lcLibrary) << "Failed to remove orphans:" << removeRes.error().toString();
-        }
+        performCleanupOrphans(
+            db, m_options.coverStore, [this]() { return getNow(); },
+            stats.cancelled || m_cancelled.load(), stats);
     };
 
     if (!walkOk || m_cancelled.load()) {
@@ -1030,7 +1281,7 @@ core::Result<ScanStats> Scanner::doScan(const QStringList &dirs)
     const int batchSize = std::max(1, m_options.batchSize);
 
     const auto pipelineRes = executeReadAndWritePipeline(
-        db, filesToRead, dbFilesByPath, batchSize, maxThreads, m_cancelled,
+        db, filesToRead, dbFilesByPath, batchSize, maxThreads, m_options.coverStore, m_cancelled,
         [this]() { return getNow(); }, [this](const ScanProgress &p) { emit progress(p); }, stats);
 
     if (!pipelineRes.ok()) {

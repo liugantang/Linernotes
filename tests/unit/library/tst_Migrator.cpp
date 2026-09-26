@@ -23,7 +23,9 @@ namespace errc = linernotes::library::errc;
 void writeSqlFile(const QString &dirPath, const QString &fileName, const QString &content)
 {
     QFile file(QDir(dirPath).filePath(fileName));
-    Q_ASSERT(file.open(QIODevice::WriteOnly | QIODevice::Text));
+    const bool opened = file.open(QIODevice::WriteOnly | QIODevice::Text);
+    Q_ASSERT(opened);
+    Q_UNUSED(opened);
     file.write(content.toUtf8());
     file.close();
 }

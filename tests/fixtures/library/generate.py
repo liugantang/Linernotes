@@ -6,6 +6,7 @@
 Dependencies:
     - Python 3.10+
     - mutagen >= 1.48
+    - Pillow（生成封面图片）
     - ffmpeg (compiled with libmp3lame, flac, libvorbis, libopus, aac, alac, wavpack)
 
 Usage:
@@ -16,12 +17,15 @@ All files are generated directly into the directory containing this script.
 All audio contents and metadata are fictional (CC0).
 """
 
+import io
 import os
 import random
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+from PIL import Image, ImageDraw
 
 import mutagen
 from mutagen.apev2 import APEv2
@@ -48,13 +52,30 @@ from mutagen.wave import WAVE
 from mutagen.wavpack import WavPack
 
 
-# Minimal 8x8 solid PNG image (79 bytes)
-TINY_PNG_BYTES = (
-    b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x08\x00\x00\x00\x08"
-    b"\x08\x02\x00\x00\x00\x4b\x6d\x29\xdc\x00\x00\x00\x1bIDATx\x9cc\xfc"
-    b"\xff\xff?\x03\x18\x18\x18\x18\x18\x18\x18\x18\x18\x18\x18\x18\x00\x00"
-    b"\x96\x0c\x02\x01\x18\xdb\x9e\x7f\x00\x00\x00\x00IEND\xaeB`\x82"
-)
+def generate_jpeg_bytes(width: int, height: int, color_bg, color_fg) -> bytes:
+    img = Image.new("RGB", (width, height), color=color_bg)
+    draw = ImageDraw.Draw(img)
+    margin_w = max(1, width // 8)
+    margin_h = max(1, height // 8)
+    draw.rectangle([margin_w, margin_h, width - margin_w, height - margin_h], fill=color_fg)
+    bio = io.BytesIO()
+    img.save(bio, format="JPEG", quality=85)
+    return bio.getvalue()
+
+
+def generate_png_bytes(width: int, height: int, color_bg, color_fg) -> bytes:
+    img = Image.new("RGBA", (width, height), color=color_bg)
+    draw = ImageDraw.Draw(img)
+    margin_w = max(1, width // 8)
+    margin_h = max(1, height // 8)
+    draw.rectangle([margin_w, margin_h, width - margin_w, height - margin_h], fill=color_fg)
+    bio = io.BytesIO()
+    img.save(bio, format="PNG")
+    return bio.getvalue()
+
+
+# Minimal 8x8 solid PNG image
+TINY_PNG_BYTES = generate_png_bytes(8, 8, (255, 0, 0, 255), (0, 255, 0, 255))
 
 
 def run_ffmpeg(args, output_path):
@@ -371,6 +392,72 @@ def main():
     p20 = out_dir / "not_audio.ogg"
     with open(p20, "wb") as f:
         f.write(b"This is a text file and not a valid ogg audio file.\n" * 10)
+
+    # 21. cover_1600_embed.mp3 (1600x1600 JPEG embedded cover)
+    jpeg_1600_bytes = generate_jpeg_bytes(1600, 1600, (65, 105, 225), (255, 140, 0))
+    p21 = out_dir / "cover_1600_embed.mp3"
+    run_ffmpeg(["-c:a", "libmp3lame", "-b:a", "64k"], p21)
+    id3 = ID3()
+    id3.add(TIT2(encoding=3, text=["大封面测试 (MP3)"]))
+    id3.add(TPE1(encoding=3, text=["测试艺人"]))
+    id3.add(TALB(encoding=3, text=["大封面专辑"]))
+    id3.add(TRCK(encoding=3, text=["1/2"]))
+    id3.add(TPOS(encoding=3, text=["1/1"]))
+    id3.add(APIC(encoding=3, mime="image/jpeg", type=3, desc="Front Cover", data=jpeg_1600_bytes))
+    id3.save(str(p21), v2_version=4)
+
+    # 22. cover_1600_embed.flac (1600x1600 JPEG embedded cover, same image)
+    p22 = out_dir / "cover_1600_embed.flac"
+    run_ffmpeg(["-c:a", "flac"], p22)
+    flac = FLAC(str(p22))
+    flac["TITLE"] = ["大封面测试 (FLAC)"]
+    flac["ARTIST"] = ["测试艺人"]
+    flac["ALBUM"] = ["大封面专辑"]
+    flac["TRACKNUMBER"] = ["2"]
+    flac["DISCNUMBER"] = ["1"]
+    pic = Picture()
+    pic.type = 3
+    pic.mime = "image/jpeg"
+    pic.desc = "Front Cover"
+    pic.data = jpeg_1600_bytes
+    flac.add_picture(pic)
+    flac.save()
+
+    # 23. dir_folder_cover/ (Directory with Cover.JPG and audio without embedded cover)
+    d_folder = out_dir / "dir_folder_cover"
+    d_folder.mkdir(parents=True, exist_ok=True)
+    cover_jpg_bytes = generate_jpeg_bytes(800, 800, (46, 139, 87), (255, 215, 0))
+    with open(d_folder / "Cover.JPG", "wb") as f:
+        f.write(cover_jpg_bytes)
+    p23 = d_folder / "track_in_dir_cover.flac"
+    run_ffmpeg(["-c:a", "flac"], p23)
+    flac = FLAC(str(p23))
+    flac["TITLE"] = ["目录封面音轨"]
+    flac["ARTIST"] = ["目录艺人"]
+    flac["ALBUM"] = ["目录封面专辑"]
+    flac["TRACKNUMBER"] = ["1"]
+    flac.save()
+
+    # 24. dir_embed_and_folder/ (Directory with embedded cover audio and folder.png)
+    d_both = out_dir / "dir_embed_and_folder"
+    d_both.mkdir(parents=True, exist_ok=True)
+    folder_png_bytes = generate_png_bytes(600, 600, (178, 34, 34), (0, 255, 127))
+    with open(d_both / "folder.png", "wb") as f:
+        f.write(folder_png_bytes)
+    p24 = d_both / "track_embed_and_folder.flac"
+    run_ffmpeg(["-c:a", "flac"], p24)
+    flac = FLAC(str(p24))
+    flac["TITLE"] = ["双封面音轨"]
+    flac["ARTIST"] = ["双封面艺人"]
+    flac["ALBUM"] = ["双封面专辑"]
+    flac["TRACKNUMBER"] = ["1"]
+    pic = Picture()
+    pic.type = 3
+    pic.mime = "image/png"
+    pic.desc = "Front Cover"
+    pic.data = TINY_PNG_BYTES
+    flac.add_picture(pic)
+    flac.save()
 
     print("All fixtures generated successfully!")
 
