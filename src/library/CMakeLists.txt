@@ -19,6 +19,8 @@ add_library(linernotes_library STATIC
     FsType.h
     LibraryLogging.cpp
     LibraryLogging.h
+    LibraryQuery.cpp
+    LibraryQuery.h
     LibraryRoots.cpp
     LibraryRoots.h
     LibraryWatcher.cpp

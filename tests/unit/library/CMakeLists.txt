@@ -62,6 +62,15 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME library_LibraryQuery
+    SOURCES
+        tst_LibraryQuery.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
     NAME library_DirectoryWalker
     SOURCES
         tst_DirectoryWalker.cpp
