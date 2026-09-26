@@ -112,14 +112,14 @@
 | ✅ 2.3 | 元数据三层表：`raw_tags` / `corrections`（source、confidence、status、reason、batch_id）/ `user_overrides`；`effective_metadata` 视图或物化表 + 刷新触发 |
 | ✅ 2.4 | 预留表：`play_events`、`moments`、`audio_features`、`embeddings`、`llm_cache`、`change_log`（先建表，后面阶段填充） |
 | 2.5 | 扫描器：多根目录、排除规则、`QDirIterator` 递归；按 mtime+size 增量；删除检测 |
-| 2.6 | 标签读取：TagLib 读所有字段（含多值、MusicBrainz ID、ReplayGain、歌词、封面存在性）；**保留原始字节**以供乱码修复使用（ID3v1/ID3v2.3 Latin-1 字段） |
+| ✅ 2.6 | 标签读取：TagLib 读所有字段（含多值、MusicBrainz ID、ReplayGain、歌词、封面存在性）；**保留原始字节**以供乱码修复使用（ID3v1/ID3v2.3 Latin-1 字段） |
 | 2.7 | 并行扫描：`QThreadPool` 读标签，单写线程批量事务写入（每 500 条一个事务） |
 | 2.8 | 文件监听：`QFileSystemWatcher`（Linux 下注意 inotify 上限，超限时退化为定时增量扫描） |
 | 2.9 | 封面：提取内嵌/目录封面，生成多尺寸缩略图缓存（按内容 hash 去重） |
 | 2.10 | FTS5 索引：标题/艺人/专辑/别名；加入拼音全拼+首字母、简繁双写入 |
 | 2.11 | 文件内容指纹：部分内容 hash（如头尾各 64 KB + 大小）用于移动检测与完全重复识别 |
 | 2.12 | 性能基准：生成 10 万条假数据的基准测试，验证查询耗时 |
-| 2.13 | 测试：包含各种编码/格式/损坏文件的测试素材集（这个素材集后续管家阶段反复用到） |
+| ✅ 2.13 | 测试：包含各种编码/格式/损坏文件的测试素材集（这个素材集后续管家阶段反复用到） |
 
 **交付物**：`library` 库；CLI `linernotes-scan <dir>` 输出统计。
 **验收**：1 万首首扫 < 2 min，二次增量 < 5 s；FTS 查询 < 100 ms（10 万条）；中断扫描后重跑结果一致。
