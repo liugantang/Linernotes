@@ -16,4 +16,8 @@
 | 文件名 / 路径 | 格式 / 类型 | 大小 / 时长 | 来源 / 授权 | 说明 |
 | :--- | :--- | :--- | :--- | :--- |
 
-*(暂无素材)*
+| `audio/tone_440_1s.flac` | FLAC / 单声道 22050 Hz | ~16 KB / 1.0 s | `generate.sh` 自行合成，CC0 | 440 Hz 正弦测试音频 |
+| `audio/tone_660_1s.flac` | FLAC / 单声道 22050 Hz | ~17 KB / 1.0 s | `generate.sh` 自行合成，CC0 | 660 Hz 正弦测试音频，用于 gapless 测试 |
+| `audio/tone_880_1s.ogg` | OGG (Vorbis) / 单声道 22050 Hz | ~5 KB / 1.0 s | `generate.sh` 自行合成，CC0 | 880 Hz 正弦测试音频 |
+| `audio/silence_5s.flac` | FLAC / 单声道 22050 Hz | ~9 KB / 5.0 s | `generate.sh` 自行合成，CC0 | 静音 5 秒测试音频，用于长时播放与导航测试 |
+| `audio/corrupt.flac` | 损坏文件 / 文本 | ~360 B / 0 s | `generate.sh` 自行合成，CC0 | 非法音频数据样本，用于错误处理测试 |

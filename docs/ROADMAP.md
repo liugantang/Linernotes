@@ -70,26 +70,33 @@
 
 ---
 
-## 阶段 1：播放内核（1.5 周）
+## 阶段 1：播放内核（1.5 周）✅ 完成（2026-09-26）
 
 **目标**：一个无界面也能稳定工作的播放引擎。
 
 | # | 任务 |
 |---|---|
-| 1.1 | `MpvHandle`：RAII 封装 `mpv_handle`，初始化参数（`vid=no`、`audio-display=no`、`gapless-audio=weak`、`replaygain` 等） |
-| 1.2 | 事件循环接入：`mpv_set_wakeup_callback` → `QMetaObject::invokeMethod(Qt::QueuedConnection)` → 在主线程 drain 事件 |
-| 1.3 | 属性观察：`time-pos`、`duration`、`pause`、`volume`、`idle-active`、`playlist-pos`，转换为 Qt 信号 |
-| 1.4 | `Player` 类（QObject，Q_PROPERTY 暴露给 QML）：play/pause/stop/seek/volume/mute |
-| 1.5 | `PlayQueue` 模型：队列由我们自己维护（而非完全依赖 mpv playlist），向 mpv 预加载下一首以实现 gapless |
-| 1.6 | 播放模式：顺序/列表循环/单曲循环/随机（实现“不短期重复”的洗牌：Fisher-Yates + 最近历史回避） |
-| 1.7 | 错误处理：文件不存在、解码失败 → 跳过并上报 |
-| 1.8 | 输出设备枚举与切换（`audio-device-list` / `audio-device`） |
-| 1.9 | 为 DJ 预留：`VoiceChannel`（第二个 mpv 实例专门播放语音）+ 主通道音量平滑渐变（ducking）接口，先实现接口与简单测试 |
-| 1.10 | 队列与进度持久化（退出保存，启动恢复） |
-| 1.11 | 单元/集成测试：用测试音频文件验证 gapless 切换、seek、事件时序 |
+| ✅ 1.1 | `MpvHandle`：RAII 封装 `mpv_handle`，初始化参数（`vid=no`、`audio-display=no`、`gapless-audio=weak`、`replaygain` 等） |
+| ✅ 1.2 | 事件循环接入：`mpv_set_wakeup_callback` → `QMetaObject::invokeMethod(Qt::QueuedConnection)` → 在主线程 drain 事件 |
+| ✅ 1.3 | 属性观察：`time-pos`、`duration`、`pause`、`volume`、`idle-active`、`playlist-pos`，转换为 Qt 信号 |
+| ✅ 1.4 | `Player` 类（QObject，Q_PROPERTY 暴露给 QML）：play/pause/stop/seek/volume/mute |
+| ✅ 1.5 | `PlayQueue` 模型：队列由我们自己维护（而非完全依赖 mpv playlist），向 mpv 预加载下一首以实现 gapless |
+| ✅ 1.6 | 播放模式：顺序/列表循环/单曲循环/随机（实现“不短期重复”的洗牌：Fisher-Yates + 最近历史回避） |
+| ✅ 1.7 | 错误处理：文件不存在、解码失败 → 跳过并上报 |
+| ✅ 1.8 | 输出设备枚举与切换（`audio-device-list` / `audio-device`） |
+| ✅ 1.9 | 为 DJ 预留：`VoiceChannel`（第二个 mpv 实例专门播放语音）+ 主通道音量平滑渐变（ducking）接口，先实现接口与简单测试 |
+| ✅ 1.10 | 队列与进度持久化（退出保存，启动恢复） |
+| ✅ 1.11 | 单元/集成测试：用测试音频文件验证 gapless 切换、seek、事件时序 |
 
 **交付物**：`player` 库 + 一个命令行测试程序（传入若干文件即可顺序播放）。
 **验收**：连续播放一张 gapless 专辑无缝隙；长时间播放（4 h）无内存增长；ducking 渐变无爆音。
+
+**验收记录（2026-09-26）**：
+- gapless：用 playcli 播放一张现场专辑（namie amuro LIVE STYLE 2014，96 kHz FLAC），人工试听，曲目交界处无停顿、无咔哒声；自动测试 `gaplessTransitionDoesNotStop` 验证切换期间不进入 Stopped、两首 1 s 曲目总耗时无额外间隙
+- 4 h 内存：`scripts/soak-player.sh tests/fixtures/audio 4`（`ao=null`、列表循环、5 个 1–5 s 素材含一个坏文件，约 1 万次切换）。RSS 96.4 MB → 114.2 MB，前几分钟一次性上涨约 14 MB，之后增速递减，2.5 h 后走平（最后 1.5 h 在 114.2–114.3 MB），判定无持续增长
+- ducking：playcli 的 `d <gain> [ms]` 命令人工试听 300/500/50 ms 渐变，无爆音；另用 `ao=pcm` 录音确认 `af-command` 实际改变输出电平（峰值 0.125 → 0.012）
+- ctest：18 个测试在 debug / ci（-Werror）/ asan 下全部通过；格式检查通过
+- 与计划的偏差：1.5 拆为 PlayQueue 模型与 Player 集成两个提交；1.1–1.3 合为一个提交；ducking 采用 lavfi volume 滤镜 + `af-command`，不改用户音量。已知局限：gapless 且前后音频格式不同时，滤镜链重建到重新应用增益之间可能有极短的全音量窗口；在曲目切换瞬间修改队列可能多一次切换（状态随后自愈）
 
 ---
 

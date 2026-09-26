@@ -2,3 +2,4 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 add_subdirectory(depcheck)
+add_subdirectory(playcli)
