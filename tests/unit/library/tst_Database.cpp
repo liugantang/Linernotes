@@ -12,6 +12,7 @@
 
 #include <library/Database.h>
 #include <library/Errors.h>
+#include <unistd.h>
 
 #include <atomic>
 
@@ -286,7 +287,8 @@ void TstDatabase::openFailsForUnwritablePath()
     }
 
     // 2. Point Database to an unwritable directory to test db.open() failure
-    {
+    //    root 不受目录权限限制（CI 容器以 root 运行），此时跳过这一部分
+    if (::geteuid() != 0) {
         const QString subDir = tempDir.filePath(QStringLiteral("readonly_dir"));
         QDir().mkdir(subDir);
         QFile::setPermissions(subDir, QFileDevice::ReadOwner | QFileDevice::ExeOwner);
