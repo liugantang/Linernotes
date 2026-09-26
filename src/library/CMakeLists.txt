@@ -17,6 +17,8 @@ add_library(linernotes_library STATIC
     LibraryRoots.h
     Migrator.cpp
     Migrator.h
+    Scanner.cpp
+    Scanner.h
     TagReader.cpp
     TagReader.h
 )

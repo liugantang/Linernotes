@@ -36,6 +36,7 @@
 #include <rifffile.h>
 #include <speexfile.h>
 #include <tbytevector.h>
+#include <tdebuglistener.h>
 #include <textidentificationframe.h>
 #include <tpropertymap.h>
 #include <tstring.h>
@@ -45,6 +46,8 @@
 #include <wavfile.h>
 #include <wavpackfile.h>
 #include <xiphcomment.h>
+
+#include <mutex>
 
 namespace linernotes::library {
 
@@ -606,10 +609,35 @@ void extractAllTags(
     }
 }
 
+class TagLibLogListener : public TagLib::DebugListener {
+public:
+    void printMessage(const TagLib::String &msg) override
+    {
+        QString str = QString::fromUtf8(msg.toCString(true));
+        while (str.endsWith(u'\n') || str.endsWith(u'\r')) {
+            str.chop(1);
+        }
+        if (!str.isEmpty()) {
+            qCDebug(lcLibrary) << str;
+        }
+    }
+};
+
+void ensureTagLibDebugListener()
+{
+    static std::once_flag s_flag;
+    std::call_once(s_flag, []() {
+        static TagLibLogListener s_listener;
+        TagLib::setDebugListener(&s_listener);
+    });
+}
+
 } // namespace
 
 core::Result<TagReadResult> TagReader::read(const QString &path)
 {
+    ensureTagLibDebugListener();
+
     const QFileInfo fileInfo(path);
     if (!fileInfo.exists() || !fileInfo.isFile()) {
         qCDebug(lcLibrary) << "File does not exist or is not a file:" << path;

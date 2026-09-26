@@ -3,3 +3,4 @@
 
 add_subdirectory(depcheck)
 add_subdirectory(playcli)
+add_subdirectory(scan)
