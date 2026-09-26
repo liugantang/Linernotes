@@ -33,3 +33,11 @@ linernotes_add_test(
         Linernotes::core
 )
 
+linernotes_add_test(
+    NAME core_Result
+    SOURCES
+        tst_Result.cpp
+    LIBS
+        Linernotes::core
+)
+

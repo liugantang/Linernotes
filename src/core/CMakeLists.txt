@@ -13,6 +13,7 @@ add_library(linernotes_core STATIC
     Logging.h
     Paths.cpp
     Paths.h
+    Result.h
     Settings.cpp
     Settings.h
     Version.cpp
