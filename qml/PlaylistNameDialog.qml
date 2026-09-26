@@ -10,11 +10,16 @@ import "controls" as Controls
 Popup {
     id: root
 
-    signal playlistSaved(string name, bool success)
+    property string titleText: qsTr("New Playlist")
+    property string acceptButtonText: qsTr("Save")
+    property string initialText: ""
+
+    signal accepted(string name)
 
     modal: true
     focus: true
     dim: true
+    parent: Overlay.overlay
     anchors.centerIn: Overlay.overlay
 
     implicitWidth: 360
@@ -34,16 +39,20 @@ Popup {
 
     function accept() {
         const name = nameField.text.trim()
-        if (name.length === 0 || !AppContext.actions) {
+        if (name.length === 0) {
             return
         }
-        const res = AppContext.actions.saveQueueAsPlaylist(name)
         root.close()
-        root.playlistSaved(name, res > 0)
+        root.accepted(name)
+    }
+
+    function openWithText(text) {
+        initialText = text || ""
+        open()
     }
 
     onOpened: {
-        nameField.text = qsTr("Queue %1").arg(Qt.formatDateTime(new Date(), "yyyy-MM-dd HH:mm"))
+        nameField.text = initialText
         nameField.selectAll()
         nameField.forceActiveFocus()
     }
@@ -53,7 +62,7 @@ Popup {
         spacing: Theme.spacingMedium
 
         Label {
-            text: qsTr("Save as Playlist")
+            text: root.titleText
             font.pixelSize: Theme.fontSizeLarge
             font.bold: true
             color: Theme.text
@@ -85,7 +94,7 @@ Popup {
 
             Controls.AppButton {
                 primary: true
-                text: qsTr("Save")
+                text: root.acceptButtonText
                 enabled: nameField.text.trim().length > 0
                 onClicked: root.accept()
             }

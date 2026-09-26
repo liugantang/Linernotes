@@ -191,6 +191,37 @@ void TstTrackListModel::testTrackListModelAndSharedModels()
         QCOMPARE(subsetIds.at(1), allIds.at(2));
     }
 
+    // 6. 歌单与 PlaylistOrder 排序测试
+    {
+        const qint64 playlistId
+            = ctx.playlists()->createManual(QStringLiteral("My Order"), { 2, 1 });
+        QVERIFY(playlistId > 0);
+
+        TrackListModel playlistModel;
+        QAbstractItemModelTester playlistTester(
+            &playlistModel, QAbstractItemModelTester::FailureReportingMode::QtTest, &playlistModel);
+        Q_UNUSED(playlistTester);
+        playlistModel.setContext(&ctx);
+        playlistModel.setPlaylistId(playlistId);
+        playlistModel.setSortKey(TrackListModel::SortKey::PlaylistOrder);
+
+        QCOMPARE(playlistModel.count(), 2);
+        QCOMPARE(
+            playlistModel.data(playlistModel.index(0, 0), TrackListModel::TrackIdRole).toLongLong(),
+            2LL);
+        QCOMPARE(
+            playlistModel.data(playlistModel.index(1, 0), TrackListModel::TrackIdRole).toLongLong(),
+            1LL);
+
+        // addTracks 后模型刷新、count 变化
+        const int added = ctx.playlists()->addTracks(playlistId, { 4 });
+        QCOMPARE(added, 1);
+        QCOMPARE(playlistModel.count(), 3);
+        QCOMPARE(
+            playlistModel.data(playlistModel.index(2, 0), TrackListModel::TrackIdRole).toLongLong(),
+            4LL);
+    }
+
     // AlbumGridModel & ArtistListModel 基础断言
     {
         AlbumGridModel albumModel;

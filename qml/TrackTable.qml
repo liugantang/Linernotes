@@ -15,19 +15,14 @@ FocusScope {
     readonly property alias selection: rowSelection
     property alias currentIndex: listView.currentIndex
 
+    property bool persistSort: true
+    property string emptyText: qsTr("No tracks in library")
+    property var playlistId: 0
+
     property var visibleColumnKeys: TrackColumns.defaultVisibleKeys()
     property var columnWidths: TrackColumns.defaultColumnWidths()
 
-    readonly property var visibleColumns: {
-        var list = [];
-        for (var i = 0; i < visibleColumnKeys.length; i++) {
-            var col = TrackColumns.getColumnByKey(visibleColumnKeys[i]);
-            if (col) {
-                list.push(col);
-            }
-        }
-        return list;
-    }
+    readonly property var visibleColumns: visibleColumnKeys.map(k => TrackColumns.getColumnByKey(k)).filter(Boolean)
 
     readonly property real totalTableWidth: getTotalTableWidth()
 
@@ -98,18 +93,18 @@ FocusScope {
 
     function columnTitle(key) {
         switch (key) {
-        case "trackNumber": return "#";
-        case "title": return qsTr("Title");
-        case "artist": return qsTr("Artist");
-        case "album": return qsTr("Album");
-        case "albumArtist": return qsTr("Album Artist");
-        case "genre": return qsTr("Genre");
-        case "year": return qsTr("Year");
-        case "duration": return qsTr("Duration");
-        case "format": return qsTr("Format");
-        case "bitrate": return qsTr("Bitrate");
-        case "addedAt": return qsTr("Date Added");
-        default: return "";
+        case "trackNumber": return "#"
+        case "title": return qsTr("Title")
+        case "artist": return qsTr("Artist")
+        case "album": return qsTr("Album")
+        case "albumArtist": return qsTr("Album Artist")
+        case "genre": return qsTr("Genre")
+        case "year": return qsTr("Year")
+        case "duration": return qsTr("Duration")
+        case "format": return qsTr("Format")
+        case "bitrate": return qsTr("Bitrate")
+        case "addedAt": return qsTr("Date Added")
+        default: return ""
         }
     }
 
@@ -122,13 +117,16 @@ FocusScope {
             trackModel.sortKey = sortKeyEnum;
             trackModel.sortOrder = Qt.AscendingOrder;
         }
-        tableSettings.sortKey = trackModel.sortKey;
-        tableSettings.sortOrder = trackModel.sortOrder;
+        if (root.persistSort) {
+            tableSettings.sortKey = trackModel.sortKey;
+            tableSettings.sortOrder = trackModel.sortOrder;
+        }
     }
 
     TrackListModel {
         id: trackModel
         context: AppContext
+        playlistId: root.playlistId
     }
 
     RowSelection {
@@ -136,7 +134,8 @@ FocusScope {
     }
 
     TrackContextMenu {
-        id: contextMenu
+        id: trackContextMenu
+        playlistId: root.playlistId
     }
 
     Settings {
@@ -167,11 +166,13 @@ FocusScope {
                 // ignore invalid json
             }
         }
-        if (tableSettings.sortKey !== undefined && tableSettings.sortKey >= 0) {
-            trackModel.sortKey = tableSettings.sortKey;
-        }
-        if (tableSettings.sortOrder !== undefined) {
-            trackModel.sortOrder = tableSettings.sortOrder;
+        if (root.persistSort) {
+            if (tableSettings.sortKey !== undefined && tableSettings.sortKey >= 0) {
+                trackModel.sortKey = tableSettings.sortKey;
+            }
+            if (tableSettings.sortOrder !== undefined) {
+                trackModel.sortOrder = tableSettings.sortOrder;
+            }
         }
         listView.forceActiveFocus();
     }
@@ -186,7 +187,7 @@ FocusScope {
     Label {
         anchors.centerIn: parent
         visible: trackModel.count === 0
-        text: qsTr("No tracks in library")
+        text: root.emptyText
         font.pixelSize: Theme.fontSizeLarge
         color: Theme.textSecondary
     }
@@ -213,7 +214,7 @@ FocusScope {
         delegate: TrackTableRow {
             table: root
             selection: rowSelection
-            contextMenu: contextMenu
+            contextMenu: trackContextMenu
             visibleColumns: root.visibleColumns
         }
 
@@ -280,7 +281,7 @@ FocusScope {
                 if (listView.currentIndex >= 0 && listView.currentIndex < trackModel.count) {
                     const selectedIds = trackModel.trackIds(rowSelection.selectedRows());
                     if (selectedIds.length > 0) {
-                        contextMenu.popupAt(selectedIds, listView.currentItem || listView);
+                        trackContextMenu.popupAt(selectedIds, listView.currentItem || listView);
                     }
                 }
                 event.accepted = true;

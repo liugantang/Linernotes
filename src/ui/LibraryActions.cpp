@@ -9,7 +9,6 @@
 
 #include <library/Database.h>
 #include <library/LibraryQuery.h>
-#include <library/PlaylistStore.h>
 #include <player/PlayQueue.h>
 #include <player/Player.h>
 #include <ui/Format.h>
@@ -236,38 +235,6 @@ void LibraryActions::showInFileManager(qint64 trackId) const
     const QFileInfo fileInfo(filePath);
     const QString dirPath = fileInfo.dir().absolutePath();
     QDesktopServices::openUrl(QUrl::fromLocalFile(dirPath));
-}
-
-qint64 LibraryActions::saveQueueAsPlaylist(const QString &name)
-{
-    if (!m_db.isOpen()) {
-        qCWarning(lcUi, "Database not open for saveQueueAsPlaylist");
-        return 0;
-    }
-
-    auto *queue = m_player.queue();
-    if (queue == nullptr) {
-        qCWarning(lcUi, "Queue not available for saveQueueAsPlaylist");
-        return 0;
-    }
-
-    QList<qint64> trackIds;
-    const int count = queue->count();
-    trackIds.reserve(count);
-    for (int i = 0; i < count; ++i) {
-        const auto &item = queue->at(i);
-        if (item.trackId >= 0) {
-            trackIds.append(item.trackId);
-        }
-    }
-
-    library::PlaylistStore store(m_db);
-    const auto res = store.createManual(name, trackIds);
-    if (!res.ok()) {
-        qCWarning(lcUi, "Failed to save queue as playlist: %s", qPrintable(res.error().toString()));
-        return 0;
-    }
-    return res.value();
 }
 
 } // namespace linernotes::ui

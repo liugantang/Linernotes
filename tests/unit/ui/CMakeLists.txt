@@ -77,3 +77,15 @@ linernotes_add_test(
         Linernotes::TestSupport
         Qt6::Sql
 )
+
+linernotes_add_test(
+    NAME ui_PlaylistController
+    SOURCES
+        tst_PlaylistController.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::library
+        Linernotes::player
+        Linernotes::TestSupport
+        Qt6::Sql
+)

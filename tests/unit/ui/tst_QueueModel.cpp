@@ -102,7 +102,7 @@ void TstQueueModel::testQueueModel()
         { .source = QStringLiteral("/tmp/ext.flac"), .trackId = -1 },
         { .source = QStringLiteral("/music/2.mp3"), .trackId = 2 },
     });
-    const qint64 playlistId = actions->saveQueueAsPlaylist(QStringLiteral("x"));
+    const qint64 playlistId = ctx.playlists()->saveQueue(QStringLiteral("x"));
     QVERIFY(playlistId > 0);
 
     auto conn = ctx.database().connection().value();

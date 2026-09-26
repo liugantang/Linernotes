@@ -33,7 +33,7 @@ Item {
     }
 
     TrackContextMenu {
-        id: contextMenu
+        id: albumContextMenu
     }
 
     function playAlbum(shuffle) {
@@ -262,7 +262,7 @@ Item {
                     if (currentIndex >= 0 && currentIndex < trackModel.count) {
                         const id = trackModel.trackIdAt(currentIndex)
                         if (id > 0) {
-                            contextMenu.popupAt([id], currentItem || listView)
+                            albumContextMenu.popupAt([id], currentItem || listView)
                             event.accepted = true
                         }
                     }
@@ -271,7 +271,7 @@ Item {
 
             delegate: AlbumTrackRow {
                 albumDetail: root
-                contextMenu: contextMenu
+                contextMenu: albumContextMenu
             }
         }
     }

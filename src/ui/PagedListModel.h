@@ -36,7 +36,7 @@ public:
     [[nodiscard]] int rowCount(const QModelIndex &parent = { }) const override;
 
     [[nodiscard]] AppContext *context() const;
-    void setContext(AppContext *context);
+    virtual void setContext(AppContext *context);
 
     [[nodiscard]] int count() const;
 

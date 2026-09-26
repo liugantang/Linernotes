@@ -10,6 +10,7 @@ Controls.AppMenu {
     id: root
 
     property var trackIds: []
+    property var playlistId: 0
 
     function popupFor(ids) {
         if (!ids || ids.length === 0) {
@@ -25,6 +26,17 @@ Controls.AppMenu {
         }
         trackIds = ids
         popup(item, 0, item.height)
+    }
+
+    PlaylistNameDialog {
+        id: newPlaylistDialog
+        titleText: qsTr("New Playlist")
+        acceptButtonText: qsTr("Create")
+        onAccepted: (name) => {
+            if (AppContext.playlists && root.trackIds.length > 0) {
+                AppContext.playlists.createManual(name, root.trackIds)
+            }
+        }
     }
 
     Controls.AppMenuItem {
@@ -55,11 +67,56 @@ Controls.AppMenu {
     }
 
     Controls.AppMenu {
+        id: addToPlaylistMenu
         title: qsTr("Add to Playlist")
 
         Controls.AppMenuItem {
-            text: qsTr("(Playlist feature not yet implemented)")
-            enabled: false
+            text: qsTr("New Playlist...")
+            onTriggered: {
+                newPlaylistDialog.openWithText("")
+            }
+        }
+
+        Controls.AppMenuSeparator {
+            id: playlistSep
+            visible: addToPlaylistMenu.count > 2
+            height: visible ? implicitHeight : 0
+        }
+
+        Instantiator {
+            id: playlistInstantiator
+            model: AppContext.playlists ? AppContext.playlists.model : null
+            delegate: Controls.AppMenuItem {
+                required property var model
+                readonly property bool isSmart: model.isSmart
+                text: model.name
+                onTriggered: {
+                    if (AppContext.playlists && root.trackIds.length > 0) {
+                        AppContext.playlists.addTracks(model.playlistId, root.trackIds)
+                    }
+                }
+            }
+            onObjectAdded: (index, object) => {
+                if (!object.isSmart) {
+                    addToPlaylistMenu.addItem(object)
+                }
+            }
+            onObjectRemoved: (index, object) => {
+                if (!object.isSmart) {
+                    addToPlaylistMenu.removeItem(object)
+                }
+            }
+        }
+    }
+
+    Controls.AppMenuItem {
+        text: qsTr("Remove from Playlist")
+        visible: root.playlistId > 0 && AppContext.playlists && AppContext.playlists.isManual(root.playlistId)
+        height: visible ? implicitHeight : 0
+        onTriggered: {
+            if (AppContext.playlists && root.playlistId > 0 && root.trackIds.length > 0) {
+                AppContext.playlists.removeTracks(root.playlistId, root.trackIds)
+            }
         }
     }
 

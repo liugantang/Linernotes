@@ -15,6 +15,8 @@
 #include <ui/ArtistListModel.h>
 #include <ui/LibraryActions.h>
 #include <ui/NowPlaying.h>
+#include <ui/PlaylistController.h>
+#include <ui/PlaylistListModel.h>
 #include <ui/QueueModel.h>
 #include <ui/RowSelection.h>
 #include <ui/SearchController.h>
@@ -104,4 +106,18 @@ struct SearchControllerForeign {
     QML_FOREIGN(linernotes::ui::SearchController)
     QML_NAMED_ELEMENT(SearchController)
     QML_UNCREATABLE("SearchController is managed by AppContext")
+};
+
+struct PlaylistControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::PlaylistController)
+    QML_NAMED_ELEMENT(PlaylistController)
+    QML_UNCREATABLE("PlaylistController is managed by AppContext")
+};
+
+struct PlaylistListModelForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::PlaylistListModel)
+    QML_NAMED_ELEMENT(PlaylistListModel)
+    QML_UNCREATABLE("PlaylistListModel is managed by PlaylistController")
 };

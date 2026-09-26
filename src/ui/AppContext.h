@@ -15,6 +15,7 @@
 #include <player/Player.h>
 #include <ui/LibraryActions.h>
 #include <ui/NowPlaying.h>
+#include <ui/PlaylistController.h>
 #include <ui/QueueModel.h>
 #include <ui/SearchController.h>
 
@@ -41,6 +42,7 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::NowPlaying *nowPlaying READ nowPlaying CONSTANT)
     Q_PROPERTY(linernotes::ui::QueueModel *queueModel READ queueModel CONSTANT)
     Q_PROPERTY(linernotes::ui::SearchController *search READ search CONSTANT)
+    Q_PROPERTY(linernotes::ui::PlaylistController *playlists READ playlists CONSTANT)
     Q_PROPERTY(linernotes::ui::LibraryActions *actions READ actions CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
     Q_PROPERTY(QString startupError READ startupError NOTIFY startupErrorChanged)
@@ -72,6 +74,7 @@ public:
     [[nodiscard]] NowPlaying *nowPlaying();
     [[nodiscard]] QueueModel *queueModel();
     [[nodiscard]] SearchController *search();
+    [[nodiscard]] PlaylistController *playlists();
     [[nodiscard]] library::Database &database();
     [[nodiscard]] const library::Database &database() const;
     [[nodiscard]] library::CoverStore *coverStore();
@@ -97,6 +100,7 @@ private:
     NowPlaying m_nowPlaying;
     QueueModel m_queueModel;
     SearchController m_search;
+    PlaylistController m_playlists;
     LibraryActions m_actions;
     std::unique_ptr<library::Scanner> m_scanner;
     std::unique_ptr<library::LibraryWatcher> m_watcher;

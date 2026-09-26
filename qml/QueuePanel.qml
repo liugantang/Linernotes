@@ -26,13 +26,18 @@ FocusScope {
         id: rowSelection
     }
 
-    SavePlaylistDialog {
+    PlaylistNameDialog {
         id: saveDialog
-        onPlaylistSaved: (name, success) => {
-            if (success) {
-                root.showNotification(qsTr("Saved as playlist: %1").arg(name), false)
-            } else {
-                root.showNotification(qsTr("Failed to save playlist"), true)
+        titleText: qsTr("Save as Playlist")
+        acceptButtonText: qsTr("Save")
+        onAccepted: (name) => {
+            if (AppContext.playlists) {
+                const res = AppContext.playlists.saveQueue(name)
+                if (res > 0) {
+                    root.showNotification(qsTr("Saved as playlist: %1").arg(name), false)
+                } else {
+                    root.showNotification(qsTr("Failed to save playlist"), true)
+                }
             }
         }
     }
@@ -213,7 +218,10 @@ FocusScope {
                 icon.source: "icons/list-plus.svg"
                 toolTip: qsTr("Save as Playlist")
                 enabled: root.queueCount > 0
-                onClicked: saveDialog.open()
+                onClicked: {
+                    const defaultName = qsTr("Queue %1").arg(Qt.formatDateTime(new Date(), "yyyy-MM-dd HH:mm"))
+                    saveDialog.openWithText(defaultName)
+                }
             }
 
             Controls.IconButton {

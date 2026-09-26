@@ -32,11 +32,13 @@ AppContext::AppContext(Options options, QObject *parent)
     , m_nowPlaying(m_db, m_player)
     , m_queueModel(m_db, m_player)
     , m_search(m_db)
+    , m_playlists(m_db, m_player)
     , m_actions(m_db, m_player)
 {
     connect(this, &AppContext::libraryChanged, &m_nowPlaying, &NowPlaying::refresh);
     connect(this, &AppContext::libraryChanged, &m_queueModel, &QueueModel::refresh);
     connect(this, &AppContext::libraryChanged, &m_search, &SearchController::refresh);
+    connect(this, &AppContext::libraryChanged, &m_playlists, &PlaylistController::refresh);
 
     if (!m_options.playbackStatePath.isEmpty()) {
         m_stateStore = std::make_unique<player::PlaybackStateStore>(m_options.playbackStatePath);
@@ -91,6 +93,7 @@ core::Result<void> AppContext::start()
     m_nowPlaying.refresh();
     m_queueModel.refresh();
     m_search.refresh();
+    m_playlists.refresh();
 
     library::Scanner::Options scannerOpts;
     scannerOpts.coverStore = &m_coverStore;
@@ -168,6 +171,11 @@ QueueModel *AppContext::queueModel()
 SearchController *AppContext::search()
 {
     return &m_search;
+}
+
+PlaylistController *AppContext::playlists()
+{
+    return &m_playlists;
 }
 
 library::Database &AppContext::database()

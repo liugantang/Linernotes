@@ -4,6 +4,7 @@
 #include <QFileInfo>
 
 #include <ui/Format.h>
+#include <ui/PlaylistController.h>
 #include <ui/TrackListModel.h>
 #include <ui/UiLogging.h>
 
@@ -14,6 +15,25 @@ namespace linernotes::ui {
 TrackListModel::TrackListModel(QObject *parent)
     : PagedListModel(parent)
 {
+}
+
+void TrackListModel::setContext(AppContext *context)
+{
+    if (this->context() != nullptr) {
+        disconnect(this->context()->playlists(), &PlaylistController::playlistContentChanged, this,
+            &TrackListModel::onPlaylistContentChanged);
+        disconnect(this->context()->playlists(), &PlaylistController::playlistsChanged, this,
+            &TrackListModel::onPlaylistsChanged);
+    }
+
+    PagedListModel::setContext(context);
+
+    if (this->context() != nullptr) {
+        connect(this->context()->playlists(), &PlaylistController::playlistContentChanged, this,
+            &TrackListModel::onPlaylistContentChanged);
+        connect(this->context()->playlists(), &PlaylistController::playlistsChanged, this,
+            &TrackListModel::onPlaylistsChanged);
+    }
 }
 
 QVariant TrackListModel::data(const QModelIndex &index, int role) const
@@ -184,6 +204,35 @@ void TrackListModel::setGenre(const QString &genre)
     reload();
 }
 
+qint64 TrackListModel::playlistId() const
+{
+    return m_playlistId;
+}
+
+void TrackListModel::setPlaylistId(qint64 playlistId)
+{
+    if (m_playlistId == playlistId) {
+        return;
+    }
+    m_playlistId = playlistId;
+    emit playlistIdChanged(playlistId);
+    reload();
+}
+
+void TrackListModel::onPlaylistContentChanged(qint64 id)
+{
+    if (m_playlistId > 0 && m_playlistId == id) {
+        reload();
+    }
+}
+
+void TrackListModel::onPlaylistsChanged()
+{
+    if (m_playlistId > 0) {
+        reload();
+    }
+}
+
 qint64 TrackListModel::trackIdAt(int row) const
 {
     if (row < 0 || row >= count()) {
@@ -263,6 +312,18 @@ library::TrackFilter TrackListModel::currentFilter() const
     }
     if (!m_genre.isEmpty()) {
         filter.genre = m_genre;
+    }
+    if (m_playlistId > 0) {
+        // 歌单已删除或 context 未就绪时用一个不存在的 id，返回空结果
+        filter.playlistId = -1;
+        const auto info
+            = context() != nullptr ? context()->playlists()->info(m_playlistId) : std::nullopt;
+        if (info.has_value() && info->kind == library::PlaylistKind::Manual) {
+            filter.playlistId = m_playlistId;
+        } else if (info.has_value() && info->kind == library::PlaylistKind::Smart) {
+            filter.playlistId.reset();
+            filter.smartRule = info->rule.value_or(library::SmartRule { });
+        }
     }
     filter.favoritesOnly = favoritesOnly();
     return filter;

@@ -163,9 +163,14 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS VolumeControl.qml
 )
 set_source_files_properties(
-    ${CMAKE_SOURCE_DIR}/qml/SavePlaylistDialog.qml
+    ${CMAKE_SOURCE_DIR}/qml/PlaylistNameDialog.qml
     PROPERTIES
-        QT_RESOURCE_ALIAS SavePlaylistDialog.qml
+        QT_RESOURCE_ALIAS PlaylistNameDialog.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/PlaylistList.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS PlaylistList.qml
 )
 set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/QueueRow.qml
@@ -368,7 +373,8 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/SidePanel.qml
         ${CMAKE_SOURCE_DIR}/qml/QueuePanel.qml
         ${CMAKE_SOURCE_DIR}/qml/QueueRow.qml
-        ${CMAKE_SOURCE_DIR}/qml/SavePlaylistDialog.qml
+        ${CMAKE_SOURCE_DIR}/qml/PlaylistNameDialog.qml
+        ${CMAKE_SOURCE_DIR}/qml/PlaylistList.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumGrid.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumDetail.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumTrackRow.qml
