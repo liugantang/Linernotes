@@ -23,7 +23,7 @@ Claude 的调用成本高，Gemini 便宜。因此：
    - 涉及的文件/模块，需要新增或修改的接口（给出类名、关键方法签名）
    - 关键设计要求与约束（引用 REQUIREMENTS / DEVELOPMENT 的相关条目）
    - 必须编写的测试用例清单
-   - 验收标准：编译、测试命令，以及需要满足的行为
+   - 验收标准：统一为 `scripts/verify.sh --quick` 通过，以及需要满足的行为（不要在任务说明里罗列 ci/asan/tidy 等命令，执行者按 COMMON.md 的“验证”一节执行）
    - 固定要求：先阅读 `docs/DEVELOPMENT.md`；**不要执行 git commit / 切换分支**；只改与任务相关的文件；完成后运行构建和 `ctest`，在最终回复中汇报修改的文件列表、测试结果和遗留问题
 2. **委托执行**（执行时间长，放到后台运行，Bash 的 `run_in_background: true`）：
    ```bash
@@ -31,7 +31,7 @@ Claude 的调用成本高，Gemini 便宜。因此：
        --dangerously-skip-permissions --model gemini-3.7-flash-high \
        --print-timeout 60m > .ai/logs/<任务编号>.log 2>&1
    ```
-3. **审查**：看 `git status`、`git diff`；自己运行一次构建、`ctest` 和 `scripts/tidy.sh --strict`（不要只信汇报；CI 的 Lint 任务就是这条命令，阶段 1 曾因审查时漏跑而在 CI 失败）；对照任务说明与 DEVELOPMENT.md 检查范围、设计、测试是否充分、有无越界修改。
+3. **审查**：看 `git status`、`git diff`；自己运行**一次** `scripts/verify.sh`（并行跑 debug + ci 构建与 ctest、格式、全量 `clang-tidy --strict`，约半分钟；涉及 C 库封装、内存/线程的任务加 `--asan`）。不要只信汇报，但也不要拆成多条命令重复跑。对照任务说明与 DEVELOPMENT.md 检查范围、设计、测试是否充分、有无越界修改。
 4. **返工**：问题写进 `.ai/tasks/<任务编号>.review.md`，然后再次委托：
    ```bash
    cd /home/liugantang/Code/AiMusic && agy -p "项目根目录是 /home/liugantang/Code/AiMusic，所有命令都在此目录下执行。请阅读 /home/liugantang/Code/AiMusic/.ai/tasks/<任务编号>.review.md，按审查意见修改。" \
