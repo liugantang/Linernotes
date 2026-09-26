@@ -253,6 +253,19 @@ private slots:
             expectedAsc.append(trk.trackId);
         }
         QCOMPARE(allIdsAsc, expectedAsc);
+
+        // 10. albumsByIds & artistsByIds: maintain input order and skip non-existent / invisible
+        // ids
+        auto albByIds = q.albumsByIds({ albNoArtist, 9999LL, alb1, albNoArtist }).value();
+        QCOMPARE(albByIds.size(), 3);
+        QCOMPARE(albByIds.at(0).albumId, albNoArtist);
+        QCOMPARE(albByIds.at(1).albumId, alb1);
+        QCOMPARE(albByIds.at(2).albumId, albNoArtist);
+
+        auto artByIds = q.artistsByIds({ 8888LL, art1, art1 }).value();
+        QCOMPARE(artByIds.size(), 2);
+        QCOMPARE(artByIds.at(0).artistId, art1);
+        QCOMPARE(artByIds.at(1).artistId, art1);
     }
 
     void migrationFillsTrackSort()

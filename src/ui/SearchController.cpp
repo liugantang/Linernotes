@@ -7,7 +7,7 @@
 #include <QVariantMap>
 
 #include <library/Database.h>
-#include <library/LibraryQuery.h>
+#include <library/LibrarySearch.h>
 #include <ui/Format.h>
 
 #include <utility>
@@ -137,8 +137,8 @@ void SearchController::performSearch()
         return;
     }
 
-    const library::LibraryQuery libraryQuery(connRes.value());
-    const auto searchRes = libraryQuery.searchGrouped(m_query);
+    const library::LibrarySearch librarySearch(connRes.value());
+    const auto searchRes = librarySearch.search(m_query);
 
     QVariantList newTracks;
     QVariantList newAlbums;

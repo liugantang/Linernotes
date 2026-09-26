@@ -21,8 +21,12 @@ add_library(linernotes_library STATIC
     LibraryLogging.h
     LibraryQuery.cpp
     LibraryQuery.h
+    LibraryQuerySql.cpp
+    LibraryQuerySql.h
     LibraryRoots.cpp
     LibraryRoots.h
+    LibrarySearch.cpp
+    LibrarySearch.h
     LibraryWatcher.cpp
     LibraryWatcher.h
     Migrator.cpp

@@ -112,15 +112,6 @@ struct ArtistRow {
     bool operator==(const ArtistRow &) const = default;
 };
 
-/// 分组搜索结果。
-struct SearchResults {
-    QList<TrackRow> tracks; ///< 按相关度，最多 trackLimit 条
-    QList<AlbumRow> albums; ///< 最多 groupLimit 个
-    QList<ArtistRow> artists; ///< 最多 groupLimit 个
-
-    bool operator==(const SearchResults &) const = default;
-};
-
 /// 曲库浏览查询（只读）。每个方法只执行少量 SQL，结果按页返回，供 UI 模型懒加载。
 ///
 /// 约定与线程安全：
@@ -153,6 +144,9 @@ public:
     core::Result<QList<AlbumRow>> albums(const AlbumFilter &filter, AlbumSortKey key,
         Qt::SortOrder order, int offset, int limit) const;
 
+    /// 按给定顺序返回存在的专辑（不存在或无可见曲目的 id 跳过），供搜索结果等使用。
+    core::Result<QList<AlbumRow>> albumsByIds(const QList<qint64> &ids) const;
+
     /// 查询单个专辑详情；若不存在或无可见曲目返回 std::nullopt。
     core::Result<std::optional<AlbumRow>> album(qint64 albumId) const;
 
@@ -163,12 +157,11 @@ public:
     core::Result<QList<ArtistRow>> artists(const ArtistFilter &filter, ArtistSortKey key,
         Qt::SortOrder order, int offset, int limit) const;
 
+    /// 按给定顺序返回存在的艺人（不存在或无可见曲目的 id 跳过），供搜索结果等使用。
+    core::Result<QList<ArtistRow>> artistsByIds(const QList<qint64> &ids) const;
+
     /// 查询单个艺人详情；若不存在或无可见曲目返回 std::nullopt。
     core::Result<std::optional<ArtistRow>> artist(qint64 artistId) const;
-
-    /// 按相关度分组搜索曲目、专辑与艺人。
-    core::Result<SearchResults> searchGrouped(
-        const QString &userInput, int trackLimit = 200, int groupLimit = 8) const;
 
 private:
     QSqlDatabase m_db;

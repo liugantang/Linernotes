@@ -7,14 +7,14 @@
 #include <QVariant>
 
 #include <library/Database.h>
-#include <library/LibraryQuery.h>
+#include <library/LibrarySearch.h>
 #include <library/Migrator.h>
 #include <library/SearchIndex.h>
 
 namespace {
 
 using linernotes::library::Database;
-using linernotes::library::LibraryQuery;
+using linernotes::library::LibrarySearch;
 using linernotes::library::Migrator;
 using linernotes::library::SearchIndex;
 using linernotes::library::SearchResults;
@@ -166,10 +166,10 @@ void TstLibrarySearch::searchGrouped()
     QVERIFY(flushRes.ok());
     QCOMPARE(flushRes.value(), 4);
 
-    const LibraryQuery libraryQuery(qDb);
+    const LibrarySearch librarySearch(qDb);
 
     // Search query matching only Artist A
-    const auto res = libraryQuery.searchGrouped(QStringLiteral("周杰伦"));
+    const auto res = librarySearch.search(QStringLiteral("周杰伦"));
     QVERIFY(res.ok());
 
     const SearchResults &results = res.value();
@@ -205,11 +205,11 @@ void TstLibrarySearch::blankQueryReturnsEmpty()
     QVERIFY(connRes.ok());
     const auto &qDb = connRes.value();
 
-    const LibraryQuery libraryQuery(qDb);
+    const LibrarySearch librarySearch(qDb);
 
     for (const auto &input :
         { QStringLiteral(""), QStringLiteral("   "), QStringLiteral("\t\n") }) {
-        const auto res = libraryQuery.searchGrouped(input);
+        const auto res = librarySearch.search(input);
         QVERIFY(res.ok());
         QVERIFY(res.value().tracks.isEmpty());
         QVERIFY(res.value().albums.isEmpty());
