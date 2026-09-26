@@ -24,3 +24,14 @@ linernotes_add_test(
     LIBS
         Linernotes::library
 )
+
+linernotes_add_test(
+    NAME library_TagReader
+    SOURCES
+        tst_TagReader.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Concurrent
+)
+

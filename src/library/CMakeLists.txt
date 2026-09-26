@@ -11,6 +11,8 @@ add_library(linernotes_library STATIC
     LibraryLogging.h
     Migrator.cpp
     Migrator.h
+    TagReader.cpp
+    TagReader.h
 )
 add_library(Linernotes::library ALIAS linernotes_library)
 
@@ -34,6 +36,7 @@ target_link_libraries(linernotes_library
         Qt6::Sql
     PRIVATE
         Linernotes::Deps::SQLite3
+        Linernotes::Deps::TagLib
 )
 
 linernotes_set_target_options(linernotes_library)
