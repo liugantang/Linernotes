@@ -63,7 +63,8 @@ core::Result<int> LibraryQuery::countTracks(const TrackFilter &filter) const
     }
 
     if (!filter.albumId.has_value() && !filter.artistId.has_value() && !filter.genre.has_value()
-        && !filter.favoritesOnly) {
+        && !filter.favoritesOnly && !filter.playlistId.has_value()
+        && !filter.smartRule.has_value()) {
         QSqlQuery q(m_db);
         if (!q.exec(QStringLiteral("SELECT COUNT(*) FROM track_sort WHERE visible = 1;"))) {
             return core::Error {
@@ -104,6 +105,31 @@ core::Result<int> LibraryQuery::countTracks(const TrackFilter &filter) const
     return 0;
 }
 
+namespace {
+
+struct EffectiveTrackSort {
+    TrackSortKey key;
+    Qt::SortOrder order;
+};
+
+EffectiveTrackSort resolveTrackSort(
+    const TrackFilter &filter, TrackSortKey key, Qt::SortOrder order)
+{
+    if (key != TrackSortKey::PlaylistOrder || filter.playlistId.has_value()) {
+        return { .key = key, .order = order };
+    }
+    if (filter.smartRule.has_value()) {
+        TrackSortKey k = filter.smartRule->sortKey;
+        if (k == TrackSortKey::PlaylistOrder) {
+            k = TrackSortKey::Default;
+        }
+        return { .key = k, .order = filter.smartRule->sortOrder };
+    }
+    return { .key = TrackSortKey::Default, .order = order };
+}
+
+} // namespace
+
 core::Result<QList<TrackRow>> LibraryQuery::tracks(
     const TrackFilter &filter, TrackSortKey key, Qt::SortOrder order, int offset, int limit) const
 {
@@ -119,8 +145,10 @@ core::Result<QList<TrackRow>> LibraryQuery::tracks(
         return QList<TrackRow> { };
     }
 
-    const bool isAsc = (order == Qt::AscendingOrder);
-    const detail::OrderClauses orderClauses = detail::buildTrackOrderClauses(key, isAsc);
+    const auto [effectiveKey, effectiveOrder] = resolveTrackSort(filter, key, order);
+    const bool isAsc = (effectiveOrder == Qt::AscendingOrder);
+    const detail::OrderClauses orderClauses
+        = detail::buildTrackOrderClauses(effectiveKey, isAsc, filter.playlistId);
 
     QList<QVariant> binds;
     const QString pageWhereSql = detail::buildTrackFilterWhereSql(filter, binds);
@@ -176,8 +204,10 @@ core::Result<QList<qint64>> LibraryQuery::trackIds(
         };
     }
 
-    const bool isAsc = (order == Qt::AscendingOrder);
-    const detail::OrderClauses orderClauses = detail::buildTrackOrderClauses(key, isAsc);
+    const auto [effectiveKey, effectiveOrder] = resolveTrackSort(filter, key, order);
+    const bool isAsc = (effectiveOrder == Qt::AscendingOrder);
+    const detail::OrderClauses orderClauses
+        = detail::buildTrackOrderClauses(effectiveKey, isAsc, filter.playlistId);
 
     QList<QVariant> binds;
     const QString whereSql = detail::buildTrackFilterWhereSql(filter, binds);

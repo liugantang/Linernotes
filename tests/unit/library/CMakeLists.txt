@@ -129,5 +129,14 @@ linernotes_add_test(
         Linernotes::TestSupport
 )
 
+linernotes_add_test(
+    NAME library_SmartRule
+    SOURCES
+        tst_SmartRule.cpp
+    LIBS
+        Linernotes::library
+)
+
+
 
 

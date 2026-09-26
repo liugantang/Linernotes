@@ -24,5 +24,7 @@ inline constexpr QLatin1StringView kRootOverlap { "root.overlap" };
 inline constexpr QLatin1StringView kCoverDecode { "cover.decode" };
 inline constexpr QLatin1StringView kTagRead { "tag.read" };
 inline constexpr QLatin1StringView kTagUnsupported { "tag.unsupported" };
+inline constexpr QLatin1StringView kPlaylistInvalid { "playlist.invalid" };
+inline constexpr QLatin1StringView kPlaylistRuleInvalid { "playlist.rule_invalid" };
 
 } // namespace linernotes::library::errc

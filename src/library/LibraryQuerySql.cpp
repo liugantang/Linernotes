@@ -73,10 +73,40 @@ ArtistRow parseArtistRow(const QSqlQuery &q)
     return row;
 }
 
-OrderClauses buildTrackOrderClauses(TrackSortKey key, bool isAsc)
+namespace {
+
+// playlistId 是整数，直接嵌入 SQL 不存在注入风险
+OrderClauses buildPlaylistOrderClauses(qint64 playlistId, bool isAsc)
+{
+    const QString pidStr = QString::number(playlistId);
+    auto makeSubquery = [&](const QString &trackIdExpr) {
+        return QStringLiteral("(SELECT pi.position FROM playlist_items pi WHERE pi.playlist_id = "
+                              "%1 AND pi.track_id = %2)")
+            .arg(pidStr, trackIdExpr);
+    };
+
+    const QString dir = isAsc ? QStringLiteral("ASC") : QStringLiteral("DESC");
+    const QString pageExpr = makeSubquery(QStringLiteral("ts.track_id"));
+    const QString outerExpr = makeSubquery(QStringLiteral("t.id"));
+
+    return OrderClauses {
+        .pageOrder = QStringLiteral("%1 %2, ts.track_id %2").arg(pageExpr, dir),
+        .outerOrder = QStringLiteral("%1 %2, t.id %2").arg(outerExpr, dir),
+    };
+}
+
+} // namespace
+
+OrderClauses buildTrackOrderClauses(TrackSortKey key, bool isAsc, std::optional<qint64> playlistId)
 {
     OrderClauses clauses;
     switch (key) {
+    case TrackSortKey::PlaylistOrder:
+        if (playlistId.has_value()) {
+            return buildPlaylistOrderClauses(playlistId.value(), isAsc);
+        }
+        [[fallthrough]];
+
     case TrackSortKey::Default:
         if (isAsc) {
             clauses.pageOrder
@@ -261,6 +291,33 @@ QString buildTrackFilterWhereSql(const TrackFilter &filter, QList<QVariant> &bin
             " AND EXISTS (SELECT 1 FROM favorites fav WHERE fav.entity_type = 'track' AND "
             "fav.entity_id = ts.track_id)");
     }
+
+    if (filter.playlistId.has_value()) {
+        whereSql += QStringLiteral(
+            " AND EXISTS (SELECT 1 FROM playlist_items pi WHERE pi.track_id = ts.track_id AND "
+            "pi.playlist_id = ?)");
+        binds.append(filter.playlistId.value());
+    }
+
+    if (filter.smartRule.has_value()) {
+        const auto &rule = filter.smartRule.value();
+        if (rule.limit.has_value()) {
+            QList<QVariant> innerBinds;
+            const QString innerWhere = buildSmartRuleWhereSql(rule, innerBinds);
+            const bool innerAsc = (rule.sortOrder == Qt::AscendingOrder);
+            const OrderClauses innerOrderClauses = buildTrackOrderClauses(rule.sortKey, innerAsc);
+
+            // 内层别名 ts 会遮蔽外层 ts，内层条件与排序均解析到内层 track_sort 表
+            whereSql += QStringLiteral(" AND ts.track_id IN (SELECT ts.track_id FROM track_sort ts "
+                                       "WHERE ts.visible = 1%1 ORDER BY %2 LIMIT ?)")
+                            .arg(innerWhere, innerOrderClauses.pageOrder);
+            binds.append(innerBinds);
+            binds.append(rule.limit.value());
+        } else {
+            whereSql += buildSmartRuleWhereSql(rule, binds);
+        }
+    }
+
     return whereSql;
 }
 

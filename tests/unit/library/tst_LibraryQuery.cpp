@@ -12,6 +12,7 @@
 #include <library/Database.h>
 #include <library/LibraryQuery.h>
 #include <library/Migrator.h>
+#include <library/SmartRule.h>
 
 using namespace linernotes::library;
 using namespace Qt::StringLiterals;
@@ -302,6 +303,190 @@ private slots:
         QCOMPARE(q.value(0).toString(), u"Old"_s);
         QCOMPARE(q.value(1).toLongLong(), 100LL);
         QCOMPARE(q.value(2).toInt(), 1);
+    }
+
+    void playlistQueries()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        Database db(dir.filePath(u"test_pl.db"_s));
+        QVERIFY(db.open(Migrator()).ok());
+        const auto qDb = db.connection().value();
+
+        const qint64 r = DbHelper::insertRoot(qDb);
+        const qint64 f1 = DbHelper::insertFile(qDb, r, u"1.mp3"_s);
+        const qint64 f2 = DbHelper::insertFile(qDb, r, u"2.mp3"_s);
+        const qint64 f3 = DbHelper::insertFile(qDb, r, u"3.mp3"_s);
+        const qint64 t1 = DbHelper::insertTrack(qDb, f1);
+        const qint64 t2 = DbHelper::insertTrack(qDb, f2);
+        const qint64 t3 = DbHelper::insertTrack(qDb, f3);
+        DbHelper::setMeta(qDb, t1, u"Track 1"_s, u"Artist"_s, u"Album"_s, QVariant());
+        DbHelper::setMeta(qDb, t2, u"Track 2"_s, u"Artist"_s, u"Album"_s, QVariant());
+        DbHelper::setMeta(qDb, t3, u"Track 3"_s, u"Artist"_s, u"Album"_s, QVariant());
+
+        // Insert manual playlist with custom order: t2 (pos 0), t3 (pos 1), t1 (pos 2)
+        exec(qDb,
+            u"INSERT INTO playlists (id, name, kind, rule, position, created_at, updated_at) "
+            "VALUES (10, 'My Playlist', 'manual', NULL, 0, 1, 1)"_s);
+        exec(qDb,
+            QStringLiteral("INSERT INTO playlist_items (playlist_id, track_id, position, added_at) "
+                           "VALUES (10, %1, 0, 1), (10, %2, 1, 1), (10, %3, 2, 1)")
+                .arg(t2)
+                .arg(t3)
+                .arg(t1));
+
+        LibraryQuery q(qDb);
+        TrackFilter filter;
+        filter.playlistId = 10;
+
+        // countTracks matches
+        QCOMPARE(q.countTracks(filter).value(), 3);
+
+        // PlaylistOrder ASC returns [t2, t3, t1]
+        const auto rowsAsc
+            = q.tracks(filter, TrackSortKey::PlaylistOrder, Qt::AscendingOrder, 0, 10).value();
+        QCOMPARE(rowsAsc.size(), 3);
+        QCOMPARE(rowsAsc.at(0).trackId, t2);
+        QCOMPARE(rowsAsc.at(1).trackId, t3);
+        QCOMPARE(rowsAsc.at(2).trackId, t1);
+
+        // trackIds matches
+        const auto idsAsc
+            = q.trackIds(filter, TrackSortKey::PlaylistOrder, Qt::AscendingOrder).value();
+        QCOMPARE(idsAsc, (QList<qint64> { t2, t3, t1 }));
+
+        // PlaylistOrder DESC returns [t1, t3, t2]
+        const auto rowsDesc
+            = q.tracks(filter, TrackSortKey::PlaylistOrder, Qt::DescendingOrder, 0, 10).value();
+        QCOMPARE(rowsDesc.size(), 3);
+        QCOMPARE(rowsDesc.at(0).trackId, t1);
+        QCOMPARE(rowsDesc.at(1).trackId, t3);
+        QCOMPARE(rowsDesc.at(2).trackId, t2);
+    }
+
+    void smartRuleQueries()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        Database db(dir.filePath(u"test_sr.db"_s));
+        QVERIFY(db.open(Migrator()).ok());
+        const auto qDb = db.connection().value();
+
+        const qint64 r = DbHelper::insertRoot(qDb);
+
+        // Track 1: Title="Z-Song", Year=2015, Genre="Classic Rock", first_seen_at=1000
+        QSqlQuery qf1(qDb);
+        qf1.prepare(
+            QStringLiteral("INSERT INTO files (root_id, path, size, mtime, duration_ms, "
+                           "first_seen_at, scanned_at) VALUES (?, '1.mp3', 1, 1, 100, 1000, 1)"));
+        qf1.addBindValue(r);
+        execChecked(qf1);
+        const qint64 f1 = qf1.lastInsertId().toLongLong();
+        const qint64 t1 = DbHelper::insertTrack(qDb, f1);
+        DbHelper::setMeta(qDb, t1, u"Z-Song"_s, u"Artist 1"_s, u"Album 1"_s, QVariant());
+        exec(qDb,
+            QStringLiteral("UPDATE effective_metadata SET year = 2015, genre = 'Classic Rock' "
+                           "WHERE track_id = %1")
+                .arg(t1));
+
+        // Track 2: Title="M-Song", Year=2020, Genre="Pop", first_seen_at=2000
+        QSqlQuery qf2(qDb);
+        qf2.prepare(
+            QStringLiteral("INSERT INTO files (root_id, path, size, mtime, duration_ms, "
+                           "first_seen_at, scanned_at) VALUES (?, '2.mp3', 1, 1, 100, 2000, 1)"));
+        qf2.addBindValue(r);
+        execChecked(qf2);
+        const qint64 f2 = qf2.lastInsertId().toLongLong();
+        const qint64 t2 = DbHelper::insertTrack(qDb, f2);
+        DbHelper::setMeta(qDb, t2, u"M-Song"_s, u"Artist 2"_s, u"Album 2"_s, QVariant());
+        exec(qDb,
+            QStringLiteral(
+                "UPDATE effective_metadata SET year = 2020, genre = 'Pop' WHERE track_id = %1")
+                .arg(t2));
+
+        // Track 3: Title="A-Song", Year=2022, Genre="Hard Rock", first_seen_at=3000
+        QSqlQuery qf3(qDb);
+        qf3.prepare(
+            QStringLiteral("INSERT INTO files (root_id, path, size, mtime, duration_ms, "
+                           "first_seen_at, scanned_at) VALUES (?, '3.mp3', 1, 1, 100, 3000, 1)"));
+        qf3.addBindValue(r);
+        execChecked(qf3);
+        const qint64 f3 = qf3.lastInsertId().toLongLong();
+        const qint64 t3 = DbHelper::insertTrack(qDb, f3);
+        DbHelper::setMeta(qDb, t3, u"A-Song"_s, u"Artist 3"_s, u"Album 3"_s, QVariant());
+        exec(qDb,
+            QStringLiteral("UPDATE effective_metadata SET year = 2022, genre = 'Hard Rock' WHERE "
+                           "track_id = %1")
+                .arg(t3));
+
+        LibraryQuery q(qDb);
+
+        // 1. SmartRule Match::All (year > 2010 AND genre contains 'Rock') -> matches t1 (2015,
+        // Classic Rock) and t3 (2022, Hard Rock)
+        SmartRule ruleAll;
+        ruleAll.match = SmartRule::Match::All;
+        ruleAll.conditions = {
+            SmartCondition {
+                .field = SmartField::Year,
+                .op = SmartOp::Greater,
+                .value = 2010,
+                .value2 = { },
+            },
+            SmartCondition {
+                .field = SmartField::Genre,
+                .op = SmartOp::Contains,
+                .value = QStringLiteral("Rock"),
+                .value2 = { },
+            },
+        };
+        TrackFilter fAll;
+        fAll.smartRule = ruleAll;
+        QCOMPARE(q.countTracks(fAll).value(), 2);
+        const auto rowsAll = q.tracks(fAll, TrackSortKey::Title, Qt::AscendingOrder, 0, 10).value();
+        QCOMPARE(rowsAll.size(), 2);
+        QCOMPARE(rowsAll.at(0).trackId, t3); // "A-Song"
+        QCOMPARE(rowsAll.at(1).trackId, t1); // "Z-Song"
+
+        // 2. SmartRule Match::Any (year > 2021 OR genre contains 'Pop') -> matches t2 (Pop) and t3
+        // (2022)
+        SmartRule ruleAny;
+        ruleAny.match = SmartRule::Match::Any;
+        ruleAny.conditions = {
+            SmartCondition {
+                .field = SmartField::Year,
+                .op = SmartOp::Greater,
+                .value = 2021,
+                .value2 = { },
+            },
+            SmartCondition {
+                .field = SmartField::Genre,
+                .op = SmartOp::Contains,
+                .value = QStringLiteral("Pop"),
+                .value2 = { },
+            },
+        };
+        TrackFilter fAny;
+        fAny.smartRule = ruleAny;
+        QCOMPARE(q.countTracks(fAny).value(), 2);
+        const auto rowsAny = q.tracks(fAny, TrackSortKey::Title, Qt::AscendingOrder, 0, 10).value();
+        QCOMPARE(rowsAny.size(), 2);
+        QCOMPARE(rowsAny.at(0).trackId, t3); // "A-Song"
+        QCOMPARE(rowsAny.at(1).trackId, t2); // "M-Song"
+
+        // 3. SmartRule with DateAdded DESC + limit 2: inner rule selects 2 newest tracks (t3 at
+        // 3000, t2 at 2000), outer sorted by Title ASC ("A-Song", "M-Song")
+        SmartRule ruleLimit;
+        ruleLimit.sortKey = TrackSortKey::DateAdded;
+        ruleLimit.sortOrder = Qt::DescendingOrder;
+        ruleLimit.limit = 2;
+        TrackFilter fLimit;
+        fLimit.smartRule = ruleLimit;
+        QCOMPARE(q.countTracks(fLimit).value(), 2);
+        const auto rowsLimit
+            = q.tracks(fLimit, TrackSortKey::Title, Qt::AscendingOrder, 0, 10).value();
+        QCOMPARE(rowsLimit.size(), 2);
+        QCOMPARE(rowsLimit.at(0).trackId, t3); // "A-Song"
+        QCOMPARE(rowsLimit.at(1).trackId, t2); // "M-Song"
     }
 };
 

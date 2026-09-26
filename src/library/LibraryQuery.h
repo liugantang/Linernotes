@@ -24,7 +24,14 @@ enum class TrackSortKey : std::uint8_t {
     Year,
     Duration,
     DateAdded,
+    PlaylistOrder,
 };
+
+} // namespace linernotes::library
+
+#include <library/SmartRule.h>
+
+namespace linernotes::library {
 
 /// 专辑排序列。
 enum class AlbumSortKey : std::uint8_t {
@@ -45,6 +52,8 @@ struct TrackFilter {
     std::optional<qint64> artistId; ///< track_artists 中 role = 'artist' 的曲目
     std::optional<QString> genre; ///< 精确匹配 effective_metadata.genre
     bool favoritesOnly = false; ///< favorites 中 entity_type = 'track'
+    std::optional<qint64> playlistId; ///< 手动歌单：只返回该歌单中的曲目
+    std::optional<SmartRule> smartRule; ///< 智能歌单：返回满足规则的曲目
 };
 
 /// 专辑筛选条件。

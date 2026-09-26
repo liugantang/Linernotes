@@ -45,6 +45,10 @@ add_library(linernotes_library STATIC
     SearchIndex.h
     SearchText.cpp
     SearchText.h
+    SmartRule.cpp
+    SmartRule.h
+    SmartRuleSql.cpp
+    SmartRuleSql.h
     TagReader.cpp
     TagReader.h
 )

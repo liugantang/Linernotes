@@ -23,8 +23,10 @@
 #include <core/Result.h>
 #include <library/Errors.h>
 #include <library/LibraryQuery.h>
+#include <library/SmartRuleSql.h>
 
 #include <algorithm>
+#include <optional>
 
 namespace linernotes::library::detail {
 
@@ -50,7 +52,8 @@ inline qint64 rowEntityId(const ArtistRow &r)
     return r.artistId;
 }
 
-OrderClauses buildTrackOrderClauses(TrackSortKey key, bool isAsc);
+OrderClauses buildTrackOrderClauses(
+    TrackSortKey key, bool isAsc, std::optional<qint64> playlistId = std::nullopt);
 OrderClauses buildAlbumOrderClauses(AlbumSortKey key, bool isAsc);
 
 QString buildTrackFilterWhereSql(const TrackFilter &filter, QList<QVariant> &binds);
