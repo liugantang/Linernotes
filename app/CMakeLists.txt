@@ -267,6 +267,21 @@ set_source_files_properties(
     PROPERTIES
         QT_RESOURCE_ALIAS SettingsAppearanceSection.qml
 )
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/AppShortcuts.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS AppShortcuts.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/ShortcutsDialog.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS ShortcutsDialog.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/FirstRunWizard.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS FirstRunWizard.qml
+)
 
 set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/resources/icons/play.svg
@@ -484,6 +499,9 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/SettingsLibrarySection.qml
         ${CMAKE_SOURCE_DIR}/qml/SettingsPlaybackSection.qml
         ${CMAKE_SOURCE_DIR}/qml/SettingsAppearanceSection.qml
+        ${CMAKE_SOURCE_DIR}/qml/AppShortcuts.qml
+        ${CMAKE_SOURCE_DIR}/qml/ShortcutsDialog.qml
+        ${CMAKE_SOURCE_DIR}/qml/FirstRunWizard.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackColumns.js
         ${CMAKE_SOURCE_DIR}/qml/TrackContextMenu.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackTableHeader.qml

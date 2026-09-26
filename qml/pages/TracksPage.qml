@@ -10,6 +10,8 @@ import "../controls" as Controls
 Item {
     id: root
 
+    signal openSettingsRequested()
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -61,11 +63,37 @@ Item {
             color: Theme.divider
         }
 
-        TrackTable {
-            id: trackTable
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            emptyText: trackTable.model.favoritesOnly ? qsTr("No loved tracks yet") : qsTr("No tracks in library")
+
+            TrackTable {
+                id: trackTable
+                anchors.fill: parent
+                emptyText: trackTable.model.favoritesOnly
+                    ? qsTr("No loved tracks yet")
+                    : (AppContext.scanning ? qsTr("Scanning library…") : "")
+            }
+
+            ColumnLayout {
+                anchors.centerIn: parent
+                visible: trackTable.count === 0 && !AppContext.scanning && !trackTable.model.favoritesOnly
+                spacing: Theme.spacingMedium
+
+                Label {
+                    text: qsTr("Your library is empty")
+                    font.pixelSize: Theme.fontSizeLarge
+                    color: Theme.textSecondary
+                    Layout.alignment: Qt.AlignHCenter
+                }
+
+                Controls.AppButton {
+                    text: qsTr("Add Music Folder")
+                    primary: true
+                    Layout.alignment: Qt.AlignHCenter
+                    onClicked: root.openSettingsRequested()
+                }
+            }
         }
     }
 }

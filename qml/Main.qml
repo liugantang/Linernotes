@@ -19,19 +19,43 @@ ApplicationWindow {
     visible: true
     color: Theme.background
 
-    Shortcut {
-        sequence: "Ctrl+Alt+P"
-        onActivated: sidePanel.collapsed = !sidePanel.collapsed
+    AppShortcuts {
+        id: appShortcuts
+        sidebar: sidebar
+        sidePanel: sidePanel
+        playerBar: playerBar
+        shortcutsDialog: shortcutsDialog
     }
 
-    Shortcut {
-        sequence: StandardKey.Preferences
-        onActivated: sidebar.currentPage = NavigationSidebar.Settings
+    ShortcutsDialog {
+        id: shortcutsDialog
+        shortcuts: appShortcuts
     }
 
-    Shortcut {
-        sequence: "Ctrl+,"
-        onActivated: sidebar.currentPage = NavigationSidebar.Settings
+    FirstRunWizard {
+        id: firstRunWizard
+    }
+
+    function checkFirstRun() {
+        if (!AppContext.libraryReady || !AppContext.settings || AppContext.settings.firstRunCompleted) {
+            return
+        }
+        if (AppContext.libraryRoots && AppContext.libraryRoots.rowCount() > 0) {
+            AppContext.settings.firstRunCompleted = true
+        } else {
+            firstRunWizard.open()
+        }
+    }
+
+    Connections {
+        target: AppContext
+        function onLibraryReadyChanged() {
+            window.checkFirstRun()
+        }
+    }
+
+    Component.onCompleted: {
+        window.checkFirstRun()
     }
 
     function openAlbum(albumId) {
@@ -194,7 +218,9 @@ ApplicationWindow {
                         visible: !searchResults.visible
                         currentIndex: sidebar.currentPage
 
-                        TracksPage {}
+                        TracksPage {
+                            onOpenSettingsRequested: sidebar.currentPage = NavigationSidebar.Settings
+                        }
                         AlbumsPage { id: albumsPage }
                         ArtistsPage { id: artistsPage }
                         PlaylistsPage {}

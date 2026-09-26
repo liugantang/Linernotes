@@ -23,6 +23,7 @@ class TstSettingsController : public QObject {
 private slots:
     void testThemeAndReplayGainSettings();
     void testAudioDeviceAndGaplessSettings();
+    void testFirstRunCompletedSettings();
 };
 
 void TstSettingsController::testThemeAndReplayGainSettings()
@@ -94,6 +95,28 @@ void TstSettingsController::testAudioDeviceAndGaplessSettings()
     QCOMPARE(player2.gapless(), false);
     QCOMPARE(ctrl2.exclusiveMode(), true);
     QCOMPARE(ctrl2.accentFromCover(), true);
+}
+
+void TstSettingsController::testFirstRunCompletedSettings()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString iniPath = tempDir.filePath(QStringLiteral("settings.ini"));
+
+    Settings settings(iniPath);
+    Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
+
+    SettingsController ctrl(settings, player);
+    QCOMPARE(ctrl.firstRunCompleted(), false);
+
+    QSignalSpy spy(&ctrl, &SettingsController::firstRunCompletedChanged);
+    ctrl.setFirstRunCompleted(true);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(ctrl.firstRunCompleted(), true);
+
+    Player player2({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    SettingsController ctrl2(settings, player2);
+    QCOMPARE(ctrl2.firstRunCompleted(), true);
 }
 
 } // namespace

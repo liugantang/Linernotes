@@ -74,6 +74,7 @@ SettingsController::SettingsController(
     , m_exclusiveMode(m_settings.value(kPlaybackExclusive))
     , m_themeMode(themeModeFromString(m_settings.value(kAppearanceTheme)))
     , m_accentFromCover(m_settings.value(kAppearanceAccentFromCover))
+    , m_firstRunCompleted(m_settings.value(kAppFirstRunCompleted))
 {
     m_player.setReplayGainMode(m_replayGainMode);
     m_player.setGapless(m_gapless);
@@ -185,6 +186,21 @@ void SettingsController::setAccentFromCover(bool enabled)
     m_accentFromCover = enabled;
     m_settings.setValue(kAppearanceAccentFromCover, enabled);
     emit accentFromCoverChanged();
+}
+
+bool SettingsController::firstRunCompleted() const
+{
+    return m_firstRunCompleted;
+}
+
+void SettingsController::setFirstRunCompleted(bool completed)
+{
+    if (completed == m_firstRunCompleted) {
+        return;
+    }
+    m_firstRunCompleted = completed;
+    m_settings.setValue(kAppFirstRunCompleted, completed);
+    emit firstRunCompletedChanged();
 }
 
 } // namespace linernotes::ui

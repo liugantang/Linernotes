@@ -189,7 +189,7 @@ FocusScope {
 
     Label {
         anchors.centerIn: parent
-        visible: trackModel.count === 0
+        visible: trackModel.count === 0 && text.length > 0
         text: root.emptyText
         font.pixelSize: Theme.fontSizeLarge
         color: Theme.textSecondary

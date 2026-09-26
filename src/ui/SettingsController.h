@@ -33,6 +33,8 @@ public:
     Q_PROPERTY(ThemeMode themeMode READ themeMode WRITE setThemeMode NOTIFY themeModeChanged)
     Q_PROPERTY(bool accentFromCover READ accentFromCover WRITE setAccentFromCover NOTIFY
             accentFromCoverChanged)
+    Q_PROPERTY(bool firstRunCompleted READ firstRunCompleted WRITE setFirstRunCompleted NOTIFY
+            firstRunCompletedChanged)
 
     explicit SettingsController(
         core::Settings &settings, player::Player &player, QObject *parent = nullptr);
@@ -56,6 +58,9 @@ public:
     [[nodiscard]] bool accentFromCover() const;
     void setAccentFromCover(bool enabled);
 
+    [[nodiscard]] bool firstRunCompleted() const;
+    void setFirstRunCompleted(bool completed);
+
 signals:
     void replayGainModeChanged();
     void gaplessChanged();
@@ -63,6 +68,7 @@ signals:
     void exclusiveModeChanged();
     void themeModeChanged();
     void accentFromCoverChanged();
+    void firstRunCompletedChanged();
 
 private:
     core::Settings &m_settings;
@@ -74,6 +80,7 @@ private:
     bool m_exclusiveMode { false };
     ThemeMode m_themeMode { ThemeMode::System };
     bool m_accentFromCover { false };
+    bool m_firstRunCompleted { false };
 };
 
 } // namespace linernotes::ui
