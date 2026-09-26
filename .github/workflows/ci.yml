@@ -49,6 +49,8 @@ jobs:
         run: cmake --build --preset ci
 
       - name: Test
+        env:
+          LINERNOTES_NO_AUDIO_SERVER: "1"
         run: ctest --preset ci
 
       - name: Upload test log on failure
@@ -119,6 +121,8 @@ jobs:
         run: cmake --build --preset asan
 
       - name: Test
+        env:
+          LINERNOTES_NO_AUDIO_SERVER: "1"
         run: ctest --preset asan
 
       - name: Upload test log on failure

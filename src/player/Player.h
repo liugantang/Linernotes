@@ -92,6 +92,13 @@ public slots:
     void duckTo(double gain, int rampMs = 300);
     /// 等价于 duckTo(1.0, rampMs)
     void unduck(int rampMs = 500);
+    /// 刷新并获取音频设备列表。
+    ///
+    /// 首次调用时开始观察 `audio-device-list` 并读取当前设备列表（此后热插拔自动更新）；
+    /// 再次调用重新读取设备列表。UI 在用户打开设备设置时调用。
+    /// 为什么不在构造时枚举：在无音频服务环境（如 CI 容器）中，libpipewire 在构造时启动设备
+    /// 热插拔监听可能在销毁时发生死锁；此外按需枚举可避免应用启动时的无谓开销。
+    Q_INVOKABLE void refreshAudioDevices();
     /// 切换输出设备。name 不在当前 audioDevices 列表中时返回 false 且不做任何改变（记 qCWarning）。
     bool selectAudioDevice(const QString &name);
     void setExclusiveMode(bool exclusive);
@@ -162,6 +169,7 @@ private:
     QString m_userAudioFilters;
     QVariantList m_audioDevices;
     QString m_audioDevice = QStringLiteral("auto");
+    bool m_audioDevicesRefreshed = false;
     bool m_exclusiveMode = false;
     bool m_idleActive = true;
     bool m_pause = false;

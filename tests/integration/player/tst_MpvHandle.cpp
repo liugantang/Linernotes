@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Linernotes contributors
 
+#include <QDir>
 #include <QFile>
 #include <QSignalSpy>
 #include <QTest>
@@ -31,6 +32,7 @@ private slots:
     void propertyRoundTrip();
 
     void readsStructuredProperty();
+    void readsAudioDeviceList();
     void readingUnknownPropertyReturnsInvalid();
     void commandFailsForUnknownCommand();
 
@@ -40,6 +42,7 @@ private slots:
     void observeSamePropertyTwiceRegistersOnce();
     void loadingCorruptFileEndsWithError();
     void destroysCleanlyWhilePlaying();
+    void doesNotStartBuiltinLuaScripts();
 };
 
 void TstMpvHandle::initTestCase()
@@ -101,6 +104,34 @@ void TstMpvHandle::propertyRoundTrip()
 
 void TstMpvHandle::readsStructuredProperty()
 {
+    MpvHandle handle({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    QVERIFY(handle.isValid());
+
+    const QString path = linernotes::test::fixturePath(QStringLiteral("audio/tone_440_1s.flac"));
+    QVERIFY(QFile::exists(path));
+    QVERIFY(handle.command({ QStringLiteral("loadfile"), path, QStringLiteral("replace") }));
+
+    QSignalSpy loadedSpy(&handle, &MpvHandle::fileLoaded);
+    QTRY_COMPARE_WITH_TIMEOUT(loadedSpy.count(), 1, 5000);
+
+    const QVariant trackListVar = handle.property(QStringLiteral("track-list"));
+    QVERIFY(trackListVar.isValid());
+    QCOMPARE(trackListVar.metaType().id(), QMetaType::QVariantList);
+
+    const QVariantList trackList = trackListVar.toList();
+    QVERIFY(!trackList.isEmpty());
+
+    const QVariantMap firstTrack = trackList.first().toMap();
+    QVERIFY(firstTrack.contains(QStringLiteral("type")));
+}
+
+void TstMpvHandle::readsAudioDeviceList()
+{
+    if (!qEnvironmentVariableIsEmpty("LINERNOTES_NO_AUDIO_SERVER")) {
+        QSKIP("LINERNOTES_NO_AUDIO_SERVER set: audio device enumeration may deadlock in "
+              "libpipewire without audio server");
+    }
+
     MpvHandle handle({ { QStringLiteral("ao"), QStringLiteral("null") } });
     QVERIFY(handle.isValid());
 
@@ -265,6 +296,28 @@ void TstMpvHandle::destroysCleanlyWhilePlaying()
         QVERIFY(handle->command({ QStringLiteral("loadfile"), path, QStringLiteral("replace") }));
         QTest::qWait(50);
     }
+}
+
+void TstMpvHandle::doesNotStartBuiltinLuaScripts()
+{
+#ifdef Q_OS_LINUX
+    MpvHandle handle({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    QVERIFY(handle.isValid());
+    QTest::qWait(50);
+
+    const QDir taskDir(QStringLiteral("/proc/self/task"));
+    const QStringList taskEntries = taskDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (const QString &tid : taskEntries) {
+        QFile commFile(taskDir.filePath(tid + QStringLiteral("/comm")));
+        if (commFile.open(QIODevice::ReadOnly)) {
+            const QString comm = QString::fromUtf8(commFile.readAll()).trimmed();
+            QVERIFY2(!comm.startsWith(QStringLiteral("lua/")),
+                qPrintable(QStringLiteral("Found Lua thread: %1").arg(comm)));
+        }
+    }
+#else
+    QSKIP("Linux only test for /proc/self/task");
+#endif
 }
 
 } // namespace
