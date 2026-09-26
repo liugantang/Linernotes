@@ -10,6 +10,7 @@
 #include <core/Result.h>
 #include <player/MpvHandle.h>
 #include <player/Player.h>
+#include <ui/LibraryActions.h>
 
 #include <memory>
 
@@ -27,6 +28,7 @@ class AppContext : public QObject {
     Q_DISABLE_COPY_MOVE(AppContext)
 
     Q_PROPERTY(linernotes::player::Player *player READ player CONSTANT)
+    Q_PROPERTY(linernotes::ui::LibraryActions *actions READ actions NOTIFY libraryReadyChanged)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
     Q_PROPERTY(QString startupError READ startupError NOTIFY startupErrorChanged)
     Q_PROPERTY(bool scanning READ isScanning NOTIFY scanningChanged)
@@ -51,6 +53,8 @@ public:
 
     [[nodiscard]] player::Player *player() const;
     [[nodiscard]] library::Database *database();
+    [[nodiscard]] library::CoverStore *coverStore() const;
+    [[nodiscard]] LibraryActions *actions() const;
     [[nodiscard]] bool isLibraryReady() const;
     [[nodiscard]] QString startupError() const;
     [[nodiscard]] bool isScanning() const;
@@ -67,6 +71,7 @@ private:
     player::Player *m_player { nullptr };
     std::unique_ptr<library::Database> m_db;
     std::unique_ptr<library::CoverStore> m_coverStore;
+    std::unique_ptr<LibraryActions> m_actions;
     std::unique_ptr<library::Scanner> m_scanner;
     std::unique_ptr<library::LibraryWatcher> m_watcher;
 

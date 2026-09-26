@@ -8,6 +8,11 @@ add_library(linernotes_ui STATIC
     AppContext.h
     ArtistListModel.cpp
     ArtistListModel.h
+    CoverImageProvider.cpp
+    CoverImageProvider.h
+    Format.h
+    LibraryActions.cpp
+    LibraryActions.h
     PageCache.h
     PagedListModel.cpp
     PagedListModel.h
@@ -31,6 +36,7 @@ target_link_libraries(linernotes_ui
         Linernotes::library
         Linernotes::player
         Qt6::Core
+        Qt6::Quick # Required by CoverImageProvider (QQuickImageProvider)
 )
 
 linernotes_set_target_options(linernotes_ui)

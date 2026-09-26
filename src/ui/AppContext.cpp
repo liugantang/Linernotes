@@ -12,6 +12,7 @@
 #include <library/Migrator.h>
 #include <library/Scanner.h>
 #include <player/Player.h>
+#include <ui/LibraryActions.h>
 
 #include <algorithm>
 #include <utility>
@@ -32,6 +33,7 @@ AppContext::~AppContext()
     }
     m_watcher.reset();
     m_scanner.reset();
+    m_actions.reset();
     m_coverStore.reset();
     m_db.reset();
 }
@@ -57,6 +59,7 @@ core::Result<void> AppContext::start()
 
     m_db = std::move(db);
     m_coverStore = std::make_unique<library::CoverStore>(m_options.coverCacheDir);
+    m_actions = std::make_unique<LibraryActions>(*m_db, *m_player, this);
 
     library::Scanner::Options scannerOpts;
     scannerOpts.coverStore = m_coverStore.get();
@@ -124,6 +127,16 @@ player::Player *AppContext::player() const
 library::Database *AppContext::database()
 {
     return m_db.get();
+}
+
+library::CoverStore *AppContext::coverStore() const
+{
+    return m_coverStore.get();
+}
+
+LibraryActions *AppContext::actions() const
+{
+    return m_actions.get();
 }
 
 bool AppContext::isLibraryReady() const

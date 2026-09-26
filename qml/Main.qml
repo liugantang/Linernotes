@@ -23,6 +23,11 @@ ApplicationWindow {
         onActivated: sidePanel.collapsed = !sidePanel.collapsed
     }
 
+    function openAlbum(albumId) {
+        sidebar.currentPage = "albums"
+        albumsPage.openAlbum(albumId)
+    }
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -115,7 +120,7 @@ ApplicationWindow {
                     Layout.fillHeight: true
 
                     TracksPage {}
-                    AlbumsPage {}
+                    AlbumsPage { id: albumsPage }
                     ArtistsPage {}
                     PlaylistsPage {}
                     AiPage {}

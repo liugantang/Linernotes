@@ -32,6 +32,21 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS SidePanel.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/AlbumGrid.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS AlbumGrid.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/AlbumDetail.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS AlbumDetail.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/ArtistDetail.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS ArtistDetail.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/pages/TracksPage.qml
     PROPERTIES
         QT_RESOURCE_ALIAS pages/TracksPage.qml
@@ -67,6 +82,9 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/NavigationSidebar.qml
         ${CMAKE_SOURCE_DIR}/qml/PlayerBar.qml
         ${CMAKE_SOURCE_DIR}/qml/SidePanel.qml
+        ${CMAKE_SOURCE_DIR}/qml/AlbumGrid.qml
+        ${CMAKE_SOURCE_DIR}/qml/AlbumDetail.qml
+        ${CMAKE_SOURCE_DIR}/qml/ArtistDetail.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/TracksPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/AlbumsPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/ArtistsPage.qml

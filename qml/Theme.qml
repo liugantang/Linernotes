@@ -53,4 +53,15 @@ QtObject {
     readonly property int playerBarHeight: 64
     readonly property int sidePanelWidth: 280
     readonly property int topBarHeight: 40
+
+    // Album & Artist view dimensions
+    readonly property int albumCardMinWidth: 160
+    readonly property int albumCardTextHeight: 52
+    readonly property int albumDetailCoverSize: 180
+    readonly property int artistAvatarSizeSmall: 44
+    readonly property int artistAvatarSizeLarge: 96
+    readonly property int artistListWidth: 260
+    readonly property int coverBorderRadius: 6
+    readonly property int cardBorderRadius: 8
+    readonly property int trackRowHeight: 44
 }

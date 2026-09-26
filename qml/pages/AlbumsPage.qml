@@ -3,34 +3,41 @@
 
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
 import Linernotes
 
 Item {
     id: root
 
-    AlbumGridModel {
-        id: albumModel
-        context: AppContext
+    function openAlbum(albumId) {
+        while (stackView.depth > 1) {
+            stackView.pop()
+        }
+        stackView.push(detailComponent, { albumId: albumId })
     }
 
-    ColumnLayout {
-        anchors.centerIn: parent
-        spacing: Theme.spacingSmall
+    StackView {
+        id: stackView
+        anchors.fill: parent
+        initialItem: gridComponent
+    }
 
-        Label {
-            text: qsTr("Albums")
-            font.pixelSize: Theme.fontSizeTitle
-            font.bold: true
-            color: Theme.text
-            Layout.alignment: Qt.AlignHCenter
+    Component {
+        id: gridComponent
+
+        AlbumGrid {
+            onAlbumClicked: (albumId) => {
+                stackView.push(detailComponent, { albumId: albumId })
+            }
         }
+    }
 
-        Label {
-            text: qsTr("Browse your music by album.")
-            font.pixelSize: Theme.fontSizeNormal
-            color: Theme.textSecondary
-            Layout.alignment: Qt.AlignHCenter
+    Component {
+        id: detailComponent
+
+        AlbumDetail {
+            onBackRequested: {
+                stackView.pop()
+            }
         }
     }
 }

@@ -7,11 +7,13 @@
 #include <QObject>
 #include <QQmlEngine>
 
+#include <player/PlayMode.h>
 #include <player/PlayQueue.h>
 #include <player/Player.h>
 #include <ui/AlbumGridModel.h>
 #include <ui/AppContext.h>
 #include <ui/ArtistListModel.h>
+#include <ui/LibraryActions.h>
 #include <ui/TrackListModel.h>
 
 struct AppContextForeign {
@@ -40,6 +42,19 @@ struct PlayQueueForeign {
     QML_FOREIGN(linernotes::player::PlayQueue)
     QML_NAMED_ELEMENT(PlayQueue)
     QML_UNCREATABLE("PlayQueue is managed by Player")
+};
+
+struct PlayModeForeign {
+    Q_GADGET
+    QML_FOREIGN_NAMESPACE(linernotes::player)
+    QML_NAMED_ELEMENT(PlayMode)
+};
+
+struct LibraryActionsForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::LibraryActions)
+    QML_NAMED_ELEMENT(LibraryActions)
+    QML_UNCREATABLE("LibraryActions is managed by AppContext")
 };
 
 struct TrackListModelForeign {
