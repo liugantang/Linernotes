@@ -31,7 +31,6 @@ qt_standard_project_setup()
 
 option(LINERNOTES_BUILD_TOOLS "Build developer tools" ON)
 option(LINERNOTES_BUILD_TESTS "Build tests" ON)
-option(LINERNOTES_BUILD_BENCHMARKS "Build benchmarks" OFF)
 
 add_subdirectory(src)
 add_subdirectory(app)
@@ -40,7 +39,7 @@ if(LINERNOTES_BUILD_TOOLS)
     add_subdirectory(tools)
 endif()
 
-if(LINERNOTES_BUILD_TESTS OR LINERNOTES_BUILD_BENCHMARKS)
+if(LINERNOTES_BUILD_TESTS)
     enable_testing()
     include(cmake/Testing.cmake)
     add_subdirectory(tests)
