@@ -75,15 +75,6 @@ public:
     /// 仅供测试与调试：返回成功执行 af-command 的次数
     [[nodiscard]] int duckApplyCount() const;
 
-    /// 仅供测试与调试：模拟分发 startFile 事件
-    void testInjectStartFile(qint64 entryId);
-
-    /// 仅供测试与调试：模拟分发 endFile 事件
-    void testInjectEndFile(qint64 entryId, MpvHandle::EndFileReason reason, const QString &error);
-
-    /// 仅供测试与调试：模拟分发 fileLoaded 事件
-    void testInjectFileLoaded();
-
 public slots:
     void openFile(const QString &path);
     void playIndex(int row);

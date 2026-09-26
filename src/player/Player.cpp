@@ -330,22 +330,6 @@ int Player::duckApplyCount() const
     return m_duckApplyCount;
 }
 
-void Player::testInjectStartFile(qint64 entryId)
-{
-    onStartFile(entryId);
-}
-
-void Player::testInjectEndFile(
-    qint64 entryId, MpvHandle::EndFileReason reason, const QString &error)
-{
-    onEndFile(entryId, reason, error);
-}
-
-void Player::testInjectFileLoaded()
-{
-    onFileLoaded();
-}
-
 void Player::openFile(const QString &path)
 {
     qCDebug(lcPlayer) << "openFile:" << path;
