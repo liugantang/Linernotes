@@ -26,6 +26,18 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME ui_NowPlaying
+    SOURCES
+        tst_NowPlaying.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::library
+        Linernotes::player
+        Linernotes::TestSupport
+        Qt6::Sql
+)
+
+linernotes_add_test(
     NAME ui_PageCache
     SOURCES
         tst_PageCache.cpp

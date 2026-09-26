@@ -13,6 +13,8 @@ add_library(linernotes_ui STATIC
     Format.h
     LibraryActions.cpp
     LibraryActions.h
+    NowPlaying.cpp
+    NowPlaying.h
     PageCache.h
     PagedListModel.cpp
     PagedListModel.h

@@ -23,7 +23,9 @@ AppContext::AppContext(Options options, QObject *parent)
     : QObject(parent)
     , m_options(std::move(options))
     , m_player(new player::Player(m_options.playerOptions, this))
+    , m_nowPlaying(std::make_unique<NowPlaying>(nullptr, *m_player, this))
 {
+    connect(this, &AppContext::libraryChanged, m_nowPlaying.get(), &NowPlaying::refresh);
 }
 
 AppContext::~AppContext()
@@ -31,6 +33,7 @@ AppContext::~AppContext()
     if (m_scanner) {
         m_scanner->cancel();
     }
+    m_nowPlaying.reset();
     m_watcher.reset();
     m_scanner.reset();
     m_actions.reset();
@@ -58,6 +61,7 @@ core::Result<void> AppContext::start()
     }
 
     m_db = std::move(db);
+    m_nowPlaying->setDatabase(m_db.get());
     m_coverStore = std::make_unique<library::CoverStore>(m_options.coverCacheDir);
     m_actions = std::make_unique<LibraryActions>(*m_db, *m_player, this);
 
@@ -122,6 +126,11 @@ core::Result<void> AppContext::start()
 player::Player *AppContext::player() const
 {
     return m_player;
+}
+
+NowPlaying *AppContext::nowPlaying() const
+{
+    return m_nowPlaying.get();
 }
 
 library::Database *AppContext::database()

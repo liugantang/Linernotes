@@ -154,6 +154,9 @@ ApplicationWindow {
             id: playerBar
             Layout.fillWidth: true
             Layout.preferredHeight: Theme.playerBarHeight
+            onOpenAlbumRequested: function(albumId) {
+                window.openAlbum(albumId)
+            }
         }
     }
 }

@@ -58,7 +58,7 @@ QtObject {
     readonly property int navItemHeight: 40
     readonly property int navItemHeightWithSubtitle: 56
     readonly property int iconSizeSmall: 20
-    readonly property int playerBarHeight: 64
+    readonly property int playerBarHeight: 80
     readonly property int sidePanelWidth: 280
     readonly property int topBarHeight: 40
 
