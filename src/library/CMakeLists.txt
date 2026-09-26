@@ -23,6 +23,10 @@ add_library(linernotes_library STATIC
     Migrator.h
     Scanner.cpp
     Scanner.h
+    SearchIndex.cpp
+    SearchIndex.h
+    SearchText.cpp
+    SearchText.h
     TagReader.cpp
     TagReader.h
 )
@@ -49,6 +53,7 @@ target_link_libraries(linernotes_library
         Qt6::Gui
         Qt6::Sql
     PRIVATE
+        Linernotes::Deps::ICU
         Linernotes::Deps::SQLite3
         Linernotes::Deps::TagLib
 )

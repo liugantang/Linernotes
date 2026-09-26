@@ -4,6 +4,7 @@
 #include <QCommandLineOption>
 #include <QCommandLineParser>
 #include <QCoreApplication>
+#include <QElapsedTimer>
 #include <QLoggingCategory>
 #include <QSqlQuery>
 
@@ -13,6 +14,7 @@
 #include <library/LibraryRoots.h>
 #include <library/Migrator.h>
 #include <library/Scanner.h>
+#include <library/SearchIndex.h>
 #include <poll.h>
 #include <unistd.h>
 
@@ -41,6 +43,7 @@ struct CliConfig {
     QString cacheDir;
     QStringList excludes;
     QStringList dirs;
+    std::optional<QString> searchQuery;
     int maxThreads = 0;
     bool verbose = false;
 };
@@ -57,6 +60,9 @@ struct CliOptions {
         QStringLiteral("glob") };
     QCommandLineOption threadsOption { QStringLiteral("threads"),
         QStringLiteral("Maximum worker threads for reading tags."), QStringLiteral("N") };
+    QCommandLineOption searchOption { QStringLiteral("search"),
+        QStringLiteral("Search query to run against full-text search index."),
+        QStringLiteral("query") };
     QCommandLineOption verboseOption { QStringLiteral("verbose"),
         QStringLiteral("Show detailed output and failed file details.") };
 };
@@ -70,6 +76,7 @@ void setupParser(QCommandLineParser &parser, const CliOptions &opts)
     parser.addOption(opts.cacheOption);
     parser.addOption(opts.excludeOption);
     parser.addOption(opts.threadsOption);
+    parser.addOption(opts.searchOption);
     parser.addOption(opts.verboseOption);
     parser.addPositionalArgument(QStringLiteral("dir"),
         QStringLiteral("Directories to add as library roots and scan."),
@@ -92,8 +99,13 @@ std::optional<CliConfig> parseArgs(
         parser.showVersion();
     }
 
+    std::optional<QString> searchQuery;
+    if (parser.isSet(opts.searchOption)) {
+        searchQuery = parser.value(opts.searchOption);
+    }
+
     const QStringList dirs = parser.positionalArguments();
-    if (dirs.isEmpty()) {
+    if (dirs.isEmpty() && !searchQuery.has_value()) {
         std::cerr << qPrintable(parser.helpText());
         exitCode = 2;
         return std::nullopt;
@@ -134,6 +146,7 @@ std::optional<CliConfig> parseArgs(
         .cacheDir = cacheDir,
         .excludes = parser.values(opts.excludeOption),
         .dirs = dirs,
+        .searchQuery = searchQuery,
         .maxThreads = maxThreads,
         .verbose = parser.isSet(opts.verboseOption),
     };
@@ -203,16 +216,8 @@ void printScanSummary(
     }
 }
 
-int runCli(const CliConfig &cfg)
+int executeScan(linernotes::library::Database &db, const CliConfig &cfg)
 {
-    linernotes::library::Database db(cfg.dbPath);
-    const linernotes::library::Migrator migrator;
-    const auto openRes = db.open(migrator);
-    if (!openRes.ok()) {
-        std::cerr << "Database error: " << qPrintable(openRes.error().toString()) << "\n";
-        return 1;
-    }
-
     linernotes::library::LibraryRoots roots(db);
     for (const auto &dir : cfg.dirs) {
         const auto addRes = roots.add(dir, cfg.excludes);
@@ -280,6 +285,69 @@ int runCli(const CliConfig &cfg)
     }
 
     printScanSummary(db, scanRes.value(), cfg.verbose);
+    return 0;
+}
+
+int executeSearch(linernotes::library::Database &db, const QString &searchQuery)
+{
+    const auto connRes = db.connection();
+    if (!connRes.ok()) {
+        std::cerr << "Database error: " << qPrintable(connRes.error().toString()) << "\n";
+        return 1;
+    }
+    const linernotes::library::SearchIndex searchIndex(connRes.value());
+    QElapsedTimer timer;
+    timer.start();
+    const auto searchRes = searchIndex.search(searchQuery, 20);
+    const qint64 elapsedMs = timer.elapsed();
+
+    if (!searchRes.ok()) {
+        std::cerr << "Search failed: " << qPrintable(searchRes.error().toString()) << "\n";
+        return 1;
+    }
+
+    const auto &hits = searchRes.value();
+    QSqlQuery qMeta(connRes.value());
+    qMeta.prepare(
+        QStringLiteral("SELECT COALESCE(title, ''), COALESCE(artist, ''), COALESCE(album, '') "
+                       "FROM effective_metadata WHERE track_id = ?"));
+
+    for (const auto &hit : hits) {
+        qMeta.bindValue(0, hit.trackId);
+        if (qMeta.exec() && qMeta.next()) {
+            std::cout << qPrintable(qMeta.value(0).toString()) << " — "
+                      << qPrintable(qMeta.value(1).toString()) << " — "
+                      << qPrintable(qMeta.value(2).toString()) << "\n";
+        }
+    }
+    std::cout << "Search completed in " << elapsedMs << " ms (" << hits.size() << " results).\n";
+    return 0;
+}
+
+int runCli(const CliConfig &cfg)
+{
+    linernotes::library::Database db(cfg.dbPath);
+    const linernotes::library::Migrator migrator;
+    const auto openRes = db.open(migrator);
+    if (!openRes.ok()) {
+        std::cerr << "Database error: " << qPrintable(openRes.error().toString()) << "\n";
+        return 1;
+    }
+
+    if (!cfg.dirs.isEmpty()) {
+        const int scanExit = executeScan(db, cfg);
+        if (scanExit != 0) {
+            return scanExit;
+        }
+    }
+
+    if (cfg.searchQuery.has_value()) {
+        const int searchExit = executeSearch(db, cfg.searchQuery.value());
+        if (searchExit != 0) {
+            return searchExit;
+        }
+    }
+
     return 0;
 }
 

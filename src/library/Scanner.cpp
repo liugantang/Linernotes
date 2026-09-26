@@ -21,6 +21,7 @@
 #include <library/FileFingerprint.h>
 #include <library/LibraryLogging.h>
 #include <library/LibraryRoots.h>
+#include <library/SearchIndex.h>
 #include <library/TagReader.h>
 
 #include <algorithm>
@@ -979,6 +980,14 @@ core::Result<void> processWriterQueue(const QSqlDatabase &db,
         readDone++;
 
         if (batchCount >= batchSize) {
+            SearchIndex searchIndex(db);
+            const auto flushRes = searchIndex.flushDirty();
+            if (!flushRes.ok()) {
+                qCWarning(lcLibrary)
+                    << "Batch search index flush failed:" << flushRes.error().toString();
+                resultQueue.stop();
+                return flushRes.error();
+            }
             auto commitRes = tx->commit();
             if (!commitRes.ok()) {
                 qCWarning(lcLibrary) << "Batch commit failed:" << commitRes.error().toString();
@@ -1003,6 +1012,13 @@ core::Result<void> processWriterQueue(const QSqlDatabase &db,
     }
 
     if (tx && tx->isActive()) {
+        SearchIndex searchIndex(db);
+        const auto flushRes = searchIndex.flushDirty();
+        if (!flushRes.ok()) {
+            qCWarning(lcLibrary) << "Final batch search index flush failed:"
+                                 << flushRes.error().toString();
+            return flushRes.error();
+        }
         auto commitRes = tx->commit();
         if (!commitRes.ok()) {
             qCWarning(lcLibrary) << "Final batch commit failed:" << commitRes.error().toString();
@@ -1259,6 +1275,18 @@ core::Result<ScanStats> Scanner::doScan(const QStringList &dirs)
 
     if (filesToRead.isEmpty()) {
         cleanupOrphans();
+        {
+            Transaction tx(db);
+            SearchIndex searchIndex(db);
+            const auto flushRes = searchIndex.flushDirty();
+            if (flushRes.ok()) {
+                const auto commitRes = tx.commit();
+                if (!commitRes.ok()) {
+                    qCWarning(lcLibrary)
+                        << "Failed to commit search index flush:" << commitRes.error().toString();
+                }
+            }
+        }
         emit progress(ScanProgress {
             .phase = ScanProgress::Phase::Finishing,
             .done = 0,

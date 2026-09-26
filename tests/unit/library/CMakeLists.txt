@@ -77,3 +77,21 @@ linernotes_add_test(
         Linernotes::library
 )
 
+linernotes_add_test(
+    NAME library_SearchText
+    SOURCES
+        tst_SearchText.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
+    NAME library_SearchIndex
+    SOURCES
+        tst_SearchIndex.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+)
+

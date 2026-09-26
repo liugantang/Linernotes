@@ -19,6 +19,7 @@
 #include <library/LibraryRoots.h>
 #include <library/Migrator.h>
 #include <library/Scanner.h>
+#include <library/SearchIndex.h>
 
 namespace {
 
@@ -230,6 +231,23 @@ void TstScanner::firstScanAddsAllAudioFiles()
         while (q.next()) {
             QVERIFY(q.value(0).toString().startsWith(QStringLiteral("v1:")));
         }
+    }
+
+    // 6. search_dirty is empty and Chinese sample can be searched by pinyin initials
+    {
+        QSqlQuery q(qDb);
+        QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM search_dirty")));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 0);
+
+        const linernotes::library::SearchIndex searchIndex(qDb);
+        const auto searchRes = searchIndex.search(QStringLiteral("cxwg"));
+        QVERIFY(searchRes.ok());
+        QVERIFY(!searchRes.value().isEmpty());
+
+        const auto searchArtist = searchIndex.search(QStringLiteral("lxf"));
+        QVERIFY(searchArtist.ok());
+        QVERIFY(!searchArtist.value().isEmpty());
     }
 }
 

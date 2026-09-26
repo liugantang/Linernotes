@@ -117,6 +117,7 @@ private slots:
     void refreshTouchesOnlyAffectedTrack();
     void refreshQueryPlanUsesIndexes();
     void refreshScalesToLargeLibrary();
+    void migration0004SearchIndexAndDirty();
 };
 
 void TstSchema::migratesFreshDatabaseToLatest()
@@ -135,7 +136,7 @@ void TstSchema::migratesFreshDatabaseToLatest()
 
     const auto verRes = Migrator::currentVersion(conn);
     QVERIFY(verRes.ok());
-    QCOMPARE(verRes.value(), 3);
+    QCOMPARE(verRes.value(), 4);
 
     // Verify all required tables exist in sqlite_schema
     const QStringList expectedTables = {
@@ -164,6 +165,8 @@ void TstSchema::migratesFreshDatabaseToLatest()
         QStringLiteral("embeddings"),
         QStringLiteral("llm_cache"),
         QStringLiteral("change_log"),
+        QStringLiteral("search_index"),
+        QStringLiteral("search_dirty"),
         QStringLiteral("schema_version"),
     };
 
@@ -242,11 +245,11 @@ void TstSchema::stepwiseMigrationEqualsFresh()
     QVERIFY(TestDbHelper::insertRawTag(conn, trackId, QStringLiteral("id3v2"), 0,
         QStringLiteral("TRACKNUMBER"), 0, QStringLiteral("4/10")));
 
-    // Upgrade to latest using default Migrator (which includes 0001, 0002, 0003)
+    // Upgrade to latest using default Migrator (which includes 0001, 0002, 0003, 0004)
     const Migrator fullMigrator;
     const auto migRes = fullMigrator.migrate(conn);
     QVERIFY(migRes.ok());
-    QCOMPARE(Migrator::currentVersion(conn).value(), 3);
+    QCOMPARE(Migrator::currentVersion(conn).value(), 4);
 
     // Verify 0002 initial population filled effective_metadata for pre-existing track
     QSqlQuery q(conn);
@@ -260,6 +263,12 @@ void TstSchema::stepwiseMigrationEqualsFresh()
     QCOMPARE(q.value(2).toInt(), 2021);
     QCOMPARE(q.value(3).toInt(), 4);
     QCOMPARE(q.value(4).toInt(), 10);
+
+    // Verify 0004 migration marked pre-existing track as dirty
+    q.prepare(QStringLiteral("SELECT COUNT(*) FROM search_dirty WHERE track_id = ?;"));
+    q.addBindValue(trackId);
+    QVERIFY(q.exec() && q.next());
+    QCOMPARE(q.value(0).toInt(), 1);
 }
 
 void TstSchema::strictTablesRejectWrongTypes()
@@ -966,6 +975,67 @@ void TstSchema::refreshScalesToLargeLibrary()
     QCOMPARE(q.value(3).toString(), QStringLiteral("val_ALBUMARTIST_10500"));
     QCOMPARE(q.value(4).toString(), QStringLiteral("val_GENRE_10500"));
     QCOMPARE(q.value(5).toString(), QStringLiteral("val_COMPOSER_10500"));
+}
+
+void TstSchema::migration0004SearchIndexAndDirty()
+{
+    const QTemporaryDir stepMigDir;
+    QVERIFY(stepMigDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    // Copy migrations 0001, 0002, 0003 to stepMigDir
+    const QStringList baseMigs = {
+        QStringLiteral("0001_core_schema.sql"),
+        QStringLiteral("0002_metadata_layers.sql"),
+        QStringLiteral("0003_reserved_tables.sql"),
+    };
+    for (const auto &migName : baseMigs) {
+        QFile src(QStringLiteral(":/migrations/") + migName);
+        QVERIFY(src.open(QIODevice::ReadOnly | QIODevice::Text));
+        QFile dest(QDir(stepMigDir.path()).filePath(migName));
+        QVERIFY(dest.open(QIODevice::WriteOnly | QIODevice::Text));
+        dest.write(src.readAll());
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("v3_to_v4.db"));
+    Database db(dbPath);
+    const Migrator stepMigrator(stepMigDir.path());
+    QVERIFY(db.open(stepMigrator).ok());
+
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    QCOMPARE(Migrator::currentVersion(conn).value(), 3);
+
+    // Insert 2 tracks under v3
+    const qint64 rootId = TestDbHelper::insertRoot(conn);
+    const qint64 f1 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/m/1.mp3"));
+    const qint64 f2 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/m/2.mp3"));
+    const qint64 t1 = TestDbHelper::insertTrack(conn, f1, QVariant(), QVariant(), 100);
+    const qint64 t2 = TestDbHelper::insertTrack(conn, f2, QVariant(), QVariant(), 100);
+
+    QVERIFY(TestDbHelper::insertRawTag(conn, t1, QStringLiteral("id3v2"), 0,
+        QStringLiteral("TITLE"), 0, QStringLiteral("Title 1")));
+    QVERIFY(TestDbHelper::insertRawTag(conn, t2, QStringLiteral("id3v2"), 0,
+        QStringLiteral("TITLE"), 0, QStringLiteral("Title 2")));
+    QVERIFY(TestDbHelper::updateTagsReadAt(conn, t1, 200));
+    QVERIFY(TestDbHelper::updateTagsReadAt(conn, t2, 200));
+
+    // Migrate from v3 to v4 using full Migrator
+    const Migrator fullMigrator;
+    QVERIFY(fullMigrator.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 4);
+
+    // Verify search_dirty contains both tracks
+    QSqlQuery q(conn);
+    QVERIFY(q.exec(QStringLiteral("SELECT track_id FROM search_dirty ORDER BY track_id ASC;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toLongLong(), t1);
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toLongLong(), t2);
+    QVERIFY(!q.next());
 }
 
 } // namespace

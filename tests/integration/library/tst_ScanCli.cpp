@@ -34,6 +34,7 @@ private slots:
     void scanCliSuccessfulRun();
     void noArgumentsPrintsUsageAndReturns2();
     void scanCliWithCacheGeneratesThumbnails();
+    void scanCliWithSearchOption();
 };
 
 void TstScanCli::scanCliSuccessfulRun()
@@ -121,6 +122,56 @@ void TstScanCli::scanCliWithCacheGeneratesThumbnails()
         fileCount++;
     }
     QVERIFY(fileCount > 0);
+}
+
+void TstScanCli::scanCliWithSearchOption()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+
+    const QString musicDir = tempDir.filePath(QStringLiteral("music"));
+    copyDirContents(fixturePath(QStringLiteral("library")), musicDir);
+
+    const QString dbPath = tempDir.filePath(QStringLiteral("test_search.db"));
+
+    // 1. Scan and search in one command
+    {
+        QProcess proc;
+        proc.setProgram(QString::fromUtf8(SCANCLI_PATH));
+        proc.setArguments({ QStringLiteral("--db"), dbPath, QStringLiteral("--search"),
+            QStringLiteral("晨曦"), musicDir });
+        proc.start();
+
+        QVERIFY(proc.waitForFinished(30000));
+        QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
+        QCOMPARE(proc.exitCode(), 0);
+
+        const QString stdoutStr = QString::fromUtf8(proc.readAllStandardOutput());
+        QVERIFY2(stdoutStr.contains(QStringLiteral("Found")), "Expected 'Found' in output");
+        QVERIFY2(stdoutStr.contains(QStringLiteral("晨曦微光 — 林晓风 / 夜行者 — 山谷的回响")),
+            "Expected search result line in output");
+        QVERIFY2(stdoutStr.contains(QStringLiteral("Search completed in")),
+            "Expected 'Search completed in' in output");
+    }
+
+    // 2. Search only (without musicDir parameter)
+    {
+        QProcess proc;
+        proc.setProgram(QString::fromUtf8(SCANCLI_PATH));
+        proc.setArguments(
+            { QStringLiteral("--db"), dbPath, QStringLiteral("--search"), QStringLiteral("lxf") });
+        proc.start();
+
+        QVERIFY(proc.waitForFinished(30000));
+        QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
+        QCOMPARE(proc.exitCode(), 0);
+
+        const QString stdoutStr = QString::fromUtf8(proc.readAllStandardOutput());
+        QVERIFY2(stdoutStr.contains(QStringLiteral("晨曦微光 — 林晓风 / 夜行者 — 山谷的回响")),
+            "Expected pinyin search result line in output");
+        QVERIFY2(stdoutStr.contains(QStringLiteral("Search completed in")),
+            "Expected 'Search completed in' in output");
+    }
 }
 
 } // namespace
