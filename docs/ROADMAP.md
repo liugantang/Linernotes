@@ -108,9 +108,9 @@
 | # | 任务 |
 |---|---|
 | ✅ 2.1 | 数据库层：SQLite 连接管理（每线程一个连接）、WAL、`PRAGMA` 调优、**迁移框架**（`schema_version` + 有序 SQL 脚本） |
-| 2.2 | 核心表设计：`files`、`tracks`、`raw_tags`、`artists`、`artist_aliases`、`track_artists`（多对多 + 角色）、`albums`、`works`（作品，预留）、`playlists`、`playlist_items`、`favorites`、`covers` |
-| 2.3 | 元数据三层表：`raw_tags` / `corrections`（source、confidence、status、reason、batch_id）/ `user_overrides`；`effective_metadata` 视图或物化表 + 刷新触发 |
-| 2.4 | 预留表：`play_events`、`moments`、`audio_features`、`embeddings`、`llm_cache`、`change_log`（先建表，后面阶段填充） |
+| ✅ 2.2 | 核心表设计：`files`、`tracks`、`raw_tags`、`artists`、`artist_aliases`、`track_artists`（多对多 + 角色）、`albums`、`works`（作品，预留）、`playlists`、`playlist_items`、`favorites`、`covers` |
+| ✅ 2.3 | 元数据三层表：`raw_tags` / `corrections`（source、confidence、status、reason、batch_id）/ `user_overrides`；`effective_metadata` 视图或物化表 + 刷新触发 |
+| ✅ 2.4 | 预留表：`play_events`、`moments`、`audio_features`、`embeddings`、`llm_cache`、`change_log`（先建表，后面阶段填充） |
 | 2.5 | 扫描器：多根目录、排除规则、`QDirIterator` 递归；按 mtime+size 增量；删除检测 |
 | 2.6 | 标签读取：TagLib 读所有字段（含多值、MusicBrainz ID、ReplayGain、歌词、封面存在性）；**保留原始字节**以供乱码修复使用（ID3v1/ID3v2.3 Latin-1 字段） |
 | 2.7 | 并行扫描：`QThreadPool` 读标签，单写线程批量事务写入（每 500 条一个事务） |
