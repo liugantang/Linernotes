@@ -33,8 +33,14 @@ add_library(linernotes_library STATIC
     Migrator.h
     PlaylistStore.cpp
     PlaylistStore.h
+    ScanDiff.cpp
+    ScanDiff.h
     Scanner.cpp
     Scanner.h
+    ScanPipeline.cpp
+    ScanPipeline.h
+    ScanWriter.cpp
+    ScanWriter.h
     SearchIndex.cpp
     SearchIndex.h
     SearchText.cpp
