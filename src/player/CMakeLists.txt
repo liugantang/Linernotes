@@ -2,6 +2,10 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 add_library(linernotes_player STATIC
+    AudioOutput.cpp
+    AudioOutput.h
+    Ducker.cpp
+    Ducker.h
     GainRamp.cpp
     GainRamp.h
     MpvHandle.cpp

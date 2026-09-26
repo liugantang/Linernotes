@@ -3,23 +3,24 @@
 
 #pragma once
 
-#include <QElapsedTimer>
+#include <QHash>
 #include <QObject>
 #include <QSet>
 #include <QString>
-#include <QTimer>
 #include <QVariant>
 #include <QVariantList>
 
-#include <player/GainRamp.h>
+#include <player/AudioOutput.h>
+#include <player/Ducker.h>
 #include <player/MpvHandle.h>
+#include <player/PlayQueue.h>
 #include <player/PlaybackSnapshot.h>
 
 #include <cstdint>
+#include <optional>
 
 namespace linernotes::player {
 
-class PlayQueue;
 struct QueueItem;
 
 class Player : public QObject {
@@ -47,7 +48,7 @@ public:
     explicit Player(const MpvHandle::OptionList &extraOptions = { }, QObject *parent = nullptr);
     ~Player() override = default;
 
-    [[nodiscard]] PlayQueue *queue() const;
+    [[nodiscard]] PlayQueue *queue();
     [[nodiscard]] bool isValid() const;
     [[nodiscard]] PlaybackState state() const;
     [[nodiscard]] double position() const;
@@ -119,58 +120,45 @@ signals:
     void playbackFinished();
     /// 某项无法播放（文件不存在、格式无法识别/解码失败）。source 为该项路径，message
     /// 为可读原因（来自 mpv）。
-    void playbackError(const QString &source, const QString &message);
+    void playbackError(const QString &source, const QString &error);
 
 private slots:
-    void onDuckTimerTick();
+    void onPropertyChanged(const QString &name, const QVariant &value);
+    void onStartFile(qint64 entryId);
+    void onFileLoaded();
+    void onEndFile(qint64 entryId, MpvHandle::EndFileReason reason, const QString &error);
 
 private:
-    void onPropertyChanged(const QString &name, const QVariant &value);
     void handleIdleActiveChanged(const QVariant &value);
     void handlePauseChanged(const QVariant &value);
     void handleTimePosChanged(const QVariant &value);
     void handleDurationChanged(const QVariant &value);
     void handleVolumeChanged(const QVariant &value);
     void handleMuteChanged(const QVariant &value);
-    void handleAudioDeviceListChanged(const QVariant &value);
-    void handleAudioDeviceChanged(const QVariant &value);
-    void handleAudioExclusiveChanged(const QVariant &value);
     void updatePlaybackState();
 
-    void onStartFile(qint64 entryId);
-    void onFileLoaded();
-    void onAudioReconfigured();
-    void onEndFile(qint64 entryId, MpvHandle::EndFileReason reason, const QString &error);
     void handleEndFileError(qint64 entryId, const QString &failedSource, const QString &error);
     void onUpcomingChanged();
     void schedulePreloadSync();
     void syncPreload();
-    void loadCurrentItem(const QueueItem &item);
-    void loadItemPaused(const QueueItem &item, double startPosition);
+    void discardPreload(bool removeFromMpv);
+    void loadItem(const QueueItem &item, std::optional<double> pausedAt = std::nullopt);
+    void finishPlayback(bool emitFinished = true);
     [[nodiscard]] qint64 lastPlaylistEntryId() const;
-    void applyDuckGainToMpv();
-    [[nodiscard]] QString formattedDuckFilter(double gain) const;
 
-    MpvHandle *m_mpv = nullptr;
-    PlayQueue *m_queue = nullptr;
+    // 声明顺序即依赖顺序，析构逆序进行，依赖方先于被依赖方析构
+    MpvHandle m_mpv;
+    PlayQueue m_queue;
+    Ducker m_ducker;
+    AudioOutput m_audioOutput;
+
     PlaybackState m_state = PlaybackState::Stopped;
     double m_position = 0.0;
     double m_lastEmittedPosition = 0.0;
     double m_duration = 0.0;
     int m_volume = 100;
     bool m_muted = false;
-    double m_duckGain = 1.0;
-    double m_lastEmittedDuckGain = 1.0;
-    int m_duckApplyCount = 0;
-    GainRamp m_duckRamp;
-    QTimer m_duckTimer;
-    QElapsedTimer m_duckElapsedTimer;
     QString m_currentSource;
-    QString m_userAudioFilters;
-    QVariantList m_audioDevices;
-    QString m_audioDevice = QStringLiteral("auto");
-    bool m_audioDevicesRefreshed = false;
-    bool m_exclusiveMode = false;
     bool m_idleActive = true;
     bool m_pause = false;
 

@@ -7,7 +7,6 @@
 #include <QTest>
 
 #include <common/TestSupport.h>
-#include <player/MpvHandle.h>
 #include <player/PlayMode.h>
 #include <player/PlayQueue.h>
 #include <player/Player.h>
@@ -130,14 +129,21 @@ void TstPlayerQueue::repeatOneLoops()
     player.queue()->setItems({ { .source = p440 } });
     player.queue()->setMode(PlayMode::RepeatOne);
 
-    auto *mpv = player.findChild<linernotes::player::MpvHandle *>();
-    QVERIFY(mpv != nullptr);
-    QSignalSpy startFileSpy(mpv, &linernotes::player::MpvHandle::startFile);
+    bool reachedPastMidpoint = false;
+    bool loopedBack = false;
+
+    connect(&player, &Player::positionChanged, [&](double pos) {
+        if (pos > 0.5) {
+            reachedPastMidpoint = true;
+        } else if (reachedPastMidpoint && pos < 0.3) {
+            loopedBack = true;
+        }
+    });
 
     player.playIndex(0);
     QTRY_COMPARE_WITH_TIMEOUT(player.state(), Player::PlaybackState::Playing, 5000);
 
-    QTRY_VERIFY_WITH_TIMEOUT(startFileSpy.count() >= 2, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(loopedBack, 5000);
     QCOMPARE(player.currentSource(), p440);
     QCOMPARE(player.state(), Player::PlaybackState::Playing);
 }
