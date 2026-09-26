@@ -66,12 +66,12 @@ struct DbHelper {
         return q.lastInsertId().toLongLong();
     }
     static qint64 insertAlbum(
-        const QSqlDatabase &db, const QString &t, const QString &aa = QString())
+        const QSqlDatabase &db, const QString &t, const QVariant &aa = QVariant())
     {
         QSqlQuery q(db);
         q.prepare(QStringLiteral("INSERT INTO albums (grouping_key, title, album_artist, "
                                  "created_at) VALUES (?, ?, ?, 1)"));
-        q.addBindValue(QString(t + aa));
+        q.addBindValue(QString(t + aa.toString()));
         q.addBindValue(t);
         q.addBindValue(aa);
         execChecked(q);
@@ -216,7 +216,36 @@ private slots:
         QCOMPARE(artList.at(0).trackCount, 1);
         QCOMPARE(artList.at(0).coverHash, QStringLiteral("hash_abc"));
 
-        // 8. trackIds matches tracks() order
+        // 8. album_artist fallback
+        qint64 albNoArtist = DbHelper::insertAlbum(qDb, u"NoArtistAlbum"_s, QVariant());
+        qint64 f4 = DbHelper::insertFile(qDb, r, u"4.mp3"_s, 400);
+        qint64 t4 = DbHelper::insertTrack(qDb, f4, albNoArtist);
+        DbHelper::setMeta(qDb, t4, u"Track1"_s, u"FreqArtist"_s, u"NoArtistAlbum"_s, QVariant());
+
+        qint64 f5 = DbHelper::insertFile(qDb, r, u"5.mp3"_s, 500);
+        qint64 t5 = DbHelper::insertTrack(qDb, f5, albNoArtist);
+        DbHelper::setMeta(qDb, t5, u"Track2"_s, u"FreqArtist"_s, u"NoArtistAlbum"_s, QVariant());
+
+        qint64 f6 = DbHelper::insertFile(qDb, r, u"6.mp3"_s, 600);
+        qint64 t6 = DbHelper::insertTrack(qDb, f6, albNoArtist);
+        DbHelper::setMeta(qDb, t6, u"Track3"_s, u"OtherArtist"_s, u"NoArtistAlbum"_s, QVariant());
+
+        auto albListFallback
+            = q.albums({ }, AlbumSortKey::Title, Qt::AscendingOrder, 0, 10).value();
+        bool found = false;
+        for (const auto &a : albListFallback) {
+            if (a.title == u"NoArtistAlbum"_s) {
+                QCOMPARE(a.albumArtist, u"FreqArtist"_s);
+                found = true;
+            }
+        }
+        QVERIFY(found);
+
+        auto singleAlb = q.album(albNoArtist).value();
+        QVERIFY(singleAlb.has_value());
+        QCOMPARE(singleAlb.value_or(AlbumRow { }).albumArtist, u"FreqArtist"_s);
+
+        // 9. trackIds matches tracks() order
         auto allIdsAsc = q.trackIds({ }, TrackSortKey::Title, Qt::AscendingOrder).value();
         auto allTracksAsc = q.tracks({ }, TrackSortKey::Title, Qt::AscendingOrder, 0, 100).value();
         QList<qint64> expectedAsc;

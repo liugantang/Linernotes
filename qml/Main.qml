@@ -6,6 +6,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Linernotes
 import "pages"
+import "controls" as Controls
 
 ApplicationWindow {
     id: window
@@ -67,8 +68,9 @@ ApplicationWindow {
                         Layout.fillWidth: true
                     }
 
-                    ToolButton {
-                        text: sidePanel.collapsed ? qsTr("Show Panel (Ctrl+Alt+P)") : qsTr("Hide Panel (Ctrl+Alt+P)")
+                    Controls.IconButton {
+                        icon.source: sidePanel.collapsed ? "qrc:/qt/qml/Linernotes/icons/panel-right-open.svg" : "qrc:/qt/qml/Linernotes/icons/panel-right-close.svg"
+                        toolTip: sidePanel.collapsed ? qsTr("Show Panel (Ctrl+Alt+P)") : qsTr("Hide Panel (Ctrl+Alt+P)")
                         onClicked: sidePanel.collapsed = !sidePanel.collapsed
                     }
                 }

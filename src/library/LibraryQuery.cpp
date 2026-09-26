@@ -689,7 +689,11 @@ core::Result<QList<AlbumRow>> LibraryQuery::albums(
         "  ORDER BY %2 "
         "  LIMIT ? OFFSET ?"
         ") "
-        "SELECT p.id, p.title, p.album_artist, p.year, "
+        // Note: For album_artist fallback, we do not change the sort key (still sorts by physical
+        // album_artist in db) to preserve index scan performance.
+        "SELECT p.id, p.title, COALESCE(NULLIF(p.album_artist, ''), (SELECT ts.artist FROM "
+        "track_sort ts WHERE ts.album_id = p.id AND ts.visible = 1 GROUP BY ts.artist ORDER BY "
+        "COUNT(*) DESC, ts.artist ASC LIMIT 1)), p.year, "
         "(SELECT COUNT(*) FROM track_sort ts WHERE ts.album_id = p.id AND ts.visible = 1) AS "
         "track_count, "
         "(SELECT COALESCE(SUM(ts.duration_ms), 0) FROM track_sort ts WHERE ts.album_id = p.id AND "
@@ -735,7 +739,9 @@ core::Result<std::optional<AlbumRow>> LibraryQuery::album(qint64 albumId) const
     }
 
     const QString sql = QStringLiteral(
-        "SELECT a.id, a.title, a.album_artist, a.year, "
+        "SELECT a.id, a.title, COALESCE(NULLIF(a.album_artist, ''), (SELECT ts.artist FROM "
+        "track_sort ts WHERE ts.album_id = a.id AND ts.visible = 1 GROUP BY ts.artist ORDER BY "
+        "COUNT(*) DESC, ts.artist ASC LIMIT 1)), a.year, "
         "(SELECT COUNT(*) FROM track_sort ts WHERE ts.album_id = a.id AND ts.visible = 1) AS "
         "track_count, "
         "(SELECT COALESCE(SUM(ts.duration_ms), 0) FROM track_sort ts WHERE ts.album_id = a.id AND "

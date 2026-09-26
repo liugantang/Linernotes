@@ -3,6 +3,7 @@
 
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.impl
 import QtQuick.Layouts
 import Linernotes
 
@@ -17,11 +18,11 @@ Rectangle {
 
     ListModel {
         id: navModel
-        ListElement { pageId: "tracks"; title: qsTr("Tracks"); subtitle: "" }
-        ListElement { pageId: "albums"; title: qsTr("Albums"); subtitle: "" }
-        ListElement { pageId: "artists"; title: qsTr("Artists"); subtitle: "" }
-        ListElement { pageId: "playlists"; title: qsTr("Playlists"); subtitle: "" }
-        ListElement { pageId: "ai"; title: qsTr("AI"); subtitle: qsTr("Coming soon") }
+        ListElement { pageId: "tracks"; title: qsTr("Tracks"); iconSource: "library"; subtitle: "" }
+        ListElement { pageId: "albums"; title: qsTr("Albums"); iconSource: "disc-3"; subtitle: "" }
+        ListElement { pageId: "artists"; title: qsTr("Artists"); iconSource: "mic-vocal"; subtitle: "" }
+        ListElement { pageId: "playlists"; title: qsTr("Playlists"); iconSource: "list-music"; subtitle: "" }
+        ListElement { pageId: "ai"; title: qsTr("AI"); iconSource: "sparkles"; subtitle: qsTr("Coming soon") }
     }
 
     ColumnLayout {
@@ -62,9 +63,10 @@ Rectangle {
                 required property string pageId
                 required property string title
                 required property string subtitle
+                required property string iconSource
 
                 width: ListView.view.width
-                height: subtitle.length > 0 ? Theme.navItemHeightWithSubtitle : Theme.navItemHeight
+                height: Theme.navItemHeight
                 radius: 6
                 color: {
                     if (root.currentPage === pageId) {
@@ -86,13 +88,20 @@ Rectangle {
                     }
                 }
 
-                ColumnLayout {
+                RowLayout {
                     anchors.fill: parent
                     anchors.leftMargin: Theme.spacingMedium
                     anchors.rightMargin: Theme.spacingMedium
-                    anchors.topMargin: Theme.spacingSmall
-                    anchors.bottomMargin: Theme.spacingSmall
-                    spacing: 2
+                    spacing: Theme.spacingSmall
+
+                    // IconImage 与控件的 icon.color 同一套着色实现（单色 SVG 按 color 重新着色）
+                    IconImage {
+                        source: "icons/" + itemDelegate.iconSource + ".svg"
+                        Layout.preferredWidth: Theme.iconSize
+                        Layout.preferredHeight: Theme.iconSize
+                        sourceSize: Qt.size(Theme.iconSize, Theme.iconSize)
+                        color: root.currentPage === itemDelegate.pageId ? Theme.accent : Theme.text
+                    }
 
                     Label {
                         text: itemDelegate.title
@@ -102,12 +111,20 @@ Rectangle {
                         Layout.fillWidth: true
                     }
 
-                    Label {
+                    Rectangle {
                         visible: itemDelegate.subtitle.length > 0
-                        text: itemDelegate.subtitle
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.textSecondary
-                        Layout.fillWidth: true
+                        color: Theme.surfaceVariant
+                        radius: Theme.radiusSmall
+                        Layout.preferredHeight: subtitleLabel.implicitHeight + Theme.spacingTiny
+                        Layout.preferredWidth: subtitleLabel.implicitWidth + Theme.spacingSmall
+                        
+                        Label {
+                            id: subtitleLabel
+                            anchors.centerIn: parent
+                            text: itemDelegate.subtitle
+                            font.pixelSize: Theme.fontSizeSmall - 2
+                            color: Theme.textSecondary
+                        }
                     }
                 }
             }

@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
             qPrintable(startRes.error().toString()));
     }
 
-    QQuickStyle::setStyle(QStringLiteral("Fusion"));
+    QQuickStyle::setStyle(QStringLiteral("Basic"));
 
     int exitCode = 0;
     {

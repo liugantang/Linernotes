@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Linernotes
+import "controls" as Controls
 
 Item {
     id: root
@@ -74,8 +75,9 @@ Item {
             Layout.leftMargin: Theme.spacingMedium
             Layout.rightMargin: Theme.spacingMedium
 
-            ToolButton {
-                text: qsTr("← Back")
+            Controls.IconButton {
+                icon.source: "icons/arrow-left.svg"
+                toolTip: qsTr("Back")
                 onClicked: root.backRequested()
             }
 
@@ -165,14 +167,16 @@ Item {
                 RowLayout {
                     spacing: Theme.spacingMedium
 
-                    Button {
+                    Controls.AppButton {
                         text: qsTr("Play")
-                        highlighted: true
+                        primary: true
+                        icon.source: "icons/play.svg"
                         onClicked: root.playAlbum(false)
                     }
 
-                    Button {
+                    Controls.AppButton {
                         text: qsTr("Shuffle")
+                        icon.source: "icons/shuffle.svg"
                         onClicked: root.playAlbum(true)
                     }
                 }

@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Linernotes
+import "controls" as Controls
 
 Item {
     id: root
@@ -97,24 +98,25 @@ Item {
                 }
 
                 RowLayout {
-                    Button {
+                    Controls.AppButton {
                         text: qsTr("Play All")
-                        highlighted: true
+                        primary: true
+                        icon.source: "icons/play.svg"
                         onClicked: root.playAll()
                     }
                 }
             }
         }
 
-        TabBar {
+        Controls.AppTabBar {
             id: artistTabBar
             Layout.fillWidth: true
 
-            TabButton {
+            Controls.AppTabButton {
                 text: qsTr("Albums (%1)").arg(root.info ? (root.info.albumCount || 0) : 0)
             }
 
-            TabButton {
+            Controls.AppTabButton {
                 text: qsTr("All Tracks (%1)").arg(root.info ? (root.info.trackCount || 0) : 0)
             }
         }

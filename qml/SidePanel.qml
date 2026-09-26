@@ -6,6 +6,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtCore
 import Linernotes
+import "controls" as Controls
 
 Rectangle {
     id: root
@@ -27,20 +28,20 @@ Rectangle {
         anchors.fill: parent
         spacing: 0
 
-        TabBar {
+        Controls.AppTabBar {
             id: tabBar
             Layout.fillWidth: true
 
-            TabButton {
+            Controls.AppTabButton {
                 text: qsTr("Queue")
             }
-            TabButton {
+            Controls.AppTabButton {
                 text: qsTr("Lyrics")
             }
-            TabButton {
+            Controls.AppTabButton {
                 text: qsTr("Guide")
             }
-            TabButton {
+            Controls.AppTabButton {
                 text: qsTr("DJ")
             }
         }

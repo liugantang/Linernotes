@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Linernotes
+import "controls" as Controls
 
 Item {
     id: root
@@ -75,7 +76,7 @@ Item {
                 color: Theme.textSecondary
             }
 
-            ComboBox {
+            Controls.AppComboBox {
                 id: sortCombo
                 model: [
                     { text: qsTr("Title"), key: AlbumGridModel.Title },
@@ -92,8 +93,9 @@ Item {
                 }
             }
 
-            Button {
-                text: albumModel.sortOrder === Qt.AscendingOrder ? qsTr("Ascending ▲") : qsTr("Descending ▼")
+            Controls.IconButton {
+                icon.source: albumModel.sortOrder === Qt.AscendingOrder ? "icons/arrow-up-narrow-wide.svg" : "icons/arrow-down-wide-narrow.svg"
+                toolTip: albumModel.sortOrder === Qt.AscendingOrder ? qsTr("Ascending") : qsTr("Descending")
                 onClicked: {
                     albumModel.sortOrder = (albumModel.sortOrder === Qt.AscendingOrder)
                         ? Qt.DescendingOrder : Qt.AscendingOrder
@@ -143,9 +145,8 @@ Item {
 
                 readonly property int availableWidth: Math.max(100, width)
                 readonly property int columns: Math.max(1, Math.floor((availableWidth + Theme.spacingMedium) / (Theme.albumCardMinWidth + Theme.spacingMedium)))
-                readonly property int cardWidth: Math.max(80, Math.floor((availableWidth - ((columns - 1) * Theme.spacingMedium)) / columns))
-
-                cellWidth: cardWidth + Theme.spacingMedium
+                cellWidth: Math.floor(width / columns)
+                readonly property int cardWidth: cellWidth - Theme.spacingMedium
                 cellHeight: cardWidth + Theme.albumCardTextHeight + Theme.spacingMedium
 
                 Keys.onReturnPressed: (event) => { activateCurrent(); event.accepted = true; }
@@ -160,10 +161,15 @@ Item {
                     required property string albumArtist
                     required property string coverHash
 
-                    width: gridView.cardWidth
-                    height: gridView.cardWidth + Theme.albumCardTextHeight
+                    width: gridView.cellWidth
+                    height: gridView.cellHeight
 
-                    Rectangle {
+                    Item {
+                        width: gridView.cardWidth
+                        height: gridView.cardWidth + Theme.albumCardTextHeight
+                        anchors.centerIn: parent
+
+                        Rectangle {
                         id: cardBackground
                         anchors.fill: parent
                         radius: Theme.cardBorderRadius
@@ -279,6 +285,7 @@ Item {
                             gridView.currentIndex = cardDelegate.index
                             root.albumClicked(cardDelegate.albumId)
                         }
+                    }
                     }
                 }
             }

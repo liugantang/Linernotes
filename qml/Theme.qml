@@ -39,6 +39,14 @@ QtObject {
     readonly property int spacingLarge: 24
     readonly property int spacingExtraLarge: 32
 
+    readonly property int radiusSmall: 4
+    readonly property int radiusMedium: 6
+    readonly property int controlHeight: 32
+    readonly property int iconSize: 16
+    readonly property color accentText: "#ffffff"
+    readonly property color hoverOverlay: isDark ? Qt.rgba(1, 1, 1, 0.1) : Qt.rgba(0, 0, 0, 0.05)
+    readonly property color focusRing: isDark ? "#6689b4fa" : "#4d0066cc"
+
     // Window dimensions
     readonly property int windowDefaultWidth: 1200
     readonly property int windowDefaultHeight: 800
