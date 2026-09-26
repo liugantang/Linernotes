@@ -13,7 +13,8 @@
 # 步骤（按顺序执行，坐标为窗口内的物理像素）：
 #   shot:<名字>      截图保存为 <输出目录>/<名字>.png
 #   click:<x>,<y>    左键单击        dclick:<x>,<y>  双击
-#   move:<x>,<y>     鼠标移动（悬停）
+#   move:<x>,<y>     鼠标移动（悬停）  rclick:<x>,<y>  右键单击
+#   drag:<x1>,<y1>,<x2>,<y2>  按住左键从 (x1,y1) 拖到 (x2,y2)
 #   key:<按键>       xdotool 按键名，如 Return、Escape、ctrl+alt+p、Down
 #   type:<文本>      输入文本
 #   sleep:<秒>       等待
@@ -78,6 +79,13 @@ run_steps() {
             click) xdotool mousemove ${arg/,/ } click 1; sleep 0.5 ;;
             dclick) xdotool mousemove ${arg/,/ } click --repeat 2 --delay 80 1; sleep 0.5 ;;
             move) xdotool mousemove ${arg/,/ }; sleep 0.5 ;;
+            rclick) xdotool mousemove ${arg/,/ } click 3; sleep 0.5 ;;
+            drag) IFS=, read -r x1 y1 x2 y2 <<< "${arg}"
+                  xdotool mousemove "${x1}" "${y1}" mousedown 1; sleep 0.2
+                  for i in 1 2 3 4 5 6 7 8 9 10; do
+                      xdotool mousemove $((x1 + (x2 - x1) * i / 10)) $((y1 + (y2 - y1) * i / 10)); sleep 0.05
+                  done
+                  sleep 0.3; xdotool mouseup 1; sleep 0.5 ;;
             key) xdotool key --window "${win}" "${arg}"; sleep 0.5 ;;
             type) xdotool type --window "${win}" "${arg}"; sleep 0.5 ;;
             sleep) sleep "${arg}" ;;
