@@ -33,6 +33,10 @@ public:
     /// 结果按路径排序。遍历中途被取消 → 返回已收集的部分并置 *cancelled = true（可为空指针）。
     static QList<WalkedFile> walk(const QString &root, const QString &dir,
         const WalkOptions &options, bool *cancelled = nullptr);
+
+    /// 列出 root 下所有符合规则的目录（包含 root
+    /// 本身；跳过隐藏目录、不进入被排除目录、不跟随目录符号链接）。 结果按路径排序。
+    static QStringList listDirectories(const QString &root, const QStringList &excludes = { });
 };
 
 } // namespace linernotes::library

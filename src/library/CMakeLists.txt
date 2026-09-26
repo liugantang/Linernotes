@@ -15,10 +15,14 @@ add_library(linernotes_library STATIC
     Errors.h
     FileFingerprint.cpp
     FileFingerprint.h
+    FsType.cpp
+    FsType.h
     LibraryLogging.cpp
     LibraryLogging.h
     LibraryRoots.cpp
     LibraryRoots.h
+    LibraryWatcher.cpp
+    LibraryWatcher.h
     Migrator.cpp
     Migrator.h
     Scanner.cpp

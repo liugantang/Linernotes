@@ -95,3 +95,12 @@ linernotes_add_test(
         Linernotes::TestSupport
 )
 
+linernotes_add_test(
+    NAME library_FsType
+    SOURCES
+        tst_FsType.cpp
+    LIBS
+        Linernotes::library
+)
+
+

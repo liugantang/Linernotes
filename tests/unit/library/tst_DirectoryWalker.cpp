@@ -36,6 +36,7 @@ private slots:
     void unreadableSubdirIsSkippedWithWarning();
     void subDirWalkWithRootExcludes();
     void cancellationStopsTraversal();
+    void listDirectoriesCollectsValidDirectories();
 
 private:
     static void createFile(
@@ -367,6 +368,46 @@ void TstDirectoryWalker::cancellationStopsTraversal()
     const auto files = DirectoryWalker::walk(root, root, options, &cancelled);
     QVERIFY(cancelled);
     QVERIFY(files.size() < 3);
+}
+
+void TstDirectoryWalker::listDirectoriesCollectsValidDirectories()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+
+    const QString root = tempDir.path();
+    const QString sub1 = root + QStringLiteral("/sub1");
+    const QString sub2 = root + QStringLiteral("/sub2/nested");
+    const QString hiddenSub = root + QStringLiteral("/.hidden_sub");
+    const QString excludedSub = root + QStringLiteral("/excluded_sub");
+
+    QDir().mkpath(sub1);
+    QDir().mkpath(sub2);
+    QDir().mkpath(hiddenSub);
+    QDir().mkpath(excludedSub);
+
+    // Create a directory symlink loop
+    const QString loopLink = sub1 + QStringLiteral("/loop");
+    QVERIFY(QFile::link(root, loopLink));
+
+    const auto dirs = DirectoryWalker::listDirectories(
+        root, { QStringLiteral("excluded_sub/*"), QStringLiteral("excluded_sub") });
+
+    const QString cleanRoot = QDir::cleanPath(root);
+    const QString cleanSub1 = QDir::cleanPath(sub1);
+    const QString cleanSub2Parent = QDir::cleanPath(root + QStringLiteral("/sub2"));
+    const QString cleanSub2 = QDir::cleanPath(sub2);
+
+    QCOMPARE(dirs.size(), 4);
+    QCOMPARE(dirs.at(0), cleanRoot);
+    QCOMPARE(dirs.at(1), cleanSub1);
+    QCOMPARE(dirs.at(2), cleanSub2Parent);
+    QCOMPARE(dirs.at(3), cleanSub2);
+
+    // Non-existent root returns empty
+    const auto emptyDirs
+        = DirectoryWalker::listDirectories(root + QStringLiteral("/non_existent_12345"));
+    QVERIFY(emptyDirs.isEmpty());
 }
 
 } // namespace

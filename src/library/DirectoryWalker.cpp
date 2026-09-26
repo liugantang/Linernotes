@@ -219,4 +219,55 @@ QList<WalkedFile> DirectoryWalker::walk(
     return result;
 }
 
+QStringList DirectoryWalker::listDirectories(const QString &root, const QStringList &excludes)
+{
+    const QString cleanRoot = cleanDirectoryPath(root);
+    const QFileInfo rootDirInfo(cleanRoot);
+    if (!rootDirInfo.exists() || !rootDirInfo.isDir()) {
+        return { };
+    }
+
+    const auto compiledExcludes = compileExcludes(excludes);
+    QStringList result;
+    result.append(cleanRoot);
+
+    std::vector<QString> dirsToVisit;
+    dirsToVisit.push_back(cleanRoot);
+
+    while (!dirsToVisit.empty()) {
+        const QString currentDir = std::move(dirsToVisit.back());
+        dirsToVisit.pop_back();
+
+        const QFileInfo currentDirInfo(currentDir);
+        if (!currentDirInfo.isReadable()) {
+            qCWarning(lcLibrary) << "Cannot read directory (permission denied):" << currentDir;
+            continue;
+        }
+
+        const QDir dirObj(currentDir);
+        const QFileInfoList entries = dirObj.entryInfoList(
+            QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System, QDir::Name);
+
+        for (const auto &entry : entries) {
+            if (entry.fileName().startsWith(u'.')) {
+                continue;
+            }
+            if (entry.isSymLink() && entry.isDir()) {
+                continue; // Do not follow directory symlinks
+            }
+            if (entry.isDir()) {
+                const QString absPath = entry.absoluteFilePath();
+                const QString relPath = getRelPath(cleanRoot, absPath);
+                if (!isDirExcluded(relPath, compiledExcludes)) {
+                    result.append(absPath);
+                    dirsToVisit.push_back(absPath);
+                }
+            }
+        }
+    }
+
+    std::ranges::sort(result);
+    return result;
+}
+
 } // namespace linernotes::library

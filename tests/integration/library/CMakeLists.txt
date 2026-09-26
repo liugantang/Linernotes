@@ -15,6 +15,20 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME library_LibraryWatcher
+    SOURCES
+        tst_LibraryWatcher.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+    LABELS
+        integration
+    TIMEOUT
+        120
+)
+
+
+linernotes_add_test(
     NAME library_ScanCli
     SOURCES
         tst_ScanCli.cpp
