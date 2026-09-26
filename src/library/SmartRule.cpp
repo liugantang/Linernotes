@@ -9,6 +9,7 @@
 #include <QJsonValue>
 #include <QMetaEnum>
 
+#include <library/EnumNames.h>
 #include <library/Errors.h>
 #include <library/LibraryQuery.h>
 
@@ -23,19 +24,6 @@ core::Error ruleError(const QString &message, const QString &detail = QString())
         .message = message,
         .detail = detail,
     };
-}
-
-/// 按名字反查枚举值：遍历 Q_ENUM_NS 登记的全部取值，与 toJson 用的名字函数比对，保证两个方向一致。
-template <typename E> std::optional<E> enumFromName(const QString &name, QString (*nameOf)(E))
-{
-    const QMetaEnum meta = QMetaEnum::fromType<E>();
-    for (int i = 0; i < meta.keyCount(); ++i) {
-        const auto value = static_cast<E>(meta.value(i));
-        if (nameOf(value) == name) {
-            return value;
-        }
-    }
-    return std::nullopt;
 }
 
 QString smartFieldName(SmartField f)
@@ -127,14 +115,15 @@ QString trackSortKeyName(TrackSortKey k)
 
 core::Result<SmartCondition> parseCondition(const QJsonObject &cObj)
 {
-    const auto fieldOpt
-        = enumFromName(cObj.value(QStringLiteral("field")).toString(), smartFieldName);
+    const auto fieldOpt = detail::enumFromName<SmartField>(
+        cObj.value(QStringLiteral("field")).toString(), smartFieldName);
     if (!fieldOpt.has_value()) {
         return ruleError(QStringLiteral("Unknown smart rule field"),
             cObj.value(QStringLiteral("field")).toString());
     }
 
-    const auto opOpt = enumFromName(cObj.value(QStringLiteral("op")).toString(), smartOpName);
+    const auto opOpt
+        = detail::enumFromName<SmartOp>(cObj.value(QStringLiteral("op")).toString(), smartOpName);
     if (!opOpt.has_value()) {
         return ruleError(QStringLiteral("Unknown smart rule operator"),
             cObj.value(QStringLiteral("op")).toString());
@@ -373,8 +362,8 @@ core::Result<SmartRule> SmartRule::fromJson(const QString &json)
     rule.conditions = condsRes.value();
 
     if (root.contains(QStringLiteral("sortKey"))) {
-        const auto keyOpt
-            = enumFromName(root.value(QStringLiteral("sortKey")).toString(), trackSortKeyName);
+        const auto keyOpt = detail::enumFromName<TrackSortKey>(
+            root.value(QStringLiteral("sortKey")).toString(), trackSortKeyName);
         if (!keyOpt.has_value()) {
             return ruleError(QStringLiteral("Unknown or invalid sort key in smart rule"),
                 root.value(QStringLiteral("sortKey")).toString());

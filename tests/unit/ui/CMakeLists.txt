@@ -132,3 +132,14 @@ linernotes_add_test(
         Linernotes::TestSupport
         Qt6::Sql
 )
+
+linernotes_add_test(
+    NAME ui_TagEditorModel
+    SOURCES
+        tst_TagEditorModel.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Sql
+)

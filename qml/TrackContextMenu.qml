@@ -39,6 +39,10 @@ Controls.AppMenu {
         }
     }
 
+    TagEditorDialog {
+        id: tagEditorDialog
+    }
+
     Controls.AppMenuItem {
         text: qsTr("Play")
         onTriggered: {
@@ -206,6 +210,9 @@ Controls.AppMenu {
 
     Controls.AppMenuItem {
         text: qsTr("Edit Tags...")
-        enabled: false
+        enabled: root.trackIds.length > 0
+        onTriggered: {
+            tagEditorDialog.openForTracks(root.trackIds)
+        }
     }
 }

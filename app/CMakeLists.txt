@@ -213,6 +213,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS SmartRuleDialog.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/TagEditorDialog.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS TagEditorDialog.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/QueueRow.qml
     PROPERTIES
         QT_RESOURCE_ALIAS QueueRow.qml
@@ -428,6 +433,11 @@ set_source_files_properties(
     PROPERTIES
         QT_RESOURCE_ALIAS icons/star-filled.svg
 )
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/resources/icons/rotate-ccw.svg
+    PROPERTIES
+        QT_RESOURCE_ALIAS icons/rotate-ccw.svg
+)
 
 qt_add_qml_module(linernotes
     URI Linernotes
@@ -461,6 +471,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/SmartConditionRow.qml
         ${CMAKE_SOURCE_DIR}/qml/SmartRuleSortRow.qml
         ${CMAKE_SOURCE_DIR}/qml/SmartRuleDialog.qml
+        ${CMAKE_SOURCE_DIR}/qml/TagEditorDialog.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumGrid.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumDetail.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumTrackRow.qml
@@ -504,6 +515,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/resources/icons/list-plus.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/repeat.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/repeat-1.svg
+        ${CMAKE_SOURCE_DIR}/resources/icons/rotate-ccw.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/search.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/settings.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/sparkles.svg

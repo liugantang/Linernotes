@@ -12,6 +12,7 @@ add_library(linernotes_library STATIC
     DirectoryWalker.h
     EntityLinker.cpp
     EntityLinker.h
+    EnumNames.h
     Errors.h
     FileFingerprint.cpp
     FileFingerprint.h
@@ -33,6 +34,8 @@ add_library(linernotes_library STATIC
     MarkStore.h
     Migrator.cpp
     Migrator.h
+    OverrideStore.cpp
+    OverrideStore.h
     PlaylistStore.cpp
     PlaylistStore.h
     ScanDiff.cpp

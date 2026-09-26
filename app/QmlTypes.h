@@ -25,6 +25,7 @@
 #include <ui/RowSelection.h>
 #include <ui/SearchController.h>
 #include <ui/SettingsController.h>
+#include <ui/TagEditorModel.h>
 #include <ui/TrackListModel.h>
 
 struct AppContextForeign {
@@ -132,6 +133,13 @@ struct SettingsControllerForeign {
     QML_FOREIGN(linernotes::ui::SettingsController)
     QML_NAMED_ELEMENT(SettingsController)
     QML_UNCREATABLE("SettingsController is managed by AppContext")
+};
+
+struct TagEditorModelForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::TagEditorModel)
+    QML_NAMED_ELEMENT(TagEditorModel)
+    QML_UNCREATABLE("TagEditorModel is managed by AppContext")
 };
 
 struct LibraryRootsModelForeign {

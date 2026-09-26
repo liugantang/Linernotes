@@ -37,6 +37,8 @@ add_library(linernotes_ui STATIC
     SearchController.h
     SettingsController.cpp
     SettingsController.h
+    TagEditorModel.cpp
+    TagEditorModel.h
     TrackListModel.cpp
     TrackListModel.h
     UiLogging.cpp

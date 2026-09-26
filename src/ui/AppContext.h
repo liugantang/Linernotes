@@ -21,6 +21,7 @@
 #include <ui/QueueModel.h>
 #include <ui/SearchController.h>
 #include <ui/SettingsController.h>
+#include <ui/TagEditorModel.h>
 
 #include <memory>
 
@@ -54,6 +55,7 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::LibraryActions *actions READ actions CONSTANT)
     Q_PROPERTY(linernotes::ui::SettingsController *settings READ settings CONSTANT)
     Q_PROPERTY(linernotes::ui::LibraryRootsModel *libraryRoots READ libraryRoots CONSTANT)
+    Q_PROPERTY(linernotes::ui::TagEditorModel *tagEditor READ tagEditor CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
     Q_PROPERTY(QString startupError READ startupError NOTIFY startupErrorChanged)
     Q_PROPERTY(bool scanning READ isScanning NOTIFY scanningChanged)
@@ -91,6 +93,7 @@ public:
     [[nodiscard]] MarksController *marks();
     [[nodiscard]] SettingsController *settings();
     [[nodiscard]] LibraryRootsModel *libraryRoots();
+    [[nodiscard]] TagEditorModel *tagEditor();
     [[nodiscard]] library::Database &database();
     [[nodiscard]] const library::Database &database() const;
     [[nodiscard]] library::CoverStore *coverStore();
@@ -111,6 +114,7 @@ private:
     core::Settings &m_settings;
     Options m_options;
     library::Database m_db;
+    TagEditorModel m_tagEditor;
     LibraryRootsModel m_roots;
     MarksController m_marks;
     player::Player m_player;

@@ -12,7 +12,7 @@ TextField {
     implicitWidth: 200
 
     font.pixelSize: Theme.fontSizeNormal
-    color: Theme.text
+    color: control.enabled ? Theme.text : Theme.textSecondary
     selectedTextColor: Theme.accentText
     selectionColor: Theme.accent
     placeholderTextColor: Theme.textSecondary
@@ -22,9 +22,9 @@ TextField {
     rightPadding: Theme.spacingSmall
 
     background: Rectangle {
-        color: Theme.surfaceVariant
+        color: control.enabled ? Theme.surfaceVariant : Theme.divider
         radius: Theme.radiusMedium
-        border.color: control.activeFocus ? Theme.accent : "transparent"
+        border.color: (control.enabled && control.activeFocus) ? Theme.accent : "transparent"
         border.width: 1
     }
 }

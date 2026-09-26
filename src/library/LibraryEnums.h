@@ -18,6 +18,21 @@ Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
 enum class FavoriteKind : std::uint8_t { Track, Album, Artist };
 Q_ENUM_NS(FavoriteKind)
 
+enum class TagField : std::uint8_t {
+    Title,
+    Artist,
+    Album,
+    AlbumArtist,
+    Genre,
+    Composer,
+    Year,
+    TrackNumber,
+    TrackTotal,
+    DiscNumber,
+    DiscTotal
+};
+Q_ENUM_NS(TagField)
+
 enum class TrackSortKey : std::uint8_t {
     Default,
     Title,

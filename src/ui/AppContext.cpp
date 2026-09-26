@@ -29,6 +29,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_settings(settings)
     , m_options(std::move(options))
     , m_db(m_options.databasePath)
+    , m_tagEditor(m_db)
     , m_roots(m_db)
     , m_marks(m_db)
     , m_player(m_options.playerOptions)
@@ -42,6 +43,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
 {
     connect(this, &AppContext::libraryChanged, &m_nowPlaying, &NowPlaying::refresh);
     connect(&m_marks, &MarksController::marksChanged, &m_nowPlaying, &NowPlaying::refresh);
+    connect(&m_tagEditor, &TagEditorModel::saved, this, &AppContext::libraryChanged);
     connect(this, &AppContext::libraryChanged, &m_queueModel, &QueueModel::refresh);
     connect(this, &AppContext::libraryChanged, &m_search, &SearchController::refresh);
     connect(this, &AppContext::libraryChanged, &m_playlists, &PlaylistController::refresh);
@@ -212,6 +214,11 @@ SettingsController *AppContext::settings()
 LibraryRootsModel *AppContext::libraryRoots()
 {
     return &m_roots;
+}
+
+TagEditorModel *AppContext::tagEditor()
+{
+    return &m_tagEditor;
 }
 
 library::Database &AppContext::database()
