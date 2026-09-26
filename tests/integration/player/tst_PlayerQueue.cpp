@@ -146,9 +146,7 @@ void TstPlayerQueue::mpvPlaylistNeverExceedsTwoEntries()
     int maxPlaylistCount = 0;
     connect(player.queue(), &PlayQueue::currentIndexChanged, [&]() {
         const int cnt = player.mpvPlaylistCount();
-        if (cnt > maxPlaylistCount) {
-            maxPlaylistCount = cnt;
-        }
+        maxPlaylistCount = std::max(cnt, maxPlaylistCount);
         QVERIFY(cnt <= 2);
     });
 

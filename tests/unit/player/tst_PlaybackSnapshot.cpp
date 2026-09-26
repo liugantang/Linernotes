@@ -105,6 +105,9 @@ void TstPlaybackSnapshot::toJsonAndFromJsonRoundTrip()
 
     const auto restored = PlaybackSnapshot::fromJson(json);
     QVERIFY(restored.has_value());
+    if (!restored) {
+        return;
+    }
     QCOMPARE(restored.value(), snapshot);
 }
 
@@ -115,6 +118,9 @@ void TstPlaybackSnapshot::missingFieldsUseDefaults()
 
     const auto result = PlaybackSnapshot::fromJson(json);
     QVERIFY(result.has_value());
+    if (!result) {
+        return;
+    }
 
     const PlaybackSnapshot &snap = *result;
     QVERIFY(snap.items.isEmpty());
@@ -287,6 +293,9 @@ void TstPlaybackSnapshot::boundaryValueCorrections()
 
         const auto snap = PlaybackSnapshot::fromJson(j);
         QVERIFY(snap.has_value());
+        if (!snap) {
+            return;
+        }
         QCOMPARE(snap->currentIndex, -1);
     }
 
@@ -297,6 +306,9 @@ void TstPlaybackSnapshot::boundaryValueCorrections()
 
         const auto snap = PlaybackSnapshot::fromJson(j);
         QVERIFY(snap.has_value());
+        if (!snap) {
+            return;
+        }
         QCOMPARE(snap->currentIndex, -1);
     }
 
@@ -308,6 +320,9 @@ void TstPlaybackSnapshot::boundaryValueCorrections()
 
         const auto snap = PlaybackSnapshot::fromJson(j);
         QVERIFY(snap.has_value());
+        if (!snap) {
+            return;
+        }
         QCOMPARE(snap->position, 0.0);
     }
 
@@ -319,6 +334,9 @@ void TstPlaybackSnapshot::boundaryValueCorrections()
 
         const auto snap = PlaybackSnapshot::fromJson(j);
         QVERIFY(snap.has_value());
+        if (!snap) {
+            return;
+        }
         QCOMPARE(snap->volume, 100);
     }
 
@@ -329,6 +347,9 @@ void TstPlaybackSnapshot::boundaryValueCorrections()
 
         const auto snap = PlaybackSnapshot::fromJson(j);
         QVERIFY(snap.has_value());
+        if (!snap) {
+            return;
+        }
         QCOMPARE(snap->volume, 0);
     }
 }
@@ -358,6 +379,9 @@ void TstPlaybackSnapshot::stateStoreSaveAndLoad()
 
     const auto loaded = store.load();
     QVERIFY(loaded.has_value());
+    if (!loaded) {
+        return;
+    }
     QCOMPARE(loaded.value(), snap);
 }
 

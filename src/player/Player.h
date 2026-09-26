@@ -134,6 +134,7 @@ private:
     void onFileLoaded();
     void onAudioReconfigured();
     void onEndFile(qint64 entryId, MpvHandle::EndFileReason reason, const QString &error);
+    void handleEndFileError(qint64 entryId, const QString &failedSource, const QString &error);
     void onUpcomingChanged();
     void schedulePreloadSync();
     void syncPreload();

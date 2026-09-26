@@ -41,7 +41,7 @@ private slots:
 void TstPlayQueue::modelEditingAndDataRoles()
 {
     PlayQueue queue(42);
-    auto *tester = new QAbstractItemModelTester(
+    QAbstractItemModelTester tester(
         &queue, QAbstractItemModelTester::FailureReportingMode::QtTest, &queue);
     Q_UNUSED(tester);
 
@@ -120,7 +120,7 @@ void TstPlayQueue::modelEditingAndDataRoles()
 void TstPlayQueue::uidBehavior()
 {
     PlayQueue queue(42);
-    auto *tester = new QAbstractItemModelTester(
+    QAbstractItemModelTester tester(
         &queue, QAbstractItemModelTester::FailureReportingMode::QtTest, &queue);
     Q_UNUSED(tester);
 
@@ -162,7 +162,7 @@ void TstPlayQueue::uidBehavior()
 void TstPlayQueue::currentIndexTrackingOnModelChanges()
 {
     PlayQueue queue(42);
-    auto *tester = new QAbstractItemModelTester(
+    QAbstractItemModelTester tester(
         &queue, QAbstractItemModelTester::FailureReportingMode::QtTest, &queue);
     Q_UNUSED(tester);
 
@@ -172,21 +172,36 @@ void TstPlayQueue::currentIndexTrackingOnModelChanges()
     queue.setItems(items, -1);
     queue.jumpTo(2); // Current is s2 at index 2
     QCOMPARE(queue.currentIndex(), 2);
-    QCOMPARE(queue.currentItem()->source, QStringLiteral("s2"));
+    const auto cur0 = queue.currentItem();
+    QVERIFY(cur0.has_value());
+    if (!cur0) {
+        return;
+    }
+    QCOMPARE(cur0->source, QStringLiteral("s2"));
 
     QSignalSpy currentSpy(&queue, &PlayQueue::currentIndexChanged);
 
     // 1. Insert before current (at 0, 2 items)
     queue.insert(0, { { .source = QStringLiteral("x0") }, { .source = QStringLiteral("x1") } });
     QCOMPARE(queue.currentIndex(), 4);
-    QCOMPARE(queue.currentItem()->source, QStringLiteral("s2"));
+    const auto cur1 = queue.currentItem();
+    QVERIFY(cur1.has_value());
+    if (!cur1) {
+        return;
+    }
+    QCOMPARE(cur1->source, QStringLiteral("s2"));
     QCOMPARE(currentSpy.count(), 1);
     QCOMPARE(currentSpy.takeFirst().at(0).toInt(), 4);
 
     // 2. Insert after current (at 5, 2 items)
     queue.insert(5, { { .source = QStringLiteral("y0") }, { .source = QStringLiteral("y1") } });
     QCOMPARE(queue.currentIndex(), 4);
-    QCOMPARE(queue.currentItem()->source, QStringLiteral("s2"));
+    const auto cur2 = queue.currentItem();
+    QVERIFY(cur2.has_value());
+    if (!cur2) {
+        return;
+    }
+    QCOMPARE(cur2->source, QStringLiteral("s2"));
     QCOMPARE(currentSpy.count(), 0);
 
     // 3. Move before current (row 0 to row 1)
@@ -197,21 +212,36 @@ void TstPlayQueue::currentIndexTrackingOnModelChanges()
     // 4. Move after current to before current (row 8 to row 0)
     queue.move(8, 0);
     QCOMPARE(queue.currentIndex(), 5);
-    QCOMPARE(queue.currentItem()->source, QStringLiteral("s2"));
+    const auto cur3 = queue.currentItem();
+    QVERIFY(cur3.has_value());
+    if (!cur3) {
+        return;
+    }
+    QCOMPARE(cur3->source, QStringLiteral("s2"));
     QCOMPARE(currentSpy.count(), 1);
     QCOMPARE(currentSpy.takeFirst().at(0).toInt(), 5);
 
     // 5. Move current item itself (row 5 to row 1)
     queue.move(5, 1);
     QCOMPARE(queue.currentIndex(), 1);
-    QCOMPARE(queue.currentItem()->source, QStringLiteral("s2"));
+    const auto cur4 = queue.currentItem();
+    QVERIFY(cur4.has_value());
+    if (!cur4) {
+        return;
+    }
+    QCOMPARE(cur4->source, QStringLiteral("s2"));
     QCOMPARE(currentSpy.count(), 1);
     QCOMPARE(currentSpy.takeFirst().at(0).toInt(), 1);
 
     // 6. Remove before current (row 0)
     queue.remove(0, 1);
     QCOMPARE(queue.currentIndex(), 0);
-    QCOMPARE(queue.currentItem()->source, QStringLiteral("s2"));
+    const auto cur5 = queue.currentItem();
+    QVERIFY(cur5.has_value());
+    if (!cur5) {
+        return;
+    }
+    QCOMPARE(cur5->source, QStringLiteral("s2"));
     QCOMPARE(currentSpy.count(), 1);
     QCOMPARE(currentSpy.takeFirst().at(0).toInt(), 0);
 
@@ -226,6 +256,9 @@ void TstPlayQueue::currentIndexTrackingOnModelChanges()
     // Advance(Auto) should now return the track originally following the deleted current track
     const auto adv = queue.advance(PlayOrder::Advance::Auto);
     QVERIFY(adv.has_value());
+    if (!adv) {
+        return;
+    }
     QCOMPARE(adv->source, nextExpectedSource);
     QCOMPARE(queue.currentIndex(), 0);
 }
@@ -235,7 +268,7 @@ void TstPlayQueue::insertNextBehavior()
     // 1. Sequential mode: insertNext when unstarted (current == -1)
     {
         PlayQueue queue(42);
-        auto *tester = new QAbstractItemModelTester(
+        QAbstractItemModelTester tester(
             &queue, QAbstractItemModelTester::FailureReportingMode::QtTest, &queue);
         Q_UNUSED(tester);
 
@@ -246,17 +279,23 @@ void TstPlayQueue::insertNextBehavior()
 
         const auto first = queue.advance(PlayOrder::Advance::Auto);
         QVERIFY(first.has_value());
+        if (!first) {
+            return;
+        }
         QCOMPARE(first->source, QStringLiteral("a.mp3"));
 
         const auto second = queue.advance(PlayOrder::Advance::Auto);
         QVERIFY(second.has_value());
+        if (!second) {
+            return;
+        }
         QCOMPARE(second->source, QStringLiteral("b.mp3"));
     }
 
     // 2. Sequential mode: insertNext mid-playback
     {
         PlayQueue queue(42);
-        auto *tester = new QAbstractItemModelTester(
+        QAbstractItemModelTester tester(
             &queue, QAbstractItemModelTester::FailureReportingMode::QtTest, &queue);
         Q_UNUSED(tester);
 
@@ -276,21 +315,30 @@ void TstPlayQueue::insertNextBehavior()
 
         const auto n1 = queue.advance(PlayOrder::Advance::Auto);
         QVERIFY(n1.has_value());
+        if (!n1) {
+            return;
+        }
         QCOMPARE(n1->source, QStringLiteral("nextA"));
 
         const auto n2 = queue.advance(PlayOrder::Advance::Auto);
         QVERIFY(n2.has_value());
+        if (!n2) {
+            return;
+        }
         QCOMPARE(n2->source, QStringLiteral("nextB"));
 
         const auto n3 = queue.advance(PlayOrder::Advance::Auto);
         QVERIFY(n3.has_value());
+        if (!n3) {
+            return;
+        }
         QCOMPARE(n3->source, QStringLiteral("s1"));
     }
 
     // 3. Shuffle mode across multiple seeds
     for (const quint64 seed : { 1ULL, 42ULL, 987654ULL }) {
         PlayQueue queue(seed);
-        auto *tester = new QAbstractItemModelTester(
+        QAbstractItemModelTester tester(
             &queue, QAbstractItemModelTester::FailureReportingMode::QtTest, &queue);
         Q_UNUSED(tester);
 
@@ -304,6 +352,9 @@ void TstPlayQueue::insertNextBehavior()
         const auto s1 = queue.advance(PlayOrder::Advance::Auto);
         QVERIFY(s0.has_value());
         QVERIFY(s1.has_value());
+        if (!s0 || !s1) {
+            return;
+        }
 
         // Insert next two songs
         queue.insertNext(
@@ -312,10 +363,16 @@ void TstPlayQueue::insertNextBehavior()
         // Next two advances must strictly return nextA then nextB
         const auto advA = queue.advance(PlayOrder::Advance::Auto);
         QVERIFY(advA.has_value());
+        if (!advA) {
+            return;
+        }
         QCOMPARE(advA->source, QStringLiteral("nextA"));
 
         const auto advB = queue.advance(PlayOrder::Advance::Auto);
         QVERIFY(advB.has_value());
+        if (!advB) {
+            return;
+        }
         QCOMPARE(advB->source, QStringLiteral("nextB"));
 
         // Remaining 3 advances must visit the 3 remaining original songs
@@ -328,6 +385,9 @@ void TstPlayQueue::insertNextBehavior()
         for (int i = 0; i < 3; ++i) {
             const auto adv = queue.advance(PlayOrder::Advance::Auto);
             QVERIFY(adv.has_value());
+            if (!adv) {
+                return;
+            }
             allVisited.insert(adv->source);
         }
 
@@ -345,7 +405,7 @@ void TstPlayQueue::insertNextBehavior()
 void TstPlayQueue::navigationBehavior()
 {
     PlayQueue queue(42);
-    auto *tester = new QAbstractItemModelTester(
+    QAbstractItemModelTester tester(
         &queue, QAbstractItemModelTester::FailureReportingMode::QtTest, &queue);
     Q_UNUSED(tester);
 
@@ -372,6 +432,9 @@ void TstPlayQueue::navigationBehavior()
     // 3. jumpTo
     const auto jumped = queue.jumpTo(3);
     QVERIFY(jumped.has_value());
+    if (!jumped) {
+        return;
+    }
     QCOMPARE(jumped->source, QStringLiteral("s3"));
     QCOMPARE(queue.currentIndex(), 3);
 
@@ -384,7 +447,7 @@ void TstPlayQueue::navigationBehavior()
 void TstPlayQueue::upcomingChangedAndModeChangedSignals()
 {
     PlayQueue queue(42);
-    auto *tester = new QAbstractItemModelTester(
+    QAbstractItemModelTester tester(
         &queue, QAbstractItemModelTester::FailureReportingMode::QtTest, &queue);
     Q_UNUSED(tester);
 
@@ -466,7 +529,7 @@ void TstPlayQueue::upcomingChangedAndModeChangedSignals()
 void TstPlayQueue::isCurrentRoleDataChanged()
 {
     PlayQueue queue(42);
-    auto *tester = new QAbstractItemModelTester(
+    QAbstractItemModelTester tester(
         &queue, QAbstractItemModelTester::FailureReportingMode::QtTest, &queue);
     Q_UNUSED(tester);
 

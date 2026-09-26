@@ -20,7 +20,6 @@ using linernotes::player::PlaybackSnapshot;
 using linernotes::player::PlaybackStateStore;
 using linernotes::player::Player;
 using linernotes::player::PlayMode;
-using linernotes::player::PlayQueue;
 
 namespace {
 
@@ -216,6 +215,9 @@ void TstPlayerPersistence::endToEndStoreSaveLoadAndRestore()
     {
         const auto loadedSnap = store.load();
         QVERIFY(loadedSnap.has_value());
+        if (!loadedSnap) {
+            return;
+        }
 
         Player player2({ { QStringLiteral("ao"), QStringLiteral("null") } });
         QVERIFY(player2.isValid());
