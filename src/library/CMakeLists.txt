@@ -6,9 +6,15 @@ file(GLOB MIGRATION_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/mig
 add_library(linernotes_library STATIC
     Database.cpp
     Database.h
+    DirectoryWalker.cpp
+    DirectoryWalker.h
     Errors.h
+    FileFingerprint.cpp
+    FileFingerprint.h
     LibraryLogging.cpp
     LibraryLogging.h
+    LibraryRoots.cpp
+    LibraryRoots.h
     Migrator.cpp
     Migrator.h
     TagReader.cpp

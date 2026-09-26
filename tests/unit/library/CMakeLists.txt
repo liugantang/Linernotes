@@ -35,3 +35,27 @@ linernotes_add_test(
         Qt6::Concurrent
 )
 
+linernotes_add_test(
+    NAME library_FileFingerprint
+    SOURCES
+        tst_FileFingerprint.cpp
+    LIBS
+        Linernotes::library
+)
+
+linernotes_add_test(
+    NAME library_LibraryRoots
+    SOURCES
+        tst_LibraryRoots.cpp
+    LIBS
+        Linernotes::library
+)
+
+linernotes_add_test(
+    NAME library_DirectoryWalker
+    SOURCES
+        tst_DirectoryWalker.cpp
+    LIBS
+        Linernotes::library
+)
+

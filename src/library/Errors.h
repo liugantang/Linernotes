@@ -18,6 +18,9 @@ inline constexpr QLatin1StringView kDbTransaction { "db.transaction" };
 inline constexpr QLatin1StringView kDbDriver { "db.driver" };
 inline constexpr QLatin1StringView kDbHandle { "db.handle" };
 inline constexpr QLatin1StringView kDbQuery { "db.query" };
+inline constexpr QLatin1StringView kFileRead { "file.read" };
+inline constexpr QLatin1StringView kRootInvalid { "root.invalid" };
+inline constexpr QLatin1StringView kRootOverlap { "root.overlap" };
 inline constexpr QLatin1StringView kTagRead { "tag.read" };
 inline constexpr QLatin1StringView kTagUnsupported { "tag.unsupported" };
 
