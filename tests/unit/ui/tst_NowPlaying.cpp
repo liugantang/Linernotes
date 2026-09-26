@@ -62,6 +62,7 @@ void TstNowPlaying::testNowPlaying()
         .coverCacheDir = tempDir.filePath(QStringLiteral("covers")),
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
+        .playbackStatePath = { },
     };
 
     AppContext ctx(options);

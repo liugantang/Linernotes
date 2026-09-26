@@ -11,6 +11,8 @@
 #include <library/Database.h>
 #include <library/LibraryRoots.h>
 #include <library/Migrator.h>
+#include <player/PlayMode.h>
+#include <player/PlayQueue.h>
 #include <player/Player.h>
 #include <ui/AppContext.h>
 
@@ -20,6 +22,7 @@ using linernotes::library::Database;
 using linernotes::library::LibraryRoots;
 using linernotes::library::Migrator;
 using linernotes::player::Player;
+using linernotes::player::PlayMode;
 using linernotes::test::fixturePath;
 using linernotes::ui::AppContext;
 
@@ -32,6 +35,7 @@ private slots:
     void startWithLibraryRootScansAndEmitsChanged();
     void destructorCancelsScanningGracefully();
     void playerOptionsAoNull();
+    void playbackStatePersistence();
 };
 
 void TstAppContext::startSuccessNoRoots()
@@ -44,6 +48,7 @@ void TstAppContext::startSuccessNoRoots()
         .coverCacheDir = tempDir.filePath(QStringLiteral("covers")),
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
+        .playbackStatePath = { },
     };
 
     AppContext ctx(options);
@@ -87,6 +92,7 @@ void TstAppContext::startFailureInvalidPath()
         .coverCacheDir = tempDir.filePath(QStringLiteral("covers")),
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
+        .playbackStatePath = { },
     };
 
     AppContext ctx(options);
@@ -127,6 +133,7 @@ void TstAppContext::startWithLibraryRootScansAndEmitsChanged()
         .coverCacheDir = cacheDir,
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
+        .playbackStatePath = { },
     };
 
     AppContext ctx(options);
@@ -176,6 +183,7 @@ void TstAppContext::destructorCancelsScanningGracefully()
         .coverCacheDir = cacheDir,
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
+        .playbackStatePath = { },
     };
 
     auto ctx = std::make_unique<AppContext>(options);
@@ -197,12 +205,56 @@ void TstAppContext::playerOptionsAoNull()
         .coverCacheDir = tempDir.filePath(QStringLiteral("covers")),
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
+        .playbackStatePath = { },
     };
 
     AppContext ctx(options);
     QVERIFY(ctx.player() != nullptr);
     QVERIFY(ctx.player()->isValid());
     QCOMPARE(ctx.player()->state(), Player::PlaybackState::Stopped);
+}
+
+void TstAppContext::playbackStatePersistence()
+{
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+
+    const QString statePath = tempDir.filePath(QStringLiteral("playback-state.json"));
+
+    AppContext::Options options {
+        .databasePath = tempDir.filePath(QStringLiteral("library.db")),
+        .coverCacheDir = tempDir.filePath(QStringLiteral("covers")),
+        .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
+        .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
+        .playbackStatePath = statePath,
+    };
+
+    {
+        AppContext ctx1(options);
+        QVERIFY(ctx1.player() != nullptr);
+        QVERIFY(ctx1.player()->queue() != nullptr);
+
+        ctx1.player()->queue()->append({
+            { .source = tempDir.filePath(QStringLiteral("track1.flac")) },
+            { .source = tempDir.filePath(QStringLiteral("track2.flac")) },
+        });
+        ctx1.player()->setVolume(40);
+        ctx1.player()->queue()->setMode(PlayMode::RepeatAll);
+
+        QTRY_COMPARE(ctx1.player()->volume(), 40);
+        ctx1.saveState();
+        QVERIFY(QFile::exists(statePath));
+    }
+
+    {
+        AppContext ctx2(options);
+        QVERIFY(ctx2.player() != nullptr);
+        QVERIFY(ctx2.player()->queue() != nullptr);
+
+        QCOMPARE(ctx2.player()->queue()->count(), 2);
+        QCOMPARE(ctx2.player()->queue()->mode(), PlayMode::RepeatAll);
+        QTRY_COMPARE_WITH_TIMEOUT(ctx2.player()->volume(), 40, 5000);
+    }
 }
 
 } // namespace

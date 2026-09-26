@@ -5,16 +5,20 @@
 
 #include "UiLogging.h"
 
+#include <QTimer>
+
 #include <library/CoverStore.h>
 #include <library/Database.h>
 #include <library/LibraryRoots.h>
 #include <library/LibraryWatcher.h>
 #include <library/Migrator.h>
 #include <library/Scanner.h>
+#include <player/PlaybackSnapshot.h>
 #include <player/Player.h>
 #include <ui/LibraryActions.h>
 
 #include <algorithm>
+#include <chrono>
 #include <utility>
 
 namespace linernotes::ui {
@@ -26,6 +30,24 @@ AppContext::AppContext(Options options, QObject *parent)
     , m_nowPlaying(std::make_unique<NowPlaying>(nullptr, *m_player, this))
 {
     connect(this, &AppContext::libraryChanged, m_nowPlaying.get(), &NowPlaying::refresh);
+
+    if (!m_options.playbackStatePath.isEmpty()) {
+        m_stateStore = std::make_unique<player::PlaybackStateStore>(m_options.playbackStatePath);
+        if (const auto snapshot = m_stateStore->load(); snapshot.has_value()) {
+            m_player->restore(*snapshot);
+        }
+
+        m_saveTimer = new QTimer(this);
+        m_saveTimer->setInterval(std::chrono::seconds(30));
+        connect(m_saveTimer, &QTimer::timeout, this, [this]() {
+            // 仅在播放器处于播放状态时定期保存，避免崩溃/被杀时丢失太多播放进度
+            if (m_player != nullptr
+                && m_player->state() == player::Player::PlaybackState::Playing) {
+                saveState();
+            }
+        });
+        m_saveTimer->start();
+    }
 }
 
 AppContext::~AppContext()
@@ -39,6 +61,15 @@ AppContext::~AppContext()
     m_actions.reset();
     m_coverStore.reset();
     m_db.reset();
+    m_stateStore.reset();
+}
+
+void AppContext::saveState() const
+{
+    if (m_stateStore != nullptr && m_player != nullptr) {
+        // 失败时 save 内部已告警
+        static_cast<void>(m_stateStore->save(m_player->snapshot()));
+    }
 }
 
 core::Result<void> AppContext::start()

@@ -88,6 +88,7 @@ int main(int argc, char *argv[])
         .coverCacheDir = QDir(paths.cacheDir()).filePath(QStringLiteral("covers")),
         .playerOptions = { },
         .uiStatePath = QDir(paths.configDir()).filePath(QStringLiteral("ui-state.ini")),
+        .playbackStatePath = QDir(paths.dataDir()).filePath(QStringLiteral("playback-state.json")),
     };
     if (isSmokeTest) {
         appOptions.playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } };
@@ -95,6 +96,9 @@ int main(int argc, char *argv[])
 
     linernotes::ui::AppContext appContext(appOptions);
     AppContextForeign::setInstance(&appContext);
+
+    QObject::connect(
+        &app, &QCoreApplication::aboutToQuit, &appContext, &linernotes::ui::AppContext::saveState);
 
     const auto startRes = appContext.start();
     if (!startRes.ok()) {
