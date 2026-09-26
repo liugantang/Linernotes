@@ -26,5 +26,6 @@ inline constexpr QLatin1StringView kTagRead { "tag.read" };
 inline constexpr QLatin1StringView kTagUnsupported { "tag.unsupported" };
 inline constexpr QLatin1StringView kPlaylistInvalid { "playlist.invalid" };
 inline constexpr QLatin1StringView kPlaylistRuleInvalid { "playlist.rule_invalid" };
+inline constexpr QLatin1StringView kRatingInvalid { "rating.invalid" };
 
 } // namespace linernotes::library::errc

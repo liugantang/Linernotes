@@ -14,6 +14,7 @@
 #include <player/MpvHandle.h>
 #include <player/Player.h>
 #include <ui/LibraryActions.h>
+#include <ui/MarksController.h>
 #include <ui/NowPlaying.h>
 #include <ui/PlaylistController.h>
 #include <ui/QueueModel.h>
@@ -43,6 +44,7 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::QueueModel *queueModel READ queueModel CONSTANT)
     Q_PROPERTY(linernotes::ui::SearchController *search READ search CONSTANT)
     Q_PROPERTY(linernotes::ui::PlaylistController *playlists READ playlists CONSTANT)
+    Q_PROPERTY(linernotes::ui::MarksController *marks READ marks CONSTANT)
     Q_PROPERTY(linernotes::ui::LibraryActions *actions READ actions CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
     Q_PROPERTY(QString startupError READ startupError NOTIFY startupErrorChanged)
@@ -75,6 +77,7 @@ public:
     [[nodiscard]] QueueModel *queueModel();
     [[nodiscard]] SearchController *search();
     [[nodiscard]] PlaylistController *playlists();
+    [[nodiscard]] MarksController *marks();
     [[nodiscard]] library::Database &database();
     [[nodiscard]] const library::Database &database() const;
     [[nodiscard]] library::CoverStore *coverStore();
@@ -94,6 +97,7 @@ private:
     // 声明顺序即依赖顺序，析构逆序进行，依赖方先于被依赖方析构
     Options m_options;
     library::Database m_db;
+    MarksController m_marks;
     player::Player m_player;
     library::CoverStore m_coverStore;
     std::unique_ptr<player::PlaybackStateStore> m_stateStore;

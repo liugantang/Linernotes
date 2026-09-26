@@ -27,6 +27,7 @@ AppContext::AppContext(Options options, QObject *parent)
     : QObject(parent)
     , m_options(std::move(options))
     , m_db(m_options.databasePath)
+    , m_marks(m_db)
     , m_player(m_options.playerOptions)
     , m_coverStore(m_options.coverCacheDir)
     , m_nowPlaying(m_db, m_player)
@@ -36,6 +37,7 @@ AppContext::AppContext(Options options, QObject *parent)
     , m_actions(m_db, m_player)
 {
     connect(this, &AppContext::libraryChanged, &m_nowPlaying, &NowPlaying::refresh);
+    connect(&m_marks, &MarksController::marksChanged, &m_nowPlaying, &NowPlaying::refresh);
     connect(this, &AppContext::libraryChanged, &m_queueModel, &QueueModel::refresh);
     connect(this, &AppContext::libraryChanged, &m_search, &SearchController::refresh);
     connect(this, &AppContext::libraryChanged, &m_playlists, &PlaylistController::refresh);
@@ -176,6 +178,11 @@ SearchController *AppContext::search()
 PlaylistController *AppContext::playlists()
 {
     return &m_playlists;
+}
+
+MarksController *AppContext::marks()
+{
+    return &m_marks;
 }
 
 library::Database &AppContext::database()

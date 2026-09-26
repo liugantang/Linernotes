@@ -15,6 +15,9 @@ Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
 
 /// 这是 library 命名空间唯一的 Q_NAMESPACE，需要反射/暴露给 QML 的 library 枚举都放在这里。
 
+enum class FavoriteKind : std::uint8_t { Track, Album, Artist };
+Q_ENUM_NS(FavoriteKind)
+
 enum class TrackSortKey : std::uint8_t {
     Default,
     Title,

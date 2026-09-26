@@ -6,6 +6,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Effects
 import Linernotes
+import "../controls" as Controls
 
 Item {
     id: root
@@ -47,6 +48,7 @@ Item {
                     Layout.preferredHeight: Theme.topBarHeight
                     Layout.leftMargin: Theme.spacingMedium
                     Layout.rightMargin: Theme.spacingMedium
+                    spacing: Theme.spacingSmall
 
                     Label {
                         text: qsTr("Artists")
@@ -57,6 +59,16 @@ Item {
 
                     Item {
                         Layout.fillWidth: true
+                    }
+
+                    Controls.AppButton {
+                        text: qsTr("Loved")
+                        icon.source: artistModel.favoritesOnly ? "../icons/heart-filled.svg" : "../icons/heart.svg"
+                        icon.color: artistModel.favoritesOnly ? Theme.favorite : Theme.text
+                        checked: artistModel.favoritesOnly
+                        onClicked: {
+                            artistModel.favoritesOnly = !artistModel.favoritesOnly
+                        }
                     }
 
                     Label {
@@ -79,7 +91,7 @@ Item {
                     Label {
                         anchors.centerIn: parent
                         visible: artistModel.count === 0
-                        text: qsTr("No artists in library")
+                        text: artistModel.favoritesOnly ? qsTr("No loved artists yet") : qsTr("No artists in library")
                         font.pixelSize: Theme.fontSizeNormal
                         color: Theme.textSecondary
                     }

@@ -16,6 +16,7 @@
 #include <ui/AppContext.h>
 #include <ui/ArtistListModel.h>
 #include <ui/LibraryActions.h>
+#include <ui/MarksController.h>
 #include <ui/NowPlaying.h>
 #include <ui/PlaylistController.h>
 #include <ui/PlaylistListModel.h>
@@ -115,6 +116,13 @@ struct PlaylistControllerForeign {
     QML_FOREIGN(linernotes::ui::PlaylistController)
     QML_NAMED_ELEMENT(PlaylistController)
     QML_UNCREATABLE("PlaylistController is managed by AppContext")
+};
+
+struct MarksControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::MarksController)
+    QML_NAMED_ELEMENT(MarksController)
+    QML_UNCREATABLE("MarksController is managed by AppContext")
 };
 
 struct PlaylistListModelForeign {

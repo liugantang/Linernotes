@@ -102,6 +102,16 @@ Item {
                 }
             }
 
+            Controls.AppButton {
+                text: qsTr("Loved")
+                icon.source: albumModel.favoritesOnly ? "icons/heart-filled.svg" : "icons/heart.svg"
+                icon.color: albumModel.favoritesOnly ? Theme.favorite : Theme.text
+                checked: albumModel.favoritesOnly
+                onClicked: {
+                    albumModel.favoritesOnly = !albumModel.favoritesOnly
+                }
+            }
+
             Item {
                 Layout.fillWidth: true
             }
@@ -127,7 +137,7 @@ Item {
             Label {
                 anchors.centerIn: parent
                 visible: albumModel.count === 0
-                text: qsTr("No albums in library")
+                text: albumModel.favoritesOnly ? qsTr("No loved albums yet") : qsTr("No albums in library")
                 font.pixelSize: Theme.fontSizeLarge
                 color: Theme.textSecondary
             }

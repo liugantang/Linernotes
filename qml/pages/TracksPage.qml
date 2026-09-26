@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Linernotes
+import "../controls" as Controls
 
 Item {
     id: root
@@ -42,6 +43,16 @@ Item {
             Item {
                 Layout.fillWidth: true
             }
+
+            Controls.AppButton {
+                text: qsTr("Loved")
+                icon.source: trackTable.model.favoritesOnly ? "../icons/heart-filled.svg" : "../icons/heart.svg"
+                icon.color: trackTable.model.favoritesOnly ? Theme.favorite : Theme.text
+                checked: trackTable.model.favoritesOnly
+                onClicked: {
+                    trackTable.model.favoritesOnly = !trackTable.model.favoritesOnly
+                }
+            }
         }
 
         Rectangle {
@@ -54,6 +65,7 @@ Item {
             id: trackTable
             Layout.fillWidth: true
             Layout.fillHeight: true
+            emptyText: trackTable.model.favoritesOnly ? qsTr("No loved tracks yet") : qsTr("No tracks in library")
         }
     }
 }

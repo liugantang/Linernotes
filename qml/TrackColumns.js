@@ -5,6 +5,14 @@
 
 var ALL_COLUMNS = [
     {
+        key: "favorite",
+        defaultWidth: 36,
+        sortKey: -1,
+        defaultVisible: true,
+        alignRight: false,
+        canHide: true
+    },
+    {
         key: "trackNumber",
         defaultWidth: 48,
         sortKey: -1,
@@ -66,6 +74,14 @@ var ALL_COLUMNS = [
         sortKey: 5, // TrackListModel.Duration
         defaultVisible: true,
         alignRight: true,
+        canHide: true
+    },
+    {
+        key: "rating",
+        defaultWidth: 96,
+        sortKey: -1,
+        defaultVisible: true,
+        alignRight: false,
         canHide: true
     },
     {

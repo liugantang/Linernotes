@@ -3,6 +3,7 @@
 
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.impl
 import QtQuick.Layouts
 import Linernotes
 import "controls" as Controls
@@ -58,7 +59,18 @@ Rectangle {
                         color: headerMouseArea.containsMouse ? Theme.hoverOverlay : "transparent"
                     }
 
+                    IconImage {
+                        visible: modelData.key === "favorite"
+                        anchors.centerIn: parent
+                        source: "icons/heart.svg"
+                        sourceSize: Qt.size(Theme.iconSize, Theme.iconSize)
+                        color: Theme.textSecondary
+                        width: Theme.iconSize
+                        height: Theme.iconSize
+                    }
+
                     RowLayout {
+                        visible: modelData.key !== "favorite"
                         anchors.fill: parent
                         anchors.leftMargin: Theme.spacingSmall
                         anchors.rightMargin: Theme.spacingSmall
@@ -152,7 +164,7 @@ Rectangle {
 
             delegate: Controls.AppMenuItem {
                 required property var modelData
-                text: root.table.columnTitle(modelData.key)
+                text: modelData.key === "favorite" ? qsTr("Loved") : root.table.columnTitle(modelData.key)
                 checkable: true
                 checked: root.table.isColumnVisible(modelData.key)
                 enabled: modelData.canHide

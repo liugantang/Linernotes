@@ -123,6 +123,78 @@ Controls.AppMenu {
     Controls.AppMenuSeparator {}
 
     Controls.AppMenuItem {
+        readonly property bool isCurrentFavorite: (AppContext.marks && root.trackIds.length > 0)
+            ? AppContext.marks.isFavorite(Library.FavoriteKind.Track, root.trackIds[0]) : false
+        text: isCurrentFavorite ? qsTr("Remove from Loved") : qsTr("Love")
+        onTriggered: {
+            if (AppContext.marks && root.trackIds.length > 0) {
+                AppContext.marks.setFavorite(Library.FavoriteKind.Track, root.trackIds, !isCurrentFavorite)
+            }
+        }
+    }
+
+    Controls.AppMenu {
+        id: ratingMenu
+        title: qsTr("Rating")
+
+        Controls.AppMenuItem {
+            text: qsTr("None")
+            onTriggered: {
+                if (AppContext.marks && root.trackIds.length > 0) {
+                    AppContext.marks.setRating(root.trackIds, 0)
+                }
+            }
+        }
+
+        Controls.AppMenuItem {
+            text: "★"
+            onTriggered: {
+                if (AppContext.marks && root.trackIds.length > 0) {
+                    AppContext.marks.setRating(root.trackIds, 1)
+                }
+            }
+        }
+
+        Controls.AppMenuItem {
+            text: "★★"
+            onTriggered: {
+                if (AppContext.marks && root.trackIds.length > 0) {
+                    AppContext.marks.setRating(root.trackIds, 2)
+                }
+            }
+        }
+
+        Controls.AppMenuItem {
+            text: "★★★"
+            onTriggered: {
+                if (AppContext.marks && root.trackIds.length > 0) {
+                    AppContext.marks.setRating(root.trackIds, 3)
+                }
+            }
+        }
+
+        Controls.AppMenuItem {
+            text: "★★★★"
+            onTriggered: {
+                if (AppContext.marks && root.trackIds.length > 0) {
+                    AppContext.marks.setRating(root.trackIds, 4)
+                }
+            }
+        }
+
+        Controls.AppMenuItem {
+            text: "★★★★★"
+            onTriggered: {
+                if (AppContext.marks && root.trackIds.length > 0) {
+                    AppContext.marks.setRating(root.trackIds, 5)
+                }
+            }
+        }
+    }
+
+    Controls.AppMenuSeparator {}
+
+    Controls.AppMenuItem {
         text: qsTr("Show in File Manager")
         enabled: root.trackIds.length === 1
         onTriggered: {

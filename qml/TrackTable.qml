@@ -94,6 +94,7 @@ FocusScope {
 
     function columnTitle(key) {
         switch (key) {
+        case "favorite": return ""
         case "trackNumber": return "#"
         case "title": return qsTr("Title")
         case "artist": return qsTr("Artist")
@@ -102,6 +103,7 @@ FocusScope {
         case "genre": return qsTr("Genre")
         case "year": return qsTr("Year")
         case "duration": return qsTr("Duration")
+        case "rating": return qsTr("Rating")
         case "format": return qsTr("Format")
         case "bitrate": return qsTr("Bitrate")
         case "addedAt": return qsTr("Date Added")
@@ -143,7 +145,7 @@ FocusScope {
         id: tableSettings
         location: AppContext.uiStateUrl
         category: "trackTable"
-        property string visibleColumns: "title,artist,album,year,duration"
+        property string visibleColumns: "favorite,title,artist,album,year,duration,rating"
         property string columnWidths: "{}"
         property int sortKey: 0
         property int sortOrder: Qt.AscendingOrder

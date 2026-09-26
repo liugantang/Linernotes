@@ -9,6 +9,8 @@ Icons are from Lucide (https://lucide.dev/), licensed under the ISC License, com
 - `audio-lines.svg`
 - `disc-3.svg`
 - `grip-vertical.svg`
+- `heart-filled.svg`
+- `heart.svg`
 - `library.svg`
 - `list-music.svg`
 - `list-plus.svg`
@@ -25,6 +27,8 @@ Icons are from Lucide (https://lucide.dev/), licensed under the ISC License, com
 - `skip-back.svg`
 - `skip-forward.svg`
 - `sparkles.svg`
+- `star-filled.svg`
+- `star.svg`
 - `trash-2.svg`
 - `volume-x.svg`
 - `volume-1.svg`

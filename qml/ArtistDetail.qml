@@ -13,8 +13,19 @@ Item {
     property var artistId: 0
     signal albumSelected(var albumId)
 
-    readonly property var info: (root.artistId > 0 && AppContext.actions)
-        ? AppContext.actions.artistInfo(root.artistId) : ({})
+    property int infoRevision: 0
+    readonly property var info: {
+        infoRevision;
+        return (root.artistId > 0 && AppContext.actions)
+            ? AppContext.actions.artistInfo(root.artistId) : ({})
+    }
+
+    Connections {
+        target: AppContext.marks
+        function onMarksChanged() {
+            root.infoRevision++
+        }
+    }
 
     TrackListModel {
         id: artistTracksModel
@@ -102,11 +113,22 @@ Item {
                 }
 
                 RowLayout {
+                    spacing: Theme.spacingMedium
+
                     Controls.AppButton {
                         text: qsTr("Play All")
                         primary: true
                         icon.source: "icons/play.svg"
                         onClicked: root.playAll()
+                    }
+
+                    Controls.FavoriteButton {
+                        favorite: (root.info && root.info.favorite) ? true : false
+                        onFavoriteToggled: {
+                            if (AppContext.marks && root.artistId > 0) {
+                                AppContext.marks.toggleFavorite(Library.FavoriteKind.Artist, root.artistId)
+                            }
+                        }
                     }
                 }
             }

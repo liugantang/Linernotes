@@ -83,6 +83,16 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS controls/IconButton.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/controls/FavoriteButton.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS controls/FavoriteButton.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/controls/RatingStars.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS controls/RatingStars.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/controls/SeekBar.qml
     PROPERTIES
         QT_RESOURCE_ALIAS controls/SeekBar.qml
@@ -373,6 +383,26 @@ set_source_files_properties(
     PROPERTIES
         QT_RESOURCE_ALIAS icons/audio-lines.svg
 )
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/resources/icons/heart.svg
+    PROPERTIES
+        QT_RESOURCE_ALIAS icons/heart.svg
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/resources/icons/heart-filled.svg
+    PROPERTIES
+        QT_RESOURCE_ALIAS icons/heart-filled.svg
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/resources/icons/star.svg
+    PROPERTIES
+        QT_RESOURCE_ALIAS icons/star.svg
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/resources/icons/star-filled.svg
+    PROPERTIES
+        QT_RESOURCE_ALIAS icons/star-filled.svg
+)
 
 qt_add_qml_module(linernotes
     URI Linernotes
@@ -382,6 +412,8 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/controls/AppButton.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/AppCheckBox.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/IconButton.qml
+        ${CMAKE_SOURCE_DIR}/qml/controls/FavoriteButton.qml
+        ${CMAKE_SOURCE_DIR}/qml/controls/RatingStars.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/SeekBar.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/AppComboBox.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/AppTabBar.qml
@@ -446,6 +478,10 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/resources/icons/search.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/sparkles.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/library.svg
+        ${CMAKE_SOURCE_DIR}/resources/icons/heart.svg
+        ${CMAKE_SOURCE_DIR}/resources/icons/heart-filled.svg
+        ${CMAKE_SOURCE_DIR}/resources/icons/star.svg
+        ${CMAKE_SOURCE_DIR}/resources/icons/star-filled.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/trash-2.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/volume-x.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/volume-1.svg

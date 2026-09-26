@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Linernotes
+import "controls" as Controls
 
 Item {
     id: root
@@ -72,23 +73,38 @@ Item {
             Layout.alignment: Qt.AlignVCenter
             spacing: Theme.spacingTiny
 
-            Label {
-                id: titleLabel
-                text: root.hasTrack ? (root.title.length > 0 ? root.title : qsTr("Unknown Title")) : qsTr("Not playing")
-                font.pixelSize: Theme.fontSizeNormal
-                font.bold: root.hasTrack
-                color: root.hasTrack ? Theme.text : Theme.textSecondary
-                elide: Text.ElideRight
+            RowLayout {
                 Layout.fillWidth: true
-                maximumLineCount: 1
+                spacing: Theme.spacingSmall
 
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: root.canOpenAlbum ? Qt.PointingHandCursor : Qt.ArrowCursor
-                    onClicked: {
-                        if (root.canOpenAlbum) {
-                            root.openAlbumRequested(root.albumId)
+                Label {
+                    id: titleLabel
+                    text: root.hasTrack ? (root.title.length > 0 ? root.title : qsTr("Unknown Title")) : qsTr("Not playing")
+                    font.pixelSize: Theme.fontSizeNormal
+                    font.bold: root.hasTrack
+                    color: root.hasTrack ? Theme.text : Theme.textSecondary
+                    elide: Text.ElideRight
+                    Layout.fillWidth: true
+                    maximumLineCount: 1
+
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: root.canOpenAlbum ? Qt.PointingHandCursor : Qt.ArrowCursor
+                        onClicked: {
+                            if (root.canOpenAlbum) {
+                                root.openAlbumRequested(root.albumId)
+                            }
+                        }
+                    }
+                }
+
+                Controls.FavoriteButton {
+                    visible: root.hasTrack
+                    favorite: AppContext.nowPlaying ? AppContext.nowPlaying.favorite : false
+                    onFavoriteToggled: {
+                        if (AppContext.marks && AppContext.nowPlaying && AppContext.nowPlaying.trackId >= 0) {
+                            AppContext.marks.toggleFavorite(Library.FavoriteKind.Track, AppContext.nowPlaying.trackId)
                         }
                     }
                 }

@@ -180,6 +180,7 @@ QVariantMap LibraryActions::albumInfo(qint64 albumId) const
     map.insert(QStringLiteral("trackCount"), row.trackCount);
     map.insert(QStringLiteral("durationText"), formatDuration(row.totalDurationMs));
     map.insert(QStringLiteral("coverHash"), row.coverHash);
+    map.insert(QStringLiteral("favorite"), row.favorite);
     return map;
 }
 
@@ -208,6 +209,7 @@ QVariantMap LibraryActions::artistInfo(qint64 artistId) const
     map.insert(QStringLiteral("trackCount"), row.trackCount);
     map.insert(QStringLiteral("albumCount"), row.albumCount);
     map.insert(QStringLiteral("coverHash"), row.coverHash);
+    map.insert(QStringLiteral("favorite"), row.favorite);
     return map;
 }
 

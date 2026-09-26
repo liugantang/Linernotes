@@ -4,6 +4,7 @@
 import QtQuick
 import QtQuick.Controls
 import Linernotes
+import "controls" as Controls
 import "TrackColumns.js" as TrackColumns
 
 Rectangle {
@@ -28,6 +29,8 @@ Rectangle {
     required property int sampleRate
     required property int bitDepth
     required property int bitrate
+    required property bool favorite
+    required property int rating
     required property var addedAt
 
     readonly property bool isCurrent: rootRow.table.currentIndex === rootRow.index && rootRow.table.activeFocus
@@ -80,6 +83,7 @@ Rectangle {
     Row {
         anchors.fill: parent
         spacing: 0
+        z: 1
 
         Repeater {
             model: rootRow.visibleColumns
@@ -93,7 +97,30 @@ Rectangle {
                 height: rootRow.height
                 clip: true
 
+                Controls.FavoriteButton {
+                    visible: modelData.key === "favorite"
+                    anchors.centerIn: parent
+                    favorite: rootRow.favorite
+                    onFavoriteToggled: {
+                        if (AppContext.marks && rootRow.trackId) {
+                            AppContext.marks.toggleFavorite(Library.FavoriteKind.Track, rootRow.trackId)
+                        }
+                    }
+                }
+
+                Controls.RatingStars {
+                    visible: modelData.key === "rating"
+                    anchors.centerIn: parent
+                    rating: rootRow.rating
+                    onRated: (value) => {
+                        if (AppContext.marks && rootRow.trackId) {
+                            AppContext.marks.setRating([rootRow.trackId], value)
+                        }
+                    }
+                }
+
                 Label {
+                    visible: modelData.key !== "favorite" && modelData.key !== "rating"
                     anchors.fill: parent
                     anchors.leftMargin: Theme.spacingSmall
                     anchors.rightMargin: Theme.spacingSmall

@@ -13,8 +13,19 @@ Item {
     property var albumId: 0
     signal backRequested()
 
-    readonly property var info: AppContext.actions ? AppContext.actions.albumInfo(albumId) : ({})
+    property int infoRevision: 0
+    readonly property var info: {
+        infoRevision;
+        return AppContext.actions ? AppContext.actions.albumInfo(albumId) : ({})
+    }
     property alias currentIndex: listView.currentIndex
+
+    Connections {
+        target: AppContext.marks
+        function onMarksChanged() {
+            root.infoRevision++
+        }
+    }
 
     Shortcut {
         sequence: "Esc"
@@ -183,6 +194,15 @@ Item {
                         text: qsTr("Shuffle")
                         icon.source: "icons/shuffle.svg"
                         onClicked: root.playAlbum(true)
+                    }
+
+                    Controls.FavoriteButton {
+                        favorite: (root.info && root.info.favorite) ? true : false
+                        onFavoriteToggled: {
+                            if (AppContext.marks && root.albumId > 0) {
+                                AppContext.marks.toggleFavorite(Library.FavoriteKind.Album, root.albumId)
+                            }
+                        }
                     }
                 }
             }

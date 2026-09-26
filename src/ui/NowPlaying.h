@@ -30,6 +30,8 @@ class NowPlaying : public QObject {
     Q_PROPERTY(qint64 albumId READ albumId NOTIFY changed)
     Q_PROPERTY(QString coverHash READ coverHash NOTIFY changed)
     Q_PROPERTY(double durationSeconds READ durationSeconds NOTIFY changed)
+    Q_PROPERTY(bool favorite READ favorite NOTIFY changed)
+    Q_PROPERTY(int rating READ rating NOTIFY changed)
 
 public:
     NowPlaying(library::Database &db, player::Player &player, QObject *parent = nullptr);
@@ -45,6 +47,8 @@ public:
     [[nodiscard]] qint64 albumId() const;
     [[nodiscard]] QString coverHash() const;
     [[nodiscard]] double durationSeconds() const;
+    [[nodiscard]] bool favorite() const;
+    [[nodiscard]] int rating() const;
 
 signals:
     void changed();
@@ -61,6 +65,8 @@ private:
     qint64 m_albumId { 0 };
     QString m_coverHash;
     double m_durationSeconds { 0.0 };
+    bool m_favorite { false };
+    int m_rating { 0 };
 };
 
 } // namespace linernotes::ui

@@ -20,6 +20,8 @@ QtObject {
     readonly property color divider: isDark ? "#313244" : "#dee2e6"
     readonly property color itemHover: isDark ? "#313244" : "#e9ecef"
     readonly property color itemSelected: isDark ? "#45475a" : "#dee2e6"
+    readonly property color favorite: isDark ? "#f38ba8" : "#e0245e"
+    readonly property color rating: isDark ? "#f9e2af" : "#f59e0b"
 
     // Error banner colors
     readonly property color errorBackground: isDark ? "#3b1e24" : "#fde8e8"

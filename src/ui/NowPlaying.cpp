@@ -39,6 +39,8 @@ void NowPlaying::refresh()
     qint64 newAlbumId = 0;
     QString newCoverHash;
     double newDurationSeconds = 0.0;
+    bool newFavorite = false;
+    int newRating = 0;
 
     if (currentItemOpt.has_value()) {
         const auto &item = currentItemOpt.value();
@@ -61,6 +63,8 @@ void NowPlaying::refresh()
                     newAlbumId = row.albumId.value_or(0);
                     newCoverHash = row.coverHash;
                     newDurationSeconds = static_cast<double>(row.durationMs) / 1000.0;
+                    newFavorite = row.favorite;
+                    newRating = row.rating;
                 }
             }
         }
@@ -68,8 +72,8 @@ void NowPlaying::refresh()
 
     const bool changedValues = (m_hasTrack != newHasTrack || m_trackId != newTrackId
         || m_title != newTitle || m_artist != newArtist || m_album != newAlbum
-        || m_albumId != newAlbumId || m_coverHash != newCoverHash
-        || std::abs(m_durationSeconds - newDurationSeconds) > 1e-4);
+        || m_albumId != newAlbumId || m_coverHash != newCoverHash || m_favorite != newFavorite
+        || m_rating != newRating || std::abs(m_durationSeconds - newDurationSeconds) > 1e-4);
 
     if (changedValues) {
         m_hasTrack = newHasTrack;
@@ -80,6 +84,8 @@ void NowPlaying::refresh()
         m_albumId = newAlbumId;
         m_coverHash = newCoverHash;
         m_durationSeconds = newDurationSeconds;
+        m_favorite = newFavorite;
+        m_rating = newRating;
         emit changed();
     }
 }
@@ -122,6 +128,16 @@ QString NowPlaying::coverHash() const
 double NowPlaying::durationSeconds() const
 {
     return m_durationSeconds;
+}
+
+bool NowPlaying::favorite() const
+{
+    return m_favorite;
+}
+
+int NowPlaying::rating() const
+{
+    return m_rating;
 }
 
 } // namespace linernotes::ui
