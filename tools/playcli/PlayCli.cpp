@@ -127,6 +127,12 @@ void PlayCli::setupStdin()
         ::fcntl(STDIN_FILENO, F_SETFL, flags | O_NONBLOCK);
     }
 
+    if (::isatty(STDIN_FILENO) != 0) {
+        std::cout << "Commands (press Enter after each): p pause/resume, n next, b previous, "
+                     "s <sec> seek, v <0-100> volume, d <gain 0-1> [ms] duck, m <mode>, q quit\n"
+                  << std::flush;
+    }
+
     m_stdinNotifier = new QSocketNotifier(STDIN_FILENO, QSocketNotifier::Read, this);
     connect(m_stdinNotifier, &QSocketNotifier::activated, this, &PlayCli::handleStdin);
 }
@@ -268,7 +274,17 @@ void PlayCli::handleStdinCommand(const QString &line)
     if (trimmed.isEmpty()) {
         return;
     }
+    if (!executeCommand(trimmed)) {
+        std::cout << "UNKNOWN " << trimmed.toStdString()
+                  << " (commands: p, n, b, s <sec>, v <0-100>, d <gain> [ms], m <mode>, q)\n"
+                  << std::flush;
+        return;
+    }
+    std::cout << "OK " << trimmed.toStdString() << "\n" << std::flush;
+}
 
+bool PlayCli::executeCommand(const QString &trimmed)
+{
     if (trimmed == QStringLiteral("p")) {
         m_player.togglePause();
     } else if (trimmed == QStringLiteral("n")) {
@@ -281,16 +297,18 @@ void PlayCli::handleStdinCommand(const QString &line)
         || trimmed.startsWith(QStringLiteral("s\t"))) {
         bool ok = false;
         const double sec = QStringView(trimmed).sliced(2).trimmed().toDouble(&ok);
-        if (ok) {
-            m_player.seek(sec);
+        if (!ok) {
+            return false;
         }
+        m_player.seek(sec);
     } else if (trimmed.startsWith(QStringLiteral("v "))
         || trimmed.startsWith(QStringLiteral("v\t"))) {
         bool ok = false;
         const int vol = QStringView(trimmed).sliced(2).trimmed().toInt(&ok);
-        if (ok) {
-            m_player.setVolume(std::clamp(vol, 0, 100));
+        if (!ok) {
+            return false;
         }
+        m_player.setVolume(std::clamp(vol, 0, 100));
     } else if (trimmed.startsWith(QStringLiteral("d "))
         || trimmed.startsWith(QStringLiteral("d\t"))) {
         // d <增益 0-1> [渐变毫秒，默认 300]：手动验证 ducking 渐变是否有爆音
@@ -298,9 +316,10 @@ void PlayCli::handleStdinCommand(const QString &line)
         bool ok = false;
         const double gain = parts.value(1).toDouble(&ok);
         const int rampMs = parts.size() > 2 ? parts.at(2).toInt() : 300;
-        if (ok) {
-            m_player.duckTo(gain, rampMs);
+        if (!ok) {
+            return false;
         }
+        m_player.duckTo(gain, rampMs);
     } else if (trimmed.startsWith(QStringLiteral("m "))
         || trimmed.startsWith(QStringLiteral("m\t"))) {
         const QString modeStr = QStringView(trimmed).sliced(2).trimmed().toString().toLower();
@@ -312,8 +331,13 @@ void PlayCli::handleStdinCommand(const QString &line)
             m_player.queue()->setMode(player::PlayMode::RepeatOne);
         } else if (modeStr == QStringLiteral("shuffle")) {
             m_player.queue()->setMode(player::PlayMode::Shuffle);
+        } else {
+            return false;
         }
+    } else {
+        return false;
     }
+    return true;
 }
 
 void PlayCli::handleReportMemory()

@@ -6,6 +6,7 @@
 #include <QCommandLineOption>
 #include <QCommandLineParser>
 #include <QCoreApplication>
+#include <QLoggingCategory>
 
 #include <iostream>
 #include <optional>
@@ -44,12 +45,21 @@ int main(int argc, char *argv[])
         QStringLiteral("seconds"));
     parser.addOption(reportMemoryOption);
 
+    QCommandLineOption verboseOption(
+        QStringLiteral("verbose"), QStringLiteral("Show debug logs of the player."));
+    parser.addOption(verboseOption);
+
     parser.addPositionalArgument(QStringLiteral("files"), QStringLiteral("Audio files to play."),
         QStringLiteral("[files...]"));
 
     if (!parser.parse(app.arguments())) {
         std::cerr << qPrintable(parser.errorText()) << "\n";
         return 2;
+    }
+
+    // 调试日志默认会刷屏，淹没事件输出和命令回显
+    if (!parser.isSet(verboseOption)) {
+        QLoggingCategory::setFilterRules(QStringLiteral("linernotes.*.debug=false"));
     }
 
     if (parser.isSet(QStringLiteral("help"))) {

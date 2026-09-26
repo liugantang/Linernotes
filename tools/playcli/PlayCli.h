@@ -48,6 +48,8 @@ private:
     void setupStdin();
     void setupPlayer();
     void handleStdinCommand(const QString &line);
+    /// 执行一条命令；无法识别或参数无效时返回 false
+    bool executeCommand(const QString &trimmed);
     static qint64 readVmRssKb();
 
     player::Player m_player;
