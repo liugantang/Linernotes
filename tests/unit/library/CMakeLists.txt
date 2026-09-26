@@ -112,4 +112,12 @@ linernotes_add_test(
         Linernotes::library
 )
 
+linernotes_add_test(
+    NAME library_PlaylistStore
+    SOURCES
+        tst_PlaylistStore.cpp
+    LIBS
+        Linernotes::library
+)
+
 

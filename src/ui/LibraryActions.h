@@ -41,6 +41,9 @@ public:
     /// 在系统文件管理器中打开该曲目所在目录。
     Q_INVOKABLE void showInFileManager(qint64 trackId) const;
 
+    /// 将播放队列中 trackId >= 0 的曲目保存为手动歌单。失败返回 0。
+    Q_INVOKABLE qint64 saveQueueAsPlaylist(const QString &name);
+
 private:
     library::Database &m_db;
     player::Player &m_player;

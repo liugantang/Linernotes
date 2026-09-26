@@ -28,8 +28,10 @@ AppContext::AppContext(Options options, QObject *parent)
     , m_options(std::move(options))
     , m_player(new player::Player(m_options.playerOptions, this))
     , m_nowPlaying(std::make_unique<NowPlaying>(nullptr, *m_player, this))
+    , m_queueModel(std::make_unique<QueueModel>(nullptr, *m_player, this))
 {
     connect(this, &AppContext::libraryChanged, m_nowPlaying.get(), &NowPlaying::refresh);
+    connect(this, &AppContext::libraryChanged, m_queueModel.get(), &QueueModel::refresh);
 
     if (!m_options.playbackStatePath.isEmpty()) {
         m_stateStore = std::make_unique<player::PlaybackStateStore>(m_options.playbackStatePath);
@@ -56,6 +58,7 @@ AppContext::~AppContext()
         m_scanner->cancel();
     }
     m_nowPlaying.reset();
+    m_queueModel.reset();
     m_watcher.reset();
     m_scanner.reset();
     m_actions.reset();
@@ -93,6 +96,7 @@ core::Result<void> AppContext::start()
 
     m_db = std::move(db);
     m_nowPlaying->setDatabase(m_db.get());
+    m_queueModel->setDatabase(m_db.get());
     m_coverStore = std::make_unique<library::CoverStore>(m_options.coverCacheDir);
     m_actions = std::make_unique<LibraryActions>(*m_db, *m_player, this);
 
@@ -162,6 +166,11 @@ player::Player *AppContext::player() const
 NowPlaying *AppContext::nowPlaying() const
 {
     return m_nowPlaying.get();
+}
+
+QueueModel *AppContext::queueModel() const
+{
+    return m_queueModel.get();
 }
 
 library::Database *AppContext::database()

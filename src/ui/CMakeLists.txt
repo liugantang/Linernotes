@@ -18,6 +18,8 @@ add_library(linernotes_ui STATIC
     PageCache.h
     PagedListModel.cpp
     PagedListModel.h
+    QueueModel.cpp
+    QueueModel.h
     RowSelection.cpp
     RowSelection.h
     TrackListModel.cpp

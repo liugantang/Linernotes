@@ -15,6 +15,7 @@
 #include <ui/ArtistListModel.h>
 #include <ui/LibraryActions.h>
 #include <ui/NowPlaying.h>
+#include <ui/QueueModel.h>
 #include <ui/RowSelection.h>
 #include <ui/TrackListModel.h>
 
@@ -64,6 +65,13 @@ struct NowPlayingForeign {
     QML_FOREIGN(linernotes::ui::NowPlaying)
     QML_NAMED_ELEMENT(NowPlaying)
     QML_UNCREATABLE("NowPlaying is managed by AppContext")
+};
+
+struct QueueModelForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::QueueModel)
+    QML_NAMED_ELEMENT(QueueModel)
+    QML_UNCREATABLE("QueueModel is managed by AppContext")
 };
 
 struct RowSelectionForeign {

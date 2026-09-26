@@ -118,6 +118,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS controls/AppMenuSeparator.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/controls/AppTextField.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS controls/AppTextField.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/TrackColumns.js
     PROPERTIES
         QT_RESOURCE_ALIAS TrackColumns.js
@@ -156,6 +161,21 @@ set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/VolumeControl.qml
     PROPERTIES
         QT_RESOURCE_ALIAS VolumeControl.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SavePlaylistDialog.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SavePlaylistDialog.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/QueueRow.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS QueueRow.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/QueuePanel.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS QueuePanel.qml
 )
 
 set_source_files_properties(
@@ -268,6 +288,31 @@ set_source_files_properties(
     PROPERTIES
         QT_RESOURCE_ALIAS icons/volume-2.svg
 )
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/resources/icons/list-plus.svg
+    PROPERTIES
+        QT_RESOURCE_ALIAS icons/list-plus.svg
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/resources/icons/trash-2.svg
+    PROPERTIES
+        QT_RESOURCE_ALIAS icons/trash-2.svg
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/resources/icons/x.svg
+    PROPERTIES
+        QT_RESOURCE_ALIAS icons/x.svg
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/resources/icons/grip-vertical.svg
+    PROPERTIES
+        QT_RESOURCE_ALIAS icons/grip-vertical.svg
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/resources/icons/audio-lines.svg
+    PROPERTIES
+        QT_RESOURCE_ALIAS icons/audio-lines.svg
+)
 
 qt_add_qml_module(linernotes
     URI Linernotes
@@ -283,6 +328,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/controls/AppMenu.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/AppMenuItem.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/AppMenuSeparator.qml
+        ${CMAKE_SOURCE_DIR}/qml/controls/AppTextField.qml
         ${CMAKE_SOURCE_DIR}/qml/Main.qml
         ${CMAKE_SOURCE_DIR}/qml/Theme.qml
         ${CMAKE_SOURCE_DIR}/qml/NavigationSidebar.qml
@@ -290,6 +336,9 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/PlayerBarTrackInfo.qml
         ${CMAKE_SOURCE_DIR}/qml/VolumeControl.qml
         ${CMAKE_SOURCE_DIR}/qml/SidePanel.qml
+        ${CMAKE_SOURCE_DIR}/qml/QueuePanel.qml
+        ${CMAKE_SOURCE_DIR}/qml/QueueRow.qml
+        ${CMAKE_SOURCE_DIR}/qml/SavePlaylistDialog.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumGrid.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumDetail.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumTrackRow.qml
@@ -320,13 +369,18 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/resources/icons/mic-vocal.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/music.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/list-music.svg
+        ${CMAKE_SOURCE_DIR}/resources/icons/list-plus.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/repeat.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/repeat-1.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/sparkles.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/library.svg
+        ${CMAKE_SOURCE_DIR}/resources/icons/trash-2.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/volume-x.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/volume-1.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/volume-2.svg
+        ${CMAKE_SOURCE_DIR}/resources/icons/x.svg
+        ${CMAKE_SOURCE_DIR}/resources/icons/grip-vertical.svg
+        ${CMAKE_SOURCE_DIR}/resources/icons/audio-lines.svg
     SOURCES
         AppInfo.cpp
         AppInfo.h

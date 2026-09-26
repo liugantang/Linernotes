@@ -65,3 +65,15 @@ linernotes_add_test(
         Linernotes::TestSupport
         Qt6::Sql
 )
+
+linernotes_add_test(
+    NAME ui_QueueModel
+    SOURCES
+        tst_QueueModel.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::library
+        Linernotes::player
+        Linernotes::TestSupport
+        Qt6::Sql
+)

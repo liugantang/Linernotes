@@ -59,24 +59,9 @@ Rectangle {
             Layout.fillHeight: true
 
             // Queue tab
-            Item {
-                ColumnLayout {
-                    anchors.centerIn: parent
-                    spacing: Theme.spacingSmall
-                    Label {
-                        text: qsTr("Queue")
-                        font.pixelSize: Theme.fontSizeLarge
-                        font.bold: true
-                        color: Theme.text
-                        Layout.alignment: Qt.AlignHCenter
-                    }
-                    Label {
-                        text: qsTr("Playback queue content will appear here.")
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.textSecondary
-                        Layout.alignment: Qt.AlignHCenter
-                    }
-                }
+            QueuePanel {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
             }
 
             // Lyrics tab

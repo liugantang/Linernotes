@@ -27,6 +27,8 @@ add_library(linernotes_library STATIC
     LibraryWatcher.h
     Migrator.cpp
     Migrator.h
+    PlaylistStore.cpp
+    PlaylistStore.h
     Scanner.cpp
     Scanner.h
     SearchIndex.cpp
