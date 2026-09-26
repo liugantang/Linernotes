@@ -6,6 +6,8 @@
 #   --quick  执行者用：debug 构建 + ctest + 格式 + tidy（仅改动文件）
 #   默认     审查者用：再加 ci 预设（-Werror）构建 + ctest，tidy 全量（与 CI 的 Lint 一致）
 #   --asan   额外构建并运行 asan 预设
+# 默认模式下，ci 预设的测试还会用 `unshare -r` 以 root 身份再跑一遍（CI 容器以 root 运行，
+# 权限相关的测试曾因此只在 CI 失败）。
 # 每一步的完整输出在 build/verify/<步骤>.log，失败时打印其尾部。
 set -uo pipefail
 
@@ -19,7 +21,7 @@ for arg in "$@"; do
         --quick) QUICK=true ;;
         --asan) ASAN=true ;;
         -h|--help)
-            sed -n '4,9p' "$0" | sed 's/^# \{0,1\}//'
+            sed -n '4,11p' "$0" | sed 's/^# \{0,1\}//'
             exit 0
             ;;
         *)
@@ -40,7 +42,11 @@ build_and_test() {
     local preset="$1"
     cmake --preset "${preset}" >/dev/null &&
         cmake --build --preset "${preset}" -j "${JOBS_BUILD}" &&
-        ctest --test-dir "build/${preset}" -j "${JOBS_TEST}" --output-on-failure
+        ctest --test-dir "build/${preset}" -j "${JOBS_TEST}" --output-on-failure || return 1
+    if [[ "${preset}" == ci ]] && unshare -r true 2>/dev/null; then
+        echo "=== ctest as root (unshare -r) ==="
+        unshare -r ctest --test-dir "build/${preset}" -j "${JOBS_TEST}" --output-on-failure
+    fi
 }
 
 tidy_step() {
