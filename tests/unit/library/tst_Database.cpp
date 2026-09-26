@@ -12,7 +12,6 @@
 
 #include <library/Database.h>
 #include <library/Errors.h>
-#include <unistd.h>
 
 #include <atomic>
 
@@ -286,20 +285,19 @@ void TstDatabase::openFailsForUnwritablePath()
         QVERIFY(connRes.error().detail.contains(tempDir.path()));
     }
 
-    // 2. Point Database to an unwritable directory to test db.open() failure
-    //    root 不受目录权限限制（CI 容器以 root 运行），此时跳过这一部分
-    if (::geteuid() != 0) {
-        const QString subDir = tempDir.filePath(QStringLiteral("readonly_dir"));
-        QDir().mkdir(subDir);
-        QFile::setPermissions(subDir, QFileDevice::ReadOwner | QFileDevice::ExeOwner);
-        const QString badPath = QDir(subDir).filePath(QStringLiteral("test.db"));
+    // 2. 父路径是一个普通文件：数据库目录无法创建，任何用户（包括 root）都一样。
+    //    不用“只读目录”来构造失败，因为 root 不受目录权限限制。
+    {
+        const QString blocker = tempDir.filePath(QStringLiteral("not_a_dir"));
+        QFile blockerFile(blocker);
+        QVERIFY(blockerFile.open(QIODevice::WriteOnly));
+        blockerFile.close();
+        const QString badPath = QDir(blocker).filePath(QStringLiteral("sub/test.db"));
         Database db(badPath);
         const auto connRes = db.connection();
         QVERIFY(!connRes.ok());
         QCOMPARE(connRes.error().code, errc::kDbOpen);
-        QVERIFY(connRes.error().detail.contains(badPath));
-        QFile::setPermissions(
-            subDir, QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner);
+        QVERIFY2(connRes.error().detail.contains(blocker), qPrintable(connRes.error().detail));
     }
 }
 

@@ -48,10 +48,17 @@ jobs:
       - name: Build
         run: cmake --build --preset ci
 
+      # 容器默认以 root 运行，而应用不会以 root 运行（root 不受文件权限限制，
+      # 会让权限相关的测试失去意义）。构建仍用 root，测试切换到普通用户。
+      - name: Create test user
+        run: |
+          useradd --create-home tester
+          chown -R tester:tester "$GITHUB_WORKSPACE"
+
       - name: Test
         env:
           LINERNOTES_NO_AUDIO_SERVER: "1"
-        run: ctest --preset ci
+        run: runuser -u tester -- env LINERNOTES_NO_AUDIO_SERVER=1 ctest --preset ci
 
       - name: Upload test log on failure
         if: failure()
@@ -120,10 +127,17 @@ jobs:
       - name: Build
         run: cmake --build --preset asan
 
+      # 容器默认以 root 运行，而应用不会以 root 运行（root 不受文件权限限制，
+      # 会让权限相关的测试失去意义）。构建仍用 root，测试切换到普通用户。
+      - name: Create test user
+        run: |
+          useradd --create-home tester
+          chown -R tester:tester "$GITHUB_WORKSPACE"
+
       - name: Test
         env:
           LINERNOTES_NO_AUDIO_SERVER: "1"
-        run: ctest --preset asan
+        run: runuser -u tester -- env LINERNOTES_NO_AUDIO_SERVER=1 ctest --preset asan
 
       - name: Upload test log on failure
         if: failure()
