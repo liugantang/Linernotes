@@ -22,6 +22,7 @@ namespace linernotes::playcli {
 
 class PlayCli : public QObject {
     Q_OBJECT
+    Q_DISABLE_COPY_MOVE(PlayCli)
 
 public:
     explicit PlayCli(const QString &ao = QString(), QObject *parent = nullptr);
@@ -47,6 +48,7 @@ private:
     void setupSignals();
     void setupStdin();
     void setupPlayer();
+    void processStdinBuffer();
     void handleStdinCommand(const QString &line);
     /// 执行一条命令；无法识别或参数无效时返回 false
     bool executeCommand(const QString &trimmed);

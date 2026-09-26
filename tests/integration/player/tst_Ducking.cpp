@@ -106,7 +106,7 @@ void TstDucking::retargetMidRampIsContinuous()
     QTRY_VERIFY_WITH_TIMEOUT(gainSpy.count() >= 3, 2000);
 
     const double lastGainBeforeRetarget = gainSpy.last().at(0).toDouble();
-    const int countBeforeRetarget = gainSpy.count();
+    const auto countBeforeRetarget = gainSpy.count();
 
     // Retarget mid-ramp towards 1.0
     player.duckTo(1.0, 400);

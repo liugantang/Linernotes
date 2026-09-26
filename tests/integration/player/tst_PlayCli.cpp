@@ -171,9 +171,13 @@ void TstPlayCli::quitCommandSavesState()
     linernotes::player::PlaybackStateStore store(stateFilePath);
     const auto snapshot = store.load();
     QVERIFY(snapshot.has_value());
-    QCOMPARE(snapshot->items.size(), 1);
-    QCOMPARE(snapshot->items.at(0).source, silence);
-    QCOMPARE(snapshot->currentIndex, 0);
+    if (!snapshot) {
+        return;
+    }
+    const auto &snap = *snapshot;
+    QCOMPARE(snap.items.size(), 1);
+    QCOMPARE(snap.items.at(0).source, silence);
+    QCOMPARE(snap.currentIndex, 0);
 }
 
 void TstPlayCli::restoresFromStateFile()

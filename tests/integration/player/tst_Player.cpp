@@ -33,6 +33,9 @@ private slots:
     void muteToggles();
     void playbackFinishedEmittedAtEof();
     void stateChangedNotEmittedRedundantly();
+    void audioDevicesEmptyUntilRefreshed();
+    void selectAutoWithoutRefresh();
+    void refreshPopulatesDevices();
     void audioDevicesContainsAuto();
     void defaultAudioDeviceIsAuto();
     void selectingUnknownDeviceFails();
@@ -259,11 +262,56 @@ void TstPlayer::stateChangedNotEmittedRedundantly()
     }
 }
 
-void TstPlayer::audioDevicesContainsAuto()
+void TstPlayer::audioDevicesEmptyUntilRefreshed()
 {
     Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
     QVERIFY(player.isValid());
+    QVERIFY(player.audioDevices().isEmpty());
+}
 
+void TstPlayer::selectAutoWithoutRefresh()
+{
+    Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    QVERIFY(player.isValid());
+    QVERIFY(player.audioDevices().isEmpty());
+
+    QSignalSpy spy(&player, &Player::audioDeviceChanged);
+    const bool result = player.selectAudioDevice(QStringLiteral("auto"));
+    QCOMPARE(result, true);
+    QCOMPARE(player.audioDevice(), QStringLiteral("auto"));
+    QVERIFY(player.audioDevices().isEmpty());
+    QCOMPARE(spy.count(), 0);
+}
+
+void TstPlayer::refreshPopulatesDevices()
+{
+    if (!qEnvironmentVariableIsEmpty("LINERNOTES_NO_AUDIO_SERVER")) {
+        QSKIP("LINERNOTES_NO_AUDIO_SERVER set: audio device enumeration may deadlock in "
+              "libpipewire without audio server");
+    }
+
+    Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    QVERIFY(player.isValid());
+    QVERIFY(player.audioDevices().isEmpty());
+
+    QSignalSpy spy(&player, &Player::audioDevicesChanged);
+    player.refreshAudioDevices();
+
+    QTRY_VERIFY_WITH_TIMEOUT(!player.audioDevices().isEmpty(), 5000);
+    QVERIFY(spy.count() >= 1);
+}
+
+void TstPlayer::audioDevicesContainsAuto()
+{
+    if (!qEnvironmentVariableIsEmpty("LINERNOTES_NO_AUDIO_SERVER")) {
+        QSKIP("LINERNOTES_NO_AUDIO_SERVER set: audio device enumeration may deadlock in "
+              "libpipewire without audio server");
+    }
+
+    Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    QVERIFY(player.isValid());
+
+    player.refreshAudioDevices();
     QTRY_VERIFY_WITH_TIMEOUT(!player.audioDevices().isEmpty(), 5000);
 
     const QVariantList devices = player.audioDevices();
@@ -296,6 +344,11 @@ void TstPlayer::defaultAudioDeviceIsAuto()
 
 void TstPlayer::selectingUnknownDeviceFails()
 {
+    if (!qEnvironmentVariableIsEmpty("LINERNOTES_NO_AUDIO_SERVER")) {
+        QSKIP("LINERNOTES_NO_AUDIO_SERVER set: audio device enumeration may deadlock in "
+              "libpipewire without audio server");
+    }
+
     Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
     QVERIFY(player.isValid());
 
@@ -311,8 +364,15 @@ void TstPlayer::selectingUnknownDeviceFails()
 
 void TstPlayer::selectingListedDeviceSucceeds()
 {
+    if (!qEnvironmentVariableIsEmpty("LINERNOTES_NO_AUDIO_SERVER")) {
+        QSKIP("LINERNOTES_NO_AUDIO_SERVER set: audio device enumeration may deadlock in "
+              "libpipewire without audio server");
+    }
+
     Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
     QVERIFY(player.isValid());
+
+    player.refreshAudioDevices();
     QTRY_VERIFY_WITH_TIMEOUT(!player.audioDevices().isEmpty(), 5000);
 
     const QVariantList devices = player.audioDevices();

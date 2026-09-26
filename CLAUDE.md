@@ -31,7 +31,7 @@ Claude 的调用成本高，Gemini 便宜。因此：
        --dangerously-skip-permissions --model gemini-3.7-flash-high \
        --print-timeout 60m > .ai/logs/<任务编号>.log 2>&1
    ```
-3. **审查**：看 `git status`、`git diff`；自己运行一次构建和 `ctest`（不要只信汇报）；对照任务说明与 DEVELOPMENT.md 检查范围、设计、测试是否充分、有无越界修改。
+3. **审查**：看 `git status`、`git diff`；自己运行一次构建、`ctest` 和 `scripts/tidy.sh --strict`（不要只信汇报；CI 的 Lint 任务就是这条命令，阶段 1 曾因审查时漏跑而在 CI 失败）；对照任务说明与 DEVELOPMENT.md 检查范围、设计、测试是否充分、有无越界修改。
 4. **返工**：问题写进 `.ai/tasks/<任务编号>.review.md`，然后再次委托：
    ```bash
    cd /home/liugantang/Code/AiMusic && agy -p "项目根目录是 /home/liugantang/Code/AiMusic，所有命令都在此目录下执行。请阅读 /home/liugantang/Code/AiMusic/.ai/tasks/<任务编号>.review.md，按审查意见修改。" \
@@ -48,3 +48,4 @@ Claude 的调用成本高，Gemini 便宜。因此：
 
 - 较大的技术选型或验证（spike）也可以交给 Gemini 调研，但结论由 Claude 审查后写入 `docs/decisions/`。
 - 可用模型用 `agy models` 查看。
+- 重复运行测试（查偶发失败、稳定性验证）最多 10 次，任务说明中也按此上限要求。

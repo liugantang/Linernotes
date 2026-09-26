@@ -14,7 +14,6 @@
 
 using linernotes::player::Player;
 using linernotes::player::PlayMode;
-using linernotes::player::PlayQueue;
 
 namespace {
 

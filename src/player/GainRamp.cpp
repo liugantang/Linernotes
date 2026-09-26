@@ -25,8 +25,8 @@ double GainRamp::valueAt(qint64 elapsedMs) const
 
     const double t = static_cast<double>(elapsedMs) / static_cast<double>(m_durationMs);
     // Smoothstep: S(t) = t * t * (3 - 2 * t)
-    const double smoothT = t * t * (3.0 - 2.0 * t);
-    const double value = m_from + (m_to - m_from) * smoothT;
+    const double smoothT = (t * t) * (3.0 - (2.0 * t));
+    const double value = m_from + ((m_to - m_from) * smoothT);
     return std::clamp(value, 0.0, 1.0);
 }
 

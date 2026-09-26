@@ -59,11 +59,11 @@ MpvHandle::OptionList buildPlayerOptions(const MpvHandle::OptionList &extraOptio
 {
     MpvHandle::OptionList options = extraOptions;
     QString userAf;
-    int afIndex = -1;
-    for (int i = 0; i < options.size(); ++i) {
-        if (options[i].first == QStringLiteral("af")) {
-            userAf = options[i].second;
-            afIndex = i;
+    bool foundAf = false;
+    for (const auto &opt : options) {
+        if (opt.first == QStringLiteral("af")) {
+            userAf = opt.second;
+            foundAf = true;
             break;
         }
     }
@@ -72,8 +72,13 @@ MpvHandle::OptionList buildPlayerOptions(const MpvHandle::OptionList &extraOptio
     const QString combinedAf
         = userAf.isEmpty() ? duckFilter : (userAf + QStringLiteral(",") + duckFilter);
 
-    if (afIndex >= 0) {
-        options[afIndex].second = combinedAf;
+    if (foundAf) {
+        for (auto &opt : options) {
+            if (opt.first == QStringLiteral("af")) {
+                opt.second = combinedAf;
+                break;
+            }
+        }
     } else {
         options.append({ QStringLiteral("af"), combinedAf });
     }
@@ -115,7 +120,6 @@ Player::Player(const MpvHandle::OptionList &extraOptions, QObject *parent)
     m_mpv->observeProperty(QStringLiteral("duration"));
     m_mpv->observeProperty(QStringLiteral("volume"));
     m_mpv->observeProperty(QStringLiteral("mute"));
-    m_mpv->observeProperty(QStringLiteral("audio-device-list"));
     m_mpv->observeProperty(QStringLiteral("audio-device"));
     m_mpv->observeProperty(QStringLiteral("audio-exclusive"));
 
@@ -134,10 +138,6 @@ Player::Player(const MpvHandle::OptionList &extraOptions, QObject *parent)
     const QVariant muteVar = m_mpv->property(QStringLiteral("mute"));
     if (muteVar.isValid()) {
         m_muted = muteVar.toBool();
-    }
-    const QVariant devListVar = m_mpv->property(QStringLiteral("audio-device-list"));
-    if (devListVar.isValid()) {
-        m_audioDevices = parseAudioDeviceList(devListVar);
     }
     const QVariant devVar = m_mpv->property(QStringLiteral("audio-device"));
     if (devVar.isValid() && !devVar.isNull()) {
@@ -263,6 +263,9 @@ void Player::restore(const PlaybackSnapshot &snapshot)
             selectAudioDevice(QStringLiteral("auto"));
         }
     } else {
+        if (!m_audioDevicesRefreshed) {
+            refreshAudioDevices();
+        }
         bool deviceFound = false;
         for (const QVariant &devVar : m_audioDevices) {
             if (devVar.toMap().value(QStringLiteral("name")).toString() == snapshot.audioDevice) {
@@ -586,7 +589,7 @@ void Player::onAudioReconfigured()
 
 QString Player::formattedDuckFilter(double gain) const
 {
-    const QString duckFilter = QStringLiteral("@duck:lavfi=[volume=volume=")
+    QString duckFilter = QStringLiteral("@duck:lavfi=[volume=volume=")
         + QString::number(gain, 'f', 6) + QStringLiteral("]");
     if (m_userAudioFilters.isEmpty()) {
         return duckFilter;
@@ -594,8 +597,35 @@ QString Player::formattedDuckFilter(double gain) const
     return m_userAudioFilters + QStringLiteral(",") + duckFilter;
 }
 
+void Player::refreshAudioDevices()
+{
+    if (m_mpv == nullptr || !m_mpv->isValid()) {
+        return;
+    }
+    if (!m_audioDevicesRefreshed) {
+        m_audioDevicesRefreshed = true;
+        m_mpv->observeProperty(QStringLiteral("audio-device-list"));
+    }
+    const QVariant devListVar = m_mpv->property(QStringLiteral("audio-device-list"));
+    if (devListVar.isValid()) {
+        handleAudioDeviceListChanged(devListVar);
+    }
+}
+
 bool Player::selectAudioDevice(const QString &name)
 {
+    if (name == QStringLiteral("auto")) {
+        qCDebug(lcPlayer) << "selectAudioDevice() to auto";
+        if (m_mpv == nullptr || !m_mpv->isValid()) {
+            return false;
+        }
+        return m_mpv->setProperty(QStringLiteral("audio-device"), QStringLiteral("auto"));
+    }
+
+    if (!m_audioDevicesRefreshed) {
+        refreshAudioDevices();
+    }
+
     bool found = false;
     for (const QVariant &devVar : m_audioDevices) {
         if (devVar.toMap().value(QStringLiteral("name")).toString() == name) {
@@ -959,46 +989,51 @@ void Player::onEndFile(qint64 entryId, MpvHandle::EndFileReason reason, const QS
             emit playbackFinished();
         }
     } else if (reason == MpvHandle::EndFileReason::Error) {
-        qCWarning(lcPlayer) << "Playback error on" << failedSource << ":" << error;
-        emit playbackError(failedSource, error);
+        handleEndFileError(entryId, failedSource, error);
+    }
+}
 
-        ++m_consecutiveErrorCount;
-        if (m_consecutiveErrorCount >= std::max(1, m_queue->count())) {
-            qCWarning(lcPlayer) << "all items failed (" << m_consecutiveErrorCount
-                                << "consecutive errors), stopping playback";
-            m_currentEntryId = -1;
-            m_currentUid = 0;
-            stop();
-            if (m_queue->mode() == PlayMode::Sequential) {
-                emit playbackFinished();
-            }
-            return;
+void Player::handleEndFileError(qint64 entryId, const QString &failedSource, const QString &error)
+{
+    qCWarning(lcPlayer) << "Playback error on" << failedSource << ":" << error;
+    emit playbackError(failedSource, error);
+
+    ++m_consecutiveErrorCount;
+    if (m_consecutiveErrorCount >= std::max(1, m_queue->count())) {
+        qCWarning(lcPlayer) << "all items failed (" << m_consecutiveErrorCount
+                            << "consecutive errors), stopping playback";
+        m_currentEntryId = -1;
+        m_currentUid = 0;
+        stop();
+        if (m_queue->mode() == PlayMode::Sequential) {
+            emit playbackFinished();
         }
+        return;
+    }
 
-        if (m_preloadIsRepeatOne && m_preloadEntryId != -1) {
-            m_inInternalSync = true;
-            m_ignoredEntryIds.insert(m_preloadEntryId);
-            m_mpv->command({ QStringLiteral("playlist-remove"), QStringLiteral("1") });
-            m_entrySources.remove(m_preloadEntryId);
-            m_preloadEntryId = -1;
-            m_preloadUid = 0;
-            m_preloadIsRepeatOne = false;
-            m_inInternalSync = false;
-        }
+    if (m_preloadIsRepeatOne && m_preloadEntryId != -1) {
+        m_inInternalSync = true;
+        m_ignoredEntryIds.insert(m_preloadEntryId);
+        m_mpv->command({ QStringLiteral("playlist-remove"), QStringLiteral("1") });
+        m_entrySources.remove(m_preloadEntryId);
+        m_preloadEntryId = -1;
+        m_preloadUid = 0;
+        m_preloadIsRepeatOne = false;
+        m_inInternalSync = false;
+    }
 
-        if (entryId == m_currentEntryId || m_currentEntryId == -1) {
-            if (m_preloadEntryId != -1) {
-                // mpv has preloaded next item and will automatically transition to it.
+    if (entryId == m_currentEntryId || m_currentEntryId == -1) {
+        if (m_preloadEntryId != -1) {
+            // mpv has preloaded next item and will automatically transition to it.
+        } else {
+            const auto nextItem = m_queue->advance(PlayOrder::Advance::User);
+            if (nextItem.has_value()) {
+                loadCurrentItem(*nextItem);
             } else {
-                const auto nextItem = m_queue->advance(PlayOrder::Advance::User);
-                if (nextItem.has_value()) {
-                    loadCurrentItem(*nextItem);
-                } else {
-                    m_currentEntryId = -1;
-                    m_currentUid = 0;
-                    stop();
-                    emit playbackFinished();
-                }
+                m_currentEntryId = -1;
+                m_currentUid = 0;
+                stop();
+                emit playbackFinished();
             }
         }
     }

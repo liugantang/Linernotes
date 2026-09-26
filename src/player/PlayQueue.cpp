@@ -51,10 +51,10 @@ QVariant PlayQueue::data(const QModelIndex &index, int role) const
 QHash<int, QByteArray> PlayQueue::roleNames() const
 {
     QHash<int, QByteArray> roles = QAbstractListModel::roleNames();
-    roles[SourceRole] = "source";
-    roles[TrackIdRole] = "trackId";
-    roles[UidRole] = "uid";
-    roles[IsCurrentRole] = "isCurrent";
+    roles.insert(SourceRole, "source");
+    roles.insert(TrackIdRole, "trackId");
+    roles.insert(UidRole, "uid");
+    roles.insert(IsCurrentRole, "isCurrent");
     return roles;
 }
 

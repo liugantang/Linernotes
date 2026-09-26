@@ -25,12 +25,19 @@ struct QueueItem {
 
 class PlayQueue : public QAbstractListModel {
     Q_OBJECT
+    Q_DISABLE_COPY_MOVE(PlayQueue)
     Q_PROPERTY(int currentIndex READ currentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(linernotes::player::PlayMode mode READ mode WRITE setMode NOTIFY modeChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
-    enum Role { SourceRole = Qt::UserRole + 1, TrackIdRole, UidRole, IsCurrentRole };
+    enum Role : std::uint16_t { // NOLINT(cppcoreguidelines-use-enum-class) - Qt 模型角色需与 int
+                                // 互转
+        SourceRole = Qt::UserRole + 1,
+        TrackIdRole,
+        UidRole,
+        IsCurrentRole
+    };
     Q_ENUM(Role)
 
     explicit PlayQueue(quint64 seed, QObject *parent = nullptr);
