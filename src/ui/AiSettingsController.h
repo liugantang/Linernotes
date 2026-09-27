@@ -26,10 +26,12 @@ class AiSettingsController : public QObject {
 
     Q_PROPERTY(linernotes::ui::ServiceListModel *services READ services CONSTANT)
     Q_PROPERTY(QString testingServiceId READ testingServiceId NOTIFY testingServiceIdChanged)
+    Q_PROPERTY(bool playHistoryAllowed READ playHistoryAllowed WRITE setPlayHistoryAllowed NOTIFY
+            privacyChanged)
     Q_PROPERTY(
-        bool sendPlayHistory READ sendPlayHistory WRITE setSendPlayHistory NOTIFY privacyChanged)
-    Q_PROPERTY(bool sendMoments READ sendMoments WRITE setSendMoments NOTIFY privacyChanged)
-    Q_PROPERTY(bool sendLocation READ sendLocation WRITE setSendLocation NOTIFY privacyChanged)
+        bool momentsAllowed READ momentsAllowed WRITE setMomentsAllowed NOTIFY privacyChanged)
+    Q_PROPERTY(
+        bool locationAllowed READ locationAllowed WRITE setLocationAllowed NOTIFY privacyChanged)
     Q_PROPERTY(linernotes::ui::UsageSummaryModel *usage READ usage CONSTANT)
 
 public:
@@ -61,12 +63,12 @@ public:
         linernotes::ai::Purpose purpose, const QString &serviceId, const QString &model);
 
     // Privacy
-    [[nodiscard]] bool sendPlayHistory() const;
-    void setSendPlayHistory(bool allowed);
-    [[nodiscard]] bool sendMoments() const;
-    void setSendMoments(bool allowed);
-    [[nodiscard]] bool sendLocation() const;
-    void setSendLocation(bool allowed);
+    [[nodiscard]] bool playHistoryAllowed() const;
+    void setPlayHistoryAllowed(bool allowed);
+    [[nodiscard]] bool momentsAllowed() const;
+    void setMomentsAllowed(bool allowed);
+    [[nodiscard]] bool locationAllowed() const;
+    void setLocationAllowed(bool allowed);
 
     // Usage & Cache
     [[nodiscard]] UsageSummaryModel *usage();

@@ -125,12 +125,12 @@
         <translation>曲库中暂无专辑</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumGrid.qml" line="274"/>
+        <location filename="../qml/AlbumGrid.qml" line="276"/>
         <source>Unknown Album</source>
         <translation>未知专辑</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumGrid.qml" line="284"/>
+        <location filename="../qml/AlbumGrid.qml" line="286"/>
         <source>Unknown Artist</source>
         <translation>未知艺人</translation>
     </message>
@@ -138,7 +138,7 @@
 <context>
     <name>AlbumTrackRow</name>
     <message>
-        <location filename="../qml/AlbumTrackRow.qml" line="54"/>
+        <location filename="../qml/AlbumTrackRow.qml" line="55"/>
         <source>Unknown Title</source>
         <translation>未知标题</translation>
     </message>
@@ -322,7 +322,7 @@
         <translation>全部歌曲 (%1)</translation>
     </message>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="243"/>
+        <location filename="../qml/ArtistDetail.qml" line="245"/>
         <source>Unknown Title</source>
         <translation>未知标题</translation>
     </message>
@@ -357,26 +357,26 @@
         <translation>曲库中暂无艺人</translation>
     </message>
     <message>
-        <location filename="../qml/pages/ArtistsPage.qml" line="197"/>
+        <location filename="../qml/pages/ArtistsPage.qml" line="199"/>
         <source>Unknown Artist</source>
         <translation>未知艺人</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/pages/ArtistsPage.qml" line="206"/>
+        <location filename="../qml/pages/ArtistsPage.qml" line="208"/>
         <source>%n album(s)</source>
         <translation>
             <numerusform>%n 张专辑</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/pages/ArtistsPage.qml" line="206"/>
+        <location filename="../qml/pages/ArtistsPage.qml" line="208"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n 首</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/pages/ArtistsPage.qml" line="244"/>
+        <location filename="../qml/pages/ArtistsPage.qml" line="246"/>
         <source>Select an artist to view details</source>
         <translation>选择艺人以查看详情</translation>
     </message>
@@ -697,7 +697,7 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/PlaylistList.qml" line="337"/>
+        <location filename="../qml/PlaylistList.qml" line="335"/>
         <source>No playlists</source>
         <translation>暂无歌单</translation>
     </message>
@@ -821,12 +821,12 @@
         <translation>清空播放队列（保留当前播放歌曲）</translation>
     </message>
     <message>
-        <location filename="../qml/QueuePanel.qml" line="379"/>
+        <location filename="../qml/QueuePanel.qml" line="377"/>
         <source>Queue is empty</source>
         <translation>播放队列为空</translation>
     </message>
     <message>
-        <location filename="../qml/QueuePanel.qml" line="387"/>
+        <location filename="../qml/QueuePanel.qml" line="385"/>
         <source>Double-click tracks in the library to start playing</source>
         <translation>双击曲库中的歌曲开始播放</translation>
     </message>
@@ -834,12 +834,12 @@
 <context>
     <name>QueueRow</name>
     <message>
-        <location filename="../qml/QueueRow.qml" line="172"/>
+        <location filename="../qml/QueueRow.qml" line="176"/>
         <source>Unknown Title</source>
         <translation>未知标题</translation>
     </message>
     <message>
-        <location filename="../qml/QueueRow.qml" line="210"/>
+        <location filename="../qml/QueueRow.qml" line="214"/>
         <source>Remove from Queue</source>
         <translation>从播放队列中移除</translation>
     </message>
@@ -860,12 +860,12 @@
 <context>
     <name>SearchResults</name>
     <message>
-        <location filename="../qml/SearchResults.qml" line="59"/>
+        <location filename="../qml/SearchResults.qml" line="60"/>
         <source>Search &quot;%1&quot;</source>
         <translation>搜索“%1”</translation>
     </message>
     <message>
-        <location filename="../qml/SearchResults.qml" line="69"/>
+        <location filename="../qml/SearchResults.qml" line="70"/>
         <source>No results found for &quot;%1&quot;</source>
         <translation>未找到“%1”的相关结果</translation>
     </message>
@@ -924,6 +924,391 @@
         <translation>
             <numerusform>显示全部 %n 首歌曲</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>SettingsAiPrivacy</name>
+    <message>
+        <location filename="../qml/SettingsAiPrivacy.qml" line="16"/>
+        <source>Privacy</source>
+        <translation>隐私</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiPrivacy.qml" line="26"/>
+        <source>Send play history to cloud services</source>
+        <translation>向云端服务发送播放历史</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiPrivacy.qml" line="38"/>
+        <source>Send moments to cloud services</source>
+        <translation>向云端服务发送瞬间</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiPrivacy.qml" line="50"/>
+        <source>Send location to cloud services</source>
+        <translation>向云端服务发送位置</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiPrivacy.qml" line="71"/>
+        <source>Local services (localhost / LAN) are not restricted. Only text metadata is ever sent; audio is never uploaded.</source>
+        <translation>本地服务（localhost / LAN）不受限制。仅发送文本元数据；音频绝不会被上传。</translation>
+    </message>
+</context>
+<context>
+    <name>SettingsAiRoutes</name>
+    <message>
+        <location filename="../qml/SettingsAiRoutes.qml" line="31"/>
+        <source>Metadata cleanup</source>
+        <translation>元数据清理</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiRoutes.qml" line="32"/>
+        <source>Natural-language search</source>
+        <translation>自然语言搜索</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiRoutes.qml" line="33"/>
+        <source>AI DJ</source>
+        <translation>AI DJ</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiRoutes.qml" line="34"/>
+        <source>Listening guide</source>
+        <translation>聆听向导</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiRoutes.qml" line="35"/>
+        <source>Liner notes &amp; narrative</source>
+        <translation>唱片内页说明与叙事</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiRoutes.qml" line="41"/>
+        <source>Models by Feature</source>
+        <translation>按功能配置模型</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiRoutes.qml" line="50"/>
+        <source>Add a service above to configure feature routing.</source>
+        <translation>在上方添加服务以配置功能路由。</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiRoutes.qml" line="91"/>
+        <source>Default service</source>
+        <translation>默认服务</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiRoutes.qml" line="139"/>
+        <source>Default model</source>
+        <translation>默认模型</translation>
+    </message>
+</context>
+<context>
+    <name>SettingsAiSection</name>
+    <message>
+        <location filename="../qml/SettingsAiSection.qml" line="19"/>
+        <source>AI</source>
+        <translation>AI</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiSection.qml" line="27"/>
+        <source>Linernotes does not ship any API key. Connect an OpenAI-compatible service (cloud, or local such as Ollama / llama.cpp). Audio never leaves your computer.</source>
+        <translation>Linernotes 不内置任何 API Key。连接兼容 OpenAI 的服务（云端或本地，如 Ollama / llama.cpp）。音频绝不会离开您的计算机。</translation>
+    </message>
+</context>
+<context>
+    <name>SettingsAiServiceDialog</name>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="19"/>
+        <source>Custom</source>
+        <translation>自定义</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="134"/>
+        <source>Edit Service</source>
+        <translation>编辑服务</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="134"/>
+        <source>Add Service</source>
+        <translation>添加服务</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="149"/>
+        <source>Preset</source>
+        <translation>预设</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="172"/>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="181"/>
+        <source>e.g. OpenAI</source>
+        <translation>例如 OpenAI</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="186"/>
+        <source>Base URL</source>
+        <translation>Base URL</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="200"/>
+        <source>Default Model</source>
+        <translation>默认模型</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="209"/>
+        <source>e.g. gpt-4o, llama3</source>
+        <translation>例如 gpt-4o, llama3</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="214"/>
+        <source>API Key</source>
+        <translation>API Key</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="231"/>
+        <source>Saved — leave empty to keep</source>
+        <translation>已保存 — 留空以保持不变</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="231"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="233"/>
+        <source>Not set</source>
+        <translation>未设置</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="239"/>
+        <source>Clear key</source>
+        <translation>清除 Key</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="246"/>
+        <source>Timeout (seconds)</source>
+        <translation>超时（秒）</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="262"/>
+        <source>Max concurrent</source>
+        <translation>最大并发数</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="278"/>
+        <source>Requests / min</source>
+        <translation>每分钟请求数</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="297"/>
+        <source>0 = unlimited</source>
+        <translation>0 = 无限制</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="325"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="331"/>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+</context>
+<context>
+    <name>SettingsAiServices</name>
+    <message>
+        <location filename="../qml/SettingsAiServices.qml" line="55"/>
+        <source>Remove Service</source>
+        <translation>移除服务</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServices.qml" line="63"/>
+        <source>Remove &quot;%1&quot;? Any feature routing configured to this service will fall back to the default service.</source>
+        <translation>确定要移除“%1”吗？配置到此服务的所有功能路由将回退至默认服务。</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServices.qml" line="80"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServices.qml" line="86"/>
+        <location filename="../qml/SettingsAiServices.qml" line="325"/>
+        <source>Remove</source>
+        <translation>移除</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServices.qml" line="104"/>
+        <source>Services</source>
+        <translation>服务</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServices.qml" line="181"/>
+        <source>Default</source>
+        <translation>默认</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServices.qml" line="200"/>
+        <source>Local</source>
+        <translation>本地</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServices.qml" line="218"/>
+        <source>Not tested</source>
+        <translation>未测试</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServices.qml" line="282"/>
+        <source>Testing…</source>
+        <translation>正在测试…</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServices.qml" line="288"/>
+        <source>Test</source>
+        <translation>测试</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServices.qml" line="298"/>
+        <source>Set as default</source>
+        <translation>设为默认</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServices.qml" line="309"/>
+        <source>Edit</source>
+        <translation>编辑</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServices.qml" line="349"/>
+        <source>Model: %1</source>
+        <translation>模型：%1</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServices.qml" line="376"/>
+        <source>No AI services configured yet. Add a service to enable AI features.</source>
+        <translation>暂无已配置的 AI 服务。添加服务以启用 AI 功能。</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServices.qml" line="392"/>
+        <source>Add service</source>
+        <translation>添加服务</translation>
+    </message>
+</context>
+<context>
+    <name>SettingsAiUsage</name>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="23"/>
+        <source>Metadata cleanup</source>
+        <translation>元数据清理</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="24"/>
+        <source>Natural-language search</source>
+        <translation>自然语言搜索</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="25"/>
+        <source>AI DJ</source>
+        <translation>AI DJ</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="26"/>
+        <source>Listening guide</source>
+        <translation>聆听向导</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="27"/>
+        <source>Liner notes &amp; narrative</source>
+        <translation>唱片内页说明与叙事</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="28"/>
+        <source>Unknown</source>
+        <translation>未知</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="48"/>
+        <source>Response cache cleared successfully.</source>
+        <translation>已成功清除响应缓存。</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="49"/>
+        <source>Failed to clear response cache.</source>
+        <translation>清除响应缓存失败。</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="62"/>
+        <source>Usage</source>
+        <translation>用量</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="73"/>
+        <source>Time range:</source>
+        <translation>时间范围：</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="84"/>
+        <source>7 days</source>
+        <translation>7 天</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="85"/>
+        <source>30 days</source>
+        <translation>30 天</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="86"/>
+        <source>90 days</source>
+        <translation>90 天</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="97"/>
+        <source>Clear response cache</source>
+        <translation>清除响应缓存</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="118"/>
+        <source>Total: %1 requests, %2 input tokens, %3 output tokens</source>
+        <translation>总计：%1 次请求，%2 个输入 tokens，%3 个输出 tokens</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="157"/>
+        <source>Feature</source>
+        <translation>功能</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="166"/>
+        <source>Model</source>
+        <translation>模型</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="175"/>
+        <source>Requests</source>
+        <translation>请求数</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="184"/>
+        <source>Cache Hits</source>
+        <translation>缓存命中</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="193"/>
+        <source>Failures</source>
+        <translation>失败数</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="202"/>
+        <source>Input Tokens</source>
+        <translation>输入 Tokens</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="211"/>
+        <source>Output Tokens</source>
+        <translation>输出 Tokens</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiUsage.qml" line="329"/>
+        <source>No usage yet.</source>
+        <translation>暂无用量数据。</translation>
     </message>
 </context>
 <context>
@@ -1041,7 +1426,7 @@
 <context>
     <name>SettingsPage</name>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="29"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="32"/>
         <source>Settings</source>
         <translation>设置</translation>
     </message>
@@ -1470,84 +1855,84 @@
 <context>
     <name>TrackTable</name>
     <message>
-        <location filename="../qml/TrackTable.qml" line="20"/>
+        <location filename="../qml/TrackTable.qml" line="21"/>
         <source>No tracks in library</source>
         <translation>曲库中暂无歌曲</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="101"/>
+        <location filename="../qml/TrackTable.qml" line="103"/>
         <source>Title</source>
         <extracomment>Track table column header</extracomment>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="103"/>
+        <location filename="../qml/TrackTable.qml" line="105"/>
         <source>Artist</source>
         <extracomment>Track table column header</extracomment>
         <translation>艺人</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="105"/>
+        <location filename="../qml/TrackTable.qml" line="107"/>
         <source>Album</source>
         <extracomment>Track table column header</extracomment>
         <translation>专辑</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="107"/>
+        <location filename="../qml/TrackTable.qml" line="109"/>
         <source>Album Artist</source>
         <extracomment>Track table column header</extracomment>
         <translation>专辑艺人</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="109"/>
+        <location filename="../qml/TrackTable.qml" line="111"/>
         <source>Genre</source>
         <extracomment>Track table column header</extracomment>
         <translation>流派</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="111"/>
+        <location filename="../qml/TrackTable.qml" line="113"/>
         <source>Year</source>
         <extracomment>Track table column header</extracomment>
         <translation>年份</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="113"/>
+        <location filename="../qml/TrackTable.qml" line="115"/>
         <source>Duration</source>
         <extracomment>Track table column header</extracomment>
         <translation>时长</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="115"/>
+        <location filename="../qml/TrackTable.qml" line="117"/>
         <source>Rating</source>
         <extracomment>Track table column header</extracomment>
         <translation>评分</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="117"/>
+        <location filename="../qml/TrackTable.qml" line="119"/>
         <source>Format</source>
         <extracomment>Track table column header</extracomment>
         <translation>格式</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="119"/>
+        <location filename="../qml/TrackTable.qml" line="121"/>
         <source>Bitrate</source>
         <extracomment>Track table column header</extracomment>
         <translation>比特率</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="121"/>
+        <location filename="../qml/TrackTable.qml" line="123"/>
         <source>Date Added</source>
         <extracomment>Track table column header</extracomment>
         <translation>添加日期</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="123"/>
+        <location filename="../qml/TrackTable.qml" line="125"/>
         <source>Plays</source>
         <extracomment>Track table column header</extracomment>
         <translation>播放次数</translation>
     </message>
     <message>
-        <location filename="../qml/TrackTable.qml" line="125"/>
+        <location filename="../qml/TrackTable.qml" line="127"/>
         <source>Last Played</source>
         <extracomment>Track table column header</extracomment>
         <translation>最后播放</translation>
@@ -1655,6 +2040,99 @@
         <location filename="../qml/VolumeControl.qml" line="31"/>
         <source>Mute</source>
         <translation>静音</translation>
+    </message>
+</context>
+<context>
+    <name>linernotes::ui::AiSettingsController</name>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="50"/>
+        <source>Service name cannot be empty</source>
+        <translation>服务名称不能为空</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="54"/>
+        <source>Base URL cannot be empty</source>
+        <translation>Base URL 不能为空</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="58"/>
+        <source>Default model cannot be empty</source>
+        <translation>默认模型不能为空</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="65"/>
+        <source>Base URL must start with http:// or https://</source>
+        <translation>Base URL 必须以 http:// 或 https:// 开头</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="109"/>
+        <source>API key removed</source>
+        <translation>API Key 已移除</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="112"/>
+        <source>Failed to remove API key: %1</source>
+        <translation>移除 API Key 失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="119"/>
+        <source>API key saved</source>
+        <translation>API Key 已保存</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="122"/>
+        <source>Failed to save API key: %1</source>
+        <translation>保存 API Key 失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="160"/>
+        <source>Failed to read API key</source>
+        <translation>读取 API Key 失败</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="166"/>
+        <source>Failed to load ping prompt template</source>
+        <translation>加载 ping 提示词模板失败</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="212"/>
+        <source>Connected successfully, model replied: %1</source>
+        <translation>连接成功，模型回复：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="222"/>
+        <source> (Failed to probe capabilities)</source>
+        <translation>（探测能力失败）</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="241"/>
+        <source>API key is invalid or unauthorized</source>
+        <translation>API Key 无效或未授权</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="244"/>
+        <source>Unable to connect to service</source>
+        <translation>无法连接到服务</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="247"/>
+        <source>Connection timed out</source>
+        <translation>连接超时</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="250"/>
+        <source>Request limit exceeded</source>
+        <translation>超出请求限制</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="253"/>
+        <source>Connection failed: %1</source>
+        <translation>连接失败：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="255"/>
+        <source>Connection failed</source>
+        <translation>连接失败</translation>
     </message>
 </context>
 <context>

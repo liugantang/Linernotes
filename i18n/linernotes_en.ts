@@ -53,7 +53,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/pages/ArtistsPage.qml" line="206"/>
+        <location filename="../qml/pages/ArtistsPage.qml" line="208"/>
         <source>%n album(s)</source>
         <translation>
             <numerusform>%n album</numerusform>
@@ -61,7 +61,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/pages/ArtistsPage.qml" line="206"/>
+        <location filename="../qml/pages/ArtistsPage.qml" line="208"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n track</numerusform>

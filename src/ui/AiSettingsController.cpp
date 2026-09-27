@@ -275,32 +275,32 @@ void AiSettingsController::setRoute(
         });
 }
 
-bool AiSettingsController::sendPlayHistory() const
+bool AiSettingsController::playHistoryAllowed() const
 {
     return m_privacy.isAllowed(ai::DataCategory::PlayHistory);
 }
 
-void AiSettingsController::setSendPlayHistory(bool allowed)
+void AiSettingsController::setPlayHistoryAllowed(bool allowed)
 {
     m_privacy.setAllowed(ai::DataCategory::PlayHistory, allowed);
 }
 
-bool AiSettingsController::sendMoments() const
+bool AiSettingsController::momentsAllowed() const
 {
     return m_privacy.isAllowed(ai::DataCategory::Moments);
 }
 
-void AiSettingsController::setSendMoments(bool allowed)
+void AiSettingsController::setMomentsAllowed(bool allowed)
 {
     m_privacy.setAllowed(ai::DataCategory::Moments, allowed);
 }
 
-bool AiSettingsController::sendLocation() const
+bool AiSettingsController::locationAllowed() const
 {
     return m_privacy.isAllowed(ai::DataCategory::Location);
 }
 
-void AiSettingsController::setSendLocation(bool allowed)
+void AiSettingsController::setLocationAllowed(bool allowed)
 {
     m_privacy.setAllowed(ai::DataCategory::Location, allowed);
 }

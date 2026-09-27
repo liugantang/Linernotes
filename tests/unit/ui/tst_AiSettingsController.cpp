@@ -331,24 +331,24 @@ void TstAiSettingsController::privacyAndRoutes()
     AiSettingsController ctrl(config, secrets, client, privacy, usage, cache, prompts, clock);
 
     // 1. Privacy switches
-    QCOMPARE(ctrl.sendPlayHistory(), true);
-    QCOMPARE(ctrl.sendMoments(), false);
-    QCOMPARE(ctrl.sendLocation(), false);
+    QCOMPARE(ctrl.playHistoryAllowed(), true);
+    QCOMPARE(ctrl.momentsAllowed(), false);
+    QCOMPARE(ctrl.locationAllowed(), false);
 
     QSignalSpy privacySpy(&ctrl, &AiSettingsController::privacyChanged);
 
-    ctrl.setSendPlayHistory(false);
-    QCOMPARE(ctrl.sendPlayHistory(), false);
+    ctrl.setPlayHistoryAllowed(false);
+    QCOMPARE(ctrl.playHistoryAllowed(), false);
     QCOMPARE(privacy.isAllowed(linernotes::ai::DataCategory::PlayHistory), false);
     QCOMPARE(privacySpy.count(), 1);
 
-    ctrl.setSendMoments(true);
-    QCOMPARE(ctrl.sendMoments(), true);
+    ctrl.setMomentsAllowed(true);
+    QCOMPARE(ctrl.momentsAllowed(), true);
     QCOMPARE(privacy.isAllowed(linernotes::ai::DataCategory::Moments), true);
     QCOMPARE(privacySpy.count(), 2);
 
-    ctrl.setSendLocation(true);
-    QCOMPARE(ctrl.sendLocation(), true);
+    ctrl.setLocationAllowed(true);
+    QCOMPARE(ctrl.locationAllowed(), true);
     QCOMPARE(privacy.isAllowed(linernotes::ai::DataCategory::Location), true);
     QCOMPARE(privacySpy.count(), 3);
 

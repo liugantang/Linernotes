@@ -278,6 +278,36 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS SettingsAppearanceSection.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SettingsAiSection.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SettingsAiSection.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SettingsAiServices.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SettingsAiServices.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SettingsAiServiceDialog.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SettingsAiServiceDialog.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SettingsAiRoutes.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SettingsAiRoutes.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SettingsAiPrivacy.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SettingsAiPrivacy.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SettingsAiUsage.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SettingsAiUsage.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/AppShortcuts.qml
     PROPERTIES
         QT_RESOURCE_ALIAS AppShortcuts.qml
@@ -516,6 +546,12 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/SettingsLibrarySection.qml
         ${CMAKE_SOURCE_DIR}/qml/SettingsPlaybackSection.qml
         ${CMAKE_SOURCE_DIR}/qml/SettingsAppearanceSection.qml
+        ${CMAKE_SOURCE_DIR}/qml/SettingsAiSection.qml
+        ${CMAKE_SOURCE_DIR}/qml/SettingsAiServices.qml
+        ${CMAKE_SOURCE_DIR}/qml/SettingsAiServiceDialog.qml
+        ${CMAKE_SOURCE_DIR}/qml/SettingsAiRoutes.qml
+        ${CMAKE_SOURCE_DIR}/qml/SettingsAiPrivacy.qml
+        ${CMAKE_SOURCE_DIR}/qml/SettingsAiUsage.qml
         ${CMAKE_SOURCE_DIR}/qml/AppShortcuts.qml
         ${CMAKE_SOURCE_DIR}/qml/ShortcutsDialog.qml
         ${CMAKE_SOURCE_DIR}/qml/FirstRunWizard.qml
