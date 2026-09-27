@@ -28,6 +28,8 @@ add_library(linernotes_ai STATIC
     LlmCache.h
     LlmClient.cpp
     LlmClient.h
+    LlmDebugLog.cpp
+    LlmDebugLog.h
     LlmReply.cpp
     LlmReply.h
     LlmService.cpp

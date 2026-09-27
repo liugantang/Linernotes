@@ -3,11 +3,14 @@
 
 #include "LlmService.h"
 
+#include <QJsonArray>
+#include <QJsonDocument>
 #include <QTimer>
 
 #include <ai/AiEnumNames.h>
 #include <ai/AiLogging.h>
 #include <ai/Errors.h>
+#include <ai/LlmDebugLog.h>
 #include <ai/PrivacyGuard.h>
 
 #include <utility>
@@ -17,6 +20,30 @@ namespace linernotes::ai {
 namespace {
 
 constexpr qint64 kDefaultCacheTtlMs = 30LL * 24 * 60 * 60 * 1000;
+
+QString formatResponseText(const ChatResponse &resp)
+{
+    if (resp.toolCalls.isEmpty()) {
+        return resp.content;
+    }
+
+    QJsonArray toolCallsArr;
+    for (const auto &tc : resp.toolCalls) {
+        QJsonObject tcObj;
+        tcObj.insert(QStringLiteral("id"), tc.id);
+        tcObj.insert(QStringLiteral("type"), QStringLiteral("function"));
+        QJsonObject fnObj;
+        fnObj.insert(QStringLiteral("name"), tc.name);
+        fnObj.insert(QStringLiteral("arguments"), tc.arguments);
+        tcObj.insert(QStringLiteral("function"), fnObj);
+        toolCallsArr.append(tcObj);
+    }
+    QString tcJson = QString::fromUtf8(QJsonDocument(toolCallsArr).toJson(QJsonDocument::Indented));
+    if (resp.content.isEmpty()) {
+        return tcJson;
+    }
+    return resp.content + QStringLiteral("\n\n") + tcJson;
+}
 
 } // namespace
 
@@ -183,7 +210,7 @@ bool LlmTask::tryReturnFromCache()
         if (!parseRes.ok()) {
             return false;
         }
-        recordCacheHit();
+        recordCacheHit(cached.value());
         LlmResult res;
         res.response = std::move(cached.value());
         res.structured = parseRes.value();
@@ -195,7 +222,7 @@ bool LlmTask::tryReturnFromCache()
         return true;
     }
 
-    recordCacheHit();
+    recordCacheHit(cached.value());
     LlmResult res;
     res.response = std::move(cached.value());
     res.structured = std::nullopt;
@@ -351,7 +378,7 @@ void LlmTask::writeCacheIfEligible(const ChatResponse &response)
     }
 }
 
-void LlmTask::recordCacheHit()
+void LlmTask::recordCacheHit(const ChatResponse &cachedResp)
 {
     UsageRecord rec;
     rec.createdAtMs = m_service.m_clock.nowMs();
@@ -364,6 +391,29 @@ void LlmTask::recordCacheHit()
     rec.errorCode = QString();
     rec.elapsedMs = m_timer.elapsed();
     recordUsage(rec);
+
+    if (m_service.m_debugLog.isEnabled()) {
+        const ChatRequest reqToSend = m_call.structured.has_value()
+            ? buildStructuredRequest(m_call.request, m_spec, m_mode)
+            : m_call.request;
+
+        LlmDebugEntry entry;
+        entry.startedAtMs = rec.createdAtMs - rec.elapsedMs;
+        entry.purpose = m_call.purpose;
+        entry.serviceId = m_resolved.profile.id;
+        entry.model = m_serviceConfig.model;
+        entry.attempt = 0;
+        entry.fromCache = true;
+        entry.requestJson = toRequestJson(reqToSend, m_serviceConfig.model, m_call.stream);
+        entry.responseText = formatResponseText(cachedResp);
+        entry.httpStatus = 200;
+        entry.errorCode = QString();
+        entry.errorMessage = QString();
+        entry.elapsedMs = rec.elapsedMs;
+        entry.usage = TokenUsage { .promptTokens = 0, .completionTokens = 0 };
+        entry.call = m_call;
+        m_service.m_debugLog.add(std::move(entry));
+    }
 }
 
 void LlmTask::recordAttempt(const core::Result<ChatResponse> &res, qint64 elapsedMs)
@@ -388,6 +438,41 @@ void LlmTask::recordAttempt(const core::Result<ChatResponse> &res, qint64 elapse
         rec.errorCode = QString();
     }
     recordUsage(rec);
+
+    if (m_service.m_debugLog.isEnabled()) {
+        LlmDebugEntry entry;
+        entry.startedAtMs = rec.createdAtMs - elapsedMs;
+        entry.purpose = m_call.purpose;
+        entry.serviceId = m_resolved.profile.id;
+        entry.model = rec.model;
+        entry.attempt = m_attempts;
+        entry.fromCache = false;
+        entry.requestJson = toRequestJson(m_currentSentRequest, m_serviceConfig.model, m_stream);
+        entry.elapsedMs = elapsedMs;
+        entry.call = m_call;
+
+        if (m_currentReply != nullptr) {
+            entry.httpStatus = m_currentReply->httpStatus();
+        }
+
+        if (res.ok()) {
+            const ChatResponse &resp = res.value();
+            entry.responseText = formatResponseText(resp);
+            if (entry.httpStatus == 0) {
+                entry.httpStatus = 200;
+            }
+            entry.errorCode = QString();
+            entry.errorMessage = QString();
+            entry.usage = resp.usage;
+        } else {
+            entry.responseText = QString();
+            entry.errorCode = res.error().code;
+            entry.errorMessage = res.error().message;
+            entry.usage = TokenUsage { .promptTokens = 0, .completionTokens = 0 };
+        }
+
+        m_service.m_debugLog.add(std::move(entry));
+    }
 }
 
 void LlmTask::recordUsage(const UsageRecord &record)
@@ -432,7 +517,8 @@ void LlmTask::finishWithError(core::Error error)
 }
 
 LlmService::LlmService(AiConfig &config, SecretStore &secrets, LlmClient &client, LlmCache &cache,
-    UsageStore &usage, PrivacyGuard &privacy, const core::Clock &clock, QObject *parent)
+    UsageStore &usage, PrivacyGuard &privacy, LlmDebugLog &debugLog, const core::Clock &clock,
+    QObject *parent)
     : QObject(parent)
     , m_config(config)
     , m_secrets(secrets)
@@ -440,6 +526,7 @@ LlmService::LlmService(AiConfig &config, SecretStore &secrets, LlmClient &client
     , m_cache(cache)
     , m_usage(usage)
     , m_privacy(privacy)
+    , m_debugLog(debugLog)
     , m_clock(clock)
     , m_defaultCacheTtlMs(kDefaultCacheTtlMs)
     , m_scheduler(clock, this)
@@ -471,6 +558,13 @@ std::unique_ptr<LlmTask> LlmService::start(LlmCall call)
     auto task = std::unique_ptr<LlmTask>(new LlmTask(*this, std::move(call)));
     task->start();
     return task;
+}
+
+std::unique_ptr<LlmTask> LlmService::replay(const LlmDebugEntry &entry)
+{
+    LlmCall call = entry.call;
+    call.cachePolicy = CachePolicy::Bypass;
+    return start(std::move(call));
 }
 
 } // namespace linernotes::ai

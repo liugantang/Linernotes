@@ -20,6 +20,8 @@
 #include <ui/ArtistListModel.h>
 #include <ui/LibraryActions.h>
 #include <ui/LibraryRootsModel.h>
+#include <ui/LlmDebugController.h>
+#include <ui/LlmDebugModel.h>
 #include <ui/MarksController.h>
 #include <ui/NowPlaying.h>
 #include <ui/PlaylistController.h>
@@ -212,4 +214,18 @@ struct UsageSummaryModelForeign {
     QML_FOREIGN(linernotes::ui::UsageSummaryModel)
     QML_NAMED_ELEMENT(UsageSummaryModel)
     QML_UNCREATABLE("UsageSummaryModel is managed by AiSettingsController")
+};
+
+struct LlmDebugControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::LlmDebugController)
+    QML_NAMED_ELEMENT(LlmDebugController)
+    QML_UNCREATABLE("LlmDebugController is managed by AppContext")
+};
+
+struct LlmDebugModelForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::LlmDebugModel)
+    QML_NAMED_ELEMENT(LlmDebugModel)
+    QML_UNCREATABLE("LlmDebugModel is managed by LlmDebugController")
 };

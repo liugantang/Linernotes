@@ -65,4 +65,14 @@ ColumnLayout {
     SettingsAiUsage {
         Layout.fillWidth: true
     }
+
+    Rectangle {
+        Layout.fillWidth: true
+        Layout.preferredHeight: 1
+        color: Theme.divider
+    }
+
+    SettingsAiDeveloper {
+        Layout.fillWidth: true
+    }
 }

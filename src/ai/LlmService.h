@@ -33,6 +33,8 @@ class QTimer;
 
 namespace linernotes::ai {
 
+class LlmDebugLog;
+struct LlmDebugEntry;
 class LlmService;
 class PrivacyGuard;
 
@@ -97,7 +99,7 @@ private:
     void writeCacheIfEligible(const ChatResponse &response);
     void recordUsage(const UsageRecord &record);
     void recordAttempt(const core::Result<ChatResponse> &res, qint64 elapsedMs);
-    void recordCacheHit();
+    void recordCacheHit(const ChatResponse &cachedResp);
     void finishWithSuccess(LlmResult result);
     void finishWithError(core::Error error);
 
@@ -135,7 +137,7 @@ public:
 
     /// 依赖都由调用方持有，生命周期长于 LlmService。
     LlmService(AiConfig &config, SecretStore &secrets, LlmClient &client, LlmCache &cache,
-        UsageStore &usage, PrivacyGuard &privacy, const core::Clock &clock,
+        UsageStore &usage, PrivacyGuard &privacy, LlmDebugLog &debugLog, const core::Clock &clock,
         QObject *parent = nullptr);
     ~LlmService() override = default;
 
@@ -144,6 +146,7 @@ public:
     const RetryPolicy &retryPolicy() const;
     RequestScheduler &scheduler();
     std::unique_ptr<LlmTask> start(LlmCall call);
+    std::unique_ptr<LlmTask> replay(const LlmDebugEntry &entry);
 
 private:
     AiConfig &m_config;
@@ -152,6 +155,7 @@ private:
     LlmCache &m_cache;
     UsageStore &m_usage;
     PrivacyGuard &m_privacy;
+    LlmDebugLog &m_debugLog;
     const core::Clock &m_clock;
     std::optional<qint64> m_defaultCacheTtlMs;
     RetryPolicy m_retryPolicy;

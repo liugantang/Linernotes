@@ -12,6 +12,7 @@
 #include <ai/KeychainSecretStore.h>
 #include <ai/LlmCache.h>
 #include <ai/LlmClient.h>
+#include <ai/LlmDebugLog.h>
 #include <ai/LlmService.h>
 #include <ai/PrivacyGuard.h>
 #include <ai/PromptLibrary.h>
@@ -19,6 +20,7 @@
 #include <core/Clock.h>
 #include <library/Database.h>
 #include <ui/AiSettingsController.h>
+#include <ui/LlmDebugController.h>
 
 namespace linernotes::core {
 class Settings;
@@ -40,7 +42,9 @@ public:
     void onDatabaseReady();
 
     [[nodiscard]] AiSettingsController *settingsController();
+    [[nodiscard]] LlmDebugController *debugController();
     [[nodiscard]] ai::LlmService &llm();
+    [[nodiscard]] ai::LlmDebugLog &debugLog();
     [[nodiscard]] ai::JobQueue &jobs();
     [[nodiscard]] ai::PromptLibrary &prompts();
 
@@ -54,9 +58,11 @@ private:
     ai::UsageStore m_usage;
     ai::PrivacyGuard m_privacy;
     ai::PromptLibrary m_prompts;
+    ai::LlmDebugLog m_debugLog;
     ai::LlmService m_llm;
     ai::JobQueue m_jobs;
     AiSettingsController m_settingsController;
+    LlmDebugController m_debugController;
 };
 
 } // namespace linernotes::ui

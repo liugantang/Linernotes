@@ -21,6 +21,7 @@
 #include <ui/AiSettingsController.h>
 #include <ui/LibraryActions.h>
 #include <ui/LibraryRootsModel.h>
+#include <ui/LlmDebugController.h>
 #include <ui/MarksController.h>
 #include <ui/NowPlaying.h>
 #include <ui/PlayEventRecorder.h>
@@ -62,6 +63,7 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::LibraryActions *actions READ actions CONSTANT)
     Q_PROPERTY(linernotes::ui::SettingsController *settings READ settings CONSTANT)
     Q_PROPERTY(linernotes::ui::AiSettingsController *aiSettings READ aiSettings CONSTANT)
+    Q_PROPERTY(linernotes::ui::LlmDebugController *llmDebug READ llmDebug CONSTANT)
     Q_PROPERTY(linernotes::ui::LibraryRootsModel *libraryRoots READ libraryRoots CONSTANT)
     Q_PROPERTY(linernotes::ui::TagEditorModel *tagEditor READ tagEditor CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
@@ -103,6 +105,7 @@ public:
     [[nodiscard]] MarksController *marks();
     [[nodiscard]] SettingsController *settings();
     [[nodiscard]] AiSettingsController *aiSettings();
+    [[nodiscard]] LlmDebugController *llmDebug();
     [[nodiscard]] LibraryRootsModel *libraryRoots();
     [[nodiscard]] TagEditorModel *tagEditor();
     [[nodiscard]] library::Database &database();

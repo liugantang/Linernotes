@@ -308,6 +308,16 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS SettingsAiUsage.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/SettingsAiDeveloper.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS SettingsAiDeveloper.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/LlmDebugPanel.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS LlmDebugPanel.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/AppShortcuts.qml
     PROPERTIES
         QT_RESOURCE_ALIAS AppShortcuts.qml
@@ -552,6 +562,8 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/SettingsAiRoutes.qml
         ${CMAKE_SOURCE_DIR}/qml/SettingsAiPrivacy.qml
         ${CMAKE_SOURCE_DIR}/qml/SettingsAiUsage.qml
+        ${CMAKE_SOURCE_DIR}/qml/SettingsAiDeveloper.qml
+        ${CMAKE_SOURCE_DIR}/qml/LlmDebugPanel.qml
         ${CMAKE_SOURCE_DIR}/qml/AppShortcuts.qml
         ${CMAKE_SOURCE_DIR}/qml/ShortcutsDialog.qml
         ${CMAKE_SOURCE_DIR}/qml/FirstRunWizard.qml

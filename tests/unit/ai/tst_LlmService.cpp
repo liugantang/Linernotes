@@ -18,6 +18,7 @@
 #include <ai/Errors.h>
 #include <ai/LlmCache.h>
 #include <ai/LlmClient.h>
+#include <ai/LlmDebugLog.h>
 #include <ai/LlmService.h>
 #include <ai/PrivacyGuard.h>
 #include <ai/RetryPolicy.h>
@@ -38,6 +39,7 @@ using linernotes::ai::DataCategory;
 using linernotes::ai::LlmCache;
 using linernotes::ai::LlmCall;
 using linernotes::ai::LlmClient;
+using linernotes::ai::LlmDebugLog;
 using linernotes::ai::LlmService;
 using linernotes::ai::LlmTask;
 using linernotes::ai::makeMessage;
@@ -97,6 +99,7 @@ struct Fixture {
     LlmCache cache;
     UsageStore usage;
     PrivacyGuard privacy;
+    LlmDebugLog debugLog;
     LlmService service;
 
     explicit Fixture(
@@ -109,7 +112,8 @@ struct Fixture {
         , cache(db, clock)
         , usage(db)
         , privacy(settings)
-        , service(config, secrets, client, cache, usage, privacy, clock)
+        , debugLog(settings)
+        , service(config, secrets, client, cache, usage, privacy, debugLog, clock)
     {
         const auto openRes = db.open(migrator);
         Q_ASSERT(openRes.ok());
@@ -149,6 +153,7 @@ private slots:
     void noRetryOn401();
     void concurrencyLimitBlocksSecondCall();
     void privacyBlockedSendsNoRequest();
+    void debugLogRecordsAttemptsAndReplayBypassesCache();
 };
 
 void TstLlmService::notConfiguredFinishesAsynchronously()
@@ -791,6 +796,80 @@ void TstLlmService::privacyBlockedSendsNoRequest()
     QVERIFY(localTask->result().ok());
     QCOMPARE(localTask->result().value().response.content, QStringLiteral("local response ok"));
     QCOMPARE(fix.server.requests().size(), 1);
+}
+
+void TstLlmService::debugLogRecordsAttemptsAndReplayBypassesCache()
+{
+    Fixture fix;
+    fix.debugLog.setEnabled(true);
+
+    RetryPolicy policy;
+    policy.maxRetries = 3;
+    policy.baseDelayMs = 1;
+    policy.maxDelayMs = 100;
+    fix.service.setRetryPolicy(policy);
+
+    // 1st attempt: 500 error, 2nd attempt: 200 ok
+    FakeLlmServer::Response r500;
+    r500.status = 500;
+    fix.server.enqueue(r500);
+    fix.server.enqueue(makeJsonResponse(QStringLiteral("ok after 500")));
+
+    LlmCall call;
+    call.purpose = Purpose::Query;
+    call.request.messages.append(makeMessage(Role::User, QStringLiteral("debug log test")));
+
+    auto task = fix.service.start(call);
+    QSignalSpy spy(task.get(), &LlmTask::finished);
+    QTRY_COMPARE(spy.count(), 1);
+
+    QVERIFY(task->isFinished());
+    QVERIFY(task->result().ok());
+    QCOMPARE(task->result().value().attempts, 2);
+
+    const auto &entries = fix.debugLog.entries();
+    QCOMPARE(entries.size(), 2);
+
+    // Entry 1: attempt 1, 500, has error code, empty responseText, requestJson without key
+    const auto &e1 = entries.at(0);
+    QCOMPARE(e1.attempt, 1);
+    QCOMPARE(e1.fromCache, false);
+    QCOMPARE(e1.httpStatus, 500);
+    QCOMPARE(e1.errorCode, QString(linernotes::ai::errc::kHttp));
+    QCOMPARE(e1.responseText, QString());
+    const QString req1Str = QString::fromUtf8(QJsonDocument(e1.requestJson).toJson());
+    QVERIFY(!req1Str.contains(QStringLiteral("Authorization"), Qt::CaseInsensitive));
+    QVERIFY(!req1Str.contains(QStringLiteral("secret-token-123")));
+
+    // Entry 2: attempt 2, 200, ok, responseText contains content, requestJson without key
+    const auto &e2 = entries.at(1);
+    QCOMPARE(e2.attempt, 2);
+    QCOMPARE(e2.fromCache, false);
+    QCOMPARE(e2.httpStatus, 200);
+    QVERIFY(e2.errorCode.isEmpty());
+    QCOMPARE(e2.responseText, QStringLiteral("ok after 500"));
+    const QString req2Str = QString::fromUtf8(QJsonDocument(e2.requestJson).toJson());
+    QVERIFY(!req2Str.contains(QStringLiteral("Authorization"), Qt::CaseInsensitive));
+    QVERIFY(!req2Str.contains(QStringLiteral("secret-token-123")));
+
+    // Replay entry 2: sends a new request even though the response was cached
+    fix.server.enqueue(makeJsonResponse(QStringLiteral("fresh replay result")));
+    auto replayTask = fix.service.replay(e2);
+    QSignalSpy replaySpy(replayTask.get(), &LlmTask::finished);
+    QTRY_COMPARE(replaySpy.count(), 1);
+
+    QVERIFY(replayTask->isFinished());
+    QVERIFY(replayTask->result().ok());
+    QCOMPARE(replayTask->result().value().fromCache, false);
+    QCOMPARE(replayTask->result().value().response.content, QStringLiteral("fresh replay result"));
+    QCOMPARE(fix.server.requests().size(), 3);
+
+    // Verify 3rd debug entry was recorded for replay
+    QCOMPARE(fix.debugLog.entries().size(), 3);
+    const auto &e3 = fix.debugLog.entries().at(2);
+    QCOMPARE(e3.attempt, 1);
+    QCOMPARE(e3.fromCache, false);
+    QCOMPARE(e3.responseText, QStringLiteral("fresh replay result"));
 }
 
 } // namespace

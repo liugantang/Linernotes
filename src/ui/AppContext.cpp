@@ -274,6 +274,11 @@ AiSettingsController *AppContext::aiSettings()
     return m_ai.settingsController();
 }
 
+LlmDebugController *AppContext::llmDebug()
+{
+    return m_ai.debugController();
+}
+
 LibraryRootsModel *AppContext::libraryRoots()
 {
     return &m_roots;

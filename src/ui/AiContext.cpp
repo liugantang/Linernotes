@@ -30,10 +30,12 @@ AiContext::AiContext(core::Settings &settings, library::Database &db, const core
     , m_usage(db)
     , m_privacy(settings)
     , m_prompts(buildPromptDirs(promptsDir))
-    , m_llm(m_config, m_secrets, m_client, m_cache, m_usage, m_privacy, clock)
+    , m_debugLog(settings)
+    , m_llm(m_config, m_secrets, m_client, m_cache, m_usage, m_privacy, m_debugLog, clock)
     , m_jobs(db, clock)
     , m_settingsController(
           m_config, m_secrets, m_client, m_privacy, m_usage, m_cache, m_prompts, clock)
+    , m_debugController(m_debugLog, m_llm)
 {
 }
 
@@ -56,9 +58,19 @@ AiSettingsController *AiContext::settingsController()
     return &m_settingsController;
 }
 
+LlmDebugController *AiContext::debugController()
+{
+    return &m_debugController;
+}
+
 ai::LlmService &AiContext::llm()
 {
     return m_llm;
+}
+
+ai::LlmDebugLog &AiContext::debugLog()
+{
+    return m_debugLog;
 }
 
 ai::JobQueue &AiContext::jobs()

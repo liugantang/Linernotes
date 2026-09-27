@@ -22,6 +22,10 @@ add_library(linernotes_ui STATIC
     LibraryActions.h
     LibraryRootsModel.cpp
     LibraryRootsModel.h
+    LlmDebugController.cpp
+    LlmDebugController.h
+    LlmDebugModel.cpp
+    LlmDebugModel.h
     MarksController.cpp
     MarksController.h
     NotificationSink.h

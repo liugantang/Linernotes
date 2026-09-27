@@ -155,5 +155,15 @@ linernotes_add_test(
         Qt6::Sql
 )
 
+linernotes_add_test(
+    NAME ai_LlmDebugLog
+    SOURCES
+        tst_LlmDebugLog.cpp
+    LIBS
+        Linernotes::ai
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
 
 

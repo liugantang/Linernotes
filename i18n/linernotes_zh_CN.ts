@@ -479,6 +479,111 @@
     </message>
 </context>
 <context>
+    <name>LlmDebugPanel</name>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="13"/>
+        <source>LLM Debug</source>
+        <translation>LLM 调试</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="23"/>
+        <source>Metadata cleanup</source>
+        <translation>元数据清理</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="24"/>
+        <source>Natural-language search</source>
+        <translation>自然语言搜索</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="25"/>
+        <source>AI DJ</source>
+        <translation>AI DJ</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="26"/>
+        <source>Listening guide</source>
+        <translation>聆听向导</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="27"/>
+        <source>Liner notes &amp; narrative</source>
+        <translation>唱片内页说明与叙事</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="28"/>
+        <source>Unknown</source>
+        <translation>未知</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="42"/>
+        <source>LLM Debug Log</source>
+        <translation>LLM 调试日志</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="53"/>
+        <source>Replay</source>
+        <translation>重放</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="63"/>
+        <source>Clear</source>
+        <translation>清空</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="170"/>
+        <source>cached</source>
+        <translation>缓存</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="210"/>
+        <source>att %1</source>
+        <translation>第 %1 次</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="216"/>
+        <source>%1 ms</source>
+        <translation>%1 ms</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="223"/>
+        <source>%1 tok</source>
+        <translation>%1 tok</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="252"/>
+        <source>No LLM requests recorded yet.</source>
+        <translation>暂无 LLM 请求记录。</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="272"/>
+        <source>Select a request from the list to view details.</source>
+        <translation>从列表中选择一条请求查看详情。</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="299"/>
+        <source>Request (JSON)</source>
+        <translation>请求（JSON）</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="310"/>
+        <location filename="../qml/LlmDebugPanel.qml" line="365"/>
+        <location filename="../qml/LlmDebugPanel.qml" line="421"/>
+        <source>Copy</source>
+        <translation>复制</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="354"/>
+        <source>Response</source>
+        <translation>响应</translation>
+    </message>
+    <message>
+        <location filename="../qml/LlmDebugPanel.qml" line="410"/>
+        <source>Error</source>
+        <translation>错误</translation>
+    </message>
+</context>
+<context>
     <name>Main</name>
     <message>
         <location filename="../qml/Main.qml" line="14"/>
@@ -924,6 +1029,29 @@
         <translation>
             <numerusform>显示全部 %n 首歌曲</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>SettingsAiDeveloper</name>
+    <message>
+        <location filename="../qml/SettingsAiDeveloper.qml" line="15"/>
+        <source>Developer</source>
+        <translation>开发者</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiDeveloper.qml" line="23"/>
+        <source>Record LLM requests and responses (developer mode)</source>
+        <translation>记录 LLM 请求与响应（开发者模式）</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiDeveloper.qml" line="33"/>
+        <source>Full request and response text is kept in memory only while this is on.</source>
+        <translation>仅在开启期间，完整的请求与响应文本保存在内存中。</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiDeveloper.qml" line="44"/>
+        <source>Open LLM debug panel</source>
+        <translation>打开 LLM 调试面板</translation>
     </message>
 </context>
 <context>
