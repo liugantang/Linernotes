@@ -154,6 +154,17 @@ bool LlmTask::tryReturnFromCache()
         if (!parseRes.ok()) {
             return false;
         }
+        recordUsage(UsageRecord {
+            .createdAtMs = m_service.m_clock.nowMs(),
+            .purpose = m_call.purpose,
+            .serviceId = m_resolved.profile.id,
+            .model = m_serviceConfig.model,
+            .usage = TokenUsage { .promptTokens = 0, .completionTokens = 0 },
+            .cached = true,
+            .ok = true,
+            .errorCode = QString(),
+            .elapsedMs = m_timer.elapsed(),
+        });
         LlmResult res {
             .response = std::move(cached.value()),
             .structured = parseRes.value(),
@@ -166,6 +177,17 @@ bool LlmTask::tryReturnFromCache()
         return true;
     }
 
+    recordUsage(UsageRecord {
+        .createdAtMs = m_service.m_clock.nowMs(),
+        .purpose = m_call.purpose,
+        .serviceId = m_resolved.profile.id,
+        .model = m_serviceConfig.model,
+        .usage = TokenUsage { .promptTokens = 0, .completionTokens = 0 },
+        .cached = true,
+        .ok = true,
+        .errorCode = QString(),
+        .elapsedMs = m_timer.elapsed(),
+    });
     LlmResult res {
         .response = std::move(cached.value()),
         .structured = std::nullopt,
@@ -185,6 +207,7 @@ void LlmTask::sendAttempt(const ChatRequest &req)
 {
     m_attempts++;
     m_currentSentRequest = req;
+    m_attemptTimer.start();
 
     if (m_stream) {
         m_currentReply = m_service.m_client.stream(m_serviceConfig, req);
@@ -202,13 +225,37 @@ void LlmTask::onReplyFinished()
         return;
     }
 
+    const qint64 attemptElapsedMs = m_attemptTimer.elapsed();
     const auto &replyRes = m_currentReply->result();
     if (!replyRes.ok()) {
+        recordUsage(UsageRecord {
+            .createdAtMs = m_service.m_clock.nowMs(),
+            .purpose = m_call.purpose,
+            .serviceId = m_resolved.profile.id,
+            .model = m_serviceConfig.model,
+            .usage = TokenUsage { .promptTokens = 0, .completionTokens = 0 },
+            .cached = false,
+            .ok = false,
+            .errorCode = replyRes.error().code,
+            .elapsedMs = attemptElapsedMs,
+        });
         finishWithError(replyRes.error());
         return;
     }
 
     const ChatResponse resp = replyRes.value();
+    recordUsage(UsageRecord {
+        .createdAtMs = m_service.m_clock.nowMs(),
+        .purpose = m_call.purpose,
+        .serviceId = m_resolved.profile.id,
+        .model = resp.model.isEmpty() ? m_serviceConfig.model : resp.model,
+        .usage = resp.usage,
+        .cached = false,
+        .ok = true,
+        .errorCode = QString(),
+        .elapsedMs = attemptElapsedMs,
+    });
+
     m_totalUsage.promptTokens += resp.usage.promptTokens;
     m_totalUsage.completionTokens += resp.usage.completionTokens;
 
@@ -277,6 +324,14 @@ void LlmTask::writeCacheIfEligible(const ChatResponse &response)
     }
 }
 
+void LlmTask::recordUsage(const UsageRecord &record)
+{
+    const auto res = m_service.m_usage.record(record);
+    if (!res.ok()) {
+        qCWarning(lcAi) << "LlmTask failed to record usage:" << res.error().message;
+    }
+}
+
 void LlmTask::finishWithSuccess(LlmResult result)
 {
     if (m_finished) {
@@ -310,13 +365,15 @@ void LlmTask::finishWithError(core::Error error)
     emit finished();
 }
 
-LlmService::LlmService(
-    AiConfig &config, SecretStore &secrets, LlmClient &client, LlmCache &cache, QObject *parent)
+LlmService::LlmService(AiConfig &config, SecretStore &secrets, LlmClient &client, LlmCache &cache,
+    UsageStore &usage, const core::Clock &clock, QObject *parent)
     : QObject(parent)
     , m_config(config)
     , m_secrets(secrets)
     , m_client(client)
     , m_cache(cache)
+    , m_usage(usage)
+    , m_clock(clock)
     , m_defaultCacheTtlMs(kDefaultCacheTtlMs)
 {
 }

@@ -7,6 +7,7 @@
 #include <QNetworkAccessManager>
 #include <QObject>
 #include <QSignalSpy>
+#include <QSqlQuery>
 #include <QTemporaryDir>
 #include <QTest>
 #include <QUrl>
@@ -20,6 +21,7 @@
 #include <ai/LlmService.h>
 #include <ai/SecretStore.h>
 #include <ai/StructuredOutput.h>
+#include <ai/UsageStore.h>
 #include <common/FakeLlmServer.h>
 #include <common/ManualClock.h>
 #include <core/Settings.h>
@@ -42,6 +44,7 @@ using linernotes::ai::Role;
 using linernotes::ai::ServiceProfile;
 using linernotes::ai::StructuredMode;
 using linernotes::ai::StructuredSpec;
+using linernotes::ai::UsageStore;
 using linernotes::core::Settings;
 using linernotes::library::Database;
 using linernotes::library::Migrator;
@@ -87,6 +90,7 @@ struct Fixture {
     Migrator migrator;
     ManualClock clock;
     LlmCache cache;
+    UsageStore usage;
     LlmService service;
 
     explicit Fixture(
@@ -97,7 +101,8 @@ struct Fixture {
         , db(tempDir.filePath(QStringLiteral("test.db")))
         , clock(1000)
         , cache(db, clock)
-        , service(config, secrets, client, cache)
+        , usage(db)
+        , service(config, secrets, client, cache, usage, clock)
     {
         const auto openRes = db.open(migrator);
         Q_ASSERT(openRes.ok());
@@ -129,6 +134,7 @@ private slots:
     void structuredOutputRepairRetryAndDoubleFailure();
     void streamingDeltaForwardingAndCacheHitFullContent();
     void destroyInFlightTaskDoesNotCrashOrEmitSignals();
+    void usageRecordedOnStructuredRetryAndCacheHit();
 };
 
 void TstLlmService::notConfiguredFinishesAsynchronously()
@@ -463,6 +469,92 @@ void TstLlmService::destroyInFlightTaskDoesNotCrashOrEmitSignals()
 
     // Verify finished was never emitted
     QCOMPARE(finishSpy.count(), 0);
+}
+
+void TstLlmService::usageRecordedOnStructuredRetryAndCacheHit()
+{
+    Fixture fix;
+
+    QJsonObject schema;
+    schema.insert(QStringLiteral("type"), QStringLiteral("object"));
+    QJsonObject props;
+    props.insert(QStringLiteral("ok"),
+        QJsonObject { { QStringLiteral("type"), QStringLiteral("boolean") } });
+    schema.insert(QStringLiteral("properties"), props);
+    schema.insert(QStringLiteral("required"), QJsonArray { QStringLiteral("ok") });
+    schema.insert(QStringLiteral("additionalProperties"), false);
+
+    const StructuredSpec spec {
+        .name = QStringLiteral("result_spec"),
+        .description = QStringLiteral("Test result spec"),
+        .schema = schema,
+    };
+
+    // First attempt fails validation (ok is string instead of boolean), promptTokens=10,
+    // completionTokens=5
+    fix.server.enqueue(makeJsonResponse(
+        QStringLiteral("{\"ok\": \"not_boolean\"}"), QStringLiteral("gpt-4o"), 10, 5));
+    // Second attempt succeeds, promptTokens=20, completionTokens=5
+    fix.server.enqueue(
+        makeJsonResponse(QStringLiteral("{\"ok\": true}"), QStringLiteral("gpt-4o"), 20, 5));
+
+    LlmCall call;
+    call.purpose = Purpose::Query;
+    call.structured = spec;
+    call.request.messages.append(makeMessage(Role::User, QStringLiteral("Please check")));
+
+    // 1st structured call: attempt 1 fails schema validation -> repair retry succeeds
+    {
+        auto task = fix.service.start(call);
+        QSignalSpy spy(task.get(), &LlmTask::finished);
+        QVERIFY(spy.wait(2000));
+        QVERIFY(task->result().ok());
+
+        const auto &res = task->result().value();
+        QCOMPARE(res.attempts, 2);
+        QCOMPARE(res.fromCache, false);
+        QCOMPARE(res.totalUsage.promptTokens, 30);
+        QCOMPARE(res.totalUsage.completionTokens, 10);
+    }
+
+    // 2nd call: same request, hits cache
+    {
+        auto task = fix.service.start(call);
+        QSignalSpy spy(task.get(), &LlmTask::finished);
+        QVERIFY(spy.wait(2000));
+        QVERIFY(task->result().ok());
+
+        const auto &res = task->result().value();
+        QCOMPARE(res.attempts, 0);
+        QCOMPARE(res.fromCache, true);
+    }
+
+    // Direct DB count check: 3 rows in llm_usage
+    {
+        const auto connRes = fix.db.connection();
+        QVERIFY(connRes.ok());
+        QSqlQuery q(connRes.value());
+        QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM llm_usage;")));
+        QVERIFY(q.next());
+        QCOMPARE(q.value(0).toInt(), 3);
+    }
+
+    // summarize result check: requests=2, cacheHits=1, tokens sum of two requests
+    {
+        const auto summaryRes = fix.usage.summarize(0, 100000);
+        QVERIFY(summaryRes.ok());
+        const auto &summaries = summaryRes.value();
+        QCOMPARE(summaries.size(), 1);
+
+        const auto &summary = summaries.at(0);
+        QCOMPARE(summary.purpose, Purpose::Query);
+        QCOMPARE(summary.model, QStringLiteral("gpt-4o"));
+        QCOMPARE(summary.requests, 2);
+        QCOMPARE(summary.cacheHits, 1);
+        QCOMPARE(summary.failures, 0);
+        QCOMPARE(summary.promptTokens, 30);
+        QCOMPARE(summary.completionTokens, 10);
+    }
 }
 
 } // namespace

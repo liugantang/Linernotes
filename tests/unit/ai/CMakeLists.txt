@@ -85,3 +85,16 @@ linernotes_add_test(
         Qt6::Sql
 )
 
+linernotes_add_test(
+    NAME ai_UsageStore
+    SOURCES
+        tst_UsageStore.cpp
+    LIBS
+        Linernotes::ai
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+)
+
+

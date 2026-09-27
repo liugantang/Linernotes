@@ -18,6 +18,8 @@
 #include <ai/LlmReply.h>
 #include <ai/SecretStore.h>
 #include <ai/StructuredOutput.h>
+#include <ai/UsageStore.h>
+#include <core/Clock.h>
 #include <core/Result.h>
 
 #include <cstdint>
@@ -85,6 +87,7 @@ private:
     void handleStructuredReply(const ChatResponse &resp);
     void handleNormalReply(const ChatResponse &resp);
     void writeCacheIfEligible(const ChatResponse &response);
+    void recordUsage(const UsageRecord &record);
     void finishWithSuccess(LlmResult result);
     void finishWithError(core::Error error);
 
@@ -107,6 +110,7 @@ private:
     ChatRequest m_currentSentRequest;
     std::unique_ptr<LlmReply> m_currentReply;
     QElapsedTimer m_timer;
+    QElapsedTimer m_attemptTimer;
 };
 
 class LlmService : public QObject {
@@ -118,7 +122,7 @@ public:
 
     /// 依赖都由调用方持有，生命周期长于 LlmService。
     LlmService(AiConfig &config, SecretStore &secrets, LlmClient &client, LlmCache &cache,
-        QObject *parent = nullptr);
+        UsageStore &usage, const core::Clock &clock, QObject *parent = nullptr);
     ~LlmService() override = default;
 
     void setDefaultCacheTtlMs(std::optional<qint64> ttlMs); // 默认 30 天
@@ -129,6 +133,8 @@ private:
     SecretStore &m_secrets;
     LlmClient &m_client;
     LlmCache &m_cache;
+    UsageStore &m_usage;
+    const core::Clock &m_clock;
     std::optional<qint64> m_defaultCacheTtlMs;
 };
 

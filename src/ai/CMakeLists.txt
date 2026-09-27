@@ -32,6 +32,8 @@ add_library(linernotes_ai STATIC
     SseParser.h
     StructuredOutput.cpp
     StructuredOutput.h
+    UsageStore.cpp
+    UsageStore.h
 )
 add_library(Linernotes::ai ALIAS linernotes_ai)
 
