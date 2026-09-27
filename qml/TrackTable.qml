@@ -119,6 +119,10 @@ FocusScope {
         case "bitrate": return qsTr("Bitrate")
         //: Track table column header
         case "addedAt": return qsTr("Date Added")
+        //: Track table column header
+        case "playCount": return qsTr("Plays")
+        //: Track table column header
+        case "lastPlayed": return qsTr("Last Played")
         default: return ""
         }
     }

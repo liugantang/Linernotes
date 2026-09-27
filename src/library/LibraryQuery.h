@@ -75,6 +75,8 @@ struct TrackRow {
     bool favorite = false; ///< track 收藏
     int rating = 0; ///< ratings，无则 0
     qint64 addedAt = 0; ///< files.first_seen_at
+    int playCount = 0;
+    std::optional<qint64> lastPlayedAtMs;
 
     bool operator==(const TrackRow &) const = default;
 };

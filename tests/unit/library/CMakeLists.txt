@@ -170,6 +170,14 @@ linernotes_add_test(
         Linernotes::library
 )
 
+linernotes_add_test(
+    NAME library_PlayStats
+    SOURCES
+        tst_PlayStats.cpp
+    LIBS
+        Linernotes::library
+)
+
 
 
 

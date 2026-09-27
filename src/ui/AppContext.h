@@ -12,6 +12,7 @@
 #include <core/Result.h>
 #include <library/CoverStore.h>
 #include <library/Database.h>
+#include <library/PlayStats.h>
 #include <player/MpvHandle.h>
 #include <player/Player.h>
 #include <ui/LibraryActions.h>
@@ -110,6 +111,7 @@ signals:
     void startupErrorChanged();
     void scanningChanged();
     void libraryChanged();
+    void playStatsChanged();
 
 private:
     // 声明顺序即依赖顺序，析构逆序进行，依赖方先于被依赖方析构
@@ -117,6 +119,7 @@ private:
     Options m_options;
     core::SystemClock m_clock;
     library::Database m_db;
+    library::PlayStats m_playStats;
     TagEditorModel m_tagEditor;
     LibraryRootsModel m_roots;
     MarksController m_marks;

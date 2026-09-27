@@ -35,6 +35,8 @@ void PagedListModel::setContext(AppContext *context)
     if (m_context != nullptr) {
         disconnect(m_context, &AppContext::libraryReadyChanged, this, &PagedListModel::reload);
         disconnect(m_context, &AppContext::libraryChanged, this, &PagedListModel::onLibraryChanged);
+        disconnect(
+            m_context, &AppContext::playStatsChanged, this, &PagedListModel::onLibraryChanged);
         disconnect(m_context->marks(), &MarksController::marksChanged, this,
             &PagedListModel::onLibraryChanged);
     }
@@ -44,6 +46,7 @@ void PagedListModel::setContext(AppContext *context)
     if (m_context != nullptr) {
         connect(m_context, &AppContext::libraryReadyChanged, this, &PagedListModel::reload);
         connect(m_context, &AppContext::libraryChanged, this, &PagedListModel::onLibraryChanged);
+        connect(m_context, &AppContext::playStatsChanged, this, &PagedListModel::onLibraryChanged);
         connect(m_context->marks(), &MarksController::marksChanged, this,
             &PagedListModel::onLibraryChanged);
     }

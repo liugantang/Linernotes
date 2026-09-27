@@ -59,6 +59,8 @@ public:
         FavoriteRole,
         RatingRole,
         AddedAtRole,
+        PlayCountRole,
+        LastPlayedAtRole,
     };
     Q_ENUM(Role)
 

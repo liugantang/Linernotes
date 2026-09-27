@@ -37,10 +37,11 @@ PlayEventRecorder::PlayEventRecorder(
 }
 
 // DB writes return Result and do not throw; Qt/std memory exhaustion is unrecoverable.
+// No playEventFinished here: receivers may already be destroyed; the next start() rebuilds stats.
 // NOLINTNEXTLINE(bugprone-exception-escape)
 PlayEventRecorder::~PlayEventRecorder()
 {
-    endCurrentSession(player::ListenEnd::Stopped);
+    endCurrentSession(player::ListenEnd::Stopped, Notify::No);
 }
 
 void PlayEventRecorder::onTrackStarted(const linernotes::player::QueueItem &item)
@@ -139,16 +140,16 @@ void PlayEventRecorder::checkpoint()
     syncToStore(false);
 }
 
-void PlayEventRecorder::syncToStore(bool ended, player::ListenEnd end)
+bool PlayEventRecorder::syncToStore(bool ended, player::ListenEnd end)
 {
     if (!m_current.has_value()) {
-        return;
+        return false;
     }
 
     const qint64 now = m_clock.nowMs();
     const auto res = m_current->session.result(end, now);
     if (!m_current->session.hasStarted() || res.playedMs <= 0) {
-        return;
+        return false;
     }
 
     library::PlayEvent event;
@@ -172,28 +173,37 @@ void PlayEventRecorder::syncToStore(bool ended, player::ListenEnd end)
     event.device = m_current->device;
     event.snapshot = m_current->snapshotJson;
 
+    bool written = false;
     if (m_current->eventId == -1) {
         const auto insertRes = m_store.insert(event);
         if (insertRes.ok()) {
             m_current->eventId = insertRes.value();
+            written = true;
         } else {
             qCWarning(lcUi) << "Failed to insert play event:" << insertRes.error().toString();
         }
     } else {
         const auto updateRes = m_store.update(event);
-        if (!updateRes.ok()) {
+        if (updateRes.ok()) {
+            written = true;
+        } else {
             qCWarning(lcUi) << "Failed to update play event:" << updateRes.error().toString();
         }
     }
+    return written;
 }
 
-void PlayEventRecorder::endCurrentSession(player::ListenEnd end)
+void PlayEventRecorder::endCurrentSession(player::ListenEnd end, Notify notify)
 {
     if (!m_current.has_value()) {
         return;
     }
-    syncToStore(true, end);
+    const qint64 trackId = m_current->item.trackId;
+    const bool success = syncToStore(true, end);
     m_current.reset();
+    if (notify == Notify::Yes && success && trackId > 0) {
+        emit playEventFinished(trackId);
+    }
 }
 
 } // namespace linernotes::ui

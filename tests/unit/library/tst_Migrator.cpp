@@ -41,6 +41,7 @@ private slots:
     void backsUpBeforeUpgrade();
     void defaultResourceMigrationsLoad();
     void upgradesTo0006AddsPlayEventDetails();
+    void upgradesTo0007AddsTrackPlayStats();
 };
 
 void TstMigrator::appliesMigrationsInOrder()
@@ -277,6 +278,70 @@ void TstMigrator::upgradesTo0006AddsPlayEventDetails()
     QVERIFY(q.value(1).isNull());
     QCOMPARE(q.value(2).toLongLong(), 0LL);
     QVERIFY(q.value(3).isNull());
+}
+
+void TstMigrator::upgradesTo0007AddsTrackPlayStats()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 7);
+
+    // Write migrations 1..6
+    for (int i = 0; i < 6; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 6);
+
+    // Insert track row
+    {
+        QSqlQuery q(conn);
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO library_roots (id, path, enabled, added_at) "
+                                      "VALUES (1, '/music', 1, 100);")));
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO files (id, root_id, path, duration_ms, size, "
+                                      "mtime, first_seen_at, scanned_at) VALUES "
+                                      "(1, 1, '/music/1.mp3', 60000, 1, 1, 1, 1);")));
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO tracks (id, file_id, tags_read_at, created_at) "
+                                      "VALUES (1, 1, 1, 1);")));
+    }
+
+    // Add migration 7
+    const auto &m7 = allMigrations.at(6);
+    const QString fileName7
+        = QStringLiteral("%1_%2.sql").arg(m7.version, 4, 10, QLatin1Char('0')).arg(m7.name);
+    writeSqlFile(migDir.path(), fileName7, m7.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 7);
+
+    // Verify track_play_stats table and album_play_completion view exist and can be queried
+    QSqlQuery q(conn);
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM track_play_stats;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 0);
+
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM album_play_completion;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 0);
 }
 
 } // namespace

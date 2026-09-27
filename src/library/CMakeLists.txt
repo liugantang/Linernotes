@@ -40,6 +40,8 @@ add_library(linernotes_library STATIC
     PlayCountRule.h
     PlayEventStore.cpp
     PlayEventStore.h
+    PlayStats.cpp
+    PlayStats.h
     PlaylistStore.cpp
     PlaylistStore.h
     ScanDiff.cpp

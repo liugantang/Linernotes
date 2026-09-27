@@ -1507,6 +1507,18 @@
         <extracomment>Track table column header</extracomment>
         <translation>添加日期</translation>
     </message>
+    <message>
+        <location filename="../qml/TrackTable.qml" line="123"/>
+        <source>Plays</source>
+        <extracomment>Track table column header</extracomment>
+        <translation>播放次数</translation>
+    </message>
+    <message>
+        <location filename="../qml/TrackTable.qml" line="125"/>
+        <source>Last Played</source>
+        <extracomment>Track table column header</extracomment>
+        <translation>最后播放</translation>
+    </message>
 </context>
 <context>
     <name>TrackTableHeader</name>

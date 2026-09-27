@@ -27,6 +27,9 @@ public:
         QObject *parent = nullptr);
     ~PlayEventRecorder() override;
 
+signals:
+    void playEventFinished(qint64 trackId);
+
 private slots:
     void onTrackStarted(const linernotes::player::QueueItem &item);
     void onStateChanged(linernotes::player::Player::PlaybackState state);
@@ -35,9 +38,10 @@ private slots:
     void onCheckpointTimer();
 
 private:
-    void endCurrentSession(player::ListenEnd end);
+    enum class Notify : bool { No, Yes };
+    void endCurrentSession(player::ListenEnd end, Notify notify = Notify::Yes);
     void checkpoint();
-    void syncToStore(bool ended, player::ListenEnd end = player::ListenEnd::Stopped);
+    bool syncToStore(bool ended, player::ListenEnd end = player::ListenEnd::Stopped);
 
     player::Player &m_player;
     library::Database &m_db;

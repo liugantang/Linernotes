@@ -113,6 +113,10 @@ QVariant TrackListModel::data(const QModelIndex &index, int role) const
         return row->rating;
     case AddedAtRole:
         return row->addedAt;
+    case PlayCountRole:
+        return row->playCount;
+    case LastPlayedAtRole:
+        return row->lastPlayedAtMs.has_value() ? QVariant(row->lastPlayedAtMs.value()) : QVariant();
     default:
         return { };
     }
@@ -141,6 +145,8 @@ QHash<int, QByteArray> TrackListModel::roleNames() const
         { FavoriteRole, "favorite" },
         { RatingRole, "rating" },
         { AddedAtRole, "addedAt" },
+        { PlayCountRole, "playCount" },
+        { LastPlayedAtRole, "lastPlayedAt" },
     };
 }
 
