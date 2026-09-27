@@ -4,6 +4,8 @@
 add_library(linernotes_ai STATIC
     AiLogging.cpp
     AiLogging.h
+    CapabilityProbe.cpp
+    CapabilityProbe.h
     ChatTypes.cpp
     ChatTypes.h
     Errors.h
@@ -15,6 +17,8 @@ add_library(linernotes_ai STATIC
     LlmReply.h
     SseParser.cpp
     SseParser.h
+    StructuredOutput.cpp
+    StructuredOutput.h
 )
 add_library(Linernotes::ai ALIAS linernotes_ai)
 

@@ -26,3 +26,20 @@ linernotes_add_test(
         Linernotes::ai
 )
 
+linernotes_add_test(
+    NAME ai_StructuredOutput
+    SOURCES
+        tst_StructuredOutput.cpp
+    LIBS
+        Linernotes::ai
+)
+
+linernotes_add_test(
+    NAME ai_CapabilityProbe
+    SOURCES
+        tst_CapabilityProbe.cpp
+    LIBS
+        Linernotes::ai
+        Linernotes::TestSupport
+)
+

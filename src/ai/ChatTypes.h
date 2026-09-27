@@ -13,6 +13,7 @@
 
 #include <cstdint>
 #include <optional>
+#include <utility>
 
 namespace linernotes::ai {
 
@@ -40,6 +41,15 @@ struct ChatMessage {
     QString toolCallId; // 仅 Tool
     bool operator==(const ChatMessage &) const = default;
 };
+
+/// 只有角色与正文的消息（最常见的 System / User / Assistant 消息）。
+inline ChatMessage makeMessage(Role role, QString content)
+{
+    ChatMessage message;
+    message.role = role;
+    message.content = std::move(content);
+    return message;
+}
 
 struct ToolSpec {
     QString name;

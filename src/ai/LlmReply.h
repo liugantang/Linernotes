@@ -40,7 +40,7 @@ public:
 
 signals:
     void delta(const QString &text); // 仅流式：content 增量
-    void finished(); // 恰好一次
+    void finished(); // 恰好一次；发出后不再访问成员，槽函数中可以直接销毁本对象
 
 private:
     friend class LlmClient;
