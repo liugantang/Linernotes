@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
+file(GLOB PROMPT_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/prompts/*/*.md")
+
 add_library(linernotes_ai STATIC
     AiConfig.cpp
     AiConfig.h
@@ -26,6 +28,8 @@ add_library(linernotes_ai STATIC
     LlmReply.h
     LlmService.cpp
     LlmService.h
+    PromptLibrary.cpp
+    PromptLibrary.h
     RequestScheduler.cpp
     RequestScheduler.h
     RetryPolicy.cpp
@@ -42,6 +46,14 @@ add_library(linernotes_ai STATIC
 add_library(Linernotes::ai ALIAS linernotes_ai)
 
 qt6_extract_metatypes(linernotes_ai)
+
+if(PROMPT_FILES)
+    qt_add_resources(linernotes_ai "prompts"
+        PREFIX "/prompts"
+        BASE "${PROJECT_SOURCE_DIR}/resources/prompts"
+        FILES ${PROMPT_FILES}
+    )
+endif()
 
 target_include_directories(linernotes_ai
     PUBLIC

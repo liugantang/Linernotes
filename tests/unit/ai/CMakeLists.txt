@@ -116,4 +116,14 @@ linernotes_add_test(
         Linernotes::TestSupport
 )
 
+linernotes_add_test(
+    NAME ai_PromptLibrary
+    SOURCES
+        tst_PromptLibrary.cpp
+    LIBS
+        Linernotes::ai
+        Linernotes::core
+)
+
+
 
