@@ -141,7 +141,7 @@ void QueueModel::move(int from, int to)
     }
 }
 
-void QueueModel::removeRows(const QList<int> &rows)
+void QueueModel::removeItems(const QList<int> &rows)
 {
     auto *queue = m_player.queue();
     if (queue == nullptr || rows.isEmpty()) {

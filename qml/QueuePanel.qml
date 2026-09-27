@@ -164,9 +164,9 @@ FocusScope {
                 if (root.queueModel) {
                     const rows = rowSelection.selectedRows()
                     if (rows.indexOf(contextMenu.targetRow) !== -1) {
-                        root.queueModel.removeRows(rows)
+                        root.queueModel.removeItems(rows)
                     } else if (contextMenu.targetRow >= 0) {
-                        root.queueModel.removeRows([contextMenu.targetRow])
+                        root.queueModel.removeItems([contextMenu.targetRow])
                     }
                 }
             }
@@ -353,7 +353,7 @@ FocusScope {
                         }
                     } else if (event.key === Qt.Key_Delete) {
                         if (root.queueModel) {
-                            root.queueModel.removeRows(rowSelection.selectedRows())
+                            root.queueModel.removeItems(rowSelection.selectedRows())
                             event.accepted = true
                         }
                     } else if (event.key === Qt.Key_A && (event.modifiers & Qt.ControlModifier)) {

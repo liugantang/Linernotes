@@ -144,7 +144,7 @@ Popup {
                                 icon.source: "icons/rotate-ccw.svg"
                                 toolTip: qsTr("Revert to file tag")
                                 visible: model.overridden
-                                onClicked: AppContext.tagEditor.revert(fieldDelegate.index)
+                                onClicked: AppContext.tagEditor.revertField(fieldDelegate.index)
                             }
                         }
                     }

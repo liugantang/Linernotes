@@ -86,10 +86,10 @@ void TstQueueModel::testQueueModel()
     QCOMPARE(model->data(model->index(2, 0), QueueModel::TitleRole).toString(),
         QStringLiteral("ext.flac"));
 
-    // 2. 播放第 1 行后 removeRows({0, 1, 2}): 只剩当前行; clear() 在有当前项时保留当前项
+    // 2. 播放第 1 行后 removeItems({0, 1, 2}): 只剩当前行; clear() 在有当前项时保留当前项
     model->playAt(1);
     QCOMPARE(queue->currentIndex(), 1);
-    model->removeRows({ 0, 1, 2 });
+    model->removeItems({ 0, 1, 2 });
     QCOMPARE(model->rowCount(), 1);
     QCOMPARE(queue->currentIndex(), 0);
     QCOMPARE(model->data(model->index(0, 0), QueueModel::TitleRole).toString(),

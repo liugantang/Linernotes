@@ -44,7 +44,7 @@ public:
 
     Q_INVOKABLE void playAt(int row);
     Q_INVOKABLE void move(int from, int to);
-    Q_INVOKABLE void removeRows(const QList<int> &rows);
+    Q_INVOKABLE void removeItems(const QList<int> &rows);
     Q_INVOKABLE void clear();
     [[nodiscard]] Q_INVOKABLE QList<qint64> trackIds() const;
 

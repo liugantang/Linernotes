@@ -269,7 +269,7 @@ void TagEditorModel::setValue(int row, const QString &value)
     emit dataChanged(index(row, 0), index(row, 0), { ValueRole, MixedRole, EditedRole });
 }
 
-void TagEditorModel::revert(int row)
+void TagEditorModel::revertField(int row)
 {
     if (row < 0 || row >= static_cast<int>(m_rows.size())) {
         return;
