@@ -213,6 +213,7 @@
 - 媒体控件：在 KDE Plasma（Wayland）下试用；另在私有会话总线上用 dbus-send 核对 MPRIS 的元数据、封面、播放控制、Seeked 与 PropertiesChanged。GNOME 未实测
 - 打包：Arch 包可安装运行；AppImage 在 Xvfb（xcb）与无界面 KWin（Wayland）中冒烟测试通过；desktop-file-validate 与 appstreamcli validate 通过
 - ctest：59 个测试在 debug / ci（-Werror）/ asan 下全部通过；格式与 clang-tidy 通过
+- GitHub Actions：合并后 clang 构建失败，`QueueModel::removeRows` 与 `TagEditorModel::revert` 隐藏了 QAbstractItemModel 的同名虚函数（阶段 3 引入，GCC 不报 `-Woverloaded-virtual`，本地验证只用 GCC）。改名为 `removeItems` / `revertField` 后全部通过（2026-09-27，run 36286904217）
 - 与计划的偏差：
   - 程序改用 QApplication 并链接 Qt Widgets：Qt.labs.platform 的托盘在没有原生实现时回退到 Qt Widgets，QGuiApplication 下会中止
   - 全局媒体键由桌面环境通过 MPRIS 转发，程序内只在窗口获得焦点时响应媒体键
