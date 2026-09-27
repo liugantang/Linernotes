@@ -20,6 +20,10 @@ Rectangle {
     required property string artist
     required property string durationText
     required property string coverHash
+    readonly property real trailingInset: {
+        const bar = ListView.view ? ListView.view.ScrollBar.vertical : null
+        return bar && bar.visible ? bar.width : 0
+    }
 
     readonly property bool isSelectedRow: root.queuePanel.selection.revision >= 0
         && root.queuePanel.selection.isSelected(root.index)
@@ -68,7 +72,7 @@ Rectangle {
     RowLayout {
         anchors.fill: parent
         anchors.leftMargin: Theme.spacingTiny
-        anchors.rightMargin: Theme.spacingSmall
+        anchors.rightMargin: root.trailingInset + Theme.spacingSmall
         spacing: Theme.spacingSmall
 
         // Drag handle

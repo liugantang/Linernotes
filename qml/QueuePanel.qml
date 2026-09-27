@@ -275,9 +275,7 @@ FocusScope {
                     queuePanel: root
                 }
 
-                ScrollBar.vertical: ScrollBar {
-                    policy: ScrollBar.AsNeeded
-                }
+                ScrollBar.vertical: Controls.AppScrollBar {}
 
                 // Insertion indicator line
                 Rectangle {

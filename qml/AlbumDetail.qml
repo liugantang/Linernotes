@@ -221,7 +221,7 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             Layout.leftMargin: Theme.spacingMedium
-            Layout.rightMargin: Theme.spacingMedium
+            Layout.rightMargin: (listView.ScrollBar.vertical.visible ? listView.ScrollBar.vertical.width : 0) + Theme.spacingMedium
             Layout.topMargin: Theme.spacingSmall
             Layout.bottomMargin: Theme.spacingSmall
             spacing: Theme.spacingMedium
@@ -270,6 +270,8 @@ Item {
             boundsBehavior: Flickable.StopAtBounds
             model: trackModel
 
+            ScrollBar.vertical: Controls.AppScrollBar {}
+
             Keys.onReturnPressed: (event) => {
                 if (currentIndex >= 0 && currentIndex < trackModel.count) {
                     root.playTrackAt(currentIndex)
@@ -297,6 +299,7 @@ Item {
             delegate: AlbumTrackRow {
                 albumDetail: root
                 contextMenu: albumContextMenu
+                trailingInset: listView.ScrollBar.vertical.visible ? listView.ScrollBar.vertical.width : 0
             }
         }
     }

@@ -61,6 +61,8 @@ QtObject {
     readonly property color itemSelected: isDark ? "#45475a" : "#dee2e6"
     readonly property color favorite: isDark ? "#f38ba8" : "#e0245e"
     readonly property color rating: isDark ? "#f9e2af" : "#f59e0b"
+    readonly property color scrollBarThumb: Qt.rgba(textSecondary.r, textSecondary.g, textSecondary.b, 0.35)
+    readonly property color scrollBarThumbActive: Qt.rgba(textSecondary.r, textSecondary.g, textSecondary.b, 0.6)
 
     // Error banner colors
     readonly property color errorBackground: isDark ? "#3b1e24" : "#fde8e8"

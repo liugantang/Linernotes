@@ -88,6 +88,8 @@ Popup {
             contentWidth: availableWidth
             clip: true
 
+            ScrollBar.vertical: Controls.AppScrollBar {}
+
             ColumnLayout {
                 width: parent.width
                 spacing: Theme.spacingMedium

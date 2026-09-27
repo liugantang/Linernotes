@@ -115,6 +115,8 @@ Item {
                             }
                         }
 
+                        ScrollBar.vertical: Controls.AppScrollBar {}
+
                         delegate: Rectangle {
                             id: artistDelegate
                             required property int index
@@ -139,7 +141,7 @@ Item {
                             RowLayout {
                                 anchors.fill: parent
                                 anchors.leftMargin: Theme.spacingMedium
-                                anchors.rightMargin: Theme.spacingMedium
+                                anchors.rightMargin: (artistListView.ScrollBar.vertical.visible ? artistListView.ScrollBar.vertical.width : 0) + Theme.spacingMedium
                                 spacing: Theme.spacingSmall
 
                                 Rectangle {

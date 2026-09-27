@@ -157,11 +157,13 @@ Item {
                 boundsBehavior: Flickable.StopAtBounds
                 model: albumModel
 
-                readonly property int availableWidth: Math.max(100, width)
+                readonly property int availableWidth: Math.max(100, width - (ScrollBar.vertical.visible ? ScrollBar.vertical.width : 0))
                 readonly property int columns: Math.max(1, Math.floor((availableWidth + Theme.spacingMedium) / (Theme.albumCardMinWidth + Theme.spacingMedium)))
-                cellWidth: Math.floor(width / columns)
+                cellWidth: Math.floor(availableWidth / columns)
                 readonly property int cardWidth: cellWidth - Theme.spacingMedium
                 cellHeight: cardWidth + Theme.albumCardTextHeight + Theme.spacingMedium
+
+                ScrollBar.vertical: Controls.AppScrollBar {}
 
                 Keys.onReturnPressed: (event) => { activateCurrent(); event.accepted = true; }
                 Keys.onEnterPressed: (event) => { activateCurrent(); event.accepted = true; }

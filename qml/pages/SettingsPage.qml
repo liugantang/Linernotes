@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import Linernotes
+import "../controls" as Controls
 
 Item {
     id: root
@@ -14,6 +15,8 @@ Item {
         anchors.fill: parent
         contentWidth: availableWidth
         clip: true
+
+        ScrollBar.vertical: Controls.AppScrollBar {}
 
         ColumnLayout {
             width: Math.min(scrollView.availableWidth - Theme.spacingLarge * 2, 720)
