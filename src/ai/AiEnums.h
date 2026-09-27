@@ -24,4 +24,7 @@ enum class DataCategory : std::uint8_t {
 };
 Q_ENUM_NS(DataCategory)
 
+enum class JobState : std::uint8_t { Running, Paused, Completed, Cancelled };
+Q_ENUM_NS(JobState)
+
 } // namespace linernotes::ai

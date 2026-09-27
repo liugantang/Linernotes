@@ -43,6 +43,7 @@ private slots:
     void upgradesTo0006AddsPlayEventDetails();
     void upgradesTo0007AddsTrackPlayStats();
     void upgradesTo0009AddsLlmUsage();
+    void upgradesTo0010AddsJobs();
 };
 
 void TstMigrator::appliesMigrationsInOrder()
@@ -393,6 +394,64 @@ void TstMigrator::upgradesTo0009AddsLlmUsage()
         "completion_tokens, cached, ok, error_code, elapsed_ms) "
         "VALUES (1, 1000, 'query', 'svc1', 'gpt-4o', 10, 5, 0, 1, NULL, 120);")));
     QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM llm_usage;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 1);
+}
+
+void TstMigrator::upgradesTo0010AddsJobs()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 10);
+
+    // Write migrations 1..9
+    for (int i = 0; i < 9; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 9);
+
+    // Add migration 10
+    const auto &m10 = allMigrations.at(9);
+    const QString fileName10
+        = QStringLiteral("%1_%2.sql").arg(m10.version, 4, 10, QLatin1Char('0')).arg(m10.name);
+    writeSqlFile(migDir.path(), fileName10, m10.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 10);
+
+    // Verify jobs and job_items tables exist and can be inserted/queried
+    QSqlQuery q(conn);
+    QVERIFY(q.exec(QStringLiteral(
+        "INSERT INTO jobs (id, kind, title, params, state, last_error, created_at, updated_at) "
+        "VALUES (1, 'cleanup.normalize', 'Normalize Artist', '{}', 'running', NULL, 1000, "
+        "1000);")));
+    QVERIFY(
+        q.exec(QStringLiteral("INSERT INTO job_items (job_id, seq, item_key, state, error_code) "
+                              "VALUES (1, 0, 'artist:1', 'pending', NULL);")));
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM jobs;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 1);
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM job_items;")));
     QVERIFY(q.next());
     QCOMPARE(q.value(0).toInt(), 1);
 }

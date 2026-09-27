@@ -16,6 +16,10 @@ add_library(linernotes_ai STATIC
     ChatTypes.cpp
     ChatTypes.h
     Errors.h
+    JobHandler.cpp
+    JobHandler.h
+    JobQueue.cpp
+    JobQueue.h
     JsonSchema.cpp
     JsonSchema.h
     KeychainSecretStore.cpp

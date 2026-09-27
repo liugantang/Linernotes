@@ -143,5 +143,17 @@ linernotes_add_test(
         Linernotes::core
 )
 
+linernotes_add_test(
+    NAME ai_JobQueue
+    SOURCES
+        tst_JobQueue.cpp
+    LIBS
+        Linernotes::ai
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+)
+
 
 

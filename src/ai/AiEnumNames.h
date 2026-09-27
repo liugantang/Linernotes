@@ -18,4 +18,7 @@ std::optional<Purpose> purposeFromName(QStringView name);
 QString dataCategoryName(DataCategory category);
 std::optional<DataCategory> dataCategoryFromName(QStringView name);
 
+QString jobStateName(JobState state);
+std::optional<JobState> jobStateFromName(QStringView name);
+
 } // namespace linernotes::ai

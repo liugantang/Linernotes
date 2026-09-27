@@ -64,4 +64,24 @@ std::optional<DataCategory> dataCategoryFromName(QStringView name)
     return enumFromName<DataCategory>(name, dataCategoryName);
 }
 
+QString jobStateName(JobState state)
+{
+    switch (state) {
+    case JobState::Running:
+        return QStringLiteral("running");
+    case JobState::Paused:
+        return QStringLiteral("paused");
+    case JobState::Completed:
+        return QStringLiteral("completed");
+    case JobState::Cancelled:
+        return QStringLiteral("cancelled");
+    }
+    return { };
+}
+
+std::optional<JobState> jobStateFromName(QStringView name)
+{
+    return enumFromName<JobState>(name, jobStateName);
+}
+
 } // namespace linernotes::ai
