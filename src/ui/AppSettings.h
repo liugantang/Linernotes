@@ -21,6 +21,10 @@ inline const core::SettingKey<bool> kPlaybackGapless { u"playback/gapless", true
 inline const core::SettingKey<QString> kPlaybackAudioDevice { u"playback/audioDevice", u""_s };
 // NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 inline const core::SettingKey<bool> kPlaybackExclusive { u"playback/exclusive", false };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<int> kPlaybackCountMinPercent { u"playback/countMinPercent", 50 };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<int> kPlaybackCountMinSeconds { u"playback/countMinSeconds", 240 };
 // NOLINTNEXTLINE(bugprone-throwing-static-initialization) - QString constructor is non-noexcept in
 // Qt6
 inline const core::SettingKey<QString> kAppearanceLanguage { u"appearance/language", u"system"_s };
@@ -31,6 +35,15 @@ inline const core::SettingKey<QString> kAppearanceTheme { u"appearance/theme", u
 inline const core::SettingKey<bool> kAppearanceAccentFromCover { u"appearance/accentFromCover",
     false };
 // NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<bool> kAppearanceTrayIcon { u"appearance/trayIcon", true };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<bool> kAppearanceCloseToTray { u"appearance/closeToTray", false };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<bool> kNotificationsTrackChange { u"notifications/trackChange",
+    true };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 inline const core::SettingKey<bool> kAppFirstRunCompleted { u"app/firstRunCompleted", false };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<int> kLibraryBackupKeep { u"library/backupKeep", 7 };
 
 } // namespace linernotes::ui

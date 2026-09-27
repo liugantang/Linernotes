@@ -107,6 +107,22 @@ var ALL_COLUMNS = [
         defaultVisible: false,
         alignRight: false,
         canHide: true
+    },
+    {
+        key: "playCount",
+        defaultWidth: 80,
+        sortKey: -1,
+        defaultVisible: false,
+        alignRight: true,
+        canHide: true
+    },
+    {
+        key: "lastPlayed",
+        defaultWidth: 110,
+        sortKey: -1,
+        defaultVisible: false,
+        alignRight: false,
+        canHide: true
     }
 ];
 
@@ -160,11 +176,11 @@ function formatCodec(codec, sampleRate, bitDepth) {
     return upper + suffix;
 }
 
-function formatAddedAt(addedAt) {
-    if (!addedAt || addedAt <= 0) {
+function formatDate(epochMs) {
+    if (!epochMs || epochMs <= 0) {
         return "";
     }
-    var d = new Date(addedAt);
+    var d = new Date(epochMs);
     if (isNaN(d.getTime())) {
         return "";
     }

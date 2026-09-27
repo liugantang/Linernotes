@@ -8,6 +8,8 @@ add_library(linernotes_player STATIC
     Ducker.h
     GainRamp.cpp
     GainRamp.h
+    ListenSession.cpp
+    ListenSession.h
     MpvHandle.cpp
     MpvHandle.h
     PlaybackSnapshot.cpp

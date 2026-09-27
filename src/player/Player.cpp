@@ -162,7 +162,8 @@ PlaybackSnapshot Player::snapshot() const
     snap.items.reserve(count);
     for (int i = 0; i < count; ++i) {
         const auto &item = m_queue.at(i);
-        snap.items.append({ .source = item.source, .trackId = item.trackId });
+        snap.items.append(
+            { .source = item.source, .trackId = item.trackId, .playSource = item.playSource });
     }
     snap.currentIndex = m_queue.currentIndex();
     snap.mode = m_queue.mode();
@@ -216,7 +217,8 @@ void Player::restore(const PlaybackSnapshot &snapshot)
     QList<QueueItem> queueItems;
     queueItems.reserve(snapshot.items.size());
     for (const auto &item : snapshot.items) {
-        queueItems.append({ .source = item.source, .trackId = item.trackId });
+        queueItems.append(
+            { .source = item.source, .trackId = item.trackId, .playSource = item.playSource });
     }
 
     const int targetIndex
@@ -366,8 +368,10 @@ void Player::seek(double seconds)
 {
     qCDebug(lcPlayer) << "seek() to" << seconds;
     if (m_state != PlaybackState::Stopped && m_mpv.isValid()) {
-        m_mpv.command({ QStringLiteral("seek"), QString::number(seconds, 'f', 6),
-            QStringLiteral("absolute") });
+        if (m_mpv.command({ QStringLiteral("seek"), QString::number(seconds, 'f', 6),
+                QStringLiteral("absolute") })) {
+            emit seeked(seconds);
+        }
     }
 }
 
@@ -549,7 +553,9 @@ void Player::loadItem(const QueueItem &item, std::optional<double> pausedAt)
                 = (std::isnan(*pausedAt) || !std::isfinite(*pausedAt) || *pausedAt < 0.0)
                 ? 0.0
                 : *pausedAt;
-            const QString options = QStringLiteral("pause=yes,start=%1").arg(pos, 0, 'f', 6);
+            // pause 已经在上面设置；不要放进单文件选项：mpv 在旧文件结束时会把单文件选项
+            // 还原为加载前的值，紧接着换曲时会把刚设的 pause=false 覆盖回 true
+            const QString options = QStringLiteral("start=%1").arg(pos, 0, 'f', 6);
             m_mpv.command({ QStringLiteral("loadfile"), item.source, QStringLiteral("replace"),
                 QStringLiteral("0"), options });
         } else {
@@ -562,6 +568,8 @@ void Player::loadItem(const QueueItem &item, std::optional<double> pausedAt)
         }
     }
     m_inInternalSync = false;
+
+    emit trackStarted(item);
 
     schedulePreloadSync();
 }
@@ -620,6 +628,8 @@ void Player::onStartFile(qint64 entryId)
             m_currentSource = advItem->source;
             emit currentSourceChanged(m_currentSource);
         }
+
+        emit trackStarted(*advItem);
 
         if (m_mpv.isValid()) {
             m_mpv.command({ QStringLiteral("playlist-remove"), QStringLiteral("0") });

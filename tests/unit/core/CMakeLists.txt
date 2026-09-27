@@ -33,3 +33,12 @@ linernotes_add_test(
         Linernotes::core
 )
 
+linernotes_add_test(
+    NAME core_SingleInstance
+    SOURCES
+        tst_SingleInstance.cpp
+    LIBS
+        Linernotes::core
+)
+
+

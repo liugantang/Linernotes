@@ -20,11 +20,14 @@ add_library(linernotes_ui STATIC
     LibraryRootsModel.h
     MarksController.cpp
     MarksController.h
+    NotificationSink.h
     NowPlaying.cpp
     NowPlaying.h
     PageCache.h
     PagedListModel.cpp
     PagedListModel.h
+    PlayEventRecorder.cpp
+    PlayEventRecorder.h
     PlaylistController.cpp
     PlaylistController.h
     PlaylistListModel.cpp
@@ -41,12 +44,31 @@ add_library(linernotes_ui STATIC
     TagEditorModel.h
     TrackListModel.cpp
     TrackListModel.h
+    TrackNotifier.cpp
+    TrackNotifier.h
     Translations.cpp
     Translations.h
     UiLogging.cpp
     UiLogging.h
 )
 add_library(Linernotes::ui ALIAS linernotes_ui)
+
+if(UNIX AND NOT APPLE)
+    target_sources(linernotes_ui PRIVATE
+        DBusNotificationSink.cpp
+        DBusNotificationSink.h
+        mpris/Mpris.cpp
+        mpris/Mpris.h
+        mpris/MprisPlayerAdaptor.cpp
+        mpris/MprisPlayerAdaptor.h
+        mpris/MprisRootAdaptor.cpp
+        mpris/MprisRootAdaptor.h
+    )
+    target_link_libraries(linernotes_ui
+        PUBLIC
+            Qt6::DBus
+    )
+endif()
 
 qt6_extract_metatypes(linernotes_ui)
 
@@ -63,6 +85,7 @@ target_link_libraries(linernotes_ui
         Qt6::Core
         Qt6::Gui
         Qt6::Quick # Required by CoverImageProvider (QQuickImageProvider)
+        Qt6::Concurrent
 )
 
 linernotes_set_target_options(linernotes_ui)

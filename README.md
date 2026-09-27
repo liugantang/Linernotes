@@ -77,6 +77,17 @@ cmake --build --preset release
 ctest --preset release
 ```
 
+### 打包
+
+- **Arch Linux (PKGBUILD)**：
+  ```bash
+  cd packaging/arch && makepkg -si
+  ```
+- **AppImage**：
+  ```bash
+  ./packaging/appimage/build-appimage.sh
+  ```
+
 ## 文档索引
 
 - [需求规格说明 (REQUIREMENTS.md)](docs/REQUIREMENTS.md)：完整产品功能需求与设计规范

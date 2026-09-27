@@ -42,6 +42,10 @@ TrackRow parseTrackRow(const QSqlQuery &q)
     row.favorite = q.value(19).toInt() != 0;
     row.rating = q.value(20).toInt();
     row.addedAt = q.value(21).toLongLong();
+    row.playCount = q.value(22).toInt();
+    if (!q.value(23).isNull()) {
+        row.lastPlayedAtMs = q.value(23).toLongLong();
+    }
     return row;
 }
 
@@ -359,13 +363,16 @@ QString trackSelectSql(const QString &fromSource)
         "c.hash, "
         "(fav.entity_id IS NOT NULL) AS is_fav, "
         "COALESCE(r.rating, 0) AS rating, "
-        "f.first_seen_at "
+        "f.first_seen_at, "
+        "COALESCE(tps.play_count, 0) AS play_count, "
+        "tps.last_played_at "
         "FROM %1 "
         "JOIN files f ON t.file_id = f.id "
         "LEFT JOIN effective_metadata em ON t.id = em.track_id "
         "LEFT JOIN covers c ON f.cover_id = c.id "
         "LEFT JOIN favorites fav ON fav.entity_type = 'track' AND fav.entity_id = t.id "
-        "LEFT JOIN ratings r ON r.track_id = t.id")
+        "LEFT JOIN ratings r ON r.track_id = t.id "
+        "LEFT JOIN track_play_stats tps ON tps.track_id = t.id")
         .arg(fromSource);
 }
 

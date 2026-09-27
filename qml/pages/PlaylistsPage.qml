@@ -121,7 +121,7 @@ Item {
                         enabled: trackTable.count > 0
                         onClicked: {
                             if (AppContext.actions && trackTable.count > 0) {
-                                AppContext.actions.playTracks(trackTable.model.allTrackIds(), 0)
+                                AppContext.actions.playTracks(trackTable.model.allTrackIds(), 0, PlaySource.Playlist)
                             }
                         }
                     }
@@ -141,6 +141,9 @@ Item {
                     persistSort: false
                     reorderable: root.isManualPlaylist && root.isPlaylistOrderAscending
                     emptyText: qsTr("This playlist is empty")
+                    Component.onCompleted: {
+                        playSource = PlaySource.Playlist
+                    }
                 }
             }
 

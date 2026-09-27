@@ -1,0 +1,18 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: 2026 Linernotes contributors
+
+[Desktop Entry]
+Type=Application
+Name=Linernotes
+GenericName=Music Player
+GenericName[zh_CN]=音乐播放器
+Comment=Modern local music player with AI-powered features
+Comment[zh_CN]=具备智能辅助功能的现代本地音乐播放器
+Exec=linernotes %F
+Icon=linernotes
+Terminal=false
+Categories=AudioVideo;Audio;Player;Qt;
+MimeType=audio/flac;audio/mpeg;audio/ogg;audio/x-vorbis+ogg;audio/opus;audio/x-wav;audio/mp4;audio/x-m4a;audio/aac;audio/x-ape;audio/x-wavpack;
+StartupWMClass=linernotes
+Keywords=music;player;audio;
+Keywords[zh_CN]=音乐;播放器;音频;

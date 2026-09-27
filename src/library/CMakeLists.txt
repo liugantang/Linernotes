@@ -8,6 +8,8 @@ add_library(linernotes_library STATIC
     CoverStore.h
     Database.cpp
     Database.h
+    DatabaseBackup.cpp
+    DatabaseBackup.h
     DirectoryWalker.cpp
     DirectoryWalker.h
     EntityLinker.cpp
@@ -36,6 +38,12 @@ add_library(linernotes_library STATIC
     Migrator.h
     OverrideStore.cpp
     OverrideStore.h
+    PlayCountRule.cpp
+    PlayCountRule.h
+    PlayEventStore.cpp
+    PlayEventStore.h
+    PlayStats.cpp
+    PlayStats.h
     PlaylistStore.cpp
     PlaylistStore.h
     ScanDiff.cpp

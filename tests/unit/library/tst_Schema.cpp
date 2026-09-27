@@ -100,7 +100,7 @@ void TstSchema::migratesFreshDatabaseToLatest()
     QVERIFY(db.open(Migrator()).ok());
     const auto conn = db.connection().value();
 
-    QCOMPARE(Migrator::currentVersion(conn).value(), 5);
+    QCOMPARE(Migrator::currentVersion(conn).value(), 7);
 
     // Verify core tables exist
     QSqlQuery q(conn);
@@ -113,6 +113,7 @@ void TstSchema::migratesFreshDatabaseToLatest()
     QVERIFY(tables.contains(QStringLiteral("effective_metadata")));
     QVERIFY(tables.contains(QStringLiteral("search_index")));
     QVERIFY(tables.contains(QStringLiteral("search_dirty")));
+    QVERIFY(tables.contains(QStringLiteral("track_play_stats")));
 
     // Integrity check
     QVERIFY(q.exec(QStringLiteral("PRAGMA integrity_check;")));

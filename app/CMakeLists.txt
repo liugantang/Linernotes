@@ -143,6 +143,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS controls/AppTextField.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/controls/AppSpinBox.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS controls/AppSpinBox.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/TrackColumns.js
     PROPERTIES
         QT_RESOURCE_ALIAS TrackColumns.js
@@ -281,6 +286,11 @@ set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/FirstRunWizard.qml
     PROPERTIES
         QT_RESOURCE_ALIAS FirstRunWizard.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/TrayIcon.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS TrayIcon.qml
 )
 
 set_source_files_properties(
@@ -472,6 +482,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/controls/AppMenuItem.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/AppMenuSeparator.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/AppTextField.qml
+        ${CMAKE_SOURCE_DIR}/qml/controls/AppSpinBox.qml
         ${CMAKE_SOURCE_DIR}/qml/Main.qml
         ${CMAKE_SOURCE_DIR}/qml/Theme.qml
         ${CMAKE_SOURCE_DIR}/qml/NavigationSidebar.qml
@@ -502,6 +513,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/AppShortcuts.qml
         ${CMAKE_SOURCE_DIR}/qml/ShortcutsDialog.qml
         ${CMAKE_SOURCE_DIR}/qml/FirstRunWizard.qml
+        ${CMAKE_SOURCE_DIR}/qml/TrayIcon.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackColumns.js
         ${CMAKE_SOURCE_DIR}/qml/TrackContextMenu.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackTableHeader.qml
@@ -566,6 +578,7 @@ target_link_libraries(linernotes
         Qt6::Qml
         Qt6::Quick
         Qt6::QuickControls2
+        Qt6::Widgets
 )
 
 qt_add_translations(linernotes
@@ -576,3 +589,7 @@ qt_add_translations(linernotes
 )
 
 linernotes_set_target_options(linernotes)
+
+install(TARGETS linernotes
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

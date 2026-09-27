@@ -7,6 +7,7 @@
 #include <QList>
 #include <QString>
 
+#include <core/PlaySource.h>
 #include <player/PlayMode.h>
 #include <player/PlayOrder.h>
 
@@ -19,6 +20,7 @@ struct QueueItem {
     QString source; // 本地文件路径
     qint64 trackId = -1; // 曲库 ID，阶段 2 之后才有，现在为 -1
     quint64 uid = 0; // 队列内唯一标识，由 PlayQueue 在加入时分配（调用方传入的值被忽略）
+    core::PlaySource playSource = core::PlaySource::Unknown;
 
     bool operator==(const QueueItem &other) const = default;
 };
@@ -93,3 +95,5 @@ private:
 };
 
 } // namespace linernotes::player
+
+Q_DECLARE_METATYPE(linernotes::player::QueueItem)

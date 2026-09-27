@@ -35,19 +35,22 @@ Item {
 
     TrackContextMenu {
         id: contextMenu
+        Component.onCompleted: {
+            playSource = PlaySource.Artist
+        }
     }
 
     function playAll() {
         const ids = artistTracksModel.allTrackIds()
         if (ids.length > 0 && AppContext.actions) {
-            AppContext.actions.playTracks(ids, 0)
+            AppContext.actions.playTracks(ids, 0, PlaySource.Artist)
         }
     }
 
     function playTrackAt(index) {
         const ids = artistTracksModel.allTrackIds()
         if (ids.length > 0 && AppContext.actions) {
-            AppContext.actions.playTracks(ids, index)
+            AppContext.actions.playTracks(ids, index, PlaySource.Artist)
         }
     }
 

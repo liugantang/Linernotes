@@ -7,6 +7,7 @@
 #include <QList>
 #include <QString>
 
+#include <core/PlaySource.h>
 #include <player/PlayMode.h>
 
 #include <cstdint>
@@ -18,6 +19,7 @@ struct PlaybackSnapshot {
     struct Item {
         QString source;
         qint64 trackId = -1;
+        core::PlaySource playSource = core::PlaySource::Unknown;
 
         bool operator==(const Item &other) const = default;
     };

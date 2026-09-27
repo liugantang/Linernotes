@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QQmlEngine>
 
+#include <core/PlaySource.h>
 #include <library/LibraryEnums.h>
 #include <library/SmartRule.h>
 #include <player/PlayMode.h>
@@ -60,6 +61,12 @@ struct PlayModeForeign {
     Q_GADGET
     QML_FOREIGN_NAMESPACE(linernotes::player)
     QML_NAMED_ELEMENT(PlayMode)
+};
+
+struct PlaySourceForeign {
+    Q_GADGET
+    QML_FOREIGN_NAMESPACE(linernotes::core)
+    QML_NAMED_ELEMENT(PlaySource)
 };
 
 struct LibraryActionsForeign {

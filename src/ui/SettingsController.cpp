@@ -96,9 +96,20 @@ SettingsController::SettingsController(
     , m_gapless(m_settings.value(kPlaybackGapless))
     , m_audioDevice(m_settings.value(kPlaybackAudioDevice))
     , m_exclusiveMode(m_settings.value(kPlaybackExclusive))
+    , m_countMinPercent(
+          library::PlayCountRule { .minPercent = m_settings.value(kPlaybackCountMinPercent) }
+              .normalized()
+              .minPercent)
+    , m_countMinSeconds(
+          library::PlayCountRule { .minSeconds = m_settings.value(kPlaybackCountMinSeconds) }
+              .normalized()
+              .minSeconds)
     , m_language(languageFromString(m_settings.value(kAppearanceLanguage)))
     , m_themeMode(themeModeFromString(m_settings.value(kAppearanceTheme)))
     , m_accentFromCover(m_settings.value(kAppearanceAccentFromCover))
+    , m_trayIcon(m_settings.value(kAppearanceTrayIcon))
+    , m_closeToTray(m_settings.value(kAppearanceCloseToTray))
+    , m_trackChangeNotifications(m_settings.value(kNotificationsTrackChange))
     , m_firstRunCompleted(m_settings.value(kAppFirstRunCompleted))
 {
     m_player.setReplayGainMode(m_replayGainMode);
@@ -183,6 +194,48 @@ void SettingsController::setExclusiveMode(bool exclusive)
     emit exclusiveModeChanged();
 }
 
+int SettingsController::countMinPercent() const
+{
+    return m_countMinPercent;
+}
+
+void SettingsController::setCountMinPercent(int percent)
+{
+    const int clamped = library::PlayCountRule { .minPercent = percent }.normalized().minPercent;
+    if (clamped == m_countMinPercent) {
+        return;
+    }
+    m_countMinPercent = clamped;
+    m_settings.setValue(kPlaybackCountMinPercent, clamped);
+    emit countMinPercentChanged();
+    emit playCountRuleChanged();
+}
+
+int SettingsController::countMinSeconds() const
+{
+    return m_countMinSeconds;
+}
+
+void SettingsController::setCountMinSeconds(int seconds)
+{
+    const int clamped = library::PlayCountRule { .minSeconds = seconds }.normalized().minSeconds;
+    if (clamped == m_countMinSeconds) {
+        return;
+    }
+    m_countMinSeconds = clamped;
+    m_settings.setValue(kPlaybackCountMinSeconds, clamped);
+    emit countMinSecondsChanged();
+    emit playCountRuleChanged();
+}
+
+library::PlayCountRule SettingsController::playCountRule() const
+{
+    return library::PlayCountRule {
+        .minPercent = m_countMinPercent,
+        .minSeconds = m_countMinSeconds,
+    };
+}
+
 SettingsController::Language SettingsController::language() const
 {
     return m_language;
@@ -226,6 +279,51 @@ void SettingsController::setAccentFromCover(bool enabled)
     m_accentFromCover = enabled;
     m_settings.setValue(kAppearanceAccentFromCover, enabled);
     emit accentFromCoverChanged();
+}
+
+bool SettingsController::trayIcon() const
+{
+    return m_trayIcon;
+}
+
+void SettingsController::setTrayIcon(bool enabled)
+{
+    if (enabled == m_trayIcon) {
+        return;
+    }
+    m_trayIcon = enabled;
+    m_settings.setValue(kAppearanceTrayIcon, enabled);
+    emit trayIconChanged();
+}
+
+bool SettingsController::closeToTray() const
+{
+    return m_closeToTray;
+}
+
+void SettingsController::setCloseToTray(bool enabled)
+{
+    if (enabled == m_closeToTray) {
+        return;
+    }
+    m_closeToTray = enabled;
+    m_settings.setValue(kAppearanceCloseToTray, enabled);
+    emit closeToTrayChanged();
+}
+
+bool SettingsController::trackChangeNotifications() const
+{
+    return m_trackChangeNotifications;
+}
+
+void SettingsController::setTrackChangeNotifications(bool enabled)
+{
+    if (enabled == m_trackChangeNotifications) {
+        return;
+    }
+    m_trackChangeNotifications = enabled;
+    m_settings.setValue(kNotificationsTrackChange, enabled);
+    emit trackChangeNotificationsChanged();
 }
 
 bool SettingsController::firstRunCompleted() const

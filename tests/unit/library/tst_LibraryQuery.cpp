@@ -267,6 +267,13 @@ private slots:
         QCOMPARE(artByIds.size(), 2);
         QCOMPARE(artByIds.at(0).artistId, art1);
         QCOMPARE(artByIds.at(1).artistId, art1);
+
+        // 11. trackIdsByPaths: maps valid paths to track IDs, skips missing/nonexistent
+        const auto pathMap
+            = q.trackIdsByPaths({ u"1.mp3"_s, u"2.mp3"_s, u"not_found.mp3"_s }).value();
+        QCOMPARE(pathMap.size(), 2);
+        QCOMPARE(pathMap.value(u"1.mp3"_s), t1);
+        QCOMPARE(pathMap.value(u"2.mp3"_s), t2);
     }
 
     void migrationFillsTrackSort()

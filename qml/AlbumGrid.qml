@@ -34,7 +34,7 @@ Item {
         helperTrackModel.sortOrder = Qt.AscendingOrder
         const ids = helperTrackModel.allTrackIds()
         if (ids.length > 0) {
-            AppContext.actions.playTracks(ids, 0)
+            AppContext.actions.playTracks(ids, 0, PlaySource.Album)
         }
     }
 

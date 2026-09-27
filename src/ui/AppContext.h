@@ -3,20 +3,25 @@
 
 #pragma once
 
+#include <QFuture>
+#include <QFutureWatcher>
 #include <QObject>
 #include <QString>
 #include <QTimer>
 #include <QUrl>
 
+#include <core/Clock.h>
 #include <core/Result.h>
 #include <library/CoverStore.h>
 #include <library/Database.h>
+#include <library/PlayStats.h>
 #include <player/MpvHandle.h>
 #include <player/Player.h>
 #include <ui/LibraryActions.h>
 #include <ui/LibraryRootsModel.h>
 #include <ui/MarksController.h>
 #include <ui/NowPlaying.h>
+#include <ui/PlayEventRecorder.h>
 #include <ui/PlaylistController.h>
 #include <ui/QueueModel.h>
 #include <ui/SearchController.h>
@@ -70,6 +75,7 @@ public:
         // 改变 QStandardPaths 的目录，所以显式指定文件位置
         QString uiStatePath;
         QString playbackStatePath;
+        QString backupDir;
     };
 
     explicit AppContext(core::Settings &settings, Options options, QObject *parent = nullptr);
@@ -108,16 +114,22 @@ signals:
     void startupErrorChanged();
     void scanningChanged();
     void libraryChanged();
+    void playStatsChanged();
 
 private:
+    void triggerBackupIfDue();
+
     // 声明顺序即依赖顺序，析构逆序进行，依赖方先于被依赖方析构
     core::Settings &m_settings;
     Options m_options;
+    core::SystemClock m_clock;
     library::Database m_db;
+    library::PlayStats m_playStats;
     TagEditorModel m_tagEditor;
     LibraryRootsModel m_roots;
     MarksController m_marks;
     player::Player m_player;
+    PlayEventRecorder m_recorder;
     SettingsController m_settingsController;
     library::CoverStore m_coverStore;
     std::unique_ptr<player::PlaybackStateStore> m_stateStore;
@@ -129,6 +141,9 @@ private:
     std::unique_ptr<library::Scanner> m_scanner;
     std::unique_ptr<library::LibraryWatcher> m_watcher;
     QTimer m_saveTimer;
+    QTimer m_backupTimer;
+    QFutureWatcher<core::Result<QString>> m_backupWatcher;
+    QFuture<core::Result<QString>> m_backupFuture;
 
     bool m_libraryReady { false };
     QString m_startupError;

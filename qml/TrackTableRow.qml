@@ -32,6 +32,8 @@ Rectangle {
     required property bool favorite
     required property int rating
     required property var addedAt
+    required property int playCount
+    required property var lastPlayedAt
 
     readonly property bool isCurrent: rootRow.table.currentIndex === rootRow.index && rootRow.table.activeFocus
     readonly property bool isSelectedRow: rootRow.selection.revision >= 0 && rootRow.selection.isSelected(rootRow.index)
@@ -74,7 +76,11 @@ Rectangle {
             return (bitrate !== undefined && bitrate !== null && bitrate > 0)
                 ? (bitrate + " kbps") : ""
         case "addedAt":
-            return TrackColumns.formatAddedAt(addedAt)
+            return TrackColumns.formatDate(addedAt)
+        case "playCount":
+            return playCount > 0 ? String(playCount) : ""
+        case "lastPlayed":
+            return TrackColumns.formatDate(lastPlayedAt)
         default:
             return ""
         }
@@ -204,7 +210,7 @@ Rectangle {
             if (dragStarted) return
             if (mouse.button === Qt.LeftButton) {
                 if (AppContext.actions) {
-                    AppContext.actions.playTracks(rootRow.table.model.allTrackIds(), rootRow.index)
+                    AppContext.actions.playTracks(rootRow.table.model.allTrackIds(), rootRow.index, rootRow.table.playSource)
                 }
             }
         }

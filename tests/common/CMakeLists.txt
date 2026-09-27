@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 add_library(linernotes_testsupport STATIC
+    ManualClock.h
     TestSupport.cpp
     TestSupport.h
 )
@@ -14,6 +15,7 @@ target_include_directories(linernotes_testsupport
 
 target_link_libraries(linernotes_testsupport
     PUBLIC
+        Linernotes::core
         Qt6::Core
 )
 

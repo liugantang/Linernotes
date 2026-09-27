@@ -53,10 +53,23 @@ ColumnLayout {
         }
     }
 
+    function syncPlayCountRule() {
+        if (AppContext.settings) {
+            if (minPercentSpin.value !== AppContext.settings.countMinPercent) {
+                minPercentSpin.value = AppContext.settings.countMinPercent
+            }
+            const minutes = Math.floor(AppContext.settings.countMinSeconds / 60)
+            if (minMinutesSpin.value !== minutes) {
+                minMinutesSpin.value = minutes
+            }
+        }
+    }
+
     Component.onCompleted: {
         refreshAudioDevices()
         updateAudioDeviceModel()
         syncReplayGainIndex()
+        syncPlayCountRule()
     }
 
     onVisibleChanged: {
@@ -79,6 +92,12 @@ ColumnLayout {
         }
         function onReplayGainModeChanged() {
             root.syncReplayGainIndex()
+        }
+        function onCountMinPercentChanged() {
+            root.syncPlayCountRule()
+        }
+        function onCountMinSecondsChanged() {
+            root.syncPlayCountRule()
         }
     }
 
@@ -202,6 +221,109 @@ ColumnLayout {
             Layout.leftMargin: 26
             Layout.fillWidth: true
             wrapMode: Text.Wrap
+        }
+    }
+
+    // Play count threshold
+    ColumnLayout {
+        spacing: Theme.spacingTiny
+        Layout.fillWidth: true
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: Theme.spacingMedium
+
+            Label {
+                text: qsTr("Play Count")
+                font.pixelSize: Theme.fontSizeNormal
+                color: Theme.text
+                Layout.preferredWidth: 140
+            }
+
+            RowLayout {
+                spacing: Theme.spacingSmall
+
+                Label {
+                    text: qsTr("Played at least")
+                    font.pixelSize: Theme.fontSizeNormal
+                    color: Theme.text
+                }
+
+                Controls.AppSpinBox {
+                    id: minPercentSpin
+                    from: 1
+                    to: 100
+                    value: AppContext.settings ? AppContext.settings.countMinPercent : 50
+                    onValueModified: {
+                        if (AppContext.settings) {
+                            AppContext.settings.countMinPercent = value
+                        }
+                    }
+                }
+
+                Label {
+                    text: "%"
+                    font.pixelSize: Theme.fontSizeNormal
+                    color: Theme.text
+                }
+
+                Label {
+                    text: qsTr("or at least")
+                    font.pixelSize: Theme.fontSizeNormal
+                    color: Theme.text
+                    Layout.leftMargin: Theme.spacingSmall
+                }
+
+                Controls.AppSpinBox {
+                    id: minMinutesSpin
+                    from: 0
+                    to: 60
+                    value: AppContext.settings ? Math.floor(AppContext.settings.countMinSeconds / 60) : 4
+                    onValueModified: {
+                        if (AppContext.settings) {
+                            AppContext.settings.countMinSeconds = value * 60
+                        }
+                    }
+                }
+
+                Label {
+                    text: qsTr("min")
+                    font.pixelSize: Theme.fontSizeNormal
+                    color: Theme.text
+                }
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+        }
+
+        Label {
+            text: qsTr("Criteria for counting a track as played (0 minutes disables duration threshold)")
+            font.pixelSize: Theme.fontSizeSmall
+            color: Theme.textSecondary
+            Layout.leftMargin: 140 + Theme.spacingMedium
+            Layout.fillWidth: true
+            wrapMode: Text.Wrap
+        }
+    }
+
+    // Track change desktop notification
+    Controls.AppCheckBox {
+        id: trackNotificationCheck
+        text: qsTr("Show desktop notification on track change")
+        checked: AppContext.settings ? AppContext.settings.trackChangeNotifications : true
+        onToggled: {
+            if (AppContext.settings) {
+                AppContext.settings.trackChangeNotifications = checked
+            }
+        }
+
+        Connections {
+            target: AppContext.settings
+            function onTrackChangeNotificationsChanged() {
+                trackNotificationCheck.checked = AppContext.settings.trackChangeNotifications
+            }
         }
     }
 }

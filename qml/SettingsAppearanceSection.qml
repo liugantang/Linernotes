@@ -139,4 +139,43 @@ ColumnLayout {
             }
         }
     }
+
+    // Tray icon
+    Controls.AppCheckBox {
+        id: trayIconCheck
+        text: qsTr("Show icon in system tray")
+        checked: AppContext.settings ? AppContext.settings.trayIcon : true
+        onToggled: {
+            if (AppContext.settings) {
+                AppContext.settings.trayIcon = checked
+            }
+        }
+
+        Connections {
+            target: AppContext.settings
+            function onTrayIconChanged() {
+                trayIconCheck.checked = AppContext.settings.trayIcon
+            }
+        }
+    }
+
+    // Close to tray
+    Controls.AppCheckBox {
+        id: closeToTrayCheck
+        text: qsTr("Hide to system tray when closing window")
+        enabled: trayIconCheck.checked
+        checked: AppContext.settings ? AppContext.settings.closeToTray : false
+        onToggled: {
+            if (AppContext.settings) {
+                AppContext.settings.closeToTray = checked
+            }
+        }
+
+        Connections {
+            target: AppContext.settings
+            function onCloseToTrayChanged() {
+                closeToTrayCheck.checked = AppContext.settings.closeToTray
+            }
+        }
+    }
 }
