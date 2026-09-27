@@ -108,6 +108,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS controls/AppCheckBox.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/controls/AppScrollBar.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS controls/AppScrollBar.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/controls/AppComboBox.qml
     PROPERTIES
         QT_RESOURCE_ALIAS controls/AppComboBox.qml
@@ -471,6 +476,7 @@ qt_add_qml_module(linernotes
     QML_FILES
         ${CMAKE_SOURCE_DIR}/qml/controls/AppButton.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/AppCheckBox.qml
+        ${CMAKE_SOURCE_DIR}/qml/controls/AppScrollBar.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/IconButton.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/FavoriteButton.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/RatingStars.qml

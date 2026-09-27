@@ -180,6 +180,8 @@ Item {
                 boundsBehavior: Flickable.StopAtBounds
                 model: artistTracksModel
 
+                ScrollBar.vertical: Controls.AppScrollBar {}
+
                 Keys.onReturnPressed: (event) => {
                     if (currentIndex >= 0 && currentIndex < artistTracksModel.count) {
                         root.playTrackAt(currentIndex)
@@ -228,7 +230,7 @@ Item {
                     RowLayout {
                         anchors.fill: parent
                         anchors.leftMargin: Theme.spacingMedium
-                        anchors.rightMargin: Theme.spacingMedium
+                        anchors.rightMargin: (artistTracksListView.ScrollBar.vertical.visible ? artistTracksListView.ScrollBar.vertical.width : 0) + Theme.spacingMedium
                         spacing: Theme.spacingMedium
 
                         Label {

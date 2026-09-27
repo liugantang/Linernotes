@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QSqlRecord>
 #include <QTemporaryDir>
 #include <QTest>
 #include <QVariant>
@@ -494,6 +495,37 @@ private slots:
         QCOMPARE(rowsLimit.size(), 2);
         QCOMPARE(rowsLimit.at(0).trackId, t3); // "A-Song"
         QCOMPARE(rowsLimit.at(1).trackId, t2); // "M-Song"
+    }
+
+    void tracksByIdsQueryPlan()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        Database db(dir.filePath(u"test_plan.db"_s));
+        QVERIFY(db.open(Migrator()).ok());
+        const auto qDb = db.connection().value();
+
+        // 与 tracksByIds 的批大小一致；id 少时即使有全 NULL 的索引，SQLite 也不会选错计划
+        QStringList ids;
+        for (int i = 1; i <= 500; ++i) {
+            ids << QString::number(i);
+        }
+        QSqlQuery q(qDb);
+        QVERIFY(
+            q.exec(u"EXPLAIN QUERY PLAN SELECT t.id FROM tracks t JOIN files f ON t.file_id = "
+                   u"f.id WHERE f.missing_since IS NULL AND t.id IN (%1)"_s.arg(ids.join(u','))));
+
+        QStringList planLines;
+        const int detailIdx = q.record().indexOf(QStringLiteral("detail"));
+        while (q.next()) {
+            planLines << (detailIdx >= 0 ? q.value(detailIdx).toString()
+                                         : q.value(q.record().count() - 1).toString());
+        }
+        QVERIFY(!planLines.isEmpty());
+
+        const QString fullPlan = planLines.join(u'\n');
+        QVERIFY(!fullPlan.contains(QStringLiteral("idx_files_missing_since")));
+        QVERIFY(fullPlan.contains(QStringLiteral("SEARCH t USING INTEGER PRIMARY KEY")));
     }
 };
 

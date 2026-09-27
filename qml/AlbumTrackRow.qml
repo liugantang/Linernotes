@@ -17,6 +17,7 @@ Rectangle {
     required property string durationText
     required property var albumDetail
     required property var contextMenu
+    property real trailingInset: 0
 
     width: ListView.view ? ListView.view.width : parent.width
     height: Theme.trackRowHeight
@@ -34,7 +35,7 @@ Rectangle {
     RowLayout {
         anchors.fill: parent
         anchors.leftMargin: Theme.spacingMedium
-        anchors.rightMargin: Theme.spacingMedium
+        anchors.rightMargin: trackDelegate.trailingInset + Theme.spacingMedium
         spacing: Theme.spacingMedium
 
         Label {

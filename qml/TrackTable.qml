@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls
 import QtCore
 import Linernotes
+import "controls" as Controls
 import "TrackColumns.js" as TrackColumns
 
 FocusScope {
@@ -38,7 +39,8 @@ FocusScope {
                     otherSum += w;
                 }
             }
-            return Math.max(200, root.width - otherSum);
+            var scrollbarWidth = (vScrollBar && vScrollBar.visible) ? vScrollBar.width : 0;
+            return Math.max(200, root.width - otherSum - scrollbarWidth);
         }
         if (columnWidths[key] !== undefined) {
             return columnWidths[key];
@@ -238,14 +240,13 @@ FocusScope {
             visibleColumns: root.visibleColumns
         }
 
-        ScrollBar.horizontal: ScrollBar {
+        ScrollBar.horizontal: Controls.AppScrollBar {
             id: hScrollBar
             policy: root.totalTableWidth > listView.width ? ScrollBar.AlwaysOn : ScrollBar.AsNeeded
         }
 
-        ScrollBar.vertical: ScrollBar {
+        ScrollBar.vertical: Controls.AppScrollBar {
             id: vScrollBar
-            policy: ScrollBar.AsNeeded
         }
 
         Keys.onPressed: (event) => {

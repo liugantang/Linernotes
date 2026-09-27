@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Linernotes
+import "controls" as Controls
 
 Rectangle {
     id: root
@@ -82,6 +83,8 @@ Rectangle {
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
+
+            ScrollBar.vertical: Controls.AppScrollBar {}
 
             ColumnLayout {
                 width: scrollView.width - (scrollView.ScrollBar.vertical.visible ? scrollView.ScrollBar.vertical.width : 0)
