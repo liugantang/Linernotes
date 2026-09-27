@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-FileCopyrightText: 2026 Linernotes contributors
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2a2a3c"/>
+      <stop offset="100%" stop-color="#1e1e2e"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#89b4fa"/>
+      <stop offset="100%" stop-color="#b4befe"/>
+    </linearGradient>
+    <linearGradient id="vinylGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#252538"/>
+      <stop offset="100%" stop-color="#11111b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Base: Rounded Rectangle -->
+  <rect x="32" y="32" width="448" height="448" rx="100" ry="100" fill="url(#bgGrad)"/>
+  <rect x="32" y="32" width="448" height="448" rx="100" ry="100" fill="none" stroke="#313244" stroke-width="4"/>
+
+  <!-- Vinyl Record Disc -->
+  <g transform="translate(256, 256)">
+    <!-- Outer Disc -->
+    <circle cx="0" cy="0" r="160" fill="url(#vinylGrad)" stroke="#313244" stroke-width="3"/>
+    <!-- Grooves -->
+    <circle cx="0" cy="0" r="136" fill="none" stroke="#313244" stroke-width="2" opacity="0.6"/>
+    <circle cx="0" cy="0" r="112" fill="none" stroke="#313244" stroke-width="2" opacity="0.6"/>
+    <circle cx="0" cy="0" r="88" fill="none" stroke="#313244" stroke-width="2" opacity="0.6"/>
+    
+    <!-- Record Label (Center) -->
+    <circle cx="0" cy="0" r="64" fill="url(#accentGrad)"/>
+    
+    <!-- Note Symbol / Inner Design -->
+    <path d="M-12,12 A 16,16 0 1,0 4,24 L 4,-24 L 20,-24 L 20,-12 L 8,-12 L 8,8 A 16,16 0 0,0 -12,12 Z" fill="#1e1e2e" opacity="0.85"/>
+    
+    <!-- Spindle Hole -->
+    <circle cx="0" cy="0" r="12" fill="#1e1e2e" stroke="#89b4fa" stroke-width="2"/>
+  </g>
+</svg>

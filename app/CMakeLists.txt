@@ -589,3 +589,7 @@ qt_add_translations(linernotes
 )
 
 linernotes_set_target_options(linernotes)
+
+install(TARGETS linernotes
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-License-Identifier: GPL-3.0-or-later
+SPDX-FileCopyrightText: 2026 Linernotes contributors
+-->
+<component type="desktop-application">
+  <id>io.github.liugantang.Linernotes</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Linernotes</name>
+  <summary>Modern local music player with AI-powered features</summary>
+  <summary xml:lang="zh_CN">具备智能辅助功能的现代本地音乐播放器</summary>
+  <description>
+    <p>
+      Linernotes is an open-source, local-first desktop music player enhanced by AI.
+      It empowers your music collection with intelligent tag correction, conversational
+      search, smart playlist generation, and contextual radio hosting.
+    </p>
+    <p xml:lang="zh_CN">
+      Linernotes 是一款面向本地音乐收藏者的开源桌面音乐播放器。
+      通过 AI 辅助为曲库提供智能乱码与标签修复、自然语言交互检索、智能曲线歌单以及电台主持人串场等功能。
+    </p>
+  </description>
+  <launchable type="desktop-id">linernotes.desktop</launchable>
+  <url type="homepage">https://github.com/liugantang/Linernotes</url>
+  <url type="bugtracker">https://github.com/liugantang/Linernotes/issues</url>
+  <provides>
+    <binary>linernotes</binary>
+  </provides>
+  <releases>
+    <release version="0.1.0" date="2026-09-27">
+      <description>
+        <p>Initial release with local library management, playback, and AI integrations.</p>
+        <p xml:lang="zh_CN">初始发布版本，支持本地曲库管理、音频播放与 AI 智能辅助。</p>
+      </description>
+    </release>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>

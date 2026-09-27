@@ -25,6 +25,7 @@ if(NOT is_multi_config AND NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
 endif()
 
+include(GNUInstallDirs)
 include(cmake/Dependencies.cmake)
 include(cmake/CompilerOptions.cmake)
 qt_standard_project_setup(I18N_TRANSLATED_LANGUAGES zh_CN)
@@ -44,3 +45,16 @@ if(LINERNOTES_BUILD_TESTS)
     include(cmake/Testing.cmake)
     add_subdirectory(tests)
 endif()
+
+install(FILES packaging/linux/linernotes.desktop
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
+)
+install(FILES packaging/linux/linernotes.svg
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps
+)
+install(FILES packaging/linux/io.github.liugantang.Linernotes.metainfo.xml
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo
+)
+install(FILES LICENSE
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/licenses/linernotes
+)

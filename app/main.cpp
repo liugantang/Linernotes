@@ -88,6 +88,7 @@ int main(int argc, char *argv[])
     QGuiApplication::setOrganizationName(QString());
     QGuiApplication::setApplicationName(linernotes::core::applicationName());
     QGuiApplication::setApplicationVersion(linernotes::core::versionString());
+    QGuiApplication::setDesktopFileName(QStringLiteral("linernotes"));
 
     QApplication app(argc, argv);
 
