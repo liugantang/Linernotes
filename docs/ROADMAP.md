@@ -264,6 +264,7 @@
   - **本地服务**：用户本地模型速度慢、能力弱，不适合测试，未用真实本地服务验证（本地判定、无 Key 调用只有代码审查）
   - **429**：Ollama Cloud 在上述并发下未返回 429，真实 429 处理未验证
 - ctest：73 个测试在 debug / ci（-Werror）/ asan 下全部通过；格式与 clang-tidy 通过
+- GitHub Actions：合并后首次运行全部通过（gcc / clang / asan / lint，2026-09-27，run 36331845185）
 - 与计划的偏差：
   - 测试策略调整：删除基于手写 FakeLlmServer 的 LlmClient / LlmService / CapabilityProbe 测试与 5.14 的录制回放（含 `scripts/llm-record.py` 与 llm 素材）。手写模拟测不出真实服务的问题，重试/超时/并发限制基本是常量；与服务的集成改为阶段验收时用真实服务验证（DEVELOPMENT 4.4 同步修改）
   - 新增 5.A 验收工具 `tools/aicli`（`linernotes-aicli`），API Key 只从环境变量 `LINERNOTES_LLM_KEY` 读取
