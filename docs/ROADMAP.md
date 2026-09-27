@@ -237,11 +237,11 @@
 | ✅ 5.2 | 只实现 OpenAI Chat Completions 协议：Base URL / API Key / 模型名由用户填写；探测能力（是否支持 tools、`response_format`），不支持时退化为“提示词约束 JSON + 解析失败重试”，保证 Ollama / llama.cpp 等本地服务也能用 |
 | ✅ 5.3 | SSE 流式解析器（QNetworkReply 增量读取） |
 | ✅ 5.4 | 结构化输出保障：JSON Schema 校验（如 nlohmann/json + json-schema-validator），失败自动带错误信息重试一次 |
-| 5.5 | 按功能场景（cleanup / query / dj / guide / narrative）可选填不同的模型名或不同的服务配置，默认全部用同一个 |
+| ✅ 5.5 | 按功能场景（cleanup / query / dj / guide / narrative）可选填不同的模型名或不同的服务配置，默认全部用同一个 |
 | 5.6 | 缓存：`llm_cache` 表（key = hash(model + prompt + params)），TTL 可配置 |
 | 5.7 | 并发与限速：每个服务配置的并发上限、令牌桶限速、指数退避重试、429 处理 |
 | 5.8 | 用量计量：记录每次 token 数，按功能汇总展示 |
-| 5.9 | 密钥：QtKeychain 存储 API Key |
+| ✅ 5.9 | 密钥：QtKeychain 存储 API Key |
 | 5.10 | Prompt 模板系统：模板文件（资源内置 + 用户目录覆盖），变量替换，版本号 |
 | 5.11 | 隐私策略层 `PrivacyGuard`：在请求发出前按开关剔除敏感字段（播放历史、瞬间、位置） |
 | 5.12 | 批任务框架 `JobQueue`：可暂停/恢复/断点续跑、进度上报、运行前预估 token 用量 |

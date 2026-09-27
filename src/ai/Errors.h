@@ -17,5 +17,6 @@ inline constexpr QLatin1StringView kAborted { "ai.aborted" };
 inline constexpr QLatin1StringView kSchemaInvalid { "ai.schema_invalid" };
 inline constexpr QLatin1StringView kSchemaMismatch { "ai.schema_mismatch" };
 inline constexpr QLatin1StringView kBadJson { "ai.bad_json" };
+inline constexpr QLatin1StringView kSecretStore { "ai.secret_store" };
 
 } // namespace linernotes::ai::errc

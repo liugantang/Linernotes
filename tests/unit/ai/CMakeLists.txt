@@ -43,3 +43,21 @@ linernotes_add_test(
         Linernotes::TestSupport
 )
 
+linernotes_add_test(
+    NAME ai_AiConfig
+    SOURCES
+        tst_AiConfig.cpp
+    LIBS
+        Linernotes::ai
+        Linernotes::core
+)
+
+linernotes_add_test(
+    NAME ai_SecretStore
+    SOURCES
+        tst_SecretStore.cpp
+    LIBS
+        Linernotes::ai
+        Linernotes::core
+)
+
