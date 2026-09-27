@@ -7,6 +7,8 @@ add_library(linernotes_ai STATIC
     ChatTypes.cpp
     ChatTypes.h
     Errors.h
+    JsonSchema.cpp
+    JsonSchema.h
     LlmClient.cpp
     LlmClient.h
     LlmReply.cpp
@@ -28,6 +30,8 @@ target_link_libraries(linernotes_ai
         Linernotes::core
         Qt6::Core
         Qt6::Network
+    PRIVATE
+        Linernotes::Deps::JsonSchema
 )
 
 linernotes_set_target_options(linernotes_ai)

@@ -17,3 +17,12 @@ linernotes_add_test(
         Linernotes::ai
         Linernotes::TestSupport
 )
+
+linernotes_add_test(
+    NAME ai_JsonSchema
+    SOURCES
+        tst_JsonSchema.cpp
+    LIBS
+        Linernotes::ai
+)
+

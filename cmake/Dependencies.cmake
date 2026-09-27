@@ -17,6 +17,9 @@ find_package(Qt6 6.8 REQUIRED COMPONENTS
 
 find_package(Qt6Keychain REQUIRED)
 
+find_package(nlohmann_json 3.11 REQUIRED)
+find_package(nlohmann_json_schema_validator REQUIRED)
+
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(MPV REQUIRED IMPORTED_TARGET "mpv>=2.0")
@@ -72,6 +75,13 @@ add_library(linernotes_dep_sqlite3 INTERFACE)
 target_link_libraries(linernotes_dep_sqlite3 INTERFACE PkgConfig::SQLITE3)
 add_library(Linernotes::Deps::SQLite3 ALIAS linernotes_dep_sqlite3)
 
+add_library(linernotes_dep_json_schema INTERFACE)
+target_link_libraries(linernotes_dep_json_schema INTERFACE
+    nlohmann_json::nlohmann_json
+    nlohmann_json_schema_validator
+)
+add_library(Linernotes::Deps::JsonSchema ALIAS linernotes_dep_json_schema)
+
 # Format ICU and FFmpeg versions for display
 if(NOT ICU_VERSION)
     if(ICU_icu-uc_VERSION)
@@ -87,6 +97,17 @@ if(NOT FFMPEG_VERSION)
     endif()
 endif()
 
+set(JSON_SCHEMA_VERSION "")
+if(nlohmann_json_schema_validator_VERSION)
+    if(nlohmann_json_VERSION)
+        set(JSON_SCHEMA_VERSION "${nlohmann_json_schema_validator_VERSION} (nlohmann_json: ${nlohmann_json_VERSION})")
+    else()
+        set(JSON_SCHEMA_VERSION "${nlohmann_json_schema_validator_VERSION}")
+    endif()
+elseif(nlohmann_json_VERSION)
+    set(JSON_SCHEMA_VERSION "nlohmann_json ${nlohmann_json_VERSION}")
+endif()
+
 # Summary table
 message(STATUS "================ Linernotes Dependencies Summary ================")
 message(STATUS "  Qt6                  : ${Qt6_VERSION}")
@@ -99,4 +120,5 @@ message(STATUS "  libchromaprint       : ${CHROMAPRINT_VERSION}")
 message(STATUS "  ffmpeg               : ${FFMPEG_VERSION}")
 message(STATUS "  libebur128           : ${EBUR128_VERSION}")
 message(STATUS "  sqlite3              : ${SQLITE3_VERSION}")
+message(STATUS "  json-schema-validator: ${JSON_SCHEMA_VERSION}")
 message(STATUS "==============================================================")
