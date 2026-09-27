@@ -553,7 +553,9 @@ void Player::loadItem(const QueueItem &item, std::optional<double> pausedAt)
                 = (std::isnan(*pausedAt) || !std::isfinite(*pausedAt) || *pausedAt < 0.0)
                 ? 0.0
                 : *pausedAt;
-            const QString options = QStringLiteral("pause=yes,start=%1").arg(pos, 0, 'f', 6);
+            // pause 已经在上面设置；不要放进单文件选项：mpv 在旧文件结束时会把单文件选项
+            // 还原为加载前的值，紧接着换曲时会把刚设的 pause=false 覆盖回 true
+            const QString options = QStringLiteral("start=%1").arg(pos, 0, 'f', 6);
             m_mpv.command({ QStringLiteral("loadfile"), item.source, QStringLiteral("replace"),
                 QStringLiteral("0"), options });
         } else {
