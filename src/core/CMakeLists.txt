@@ -19,6 +19,10 @@ add_library(linernotes_core STATIC
     Result.h
     Settings.cpp
     Settings.h
+    SingleInstance.cpp
+    SingleInstance.h
+    UnixSignals.cpp
+    UnixSignals.h
     Version.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/generated/core/Version.h
 )
@@ -35,6 +39,7 @@ target_include_directories(linernotes_core
 target_link_libraries(linernotes_core
     PUBLIC
         Qt6::Core
+        Qt6::Network
 )
 
 linernotes_set_target_options(linernotes_core)

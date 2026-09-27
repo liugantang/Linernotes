@@ -5,6 +5,7 @@
 
 #include <QList>
 #include <QObject>
+#include <QStringList>
 #include <QVariantMap>
 
 #include <core/PlaySource.h>
@@ -34,6 +35,10 @@ public:
         const QList<qint64> &trackIds, int startIndex, linernotes::core::PlaySource source);
     Q_INVOKABLE void playNext(const QList<qint64> &trackIds); // 插到当前曲目之后
     Q_INVOKABLE void enqueue(const QList<qint64> &trackIds); // 加到队尾
+
+    /// 打开指定的音频文件并从第一项开始播放。
+    /// 路径转为绝对路径，跳过不存在或目录；库内文件附带 trackId，库外文件 trackId 为 -1。
+    Q_INVOKABLE void openFiles(const QStringList &paths);
 
     /// 专辑/艺人详情页头部信息；不存在返回空 map。
     /// 键：albumId,title,albumArtist,year,trackCount,durationText,coverHash /

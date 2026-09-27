@@ -4,7 +4,9 @@
 #include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
+#include <QHash>
 #include <QSet>
+#include <QStringList>
 #include <QUrl>
 
 #include <library/Database.h>
@@ -151,6 +153,66 @@ void LibraryActions::enqueue(const QList<qint64> &trackIds)
     }
 
     queue->append(items);
+}
+
+void LibraryActions::openFiles(const QStringList &paths)
+{
+    if (paths.isEmpty()) {
+        return;
+    }
+
+    QStringList validPaths;
+    validPaths.reserve(paths.size());
+    for (const auto &rawPath : paths) {
+        const QFileInfo fi(rawPath);
+        if (!fi.exists()) {
+            qCWarning(lcUi, "openFiles: path does not exist: %s", qPrintable(rawPath));
+            continue;
+        }
+        if (fi.isDir()) {
+            qCWarning(lcUi, "openFiles: directory ignored: %s", qPrintable(rawPath));
+            continue;
+        }
+        validPaths.append(fi.absoluteFilePath());
+    }
+
+    if (validPaths.isEmpty()) {
+        return;
+    }
+
+    QHash<QString, qint64> trackIdMap;
+    if (m_db.isOpen()) {
+        const auto connOpt = m_db.connection();
+        if (connOpt.ok()) {
+            const library::LibraryQuery query(connOpt.value());
+            const auto res = query.trackIdsByPaths(validPaths);
+            if (res.ok()) {
+                trackIdMap = res.value();
+            } else {
+                qCWarning(lcUi, "openFiles: failed to query track IDs: %s",
+                    qPrintable(res.error().toString()));
+            }
+        }
+    }
+
+    QList<player::QueueItem> items;
+    items.reserve(validPaths.size());
+    for (const auto &path : validPaths) {
+        const qint64 trackId = trackIdMap.value(path, -1);
+        items.append(player::QueueItem {
+            .source = path,
+            .trackId = trackId,
+            .playSource = core::PlaySource::External,
+        });
+    }
+
+    auto *queue = m_player.queue();
+    if (queue == nullptr) {
+        return;
+    }
+
+    queue->setItems(items, 0);
+    m_player.playIndex(0);
 }
 
 QVariantMap LibraryActions::albumInfo(qint64 albumId) const

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Linernotes contributors
 
+#include <QFile>
 #include <QObject>
 #include <QSqlQuery>
 #include <QTemporaryDir>
@@ -27,6 +28,7 @@ class TstLibraryActions : public QObject {
     Q_OBJECT
 private slots:
     void testLibraryActions();
+    void testOpenFiles();
 };
 
 void TstLibraryActions::testLibraryActions()
@@ -108,6 +110,78 @@ void TstLibraryActions::testLibraryActions()
 
     const auto emptyInfo = actions->albumInfo(999);
     QVERIFY(emptyInfo.isEmpty());
+}
+
+void TstLibraryActions::testOpenFiles()
+{
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString dbPath = tempDir.filePath(QStringLiteral("test.db"));
+
+    const QString inLibraryFile = tempDir.filePath(QStringLiteral("in_lib.mp3"));
+    const QString outLibraryFile = tempDir.filePath(QStringLiteral("out_lib.mp3"));
+    const QString nonExistentFile = tempDir.filePath(QStringLiteral("not_found.mp3"));
+
+    // Create real dummy files on disk
+    {
+        QFile f1(inLibraryFile);
+        QVERIFY(f1.open(QIODevice::WriteOnly));
+        f1.write("dummy");
+        f1.close();
+
+        QFile f2(outLibraryFile);
+        QVERIFY(f2.open(QIODevice::WriteOnly));
+        f2.write("dummy");
+        f2.close();
+    }
+
+    {
+        Database db(dbPath);
+        QVERIFY(db.open(Migrator()).ok());
+        const auto conn = db.connection().value();
+        QSqlQuery q(conn);
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO library_roots (id, path, enabled, added_at) "
+                                      "VALUES (1, '%1', 0, 100);")
+                .arg(tempDir.path())));
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO files (id, root_id, path, duration_ms, size, "
+                                      "mtime, first_seen_at, scanned_at) VALUES "
+                                      "(10, 1, '%1', 60000, 1, 1, 1, 1);")
+                .arg(inLibraryFile)));
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO tracks (id, file_id, tags_read_at, created_at) "
+                                      "VALUES (42, 10, 1, 1);")));
+        QVERIFY(q.exec(
+            QStringLiteral("UPDATE effective_metadata SET title = 'In Lib' WHERE track_id = 42;")));
+    }
+
+    Settings settings(tempDir.filePath(QStringLiteral("settings.ini")));
+
+    AppContext::Options options {
+        .databasePath = dbPath,
+        .coverCacheDir = tempDir.filePath(QStringLiteral("covers")),
+        .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
+        .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
+        .playbackStatePath = { },
+    };
+
+    AppContext ctx(settings, options);
+    QVERIFY(ctx.start().ok());
+    auto *actions = ctx.actions();
+    QVERIFY(actions != nullptr);
+    auto *queue = ctx.player()->queue();
+
+    // openFiles with in-library file, out-of-library temp file, and non-existent file
+    actions->openFiles({ inLibraryFile, outLibraryFile, nonExistentFile });
+
+    QCOMPARE(queue->count(), 2);
+    QCOMPARE(queue->at(0).trackId, 42LL);
+    QCOMPARE(queue->at(0).source, inLibraryFile);
+    QCOMPARE(queue->at(0).playSource, PlaySource::External);
+
+    QCOMPARE(queue->at(1).trackId, -1LL);
+    QCOMPARE(queue->at(1).source, outLibraryFile);
+    QCOMPARE(queue->at(1).playSource, PlaySource::External);
+
+    QCOMPARE(queue->currentIndex(), 0);
 }
 
 } // namespace

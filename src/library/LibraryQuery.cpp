@@ -37,8 +37,10 @@
 #include "LibraryQuerySql.h"
 
 #include <QList>
+#include <QSet>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QStringList>
 #include <QVariant>
 
 #include <library/Errors.h>
@@ -245,6 +247,74 @@ core::Result<QList<TrackRow>> LibraryQuery::tracksByIds(const QList<qint64> &ids
     return detail::fetchRowsByIds<TrackRow>(m_db, ids,
         QStringLiteral("%1 WHERE f.missing_since IS NULL AND t.id IN (%2)"),
         detail::trackSelectSql(), detail::parseTrackRow, QStringLiteral("tracksByIds"));
+}
+
+core::Result<QHash<QString, qint64>> LibraryQuery::trackIdsByPaths(const QStringList &paths) const
+{
+    if (!m_db.isOpen()) {
+        return core::Error {
+            .code = QString(errc::kDbOpen),
+            .message = QStringLiteral("Database is not open"),
+            .detail = QString(),
+        };
+    }
+
+    if (paths.isEmpty()) {
+        return QHash<QString, qint64> { };
+    }
+
+    QList<QString> uniquePaths;
+    uniquePaths.reserve(paths.size());
+    QSet<QString> seen;
+    for (const auto &p : paths) {
+        if (!p.isEmpty() && !seen.contains(p)) {
+            seen.insert(p);
+            uniquePaths.append(p);
+        }
+    }
+
+    if (uniquePaths.isEmpty()) {
+        return QHash<QString, qint64> { };
+    }
+
+    QHash<QString, qint64> result;
+    result.reserve(uniquePaths.size());
+
+    constexpr int kBatchSize = 500;
+    for (int start = 0; start < uniquePaths.size(); start += kBatchSize) {
+        const int count = std::min(kBatchSize, static_cast<int>(uniquePaths.size()) - start);
+        QStringList placeholders;
+        placeholders.reserve(count);
+        for (int i = 0; i < count; ++i) {
+            placeholders.append(QStringLiteral("?"));
+        }
+
+        const QString sql = QStringLiteral("SELECT f.path, t.id "
+                                           "FROM tracks t "
+                                           "JOIN files f ON t.file_id = f.id "
+                                           "WHERE f.missing_since IS NULL AND f.path IN (%1);")
+                                .arg(placeholders.join(QStringLiteral(", ")));
+
+        QSqlQuery q(m_db);
+        q.prepare(sql);
+        for (int i = 0; i < count; ++i) {
+            q.bindValue(i, uniquePaths.at(start + i));
+        }
+
+        if (!q.exec()) {
+            return core::Error {
+                .code = QString(errc::kDbQuery),
+                .message = QStringLiteral("trackIdsByPaths query failed"),
+                .detail = q.lastError().text(),
+            };
+        }
+
+        while (q.next()) {
+            result.insert(q.value(0).toString(), q.value(1).toLongLong());
+        }
+    }
+
+    return result;
 }
 
 core::Result<int> LibraryQuery::countAlbums(const AlbumFilter &filter) const

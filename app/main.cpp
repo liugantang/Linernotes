@@ -7,27 +7,31 @@
 #include <QCommandLineOption>
 #include <QCommandLineParser>
 #include <QDir>
+#include <QFileInfo>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 #include <QTextStream>
+#include <QWindow>
 
 #include <core/CoreSettings.h>
 #include <core/Logging.h>
 #include <core/Paths.h>
 #include <core/Settings.h>
+#include <core/SingleInstance.h>
+#include <core/UnixSignals.h>
 #include <core/Version.h>
 #include <ui/AppContext.h>
 #include <ui/CoverImageProvider.h>
+#include <ui/LibraryActions.h>
 #include <ui/Translations.h>
 
 #include <memory>
 
 #ifdef Q_OS_LINUX
-#include <QWindow>
-
 #include <ui/DBusNotificationSink.h>
 #include <ui/TrackNotifier.h>
 #include <ui/mpris/Mpris.h>
+#endif
 
 namespace {
 void activateMainWindow(const QQmlApplicationEngine &engine)
@@ -43,9 +47,42 @@ void activateMainWindow(const QQmlApplicationEngine &engine)
         window->requestActivate();
     }
 }
-} // namespace
-#endif
 
+QtMsgType logLevelFromSettings(const linernotes::core::Settings &settings)
+{
+    const QString logLevelStr = settings.value(linernotes::core::kLogLevel).trimmed().toLower();
+    if (logLevelStr == u"debug") {
+        return QtDebugMsg;
+    }
+    if (logLevelStr == u"warning" || logLevelStr == u"warn") {
+        return QtWarningMsg;
+    }
+    if (logLevelStr == u"critical") {
+        return QtCriticalMsg;
+    }
+    return QtInfoMsg;
+}
+
+bool handOffToPrimary(linernotes::core::SingleInstance &singleInstance, const QStringList &files)
+{
+    QStringList absoluteFilePaths;
+    absoluteFilePaths.reserve(files.size());
+    for (const auto &file : files) {
+        absoluteFilePaths.append(QFileInfo(file).absoluteFilePath());
+    }
+    const auto sendRes = singleInstance.sendMessage(absoluteFilePaths);
+    if (sendRes.ok()) {
+        return true;
+    }
+    qCWarning(linernotes::core::lcCore,
+        "Failed to send message to primary instance: %s; starting as standalone",
+        qPrintable(sendRes.error().toString()));
+    return false;
+}
+} // namespace
+
+// Qt 启动/分配失败时的异常无法恢复，交给默认终止
+// NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char *argv[])
 {
     QGuiApplication::setOrganizationName(QString());
@@ -54,10 +91,17 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
 
+#ifdef Q_OS_UNIX
+    const linernotes::core::UnixSignalQuitter signalQuitter;
+#endif
+
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("AI music player"));
     parser.addHelpOption();
     parser.addVersionOption();
+
+    parser.addPositionalArgument(QStringLiteral("files"), QStringLiteral("Audio files to play."),
+        QStringLiteral("[files...]"));
 
     const QCommandLineOption printPathsOption(
         QStringLiteral("print-paths"), QStringLiteral("Print application directories and exit."));
@@ -83,32 +127,35 @@ int main(int argc, char *argv[])
 
     paths.ensureCreated();
 
+    const QStringList positionalFiles = parser.positionalArguments();
+    const bool isSmokeTest = parser.isSet(smokeTestOption);
+
+    std::unique_ptr<linernotes::core::SingleInstance> singleInstance;
+    if (!isSmokeTest) {
+        singleInstance = std::make_unique<linernotes::core::SingleInstance>(paths.dataDir());
+        const auto startRes = singleInstance->start();
+        if (!startRes.ok()) {
+            qCWarning(linernotes::core::lcCore,
+                "SingleInstance start error: %s; starting as standalone",
+                qPrintable(startRes.error().toString()));
+        } else if (startRes.value() == linernotes::core::SingleInstance::Role::Secondary
+            && handOffToPrimary(*singleInstance, positionalFiles)) {
+            return 0;
+        }
+    }
+
     const QString iniFilePath = QDir(paths.configDir()).filePath(QStringLiteral("settings.ini"));
     linernotes::core::Settings settings(iniFilePath);
 
-    const QString logLevelStr = settings.value(linernotes::core::kLogLevel).trimmed().toLower();
-    QtMsgType minimumLevel = QtInfoMsg;
-    if (logLevelStr == u"debug") {
-        minimumLevel = QtDebugMsg;
-    } else if (logLevelStr == u"warning" || logLevelStr == u"warn") {
-        minimumLevel = QtWarningMsg;
-    } else if (logLevelStr == u"critical") {
-        minimumLevel = QtCriticalMsg;
-    } else {
-        minimumLevel = QtInfoMsg;
-    }
-
     linernotes::core::LogConfig logConfig;
     logConfig.directory = paths.logDir();
-    logConfig.minimumLevel = minimumLevel;
+    logConfig.minimumLevel = logLevelFromSettings(settings);
     linernotes::core::installLogging(logConfig);
 
     qCInfo(linernotes::core::lcCore, "%s %s starting (config: %s, data: %s, cache: %s, logs: %s)",
         qPrintable(linernotes::core::applicationName()),
         qPrintable(linernotes::core::versionString()), qPrintable(paths.configDir()),
         qPrintable(paths.dataDir()), qPrintable(paths.cacheDir()), qPrintable(paths.logDir()));
-
-    const bool isSmokeTest = parser.isSet(smokeTestOption);
 
     linernotes::ui::AppContext::Options appOptions {
         .databasePath = QDir(paths.dataDir()).filePath(QStringLiteral("library.db")),
@@ -133,6 +180,10 @@ int main(int argc, char *argv[])
             qPrintable(startRes.error().toString()));
     }
 
+    if (!positionalFiles.isEmpty()) {
+        appContext.actions()->openFiles(positionalFiles);
+    }
+
     linernotes::ui::Translations translations(app, *appContext.settings());
     translations.apply(appContext.settings()->language());
 
@@ -141,6 +192,17 @@ int main(int argc, char *argv[])
     int exitCode = 0;
     {
         QQmlApplicationEngine engine;
+
+        if (singleInstance) {
+            QObject::connect(singleInstance.get(),
+                &linernotes::core::SingleInstance::messageReceived, &app,
+                [&engine, actions = appContext.actions()](const QStringList &args) {
+                    activateMainWindow(engine);
+                    if (!args.isEmpty() && actions != nullptr) {
+                        actions->openFiles(args);
+                    }
+                });
+        }
 
         QObject::connect(&translations, &linernotes::ui::Translations::retranslateRequested,
             &engine, &QQmlApplicationEngine::retranslate);

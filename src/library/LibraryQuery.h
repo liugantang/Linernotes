@@ -3,9 +3,11 @@
 
 #pragma once
 
+#include <QHash>
 #include <QList>
 #include <QSqlDatabase>
 #include <QString>
+#include <QStringList>
 #include <Qt>
 
 #include <core/Result.h>
@@ -131,6 +133,9 @@ public:
 
     /// 按给定顺序返回存在的曲目（不存在或文件缺失的 id 跳过），供搜索结果、播放队列使用。
     core::Result<QList<TrackRow>> tracksByIds(const QList<qint64> &ids) const;
+
+    /// 根据文件路径批量查询曲目 ID（只返回找到且未缺失的 files.path → tracks.id 映射）。
+    core::Result<QHash<QString, qint64>> trackIdsByPaths(const QStringList &paths) const;
 
     /// 计算符合条件的专辑总数。
     core::Result<int> countAlbums(const AlbumFilter &filter) const;
