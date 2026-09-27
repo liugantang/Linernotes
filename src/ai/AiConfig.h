@@ -24,6 +24,8 @@ struct ServiceProfile {
     QString defaultModel;
     int timeoutMs = 60000;
     std::optional<Capabilities> capabilities; // 未探测为空
+    int maxConcurrent = 2; // 同时进行的请求数上限，≥1
+    int requestsPerMinute = 0; // 0 = 不限
     bool operator==(const ServiceProfile &) const = default;
 };
 

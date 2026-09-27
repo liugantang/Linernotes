@@ -97,4 +97,23 @@ linernotes_add_test(
         Qt6::Sql
 )
 
+linernotes_add_test(
+    NAME ai_RetryPolicy
+    SOURCES
+        tst_RetryPolicy.cpp
+    LIBS
+        Linernotes::ai
+        Linernotes::core
+)
+
+linernotes_add_test(
+    NAME ai_RequestScheduler
+    SOURCES
+        tst_RequestScheduler.cpp
+    LIBS
+        Linernotes::ai
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
 

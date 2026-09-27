@@ -19,6 +19,7 @@
 #include <ai/LlmCache.h>
 #include <ai/LlmClient.h>
 #include <ai/LlmService.h>
+#include <ai/RetryPolicy.h>
 #include <ai/SecretStore.h>
 #include <ai/StructuredOutput.h>
 #include <ai/UsageStore.h>
@@ -40,6 +41,7 @@ using linernotes::ai::LlmTask;
 using linernotes::ai::makeMessage;
 using linernotes::ai::MemorySecretStore;
 using linernotes::ai::Purpose;
+using linernotes::ai::RetryPolicy;
 using linernotes::ai::Role;
 using linernotes::ai::ServiceProfile;
 using linernotes::ai::StructuredMode;
@@ -115,6 +117,8 @@ struct Fixture {
             profile.defaultModel = QStringLiteral("gpt-4o");
             profile.timeoutMs = 5000;
             profile.capabilities = capabilities;
+            profile.maxConcurrent = 10;
+            profile.requestsPerMinute = 0;
 
             config.saveService(profile);
             secrets.write(
@@ -135,6 +139,10 @@ private slots:
     void streamingDeltaForwardingAndCacheHitFullContent();
     void destroyInFlightTaskDoesNotCrashOrEmitSignals();
     void usageRecordedOnStructuredRetryAndCacheHit();
+    void retry500To500To200();
+    void retry429WithRetryAfter0();
+    void noRetryOn401();
+    void concurrencyLimitBlocksSecondCall();
 };
 
 void TstLlmService::notConfiguredFinishesAsynchronously()
@@ -555,6 +563,168 @@ void TstLlmService::usageRecordedOnStructuredRetryAndCacheHit()
         QCOMPARE(summary.promptTokens, 30);
         QCOMPARE(summary.completionTokens, 10);
     }
+}
+
+void TstLlmService::retry500To500To200()
+{
+    Fixture fix;
+    RetryPolicy policy;
+    policy.maxRetries = 3;
+    policy.baseDelayMs = 1;
+    policy.maxDelayMs = 100;
+    fix.service.setRetryPolicy(policy);
+
+    // Server returns 500, 500, then 200
+    FakeLlmServer::Response r1;
+    r1.status = 500;
+    FakeLlmServer::Response r2;
+    r2.status = 500;
+    fix.server.enqueue(r1);
+    fix.server.enqueue(r2);
+    fix.server.enqueue(makeJsonResponse(QStringLiteral("finally ok")));
+
+    LlmCall call;
+    call.purpose = Purpose::Query;
+    call.request.messages.append(makeMessage(Role::User, QStringLiteral("retry test")));
+
+    auto task = fix.service.start(call);
+    QSignalSpy spy(task.get(), &LlmTask::finished);
+    QTRY_COMPARE(spy.count(), 1);
+
+    QVERIFY(task->isFinished());
+    const auto &res = task->result();
+    QVERIFY(res.ok());
+    QCOMPARE(res.value().attempts, 3);
+    QCOMPARE(res.value().response.content, QStringLiteral("finally ok"));
+    QCOMPARE(fix.server.requests().size(), 3);
+}
+
+void TstLlmService::retry429WithRetryAfter0()
+{
+    Fixture fix;
+    RetryPolicy policy;
+    policy.maxRetries = 3;
+    policy.baseDelayMs = 1;
+    policy.maxDelayMs = 100;
+    fix.service.setRetryPolicy(policy);
+
+    // Server returns 429 with Retry-After: 0, then 200
+    FakeLlmServer::Response resp429;
+    resp429.status = 429;
+    resp429.headers.append(qMakePair(QByteArray("Retry-After"), QByteArray("0")));
+    fix.server.enqueue(resp429);
+    fix.server.enqueue(makeJsonResponse(QStringLiteral("after 429")));
+
+    LlmCall call;
+    call.purpose = Purpose::Query;
+    call.request.messages.append(makeMessage(Role::User, QStringLiteral("rate limit test")));
+
+    auto task = fix.service.start(call);
+    QSignalSpy spy(task.get(), &LlmTask::finished);
+
+    // Wait for the first request to reach the server
+    QTRY_COMPARE(fix.server.requests().size(), 1);
+
+    // Allow time for 429 response to arrive and pause the service
+    QTest::qWait(50);
+
+    // Assert: Before advancing the clock, 2nd request has not been sent (service is paused)
+    QCOMPARE(fix.server.requests().size(), 1);
+    QCOMPARE(spy.count(), 0);
+
+    // Advance clock past the pause duration
+    fix.clock.advance(1000);
+
+    // After advancing clock, the second request should proceed and finish
+    QTRY_COMPARE(spy.count(), 1);
+
+    QVERIFY(task->isFinished());
+    const auto &res = task->result();
+    QVERIFY(res.ok());
+    QCOMPARE(res.value().attempts, 2);
+    QCOMPARE(res.value().response.content, QStringLiteral("after 429"));
+    QCOMPARE(fix.server.requests().size(), 2);
+}
+
+void TstLlmService::noRetryOn401()
+{
+    Fixture fix;
+    RetryPolicy policy;
+    policy.maxRetries = 3;
+    policy.baseDelayMs = 1;
+    policy.maxDelayMs = 100;
+    fix.service.setRetryPolicy(policy);
+
+    FakeLlmServer::Response r401;
+    r401.status = 401;
+    fix.server.enqueue(r401);
+
+    LlmCall call;
+    call.purpose = Purpose::Query;
+    call.request.messages.append(makeMessage(Role::User, QStringLiteral("auth fail test")));
+
+    auto task = fix.service.start(call);
+    QSignalSpy spy(task.get(), &LlmTask::finished);
+    QTRY_COMPARE(spy.count(), 1);
+
+    QVERIFY(task->isFinished());
+    const auto &res = task->result();
+    QVERIFY(!res.ok());
+    QCOMPARE(res.error().code, QString(linernotes::ai::errc::kAuth));
+    QCOMPARE(fix.server.requests().size(), 1);
+}
+
+void TstLlmService::concurrencyLimitBlocksSecondCall()
+{
+    Fixture fix(false);
+
+    ServiceProfile profile;
+    profile.id = QStringLiteral("svc1");
+    profile.name = QStringLiteral("Single Concurrency Service");
+    profile.baseUrl = fix.server.baseUrl();
+    profile.defaultModel = QStringLiteral("gpt-4o");
+    profile.timeoutMs = 5000;
+    profile.maxConcurrent = 1;
+    profile.requestsPerMinute = 0;
+
+    fix.config.saveService(profile);
+    fix.secrets.write(QStringLiteral("svc1"), QStringLiteral("secret-token-123"), nullptr, nullptr);
+
+    // Call 1 will hang
+    FakeLlmServer::Response hangResp;
+    hangResp.hang = true;
+    fix.server.enqueue(hangResp);
+
+    // Call 2 will return JSON
+    fix.server.enqueue(makeJsonResponse(QStringLiteral("call 2 ok")));
+
+    LlmCall call1;
+    call1.purpose = Purpose::Query;
+    call1.cachePolicy = CachePolicy::Bypass;
+    call1.request.messages.append(makeMessage(Role::User, QStringLiteral("call 1")));
+
+    LlmCall call2;
+    call2.purpose = Purpose::Query;
+    call2.cachePolicy = CachePolicy::Bypass;
+    call2.request.messages.append(makeMessage(Role::User, QStringLiteral("call 2")));
+
+    auto task1 = fix.service.start(call1);
+    auto task2 = fix.service.start(call2);
+
+    // Wait until server receives call 1
+    QTRY_COMPARE(fix.server.requests().size(), 1);
+
+    // Confirm that call 2 is not sent while call 1 is in-flight
+    QTest::qWait(50);
+    QCOMPARE(fix.server.requests().size(), 1);
+    QVERIFY(!task2->isFinished());
+
+    // Abort call 1; call 2 should immediately be sent to server
+    task1->abort();
+    QTRY_COMPARE(fix.server.requests().size(), 2);
+    QTRY_VERIFY(task2->isFinished());
+    QVERIFY(task2->result().ok());
+    QCOMPARE(task2->result().value().response.content, QStringLiteral("call 2 ok"));
 }
 
 } // namespace

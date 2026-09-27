@@ -16,6 +16,8 @@
 #include <ai/LlmCache.h>
 #include <ai/LlmClient.h>
 #include <ai/LlmReply.h>
+#include <ai/RequestScheduler.h>
+#include <ai/RetryPolicy.h>
 #include <ai/SecretStore.h>
 #include <ai/StructuredOutput.h>
 #include <ai/UsageStore.h>
@@ -25,6 +27,8 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+
+class QTimer;
 
 namespace linernotes::ai {
 
@@ -79,15 +83,18 @@ private:
 
     void start();
     void run();
-    void onSecretRead(core::Result<QString> keyRes);
+    void onSecretRead(const core::Result<QString> &keyRes);
     void handleExecution();
     bool tryReturnFromCache();
+    void acquireAndSend(const ChatRequest &req);
     void sendAttempt(const ChatRequest &req);
     void onReplyFinished();
     void handleStructuredReply(const ChatResponse &resp);
     void handleNormalReply(const ChatResponse &resp);
     void writeCacheIfEligible(const ChatResponse &response);
     void recordUsage(const UsageRecord &record);
+    void recordAttempt(const core::Result<ChatResponse> &res, qint64 elapsedMs);
+    void recordCacheHit();
     void finishWithSuccess(LlmResult result);
     void finishWithError(core::Error error);
 
@@ -106,9 +113,12 @@ private:
     bool m_stream = false;
 
     int m_attempts = 0;
+    int m_retriesDone = 0;
     TokenUsage m_totalUsage;
     ChatRequest m_currentSentRequest;
     std::unique_ptr<LlmReply> m_currentReply;
+    std::unique_ptr<RequestScheduler::Ticket> m_currentTicket;
+    QTimer *m_retryTimer = nullptr;
     QElapsedTimer m_timer;
     QElapsedTimer m_attemptTimer;
 };
@@ -126,6 +136,9 @@ public:
     ~LlmService() override = default;
 
     void setDefaultCacheTtlMs(std::optional<qint64> ttlMs); // 默认 30 天
+    void setRetryPolicy(RetryPolicy policy);
+    const RetryPolicy &retryPolicy() const;
+    RequestScheduler &scheduler();
     std::unique_ptr<LlmTask> start(LlmCall call);
 
 private:
@@ -136,6 +149,8 @@ private:
     UsageStore &m_usage;
     const core::Clock &m_clock;
     std::optional<qint64> m_defaultCacheTtlMs;
+    RetryPolicy m_retryPolicy;
+    RequestScheduler m_scheduler;
 };
 
 } // namespace linernotes::ai

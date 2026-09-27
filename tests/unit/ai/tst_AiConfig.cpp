@@ -34,6 +34,7 @@ private slots:
     void resolveRoutes();
     void removeDefaultService();
     void corruptedJsonDoesNotCrash();
+    void defaultValuesForLegacyConfigWithoutNewFields();
     void purposeNameRoundtrip_data();
     void purposeNameRoundtrip();
 };
@@ -44,37 +45,35 @@ void TstAiConfig::saveAndReloadServices()
     QVERIFY(tempDir.isValid());
     const QString iniPath = QDir(tempDir.path()).filePath(QStringLiteral("settings.ini"));
 
-    const std::optional<Capabilities> expectedCaps = Capabilities {
-        .jsonSchema = true,
-        .tools = true,
-        .jsonObject = true,
-    };
+    Capabilities expectedCapsStruct;
+    expectedCapsStruct.jsonSchema = true;
+    expectedCapsStruct.tools = true;
+    expectedCapsStruct.jsonObject = true;
+    const std::optional<Capabilities> expectedCaps = expectedCapsStruct;
 
     {
         Settings settings(iniPath);
         AiConfig config(settings);
 
-        ServiceProfile s1 {
-            .id = QString(),
-            .name = QStringLiteral("DeepSeek"),
-            .baseUrl = QUrl(QStringLiteral("https://api.deepseek.com")),
-            .defaultModel = QStringLiteral("deepseek-chat"),
-            .timeoutMs = 30000,
-            .capabilities = Capabilities {
-                .jsonSchema = true,
-                .tools = true,
-                .jsonObject = true,
-            },
-        };
+        ServiceProfile s1;
+        s1.id = QString();
+        s1.name = QStringLiteral("DeepSeek");
+        s1.baseUrl = QUrl(QStringLiteral("https://api.deepseek.com"));
+        s1.defaultModel = QStringLiteral("deepseek-chat");
+        s1.timeoutMs = 30000;
+        s1.capabilities = expectedCaps;
+        s1.maxConcurrent = 5;
+        s1.requestsPerMinute = 60;
 
-        ServiceProfile s2 {
-            .id = QString(),
-            .name = QStringLiteral("Ollama"),
-            .baseUrl = QUrl(QStringLiteral("http://localhost:11434")),
-            .defaultModel = QStringLiteral("llama3"),
-            .timeoutMs = 60000,
-            .capabilities = std::nullopt,
-        };
+        ServiceProfile s2;
+        s2.id = QString();
+        s2.name = QStringLiteral("Ollama");
+        s2.baseUrl = QUrl(QStringLiteral("http://localhost:11434"));
+        s2.defaultModel = QStringLiteral("llama3");
+        s2.timeoutMs = 60000;
+        s2.capabilities = std::nullopt;
+        s2.maxConcurrent = 2;
+        s2.requestsPerMinute = 0;
 
         const QString id1 = config.saveService(s1);
         QVERIFY(!id1.isEmpty());
@@ -92,10 +91,14 @@ void TstAiConfig::saveAndReloadServices()
         QCOMPARE(list.at(0).id, id1);
         QCOMPARE(list.at(0).name, QStringLiteral("DeepSeek"));
         QCOMPARE(list.at(0).capabilities, expectedCaps);
+        QCOMPARE(list.at(0).maxConcurrent, 5);
+        QCOMPARE(list.at(0).requestsPerMinute, 60);
 
         QCOMPARE(list.at(1).id, id2);
         QCOMPARE(list.at(1).name, QStringLiteral("Ollama"));
         QCOMPARE(list.at(1).capabilities, std::nullopt);
+        QCOMPARE(list.at(1).maxConcurrent, 2);
+        QCOMPARE(list.at(1).requestsPerMinute, 0);
     }
 
     // Reload in a new Settings / AiConfig instance
@@ -107,9 +110,13 @@ void TstAiConfig::saveAndReloadServices()
         QCOMPARE(list.size(), 2);
         QCOMPARE(list.at(0).name, QStringLiteral("DeepSeek"));
         QCOMPARE(list.at(0).capabilities, expectedCaps);
+        QCOMPARE(list.at(0).maxConcurrent, 5);
+        QCOMPARE(list.at(0).requestsPerMinute, 60);
 
         QCOMPARE(list.at(1).name, QStringLiteral("Ollama"));
         QCOMPARE(list.at(1).capabilities, std::nullopt);
+        QCOMPARE(list.at(1).maxConcurrent, 2);
+        QCOMPARE(list.at(1).requestsPerMinute, 0);
 
         QCOMPARE(config.defaultServiceId(), list.at(0).id);
     }
@@ -128,22 +135,26 @@ void TstAiConfig::resolveRoutes()
     QCOMPARE(config.resolve(Purpose::Cleanup).has_value(), false);
 
     // Add service 1 (default) and service 2
-    ServiceProfile s1 {
-        .id = QStringLiteral("srv-1"),
-        .name = QStringLiteral("Main LLM"),
-        .baseUrl = QUrl(QStringLiteral("https://api.main.com")),
-        .defaultModel = QStringLiteral("main-model"),
-        .timeoutMs = 60000,
-        .capabilities = std::nullopt,
-    };
-    ServiceProfile s2 {
-        .id = QStringLiteral("srv-2"),
-        .name = QStringLiteral("Fast LLM"),
-        .baseUrl = QUrl(QStringLiteral("https://api.fast.com")),
-        .defaultModel = QStringLiteral("fast-model"),
-        .timeoutMs = 15000,
-        .capabilities = std::nullopt,
-    };
+    ServiceProfile s1;
+    s1.id = QStringLiteral("srv-1");
+    s1.name = QStringLiteral("Main LLM");
+    s1.baseUrl = QUrl(QStringLiteral("https://api.main.com"));
+    s1.defaultModel = QStringLiteral("main-model");
+    s1.timeoutMs = 60000;
+    s1.capabilities = std::nullopt;
+    s1.maxConcurrent = 2;
+    s1.requestsPerMinute = 0;
+
+    ServiceProfile s2;
+    s2.id = QStringLiteral("srv-2");
+    s2.name = QStringLiteral("Fast LLM");
+    s2.baseUrl = QUrl(QStringLiteral("https://api.fast.com"));
+    s2.defaultModel = QStringLiteral("fast-model");
+    s2.timeoutMs = 15000;
+    s2.capabilities = std::nullopt;
+    s2.maxConcurrent = 4;
+    s2.requestsPerMinute = 120;
+
     config.saveService(s1);
     config.saveService(s2);
 
@@ -157,11 +168,11 @@ void TstAiConfig::resolveRoutes()
     QCOMPARE(resDefault->model, QStringLiteral("main-model"));
 
     // 3. Route specifies service and model
-    config.setRoute(Purpose::Cleanup,
-        PurposeRoute {
-            .serviceId = QStringLiteral("srv-2"),
-            .model = QStringLiteral("custom-fast"),
-        });
+    PurposeRoute r1;
+    r1.serviceId = QStringLiteral("srv-2");
+    r1.model = QStringLiteral("custom-fast");
+    config.setRoute(Purpose::Cleanup, r1);
+
     const auto resCleanup = config.resolve(Purpose::Cleanup);
     QVERIFY(resCleanup.has_value());
     if (!resCleanup.has_value()) {
@@ -171,11 +182,11 @@ void TstAiConfig::resolveRoutes()
     QCOMPARE(resCleanup->model, QStringLiteral("custom-fast"));
 
     // 4. Route specifies non-existent service -> fallback to default
-    config.setRoute(Purpose::Dj,
-        PurposeRoute {
-            .serviceId = QStringLiteral("deleted-srv"),
-            .model = QStringLiteral("dj-model"),
-        });
+    PurposeRoute r2;
+    r2.serviceId = QStringLiteral("deleted-srv");
+    r2.model = QStringLiteral("dj-model");
+    config.setRoute(Purpose::Dj, r2);
+
     const auto resDj = config.resolve(Purpose::Dj);
     QVERIFY(resDj.has_value());
     if (!resDj.has_value()) {
@@ -194,29 +205,33 @@ void TstAiConfig::removeDefaultService()
     Settings settings(iniPath);
     AiConfig config(settings);
 
-    ServiceProfile s1 {
-        .id = QStringLiteral("s1"),
-        .name = QStringLiteral("S1"),
-        .baseUrl = QUrl(QStringLiteral("https://s1.example.com")),
-        .defaultModel = QStringLiteral("m1"),
-        .timeoutMs = 60000,
-        .capabilities = std::nullopt,
-    };
-    ServiceProfile s2 {
-        .id = QStringLiteral("s2"),
-        .name = QStringLiteral("S2"),
-        .baseUrl = QUrl(QStringLiteral("https://s2.example.com")),
-        .defaultModel = QStringLiteral("m2"),
-        .timeoutMs = 60000,
-        .capabilities = std::nullopt,
-    };
+    ServiceProfile s1;
+    s1.id = QStringLiteral("s1");
+    s1.name = QStringLiteral("S1");
+    s1.baseUrl = QUrl(QStringLiteral("https://s1.example.com"));
+    s1.defaultModel = QStringLiteral("m1");
+    s1.timeoutMs = 60000;
+    s1.capabilities = std::nullopt;
+    s1.maxConcurrent = 2;
+    s1.requestsPerMinute = 0;
+
+    ServiceProfile s2;
+    s2.id = QStringLiteral("s2");
+    s2.name = QStringLiteral("S2");
+    s2.baseUrl = QUrl(QStringLiteral("https://s2.example.com"));
+    s2.defaultModel = QStringLiteral("m2");
+    s2.timeoutMs = 60000;
+    s2.capabilities = std::nullopt;
+    s2.maxConcurrent = 2;
+    s2.requestsPerMinute = 0;
+
     config.saveService(s1);
     config.saveService(s2);
-    config.setRoute(Purpose::Narrative,
-        PurposeRoute {
-            .serviceId = QStringLiteral("s1"),
-            .model = QStringLiteral("m1-custom"),
-        });
+
+    PurposeRoute r;
+    r.serviceId = QStringLiteral("s1");
+    r.model = QStringLiteral("m1-custom");
+    config.setRoute(Purpose::Narrative, r);
 
     QCOMPARE(config.defaultServiceId(), QStringLiteral("s1"));
     QCOMPARE(config.route(Purpose::Narrative).serviceId, QStringLiteral("s1"));
@@ -257,6 +272,35 @@ void TstAiConfig::corruptedJsonDoesNotCrash()
         QCOMPARE(config.services().isEmpty(), true);
         QCOMPARE(config.route(Purpose::Cleanup), PurposeRoute());
         QCOMPARE(config.resolve(Purpose::Cleanup).has_value(), false);
+    }
+}
+
+void TstAiConfig::defaultValuesForLegacyConfigWithoutNewFields()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString iniPath = QDir(tempDir.path()).filePath(QStringLiteral("settings.ini"));
+
+    {
+        Settings settings(iniPath);
+        const linernotes::core::SettingKey<QString> rawServicesKey { u"ai/services", QString() };
+        // JSON without maxConcurrent and requestsPerMinute
+        const char *const legacyRaw
+            = R"json([{"id":"legacy1","name":"Legacy Service","baseUrl":"https://legacy.example.com","defaultModel":"m1"}])json";
+        const QString legacyJson = QString::fromUtf8(legacyRaw);
+        settings.setValue(rawServicesKey, legacyJson);
+        settings.sync();
+    }
+
+    {
+        Settings settings(iniPath);
+        AiConfig config(settings);
+
+        const auto list = config.services();
+        QCOMPARE(list.size(), 1);
+        QCOMPARE(list.at(0).id, QStringLiteral("legacy1"));
+        QCOMPARE(list.at(0).maxConcurrent, 2);
+        QCOMPARE(list.at(0).requestsPerMinute, 0);
     }
 }
 

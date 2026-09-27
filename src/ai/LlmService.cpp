@@ -3,6 +3,8 @@
 
 #include "LlmService.h"
 
+#include <QTimer>
+
 #include <ai/AiEnumNames.h>
 #include <ai/AiLogging.h>
 #include <ai/Errors.h>
@@ -26,11 +28,15 @@ LlmTask::LlmTask(LlmService &service, LlmCall call, QObject *parent)
 
 LlmTask::~LlmTask()
 {
+    if (m_retryTimer != nullptr) {
+        m_retryTimer->stop();
+    }
     if (!m_finished && m_currentReply != nullptr) {
         disconnect(m_currentReply.get(), nullptr, this, nullptr);
         m_currentReply->abort();
         m_currentReply.reset();
     }
+    m_currentTicket.reset();
 }
 
 bool LlmTask::isFinished() const
@@ -49,16 +55,21 @@ void LlmTask::abort()
     if (m_finished) {
         return;
     }
+    if (m_retryTimer != nullptr) {
+        m_retryTimer->stop();
+    }
     if (m_currentReply != nullptr) {
         disconnect(m_currentReply.get(), nullptr, this, nullptr);
         m_currentReply->abort();
         m_currentReply.reset();
     }
-    finishWithError(core::Error {
-        .code = QString(errc::kAborted),
-        .message = QStringLiteral("LLM task was aborted"),
-        .detail = QString(),
-    });
+    m_currentTicket.reset();
+
+    core::Error err;
+    err.code = QString(errc::kAborted);
+    err.message = QStringLiteral("LLM task was aborted");
+    err.detail = QString();
+    finishWithError(std::move(err));
 }
 
 void LlmTask::start()
@@ -75,21 +86,21 @@ void LlmTask::run()
 
     const auto resolvedOpt = m_service.m_config.resolve(m_call.purpose);
     if (!resolvedOpt.has_value()) {
-        finishWithError(core::Error {
-            .code = QString(errc::kNotConfigured),
-            .message = QStringLiteral("No service configured for purpose: %1")
-                .arg(purposeName(m_call.purpose)),
-            .detail = QString(),
-        });
+        core::Error err;
+        err.code = QString(errc::kNotConfigured);
+        err.message = QStringLiteral("No service configured for purpose: %1")
+                          .arg(purposeName(m_call.purpose));
+        err.detail = QString();
+        finishWithError(std::move(err));
         return;
     }
 
     m_resolved = resolvedOpt.value();
     m_service.m_secrets.read(m_resolved.profile.id, this,
-        [this](core::Result<QString> keyRes) { onSecretRead(std::move(keyRes)); });
+        [this](const core::Result<QString> &keyRes) { onSecretRead(keyRes); });
 }
 
-void LlmTask::onSecretRead(core::Result<QString> keyRes)
+void LlmTask::onSecretRead(const core::Result<QString> &keyRes)
 {
     if (m_finished) {
         return;
@@ -139,7 +150,7 @@ void LlmTask::handleExecution()
         reqToSend = buildStructuredRequest(m_call.request, m_spec, m_mode);
     }
 
-    sendAttempt(reqToSend);
+    acquireAndSend(reqToSend);
 }
 
 bool LlmTask::tryReturnFromCache()
@@ -154,48 +165,26 @@ bool LlmTask::tryReturnFromCache()
         if (!parseRes.ok()) {
             return false;
         }
-        recordUsage(UsageRecord {
-            .createdAtMs = m_service.m_clock.nowMs(),
-            .purpose = m_call.purpose,
-            .serviceId = m_resolved.profile.id,
-            .model = m_serviceConfig.model,
-            .usage = TokenUsage { .promptTokens = 0, .completionTokens = 0 },
-            .cached = true,
-            .ok = true,
-            .errorCode = QString(),
-            .elapsedMs = m_timer.elapsed(),
-        });
-        LlmResult res {
-            .response = std::move(cached.value()),
-            .structured = parseRes.value(),
-            .fromCache = true,
-            .attempts = 0,
-            .totalUsage = TokenUsage { },
-            .model = m_serviceConfig.model,
-        };
+        recordCacheHit();
+        LlmResult res;
+        res.response = std::move(cached.value());
+        res.structured = parseRes.value();
+        res.fromCache = true;
+        res.attempts = 0;
+        res.totalUsage = TokenUsage { };
+        res.model = m_serviceConfig.model;
         finishWithSuccess(std::move(res));
         return true;
     }
 
-    recordUsage(UsageRecord {
-        .createdAtMs = m_service.m_clock.nowMs(),
-        .purpose = m_call.purpose,
-        .serviceId = m_resolved.profile.id,
-        .model = m_serviceConfig.model,
-        .usage = TokenUsage { .promptTokens = 0, .completionTokens = 0 },
-        .cached = true,
-        .ok = true,
-        .errorCode = QString(),
-        .elapsedMs = m_timer.elapsed(),
-    });
-    LlmResult res {
-        .response = std::move(cached.value()),
-        .structured = std::nullopt,
-        .fromCache = true,
-        .attempts = 0,
-        .totalUsage = TokenUsage { },
-        .model = m_serviceConfig.model,
-    };
+    recordCacheHit();
+    LlmResult res;
+    res.response = std::move(cached.value());
+    res.structured = std::nullopt;
+    res.fromCache = true;
+    res.attempts = 0;
+    res.totalUsage = TokenUsage { };
+    res.model = m_serviceConfig.model;
     if (m_stream) {
         emit delta(res.response.content);
     }
@@ -203,8 +192,21 @@ bool LlmTask::tryReturnFromCache()
     return true;
 }
 
+void LlmTask::acquireAndSend(const ChatRequest &req)
+{
+    if (m_finished) {
+        return;
+    }
+    m_currentTicket
+        = m_service.m_scheduler.acquire(m_resolved.profile.id, m_resolved.profile.maxConcurrent,
+            m_resolved.profile.requestsPerMinute, [this, req]() { sendAttempt(req); });
+}
+
 void LlmTask::sendAttempt(const ChatRequest &req)
 {
+    if (m_finished) {
+        return;
+    }
     m_attempts++;
     m_currentSentRequest = req;
     m_attemptTimer.start();
@@ -225,36 +227,46 @@ void LlmTask::onReplyFinished()
         return;
     }
 
+    // Release concurrency ticket immediately upon completion of the HTTP request
+    m_currentTicket.reset();
+
     const qint64 attemptElapsedMs = m_attemptTimer.elapsed();
     const auto &replyRes = m_currentReply->result();
+    recordAttempt(replyRes, attemptElapsedMs);
+
     if (!replyRes.ok()) {
-        recordUsage(UsageRecord {
-            .createdAtMs = m_service.m_clock.nowMs(),
-            .purpose = m_call.purpose,
-            .serviceId = m_resolved.profile.id,
-            .model = m_serviceConfig.model,
-            .usage = TokenUsage { .promptTokens = 0, .completionTokens = 0 },
-            .cached = false,
-            .ok = false,
-            .errorCode = replyRes.error().code,
-            .elapsedMs = attemptElapsedMs,
-        });
-        finishWithError(replyRes.error());
+        const int httpStatus = m_currentReply->httpStatus();
+        const std::optional<qint64> retryAfter = m_currentReply->retryAfterMs();
+        const core::Error err = replyRes.error();
+        m_currentReply.reset();
+
+        const auto delayOpt
+            = retryDelayMs(m_service.m_retryPolicy, err, httpStatus, retryAfter, m_retriesDone);
+
+        if (delayOpt.has_value()) {
+            const qint64 delay = delayOpt.value();
+            if (err.code == errc::kRateLimited) {
+                m_service.m_scheduler.pauseService(m_resolved.profile.id, delay);
+            }
+            m_retriesDone++;
+            if (m_retryTimer == nullptr) {
+                m_retryTimer = new QTimer(this);
+                m_retryTimer->setSingleShot(true);
+            }
+            m_retryTimer->disconnect(this);
+            connect(m_retryTimer, &QTimer::timeout, this,
+                [this]() { acquireAndSend(m_currentSentRequest); });
+            m_retryTimer->start(static_cast<int>(delay));
+            return;
+        }
+
+        finishWithError(err);
         return;
     }
 
     const ChatResponse resp = replyRes.value();
-    recordUsage(UsageRecord {
-        .createdAtMs = m_service.m_clock.nowMs(),
-        .purpose = m_call.purpose,
-        .serviceId = m_resolved.profile.id,
-        .model = resp.model.isEmpty() ? m_serviceConfig.model : resp.model,
-        .usage = resp.usage,
-        .cached = false,
-        .ok = true,
-        .errorCode = QString(),
-        .elapsedMs = attemptElapsedMs,
-    });
+    m_currentReply.reset();
+    m_retriesDone = 0;
 
     m_totalUsage.promptTokens += resp.usage.promptTokens;
     m_totalUsage.completionTokens += resp.usage.completionTokens;
@@ -273,36 +285,33 @@ void LlmTask::handleStructuredReply(const ChatResponse &resp)
         if (m_attempts == 1) {
             const ChatRequest repairReq
                 = buildRepairRequest(m_currentSentRequest, resp, parseRes.error(), m_mode);
-            m_currentReply.reset();
-            sendAttempt(repairReq);
+            acquireAndSend(repairReq);
             return;
         }
         finishWithError(parseRes.error());
         return;
     }
 
-    LlmResult res {
-        .response = resp,
-        .structured = parseRes.value(),
-        .fromCache = false,
-        .attempts = m_attempts,
-        .totalUsage = m_totalUsage,
-        .model = resp.model.isEmpty() ? m_serviceConfig.model : resp.model,
-    };
+    LlmResult res;
+    res.response = resp;
+    res.structured = parseRes.value();
+    res.fromCache = false;
+    res.attempts = m_attempts;
+    res.totalUsage = m_totalUsage;
+    res.model = resp.model.isEmpty() ? m_serviceConfig.model : resp.model;
     writeCacheIfEligible(res.response);
     finishWithSuccess(std::move(res));
 }
 
 void LlmTask::handleNormalReply(const ChatResponse &resp)
 {
-    LlmResult res {
-        .response = resp,
-        .structured = std::nullopt,
-        .fromCache = false,
-        .attempts = m_attempts,
-        .totalUsage = m_totalUsage,
-        .model = resp.model.isEmpty() ? m_serviceConfig.model : resp.model,
-    };
+    LlmResult res;
+    res.response = resp;
+    res.structured = std::nullopt;
+    res.fromCache = false;
+    res.attempts = m_attempts;
+    res.totalUsage = m_totalUsage;
+    res.model = resp.model.isEmpty() ? m_serviceConfig.model : resp.model;
     writeCacheIfEligible(res.response);
     finishWithSuccess(std::move(res));
 }
@@ -322,6 +331,45 @@ void LlmTask::writeCacheIfEligible(const ChatResponse &response)
     if (!putRes.ok()) {
         qCWarning(lcAi) << "LlmTask failed to write cache:" << putRes.error().message;
     }
+}
+
+void LlmTask::recordCacheHit()
+{
+    UsageRecord rec;
+    rec.createdAtMs = m_service.m_clock.nowMs();
+    rec.purpose = m_call.purpose;
+    rec.serviceId = m_resolved.profile.id;
+    rec.model = m_serviceConfig.model;
+    rec.usage = TokenUsage { .promptTokens = 0, .completionTokens = 0 };
+    rec.cached = true;
+    rec.ok = true;
+    rec.errorCode = QString();
+    rec.elapsedMs = m_timer.elapsed();
+    recordUsage(rec);
+}
+
+void LlmTask::recordAttempt(const core::Result<ChatResponse> &res, qint64 elapsedMs)
+{
+    UsageRecord rec;
+    rec.createdAtMs = m_service.m_clock.nowMs();
+    rec.purpose = m_call.purpose;
+    rec.serviceId = m_resolved.profile.id;
+    rec.cached = false;
+    rec.elapsedMs = elapsedMs;
+
+    if (!res.ok()) {
+        rec.model = m_serviceConfig.model;
+        rec.usage = TokenUsage { .promptTokens = 0, .completionTokens = 0 };
+        rec.ok = false;
+        rec.errorCode = res.error().code;
+    } else {
+        const ChatResponse &resp = res.value();
+        rec.model = resp.model.isEmpty() ? m_serviceConfig.model : resp.model;
+        rec.usage = resp.usage;
+        rec.ok = true;
+        rec.errorCode = QString();
+    }
+    recordUsage(rec);
 }
 
 void LlmTask::recordUsage(const UsageRecord &record)
@@ -375,12 +423,28 @@ LlmService::LlmService(AiConfig &config, SecretStore &secrets, LlmClient &client
     , m_usage(usage)
     , m_clock(clock)
     , m_defaultCacheTtlMs(kDefaultCacheTtlMs)
+    , m_scheduler(clock, this)
 {
 }
 
 void LlmService::setDefaultCacheTtlMs(std::optional<qint64> ttlMs)
 {
     m_defaultCacheTtlMs = ttlMs;
+}
+
+void LlmService::setRetryPolicy(RetryPolicy policy)
+{
+    m_retryPolicy = policy;
+}
+
+const RetryPolicy &LlmService::retryPolicy() const
+{
+    return m_retryPolicy;
+}
+
+RequestScheduler &LlmService::scheduler()
+{
+    return m_scheduler;
 }
 
 std::unique_ptr<LlmTask> LlmService::start(LlmCall call)

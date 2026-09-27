@@ -43,6 +43,8 @@ QJsonObject serviceToJson(const ServiceProfile &profile)
         capsObj.insert(QStringLiteral("jsonObject"), profile.capabilities->jsonObject);
         obj.insert(QStringLiteral("capabilities"), capsObj);
     }
+    obj.insert(QStringLiteral("maxConcurrent"), profile.maxConcurrent);
+    obj.insert(QStringLiteral("requestsPerMinute"), profile.requestsPerMinute);
     return obj;
 }
 
@@ -58,26 +60,34 @@ std::optional<ServiceProfile> serviceFromJson(const QJsonObject &obj)
     const int timeoutMs = obj.contains(QStringLiteral("timeoutMs"))
         ? obj.value(QStringLiteral("timeoutMs")).toInt(60000)
         : 60000;
+    const int maxConcurrent = obj.contains(QStringLiteral("maxConcurrent"))
+        ? obj.value(QStringLiteral("maxConcurrent")).toInt(2)
+        : 2;
+    const int requestsPerMinute = obj.contains(QStringLiteral("requestsPerMinute"))
+        ? obj.value(QStringLiteral("requestsPerMinute")).toInt(0)
+        : 0;
 
     std::optional<Capabilities> caps;
     if (obj.contains(QStringLiteral("capabilities"))
         && obj.value(QStringLiteral("capabilities")).isObject()) {
         const QJsonObject capsObj = obj.value(QStringLiteral("capabilities")).toObject();
-        caps = Capabilities {
-            .jsonSchema = capsObj.value(QStringLiteral("jsonSchema")).toBool(false),
-            .tools = capsObj.value(QStringLiteral("tools")).toBool(false),
-            .jsonObject = capsObj.value(QStringLiteral("jsonObject")).toBool(false),
-        };
+        Capabilities c;
+        c.jsonSchema = capsObj.value(QStringLiteral("jsonSchema")).toBool(false);
+        c.tools = capsObj.value(QStringLiteral("tools")).toBool(false);
+        c.jsonObject = capsObj.value(QStringLiteral("jsonObject")).toBool(false);
+        caps = c;
     }
 
-    return ServiceProfile {
-        .id = id,
-        .name = name,
-        .baseUrl = baseUrl,
-        .defaultModel = defaultModel,
-        .timeoutMs = timeoutMs,
-        .capabilities = caps,
-    };
+    ServiceProfile profile;
+    profile.id = id;
+    profile.name = name;
+    profile.baseUrl = baseUrl;
+    profile.defaultModel = defaultModel;
+    profile.timeoutMs = timeoutMs;
+    profile.capabilities = caps;
+    profile.maxConcurrent = maxConcurrent;
+    profile.requestsPerMinute = requestsPerMinute;
+    return profile;
 }
 
 QString servicesToJsonString(const QList<ServiceProfile> &list)

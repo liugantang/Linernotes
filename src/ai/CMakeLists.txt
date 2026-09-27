@@ -26,6 +26,10 @@ add_library(linernotes_ai STATIC
     LlmReply.h
     LlmService.cpp
     LlmService.h
+    RequestScheduler.cpp
+    RequestScheduler.h
+    RetryPolicy.cpp
+    RetryPolicy.h
     SecretStore.cpp
     SecretStore.h
     SseParser.cpp
