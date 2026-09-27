@@ -3,7 +3,7 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 pkgname=linernotes-git
-pkgver=0.1.0.r135.gb02816c
+pkgver=0.1.0.r136.g44b6515
 pkgrel=1
 pkgdesc="Modern local music player with AI-powered features"
 arch=('x86_64')
