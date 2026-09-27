@@ -42,6 +42,10 @@ public:
     Q_PROPERTY(ThemeMode themeMode READ themeMode WRITE setThemeMode NOTIFY themeModeChanged)
     Q_PROPERTY(bool accentFromCover READ accentFromCover WRITE setAccentFromCover NOTIFY
             accentFromCoverChanged)
+    Q_PROPERTY(bool trayIcon READ trayIcon WRITE setTrayIcon NOTIFY trayIconChanged)
+    Q_PROPERTY(bool closeToTray READ closeToTray WRITE setCloseToTray NOTIFY closeToTrayChanged)
+    Q_PROPERTY(bool trackChangeNotifications READ trackChangeNotifications WRITE
+            setTrackChangeNotifications NOTIFY trackChangeNotificationsChanged)
     Q_PROPERTY(bool firstRunCompleted READ firstRunCompleted WRITE setFirstRunCompleted NOTIFY
             firstRunCompletedChanged)
 
@@ -78,6 +82,15 @@ public:
     [[nodiscard]] bool accentFromCover() const;
     void setAccentFromCover(bool enabled);
 
+    [[nodiscard]] bool trayIcon() const;
+    void setTrayIcon(bool enabled);
+
+    [[nodiscard]] bool closeToTray() const;
+    void setCloseToTray(bool enabled);
+
+    [[nodiscard]] bool trackChangeNotifications() const;
+    void setTrackChangeNotifications(bool enabled);
+
     [[nodiscard]] bool firstRunCompleted() const;
     void setFirstRunCompleted(bool completed);
 
@@ -92,6 +105,9 @@ signals:
     void languageChanged();
     void themeModeChanged();
     void accentFromCoverChanged();
+    void trayIconChanged();
+    void closeToTrayChanged();
+    void trackChangeNotificationsChanged();
     void firstRunCompletedChanged();
 
 private:
@@ -107,6 +123,9 @@ private:
     Language m_language { Language::System };
     ThemeMode m_themeMode { ThemeMode::System };
     bool m_accentFromCover { false };
+    bool m_trayIcon { true };
+    bool m_closeToTray { false };
+    bool m_trackChangeNotifications { true };
     bool m_firstRunCompleted { false };
 };
 

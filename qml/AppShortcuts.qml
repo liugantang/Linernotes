@@ -94,6 +94,72 @@ Item {
                 }
             }
         },
+        {
+            sequence: Qt.Key_MediaPlay,
+            description: qsTr("Play"),
+            group: AppShortcuts.Group.Playback,
+            hidden: true,
+            action: () => {
+                if (AppContext.player) {
+                    AppContext.player.play()
+                }
+            }
+        },
+        {
+            sequence: Qt.Key_MediaTogglePlayPause,
+            description: qsTr("Play / Pause"),
+            group: AppShortcuts.Group.Playback,
+            hidden: true,
+            action: () => {
+                if (AppContext.player) {
+                    AppContext.player.togglePause()
+                }
+            }
+        },
+        {
+            sequence: Qt.Key_MediaPause,
+            description: qsTr("Pause"),
+            group: AppShortcuts.Group.Playback,
+            hidden: true,
+            action: () => {
+                if (AppContext.player) {
+                    AppContext.player.pause()
+                }
+            }
+        },
+        {
+            sequence: Qt.Key_MediaStop,
+            description: qsTr("Stop"),
+            group: AppShortcuts.Group.Playback,
+            hidden: true,
+            action: () => {
+                if (AppContext.player) {
+                    AppContext.player.stop()
+                }
+            }
+        },
+        {
+            sequence: Qt.Key_MediaNext,
+            description: qsTr("Next track"),
+            group: AppShortcuts.Group.Playback,
+            hidden: true,
+            action: () => {
+                if (AppContext.player) {
+                    AppContext.player.next()
+                }
+            }
+        },
+        {
+            sequence: Qt.Key_MediaPrevious,
+            description: qsTr("Previous track"),
+            group: AppShortcuts.Group.Playback,
+            hidden: true,
+            action: () => {
+                if (AppContext.player) {
+                    AppContext.player.previous()
+                }
+            }
+        },
 
         // Navigation
         {

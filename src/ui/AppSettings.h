@@ -35,6 +35,13 @@ inline const core::SettingKey<QString> kAppearanceTheme { u"appearance/theme", u
 inline const core::SettingKey<bool> kAppearanceAccentFromCover { u"appearance/accentFromCover",
     false };
 // NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<bool> kAppearanceTrayIcon { u"appearance/trayIcon", true };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<bool> kAppearanceCloseToTray { u"appearance/closeToTray", false };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<bool> kNotificationsTrackChange { u"notifications/trackChange",
+    true };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 inline const core::SettingKey<bool> kAppFirstRunCompleted { u"app/firstRunCompleted", false };
 
 } // namespace linernotes::ui

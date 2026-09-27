@@ -107,6 +107,9 @@ SettingsController::SettingsController(
     , m_language(languageFromString(m_settings.value(kAppearanceLanguage)))
     , m_themeMode(themeModeFromString(m_settings.value(kAppearanceTheme)))
     , m_accentFromCover(m_settings.value(kAppearanceAccentFromCover))
+    , m_trayIcon(m_settings.value(kAppearanceTrayIcon))
+    , m_closeToTray(m_settings.value(kAppearanceCloseToTray))
+    , m_trackChangeNotifications(m_settings.value(kNotificationsTrackChange))
     , m_firstRunCompleted(m_settings.value(kAppFirstRunCompleted))
 {
     m_player.setReplayGainMode(m_replayGainMode);
@@ -276,6 +279,51 @@ void SettingsController::setAccentFromCover(bool enabled)
     m_accentFromCover = enabled;
     m_settings.setValue(kAppearanceAccentFromCover, enabled);
     emit accentFromCoverChanged();
+}
+
+bool SettingsController::trayIcon() const
+{
+    return m_trayIcon;
+}
+
+void SettingsController::setTrayIcon(bool enabled)
+{
+    if (enabled == m_trayIcon) {
+        return;
+    }
+    m_trayIcon = enabled;
+    m_settings.setValue(kAppearanceTrayIcon, enabled);
+    emit trayIconChanged();
+}
+
+bool SettingsController::closeToTray() const
+{
+    return m_closeToTray;
+}
+
+void SettingsController::setCloseToTray(bool enabled)
+{
+    if (enabled == m_closeToTray) {
+        return;
+    }
+    m_closeToTray = enabled;
+    m_settings.setValue(kAppearanceCloseToTray, enabled);
+    emit closeToTrayChanged();
+}
+
+bool SettingsController::trackChangeNotifications() const
+{
+    return m_trackChangeNotifications;
+}
+
+void SettingsController::setTrackChangeNotifications(bool enabled)
+{
+    if (enabled == m_trackChangeNotifications) {
+        return;
+    }
+    m_trackChangeNotifications = enabled;
+    m_settings.setValue(kNotificationsTrackChange, enabled);
+    emit trackChangeNotificationsChanged();
 }
 
 bool SettingsController::firstRunCompleted() const

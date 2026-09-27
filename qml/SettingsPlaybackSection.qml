@@ -307,4 +307,23 @@ ColumnLayout {
             wrapMode: Text.Wrap
         }
     }
+
+    // Track change desktop notification
+    Controls.AppCheckBox {
+        id: trackNotificationCheck
+        text: qsTr("Show desktop notification on track change")
+        checked: AppContext.settings ? AppContext.settings.trackChangeNotifications : true
+        onToggled: {
+            if (AppContext.settings) {
+                AppContext.settings.trackChangeNotifications = checked
+            }
+        }
+
+        Connections {
+            target: AppContext.settings
+            function onTrackChangeNotificationsChanged() {
+                trackNotificationCheck.checked = AppContext.settings.trackChangeNotifications
+            }
+        }
+    }
 }

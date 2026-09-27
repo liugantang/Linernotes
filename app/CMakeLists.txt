@@ -287,6 +287,11 @@ set_source_files_properties(
     PROPERTIES
         QT_RESOURCE_ALIAS FirstRunWizard.qml
 )
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/TrayIcon.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS TrayIcon.qml
+)
 
 set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/resources/icons/play.svg
@@ -508,6 +513,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/AppShortcuts.qml
         ${CMAKE_SOURCE_DIR}/qml/ShortcutsDialog.qml
         ${CMAKE_SOURCE_DIR}/qml/FirstRunWizard.qml
+        ${CMAKE_SOURCE_DIR}/qml/TrayIcon.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackColumns.js
         ${CMAKE_SOURCE_DIR}/qml/TrackContextMenu.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackTableHeader.qml
@@ -572,6 +578,7 @@ target_link_libraries(linernotes
         Qt6::Qml
         Qt6::Quick
         Qt6::QuickControls2
+        Qt6::Widgets
 )
 
 qt_add_translations(linernotes

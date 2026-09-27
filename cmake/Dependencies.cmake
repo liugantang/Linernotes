@@ -6,6 +6,7 @@ find_package(Qt6 6.8 REQUIRED COMPONENTS
     Gui
     Quick
     QuickControls2
+    Widgets # Qt.labs.platform 托盘/菜单在没有原生实现时回退到 Qt Widgets，需要 QApplication
     Sql
     Network
     DBus

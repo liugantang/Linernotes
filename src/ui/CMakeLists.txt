@@ -20,6 +20,7 @@ add_library(linernotes_ui STATIC
     LibraryRootsModel.h
     MarksController.cpp
     MarksController.h
+    NotificationSink.h
     NowPlaying.cpp
     NowPlaying.h
     PageCache.h
@@ -43,6 +44,8 @@ add_library(linernotes_ui STATIC
     TagEditorModel.h
     TrackListModel.cpp
     TrackListModel.h
+    TrackNotifier.cpp
+    TrackNotifier.h
     Translations.cpp
     Translations.h
     UiLogging.cpp
@@ -52,6 +55,8 @@ add_library(Linernotes::ui ALIAS linernotes_ui)
 
 if(UNIX AND NOT APPLE)
     target_sources(linernotes_ui PRIVATE
+        DBusNotificationSink.cpp
+        DBusNotificationSink.h
         mpris/Mpris.cpp
         mpris/Mpris.h
         mpris/MprisPlayerAdaptor.cpp

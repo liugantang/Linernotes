@@ -147,16 +147,19 @@
     <name>AppShortcuts</name>
     <message>
         <location filename="../qml/AppShortcuts.qml" line="27"/>
+        <location filename="../qml/AppShortcuts.qml" line="110"/>
         <source>Play / Pause</source>
         <translation>播放 / 暂停</translation>
     </message>
     <message>
         <location filename="../qml/AppShortcuts.qml" line="37"/>
+        <location filename="../qml/AppShortcuts.qml" line="143"/>
         <source>Next track</source>
         <translation>下一首</translation>
     </message>
     <message>
         <location filename="../qml/AppShortcuts.qml" line="47"/>
+        <location filename="../qml/AppShortcuts.qml" line="154"/>
         <source>Previous track</source>
         <translation>上一首</translation>
     </message>
@@ -181,88 +184,103 @@
         <translation>切换播放模式</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="101"/>
+        <location filename="../qml/AppShortcuts.qml" line="99"/>
+        <source>Play</source>
+        <translation>播放</translation>
+    </message>
+    <message>
+        <location filename="../qml/AppShortcuts.qml" line="121"/>
+        <source>Pause</source>
+        <translation>暂停</translation>
+    </message>
+    <message>
+        <location filename="../qml/AppShortcuts.qml" line="132"/>
+        <source>Stop</source>
+        <translation>停止</translation>
+    </message>
+    <message>
+        <location filename="../qml/AppShortcuts.qml" line="167"/>
         <source>Go to Tracks</source>
         <translation>前往歌曲</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="111"/>
+        <location filename="../qml/AppShortcuts.qml" line="177"/>
         <source>Go to Albums</source>
         <translation>前往专辑</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="121"/>
+        <location filename="../qml/AppShortcuts.qml" line="187"/>
         <source>Go to Artists</source>
         <translation>前往艺人</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="131"/>
+        <location filename="../qml/AppShortcuts.qml" line="197"/>
         <source>Go to Playlists</source>
         <translation>前往歌单</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="141"/>
+        <location filename="../qml/AppShortcuts.qml" line="207"/>
         <source>Go to AI</source>
         <translation>前往 AI</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="151"/>
+        <location filename="../qml/AppShortcuts.qml" line="217"/>
         <source>Settings</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="161"/>
+        <location filename="../qml/AppShortcuts.qml" line="227"/>
         <source>Search</source>
         <translation>搜索</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="167"/>
+        <location filename="../qml/AppShortcuts.qml" line="233"/>
         <source>Back from detail page</source>
         <translation>从详情页返回</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="175"/>
+        <location filename="../qml/AppShortcuts.qml" line="241"/>
         <source>Favorite / Unfavorite current track</source>
         <translation>收藏 / 取消收藏当前歌曲</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="185"/>
+        <location filename="../qml/AppShortcuts.qml" line="251"/>
         <source>Clear rating</source>
         <translation>清除评分</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="195"/>
+        <location filename="../qml/AppShortcuts.qml" line="261"/>
         <source>Rate 1 star</source>
         <translation>评为 1 星</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="205"/>
+        <location filename="../qml/AppShortcuts.qml" line="271"/>
         <source>Rate 2 stars</source>
         <translation>评为 2 星</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="215"/>
+        <location filename="../qml/AppShortcuts.qml" line="281"/>
         <source>Rate 3 stars</source>
         <translation>评为 3 星</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="225"/>
+        <location filename="../qml/AppShortcuts.qml" line="291"/>
         <source>Rate 4 stars</source>
         <translation>评为 4 星</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="235"/>
+        <location filename="../qml/AppShortcuts.qml" line="301"/>
         <source>Rate 5 stars</source>
         <translation>评为 5 星</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="247"/>
+        <location filename="../qml/AppShortcuts.qml" line="313"/>
         <source>Toggle side panel</source>
         <translation>切换侧面板</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="257"/>
-        <location filename="../qml/AppShortcuts.qml" line="267"/>
+        <location filename="../qml/AppShortcuts.qml" line="323"/>
+        <location filename="../qml/AppShortcuts.qml" line="333"/>
         <source>Keyboard shortcuts</source>
         <translation>快捷键</translation>
     </message>
@@ -468,24 +486,24 @@
         <translation>Linernotes</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Main.qml" line="106"/>
+        <location filename="../qml/Main.qml" line="118"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n 首</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="175"/>
+        <location filename="../qml/Main.qml" line="187"/>
         <source>Show Panel (Ctrl+Alt+P)</source>
         <translation>显示面板 (Ctrl+Alt+P)</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="175"/>
+        <location filename="../qml/Main.qml" line="187"/>
         <source>Hide Panel (Ctrl+Alt+P)</source>
         <translation>隐藏面板 (Ctrl+Alt+P)</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="202"/>
+        <location filename="../qml/Main.qml" line="214"/>
         <source>Startup Error: %1</source>
         <translation>启动错误：%1</translation>
     </message>
@@ -946,6 +964,16 @@
         <source>Accent color from album cover</source>
         <translation>从专辑封面提取强调色</translation>
     </message>
+    <message>
+        <location filename="../qml/SettingsAppearanceSection.qml" line="146"/>
+        <source>Show icon in system tray</source>
+        <translation>在系统托盘显示图标</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAppearanceSection.qml" line="165"/>
+        <source>Hide to system tray when closing window</source>
+        <translation>关闭窗口时隐藏到托盘</translation>
+    </message>
 </context>
 <context>
     <name>SettingsLibrarySection</name>
@@ -1099,6 +1127,11 @@
         <location filename="../qml/SettingsPlaybackSection.qml" line="302"/>
         <source>Criteria for counting a track as played (0 minutes disables duration threshold)</source>
         <translation>满足任一条件即计为一次播放（0 分钟表示只按百分比）</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsPlaybackSection.qml" line="314"/>
+        <source>Show desktop notification on track change</source>
+        <translation>切歌时显示桌面通知</translation>
     </message>
 </context>
 <context>
@@ -1571,6 +1604,44 @@
         <location filename="../qml/pages/TracksPage.qml" line="91"/>
         <source>Add Music Folder</source>
         <translation>添加音乐文件夹</translation>
+    </message>
+</context>
+<context>
+    <name>TrayIcon</name>
+    <message>
+        <location filename="../qml/TrayIcon.qml" line="50"/>
+        <source>Pause</source>
+        <translation>暂停</translation>
+    </message>
+    <message>
+        <location filename="../qml/TrayIcon.qml" line="50"/>
+        <source>Play</source>
+        <translation>播放</translation>
+    </message>
+    <message>
+        <location filename="../qml/TrayIcon.qml" line="59"/>
+        <source>Previous</source>
+        <translation>上一首</translation>
+    </message>
+    <message>
+        <location filename="../qml/TrayIcon.qml" line="68"/>
+        <source>Next</source>
+        <translation>下一首</translation>
+    </message>
+    <message>
+        <location filename="../qml/TrayIcon.qml" line="79"/>
+        <source>Hide Window</source>
+        <translation>隐藏窗口</translation>
+    </message>
+    <message>
+        <location filename="../qml/TrayIcon.qml" line="79"/>
+        <source>Show Window</source>
+        <translation>显示窗口</translation>
+    </message>
+    <message>
+        <location filename="../qml/TrayIcon.qml" line="84"/>
+        <source>Quit</source>
+        <translation>退出</translation>
     </message>
 </context>
 <context>

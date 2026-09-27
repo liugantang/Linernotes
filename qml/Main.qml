@@ -19,6 +19,18 @@ ApplicationWindow {
     visible: true
     color: Theme.background
 
+    onClosing: (close) => {
+        if (AppContext.settings && AppContext.settings.trayIcon && AppContext.settings.closeToTray) {
+            close.accepted = false
+            window.hide()
+        }
+    }
+
+    TrayIcon {
+        id: trayIcon
+        window: window
+    }
+
     AppShortcuts {
         id: appShortcuts
         sidebar: sidebar

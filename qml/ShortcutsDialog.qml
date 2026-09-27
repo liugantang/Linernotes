@@ -48,7 +48,7 @@ Popup {
     ]
 
     function getEntriesForGroup(groupId) {
-        return root.entries.filter(e => e.group === groupId)
+        return root.entries.filter(e => e.group === groupId && !e.hidden)
     }
 
     contentItem: ColumnLayout {

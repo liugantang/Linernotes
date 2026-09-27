@@ -28,6 +28,7 @@ private slots:
     void testFirstRunCompletedSettings();
     void testLanguageSettings();
     void testPlayCountRuleSettings();
+    void testTrayAndNotificationSettings();
 };
 
 void TstSettingsController::testThemeAndReplayGainSettings()
@@ -225,6 +226,56 @@ void TstSettingsController::testPlayCountRuleSettings()
     QCOMPARE(ctrl2.countMinPercent(), 70);
     QCOMPARE(ctrl2.countMinSeconds(), 180);
     QCOMPARE(ctrl2.playCountRule(), customRule);
+}
+
+void TstSettingsController::testTrayAndNotificationSettings()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString iniPath = tempDir.filePath(QStringLiteral("settings.ini"));
+
+    Settings settings(iniPath);
+    Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
+
+    SettingsController ctrl1(settings, player);
+
+    // 1. Defaults
+    QCOMPARE(ctrl1.trayIcon(), true);
+    QCOMPARE(ctrl1.closeToTray(), false);
+    QCOMPARE(ctrl1.trackChangeNotifications(), true);
+
+    QSignalSpy traySpy(&ctrl1, &SettingsController::trayIconChanged);
+    QSignalSpy closeSpy(&ctrl1, &SettingsController::closeToTrayChanged);
+    QSignalSpy notifySpy(&ctrl1, &SettingsController::trackChangeNotificationsChanged);
+
+    // 2. Modifying properties
+    ctrl1.setTrayIcon(false);
+    QCOMPARE(traySpy.count(), 1);
+    QCOMPARE(ctrl1.trayIcon(), false);
+
+    ctrl1.setCloseToTray(true);
+    QCOMPARE(closeSpy.count(), 1);
+    QCOMPARE(ctrl1.closeToTray(), true);
+
+    ctrl1.setTrackChangeNotifications(false);
+    QCOMPARE(notifySpy.count(), 1);
+    QCOMPARE(ctrl1.trackChangeNotifications(), false);
+
+    // Setting same values -> no extra signals
+    ctrl1.setTrayIcon(false);
+    QCOMPARE(traySpy.count(), 1);
+    ctrl1.setCloseToTray(true);
+    QCOMPARE(closeSpy.count(), 1);
+    ctrl1.setTrackChangeNotifications(false);
+    QCOMPARE(notifySpy.count(), 1);
+
+    // 3. Persistence
+    Player player2({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    SettingsController ctrl2(settings, player2);
+
+    QCOMPARE(ctrl2.trayIcon(), false);
+    QCOMPARE(ctrl2.closeToTray(), true);
+    QCOMPARE(ctrl2.trackChangeNotifications(), false);
 }
 
 } // namespace

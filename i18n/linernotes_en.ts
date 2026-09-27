@@ -72,7 +72,7 @@
 <context>
     <name>Main</name>
     <message numerus="yes">
-        <location filename="../qml/Main.qml" line="106"/>
+        <location filename="../qml/Main.qml" line="118"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n track</numerusform>

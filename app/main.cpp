@@ -3,10 +3,10 @@
 
 #include "QmlTypes.h"
 
+#include <QApplication>
 #include <QCommandLineOption>
 #include <QCommandLineParser>
 #include <QDir>
-#include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 #include <QTextStream>
@@ -25,6 +25,8 @@
 #ifdef Q_OS_LINUX
 #include <QWindow>
 
+#include <ui/DBusNotificationSink.h>
+#include <ui/TrackNotifier.h>
 #include <ui/mpris/Mpris.h>
 
 namespace {
@@ -50,7 +52,7 @@ int main(int argc, char *argv[])
     QGuiApplication::setApplicationName(linernotes::core::applicationName());
     QGuiApplication::setApplicationVersion(linernotes::core::versionString());
 
-    QGuiApplication app(argc, argv);
+    QApplication app(argc, argv);
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("AI music player"));
@@ -177,6 +179,8 @@ int main(int argc, char *argv[])
 
 #ifdef Q_OS_LINUX
         std::unique_ptr<linernotes::ui::Mpris> mpris;
+        std::unique_ptr<linernotes::ui::DBusNotificationSink> notificationSink;
+        std::unique_ptr<linernotes::ui::TrackNotifier> trackNotifier;
         if (!isSmokeTest) {
             mpris = std::make_unique<linernotes::ui::Mpris>(
                 *appContext.player(), *appContext.nowPlaying(), *appContext.coverStore());
@@ -187,6 +191,11 @@ int main(int argc, char *argv[])
                 qCWarning(linernotes::core::lcCore, "Failed to register MPRIS on D-Bus: %s",
                     qPrintable(mprisRes.error().toString()));
             }
+
+            notificationSink = std::make_unique<linernotes::ui::DBusNotificationSink>();
+            trackNotifier = std::make_unique<linernotes::ui::TrackNotifier>(
+                *appContext.nowPlaying(), *appContext.player(), *appContext.coverStore(),
+                *appContext.settings(), *notificationSink);
         }
 #endif
 
