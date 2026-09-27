@@ -112,6 +112,19 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME ui_AiSettingsController
+    SOURCES
+        tst_AiSettingsController.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::ai
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Network
+        Qt6::Sql
+)
+
+linernotes_add_test(
     NAME ui_SettingsController
     SOURCES
         tst_SettingsController.cpp

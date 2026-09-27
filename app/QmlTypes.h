@@ -7,12 +7,14 @@
 #include <QObject>
 #include <QQmlEngine>
 
+#include <ai/AiEnums.h>
 #include <core/PlaySource.h>
 #include <library/LibraryEnums.h>
 #include <library/SmartRule.h>
 #include <player/PlayMode.h>
 #include <player/PlayQueue.h>
 #include <player/Player.h>
+#include <ui/AiSettingsController.h>
 #include <ui/AlbumGridModel.h>
 #include <ui/AppContext.h>
 #include <ui/ArtistListModel.h>
@@ -25,9 +27,11 @@
 #include <ui/QueueModel.h>
 #include <ui/RowSelection.h>
 #include <ui/SearchController.h>
+#include <ui/ServiceListModel.h>
 #include <ui/SettingsController.h>
 #include <ui/TagEditorModel.h>
 #include <ui/TrackListModel.h>
+#include <ui/UsageSummaryModel.h>
 
 struct AppContextForeign {
     Q_GADGET
@@ -181,4 +185,31 @@ struct SmartRuleForeign {
     QML_FOREIGN(linernotes::library::SmartRule)
     QML_VALUE_TYPE(smartRule)
     QML_STRUCTURED_VALUE
+};
+
+struct AiForeign {
+    Q_GADGET
+    QML_FOREIGN_NAMESPACE(linernotes::ai)
+    QML_NAMED_ELEMENT(Ai)
+};
+
+struct AiSettingsControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::AiSettingsController)
+    QML_NAMED_ELEMENT(AiSettingsController)
+    QML_UNCREATABLE("AiSettingsController is managed by AppContext")
+};
+
+struct ServiceListModelForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::ServiceListModel)
+    QML_NAMED_ELEMENT(ServiceListModel)
+    QML_UNCREATABLE("ServiceListModel is managed by AiSettingsController")
+};
+
+struct UsageSummaryModelForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::UsageSummaryModel)
+    QML_NAMED_ELEMENT(UsageSummaryModel)
+    QML_UNCREATABLE("UsageSummaryModel is managed by AiSettingsController")
 };

@@ -17,6 +17,8 @@
 #include <library/PlayStats.h>
 #include <player/MpvHandle.h>
 #include <player/Player.h>
+#include <ui/AiContext.h>
+#include <ui/AiSettingsController.h>
 #include <ui/LibraryActions.h>
 #include <ui/LibraryRootsModel.h>
 #include <ui/MarksController.h>
@@ -59,6 +61,7 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::MarksController *marks READ marks CONSTANT)
     Q_PROPERTY(linernotes::ui::LibraryActions *actions READ actions CONSTANT)
     Q_PROPERTY(linernotes::ui::SettingsController *settings READ settings CONSTANT)
+    Q_PROPERTY(linernotes::ui::AiSettingsController *aiSettings READ aiSettings CONSTANT)
     Q_PROPERTY(linernotes::ui::LibraryRootsModel *libraryRoots READ libraryRoots CONSTANT)
     Q_PROPERTY(linernotes::ui::TagEditorModel *tagEditor READ tagEditor CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
@@ -76,6 +79,7 @@ public:
         QString uiStatePath;
         QString playbackStatePath;
         QString backupDir;
+        QString promptsDir { };
     };
 
     explicit AppContext(core::Settings &settings, Options options, QObject *parent = nullptr);
@@ -98,6 +102,7 @@ public:
     [[nodiscard]] PlaylistController *playlists();
     [[nodiscard]] MarksController *marks();
     [[nodiscard]] SettingsController *settings();
+    [[nodiscard]] AiSettingsController *aiSettings();
     [[nodiscard]] LibraryRootsModel *libraryRoots();
     [[nodiscard]] TagEditorModel *tagEditor();
     [[nodiscard]] library::Database &database();
@@ -124,6 +129,7 @@ private:
     Options m_options;
     core::SystemClock m_clock;
     library::Database m_db;
+    AiContext m_ai;
     library::PlayStats m_playStats;
     TagEditorModel m_tagEditor;
     LibraryRootsModel m_roots;
