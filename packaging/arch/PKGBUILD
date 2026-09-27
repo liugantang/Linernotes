@@ -3,7 +3,7 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 pkgname=linernotes-git
-pkgver=0.1.0.r125.g34cc30d
+pkgver=0.1.0.r135.gb02816c
 pkgrel=1
 pkgdesc="Modern local music player with AI-powered features"
 arch=('x86_64')
@@ -31,7 +31,7 @@ makedepends=(
 )
 provides=('linernotes')
 conflicts=('linernotes')
-source=("linernotes::git+file://$(realpath "$startdir/../..")")
+source=("linernotes::git+file://$(realpath "$startdir/../..")#branch=main")
 sha256sums=('SKIP')
 
 pkgver() {
