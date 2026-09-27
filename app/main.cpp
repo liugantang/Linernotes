@@ -20,6 +20,30 @@
 #include <ui/CoverImageProvider.h>
 #include <ui/Translations.h>
 
+#include <memory>
+
+#ifdef Q_OS_LINUX
+#include <QWindow>
+
+#include <ui/mpris/Mpris.h>
+
+namespace {
+void activateMainWindow(const QQmlApplicationEngine &engine)
+{
+    const auto rootObjects = engine.rootObjects();
+    if (rootObjects.isEmpty()) {
+        return;
+    }
+    auto *window = qobject_cast<QWindow *>(rootObjects.constFirst());
+    if (window != nullptr) {
+        window->show();
+        window->raise();
+        window->requestActivate();
+    }
+}
+} // namespace
+#endif
+
 int main(int argc, char *argv[])
 {
     QGuiApplication::setOrganizationName(QString());
@@ -150,6 +174,21 @@ int main(int argc, char *argv[])
             new linernotes::ui::CoverImageProvider(appContext.coverStore()));
 
         engine.loadFromModule(QStringLiteral("Linernotes"), QStringLiteral("Main"));
+
+#ifdef Q_OS_LINUX
+        std::unique_ptr<linernotes::ui::Mpris> mpris;
+        if (!isSmokeTest) {
+            mpris = std::make_unique<linernotes::ui::Mpris>(
+                *appContext.player(), *appContext.nowPlaying(), *appContext.coverStore());
+            QObject::connect(mpris.get(), &linernotes::ui::Mpris::raiseRequested, &app,
+                [&engine]() { activateMainWindow(engine); });
+            const auto mprisRes = mpris->registerOnBus();
+            if (!mprisRes.ok()) {
+                qCWarning(linernotes::core::lcCore, "Failed to register MPRIS on D-Bus: %s",
+                    qPrintable(mprisRes.error().toString()));
+            }
+        }
+#endif
 
         exitCode = QGuiApplication::exec();
     }

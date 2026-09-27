@@ -50,6 +50,21 @@ add_library(linernotes_ui STATIC
 )
 add_library(Linernotes::ui ALIAS linernotes_ui)
 
+if(UNIX AND NOT APPLE)
+    target_sources(linernotes_ui PRIVATE
+        mpris/Mpris.cpp
+        mpris/Mpris.h
+        mpris/MprisPlayerAdaptor.cpp
+        mpris/MprisPlayerAdaptor.h
+        mpris/MprisRootAdaptor.cpp
+        mpris/MprisRootAdaptor.h
+    )
+    target_link_libraries(linernotes_ui
+        PUBLIC
+            Qt6::DBus
+    )
+endif()
+
 qt6_extract_metatypes(linernotes_ui)
 
 target_include_directories(linernotes_ui

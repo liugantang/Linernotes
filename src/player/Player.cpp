@@ -368,8 +368,10 @@ void Player::seek(double seconds)
 {
     qCDebug(lcPlayer) << "seek() to" << seconds;
     if (m_state != PlaybackState::Stopped && m_mpv.isValid()) {
-        m_mpv.command({ QStringLiteral("seek"), QString::number(seconds, 'f', 6),
-            QStringLiteral("absolute") });
+        if (m_mpv.command({ QStringLiteral("seek"), QString::number(seconds, 'f', 6),
+                QStringLiteral("absolute") })) {
+            emit seeked(seconds);
+        }
     }
 }
 

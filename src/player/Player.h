@@ -136,6 +136,8 @@ signals:
     /// 某项无法播放（文件不存在、格式无法识别/解码失败）。source 为该项路径，message
     /// 为可读原因（来自 mpv）。
     void playbackError(const QString &source, const QString &error);
+    /// seek() 成功下发后发出，参数为目标秒数
+    void seeked(double position);
 
 private slots:
     void onPropertyChanged(const QString &name, const QVariant &value);
