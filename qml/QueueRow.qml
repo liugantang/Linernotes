@@ -211,7 +211,7 @@ Rectangle {
                 visible: root.isHovered && !root.isCurrent
                 onClicked: {
                     if (AppContext.queueModel) {
-                        AppContext.queueModel.removeRows([root.index])
+                        AppContext.queueModel.removeItems([root.index])
                     }
                 }
             }

@@ -48,7 +48,7 @@ public:
 
     Q_INVOKABLE bool load(const QList<qint64> &trackIds);
     Q_INVOKABLE void setValue(int row, const QString &value);
-    Q_INVOKABLE void revert(int row);
+    Q_INVOKABLE void revertField(int row);
     Q_INVOKABLE bool save();
 
 signals:
