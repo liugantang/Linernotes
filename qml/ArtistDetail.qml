@@ -244,7 +244,10 @@ Item {
                             font.pixelSize: Theme.fontSizeNormal
                             color: Theme.text
                             elide: Text.ElideRight
+                            // 固定比例分配宽度，避免按文字长度分配导致专辑列不对齐
                             Layout.fillWidth: true
+                            Layout.preferredWidth: 0
+                            Layout.horizontalStretchFactor: 3
                         }
 
                         Label {
@@ -253,6 +256,8 @@ Item {
                             color: Theme.textSecondary
                             elide: Text.ElideRight
                             Layout.fillWidth: true
+                            Layout.preferredWidth: 0
+                            Layout.horizontalStretchFactor: 2
                         }
 
                         Label {
