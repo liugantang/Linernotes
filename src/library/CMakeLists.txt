@@ -12,6 +12,7 @@ add_library(linernotes_library STATIC
     DirectoryWalker.h
     EntityLinker.cpp
     EntityLinker.h
+    EnumNames.h
     Errors.h
     FileFingerprint.cpp
     FileFingerprint.h
@@ -19,22 +20,46 @@ add_library(linernotes_library STATIC
     FsType.h
     LibraryLogging.cpp
     LibraryLogging.h
+    LibraryQuery.cpp
+    LibraryQuery.h
+    LibraryQuerySql.cpp
+    LibraryQuerySql.h
     LibraryRoots.cpp
     LibraryRoots.h
+    LibrarySearch.cpp
+    LibrarySearch.h
     LibraryWatcher.cpp
     LibraryWatcher.h
+    MarkStore.cpp
+    MarkStore.h
     Migrator.cpp
     Migrator.h
+    OverrideStore.cpp
+    OverrideStore.h
+    PlaylistStore.cpp
+    PlaylistStore.h
+    ScanDiff.cpp
+    ScanDiff.h
     Scanner.cpp
     Scanner.h
+    ScanPipeline.cpp
+    ScanPipeline.h
+    ScanWriter.cpp
+    ScanWriter.h
     SearchIndex.cpp
     SearchIndex.h
     SearchText.cpp
     SearchText.h
+    SmartRule.cpp
+    LibraryEnums.h
+    SmartRule.h
+    SmartRuleSql.cpp
+    SmartRuleSql.h
     TagReader.cpp
     TagReader.h
 )
 add_library(Linernotes::library ALIAS linernotes_library)
+qt6_extract_metatypes(linernotes_library)
 
 if(MIGRATION_FILES)
     qt_add_resources(linernotes_library "migrations"

@@ -2,6 +2,10 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 add_library(linernotes_player STATIC
+    AudioOutput.cpp
+    AudioOutput.h
+    Ducker.cpp
+    Ducker.h
     GainRamp.cpp
     GainRamp.h
     MpvHandle.cpp
@@ -10,6 +14,7 @@ add_library(linernotes_player STATIC
     PlaybackSnapshot.h
     Player.cpp
     Player.h
+    PlayerAudioOptions.cpp
     PlayerLogging.cpp
     PlayerLogging.h
     PlayMode.h
@@ -21,6 +26,9 @@ add_library(linernotes_player STATIC
     VoiceChannel.h
 )
 add_library(Linernotes::player ALIAS linernotes_player)
+
+qt6_extract_metatypes(linernotes_player)
+
 
 target_include_directories(linernotes_player
     PUBLIC

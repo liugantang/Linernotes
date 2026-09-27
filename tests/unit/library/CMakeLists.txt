@@ -62,6 +62,15 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME library_LibraryQuery
+    SOURCES
+        tst_LibraryQuery.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
     NAME library_DirectoryWalker
     SOURCES
         tst_DirectoryWalker.cpp
@@ -102,5 +111,49 @@ linernotes_add_test(
     LIBS
         Linernotes::library
 )
+
+linernotes_add_test(
+    NAME library_PlaylistStore
+    SOURCES
+        tst_PlaylistStore.cpp
+    LIBS
+        Linernotes::library
+)
+
+linernotes_add_test(
+    NAME library_LibrarySearch
+    SOURCES
+        tst_LibrarySearch.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
+    NAME library_SmartRule
+    SOURCES
+        tst_SmartRule.cpp
+    LIBS
+        Linernotes::library
+)
+
+linernotes_add_test(
+    NAME library_MarkStore
+    SOURCES
+        tst_MarkStore.cpp
+    LIBS
+        Linernotes::library
+)
+
+linernotes_add_test(
+    NAME library_OverrideStore
+    SOURCES
+        tst_OverrideStore.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+)
+
+
 
 

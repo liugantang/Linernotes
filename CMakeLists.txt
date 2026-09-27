@@ -27,11 +27,10 @@ endif()
 
 include(cmake/Dependencies.cmake)
 include(cmake/CompilerOptions.cmake)
-qt_standard_project_setup()
+qt_standard_project_setup(I18N_TRANSLATED_LANGUAGES zh_CN)
 
 option(LINERNOTES_BUILD_TOOLS "Build developer tools" ON)
 option(LINERNOTES_BUILD_TESTS "Build tests" ON)
-option(LINERNOTES_BUILD_BENCHMARKS "Build benchmarks" OFF)
 
 add_subdirectory(src)
 add_subdirectory(app)
@@ -40,7 +39,7 @@ if(LINERNOTES_BUILD_TOOLS)
     add_subdirectory(tools)
 endif()
 
-if(LINERNOTES_BUILD_TESTS OR LINERNOTES_BUILD_BENCHMARKS)
+if(LINERNOTES_BUILD_TESTS)
     enable_testing()
     include(cmake/Testing.cmake)
     add_subdirectory(tests)

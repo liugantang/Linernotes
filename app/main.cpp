@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Linernotes contributors
 
+#include "QmlTypes.h"
+
 #include <QCommandLineOption>
 #include <QCommandLineParser>
 #include <QDir>
@@ -14,6 +16,9 @@
 #include <core/Paths.h>
 #include <core/Settings.h>
 #include <core/Version.h>
+#include <ui/AppContext.h>
+#include <ui/CoverImageProvider.h>
+#include <ui/Translations.h>
 
 int main(int argc, char *argv[])
 {
@@ -21,7 +26,7 @@ int main(int argc, char *argv[])
     QGuiApplication::setApplicationName(linernotes::core::applicationName());
     QGuiApplication::setApplicationVersion(linernotes::core::versionString());
 
-    const QGuiApplication app(argc, argv);
+    QGuiApplication app(argc, argv);
 
     QCommandLineParser parser;
     parser.setApplicationDescription(QStringLiteral("AI music player"));
@@ -53,7 +58,7 @@ int main(int argc, char *argv[])
     paths.ensureCreated();
 
     const QString iniFilePath = QDir(paths.configDir()).filePath(QStringLiteral("settings.ini"));
-    const linernotes::core::Settings settings(iniFilePath);
+    linernotes::core::Settings settings(iniFilePath);
 
     const QString logLevelStr = settings.value(linernotes::core::kLogLevel).trimmed().toLower();
     QtMsgType minimumLevel = QtInfoMsg;
@@ -77,43 +82,79 @@ int main(int argc, char *argv[])
         qPrintable(linernotes::core::versionString()), qPrintable(paths.configDir()),
         qPrintable(paths.dataDir()), qPrintable(paths.cacheDir()), qPrintable(paths.logDir()));
 
-    QQuickStyle::setStyle(QStringLiteral("Fusion"));
-
-    QQmlApplicationEngine engine;
-
     const bool isSmokeTest = parser.isSet(smokeTestOption);
 
-    QObject::connect(
-        &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
-        [](const QUrl &url) {
-            qCCritical(linernotes::core::lcCore, "Failed to create QML root object: %s",
-                qPrintable(url.toString()));
-            QCoreApplication::exit(EXIT_FAILURE);
-        },
-        Qt::QueuedConnection);
+    linernotes::ui::AppContext::Options appOptions {
+        .databasePath = QDir(paths.dataDir()).filePath(QStringLiteral("library.db")),
+        .coverCacheDir = QDir(paths.cacheDir()).filePath(QStringLiteral("covers")),
+        .playerOptions = { },
+        .uiStatePath = QDir(paths.configDir()).filePath(QStringLiteral("ui-state.ini")),
+        .playbackStatePath = QDir(paths.dataDir()).filePath(QStringLiteral("playback-state.json")),
+    };
+    if (isSmokeTest) {
+        appOptions.playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } };
+    }
+
+    linernotes::ui::AppContext appContext(settings, appOptions);
+    AppContextForeign::setInstance(&appContext);
 
     QObject::connect(
-        &engine, &QQmlApplicationEngine::objectCreated, &app,
-        [isSmokeTest](QObject *object, const QUrl &url) {
-            if (!object) {
-                qCCritical(linernotes::core::lcCore, "Failed to load QML root object from: %s",
+        &app, &QCoreApplication::aboutToQuit, &appContext, &linernotes::ui::AppContext::saveState);
+
+    const auto startRes = appContext.start();
+    if (!startRes.ok()) {
+        qCWarning(linernotes::core::lcCore, "AppContext start error: %s",
+            qPrintable(startRes.error().toString()));
+    }
+
+    linernotes::ui::Translations translations(app, *appContext.settings());
+    translations.apply(appContext.settings()->language());
+
+    QQuickStyle::setStyle(QStringLiteral("Basic"));
+
+    int exitCode = 0;
+    {
+        QQmlApplicationEngine engine;
+
+        QObject::connect(&translations, &linernotes::ui::Translations::retranslateRequested,
+            &engine, &QQmlApplicationEngine::retranslate);
+
+        QObject::connect(
+            &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
+            [](const QUrl &url) {
+                qCCritical(linernotes::core::lcCore, "Failed to create QML root object: %s",
                     qPrintable(url.toString()));
                 QCoreApplication::exit(EXIT_FAILURE);
-                return;
-            }
-            if (isSmokeTest) {
-                qCInfo(linernotes::core::lcCore,
-                    "Smoke test: QML root object created successfully from %s",
-                    qPrintable(url.toString()));
-                QCoreApplication::exit(0);
-            }
-        },
-        Qt::QueuedConnection);
+            },
+            Qt::QueuedConnection);
 
-    engine.loadFromModule(QStringLiteral("Linernotes"), QStringLiteral("Main"));
+        QObject::connect(
+            &engine, &QQmlApplicationEngine::objectCreated, &app,
+            [isSmokeTest](QObject *object, const QUrl &url) {
+                if (!object) {
+                    qCCritical(linernotes::core::lcCore, "Failed to load QML root object from: %s",
+                        qPrintable(url.toString()));
+                    QCoreApplication::exit(EXIT_FAILURE);
+                    return;
+                }
+                if (isSmokeTest) {
+                    qCInfo(linernotes::core::lcCore,
+                        "Smoke test: QML root object created successfully from %s",
+                        qPrintable(url.toString()));
+                    QCoreApplication::exit(0);
+                }
+            },
+            Qt::QueuedConnection);
 
-    const int exitCode = QGuiApplication::exec();
+        engine.addImageProvider(QStringLiteral("cover"),
+            new linernotes::ui::CoverImageProvider(appContext.coverStore()));
 
+        engine.loadFromModule(QStringLiteral("Linernotes"), QStringLiteral("Main"));
+
+        exitCode = QGuiApplication::exec();
+    }
+
+    AppContextForeign::setInstance(nullptr);
     linernotes::core::uninstallLogging();
     return exitCode;
 }

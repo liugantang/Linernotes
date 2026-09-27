@@ -201,6 +201,11 @@ QString Database::filePath() const
     return m_filePath;
 }
 
+bool Database::isOpen() const
+{
+    return m_open.load(std::memory_order_acquire);
+}
+
 core::Result<QSqlDatabase> Database::connection()
 {
     const QString connName
@@ -280,7 +285,12 @@ core::Result<void> Database::open(const Migrator &migrator)
     if (!connRes) {
         return connRes.error();
     }
-    return migrator.migrate(connRes.value());
+    const auto migrateRes = migrator.migrate(connRes.value());
+    if (!migrateRes) {
+        return migrateRes.error();
+    }
+    m_open.store(true, std::memory_order_release);
+    return { };
 }
 
 Transaction::Transaction(const QSqlDatabase &db, Mode mode)

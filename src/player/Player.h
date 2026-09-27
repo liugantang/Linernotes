@@ -3,23 +3,24 @@
 
 #pragma once
 
-#include <QElapsedTimer>
+#include <QHash>
 #include <QObject>
 #include <QSet>
 #include <QString>
-#include <QTimer>
 #include <QVariant>
 #include <QVariantList>
 
-#include <player/GainRamp.h>
+#include <player/AudioOutput.h>
+#include <player/Ducker.h>
 #include <player/MpvHandle.h>
+#include <player/PlayQueue.h>
 #include <player/PlaybackSnapshot.h>
 
 #include <cstdint>
+#include <optional>
 
 namespace linernotes::player {
 
-class PlayQueue;
 struct QueueItem;
 
 class Player : public QObject {
@@ -38,16 +39,22 @@ class Player : public QObject {
     Q_PROPERTY(QString audioDevice READ audioDevice NOTIFY audioDeviceChanged)
     Q_PROPERTY(
         bool exclusiveMode READ exclusiveMode WRITE setExclusiveMode NOTIFY exclusiveModeChanged)
+    Q_PROPERTY(linernotes::player::Player::ReplayGainMode replayGainMode READ replayGainMode WRITE
+            setReplayGainMode NOTIFY replayGainModeChanged)
+    Q_PROPERTY(bool gapless READ gapless WRITE setGapless NOTIFY gaplessChanged)
 
 public:
     enum class PlaybackState : std::uint8_t { Stopped, Playing, Paused };
     Q_ENUM(PlaybackState)
 
+    enum class ReplayGainMode : std::uint8_t { Off, Track, Album };
+    Q_ENUM(ReplayGainMode)
+
     /// extraOptions 透传给 MpvHandle（测试中传 {{"ao","null"}}）
     explicit Player(const MpvHandle::OptionList &extraOptions = { }, QObject *parent = nullptr);
     ~Player() override = default;
 
-    [[nodiscard]] PlayQueue *queue() const;
+    [[nodiscard]] PlayQueue *queue();
     [[nodiscard]] bool isValid() const;
     [[nodiscard]] PlaybackState state() const;
     [[nodiscard]] double position() const;
@@ -59,6 +66,8 @@ public:
     [[nodiscard]] QVariantList audioDevices() const;
     [[nodiscard]] QString audioDevice() const;
     [[nodiscard]] bool exclusiveMode() const;
+    [[nodiscard]] ReplayGainMode replayGainMode() const;
+    [[nodiscard]] bool gapless() const;
 
     [[nodiscard]] PlaybackSnapshot snapshot() const;
     /// 用快照替换当前队列与设置；若 currentIndex 有效，则加载该项、定位到 position 并保持暂停
@@ -102,6 +111,8 @@ public slots:
     /// 切换输出设备。name 不在当前 audioDevices 列表中时返回 false 且不做任何改变（记 qCWarning）。
     bool selectAudioDevice(const QString &name);
     void setExclusiveMode(bool exclusive);
+    void setReplayGainMode(ReplayGainMode mode);
+    void setGapless(bool gapless);
 
 signals:
     void stateChanged(linernotes::player::Player::PlaybackState state);
@@ -115,64 +126,55 @@ signals:
     void audioDevicesChanged();
     void audioDeviceChanged(const QString &name);
     void exclusiveModeChanged(bool exclusive);
+    void replayGainModeChanged(linernotes::player::Player::ReplayGainMode mode);
+    void gaplessChanged(bool gapless);
     /// 语义：队列播放结束（最后一首自然播完且没有下一首）
     void playbackFinished();
     /// 某项无法播放（文件不存在、格式无法识别/解码失败）。source 为该项路径，message
     /// 为可读原因（来自 mpv）。
-    void playbackError(const QString &source, const QString &message);
+    void playbackError(const QString &source, const QString &error);
 
 private slots:
-    void onDuckTimerTick();
+    void onPropertyChanged(const QString &name, const QVariant &value);
+    void onStartFile(qint64 entryId);
+    void onFileLoaded();
+    void onEndFile(qint64 entryId, MpvHandle::EndFileReason reason, const QString &error);
 
 private:
-    void onPropertyChanged(const QString &name, const QVariant &value);
     void handleIdleActiveChanged(const QVariant &value);
     void handlePauseChanged(const QVariant &value);
     void handleTimePosChanged(const QVariant &value);
     void handleDurationChanged(const QVariant &value);
     void handleVolumeChanged(const QVariant &value);
     void handleMuteChanged(const QVariant &value);
-    void handleAudioDeviceListChanged(const QVariant &value);
-    void handleAudioDeviceChanged(const QVariant &value);
-    void handleAudioExclusiveChanged(const QVariant &value);
     void updatePlaybackState();
 
-    void onStartFile(qint64 entryId);
-    void onFileLoaded();
-    void onAudioReconfigured();
-    void onEndFile(qint64 entryId, MpvHandle::EndFileReason reason, const QString &error);
     void handleEndFileError(qint64 entryId, const QString &failedSource, const QString &error);
     void onUpcomingChanged();
     void schedulePreloadSync();
     void syncPreload();
-    void loadCurrentItem(const QueueItem &item);
-    void loadItemPaused(const QueueItem &item, double startPosition);
+    void discardPreload(bool removeFromMpv);
+    void loadItem(const QueueItem &item, std::optional<double> pausedAt = std::nullopt);
+    void finishPlayback(bool emitFinished = true);
     [[nodiscard]] qint64 lastPlaylistEntryId() const;
-    void applyDuckGainToMpv();
-    [[nodiscard]] QString formattedDuckFilter(double gain) const;
 
-    MpvHandle *m_mpv = nullptr;
-    PlayQueue *m_queue = nullptr;
+    // 声明顺序即依赖顺序，析构逆序进行，依赖方先于被依赖方析构
+    MpvHandle m_mpv;
+    PlayQueue m_queue;
+    Ducker m_ducker;
+    AudioOutput m_audioOutput;
+
     PlaybackState m_state = PlaybackState::Stopped;
     double m_position = 0.0;
     double m_lastEmittedPosition = 0.0;
     double m_duration = 0.0;
     int m_volume = 100;
     bool m_muted = false;
-    double m_duckGain = 1.0;
-    double m_lastEmittedDuckGain = 1.0;
-    int m_duckApplyCount = 0;
-    GainRamp m_duckRamp;
-    QTimer m_duckTimer;
-    QElapsedTimer m_duckElapsedTimer;
     QString m_currentSource;
-    QString m_userAudioFilters;
-    QVariantList m_audioDevices;
-    QString m_audioDevice = QStringLiteral("auto");
-    bool m_audioDevicesRefreshed = false;
-    bool m_exclusiveMode = false;
     bool m_idleActive = true;
     bool m_pause = false;
+    ReplayGainMode m_replayGainMode = ReplayGainMode::Track;
+    bool m_gapless = true;
 
     qint64 m_currentEntryId = -1;
     quint64 m_currentUid = 0;

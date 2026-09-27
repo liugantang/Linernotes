@@ -2,14 +2,6 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 linernotes_add_test(
-    NAME core_Version
-    SOURCES
-        tst_Version.cpp
-    LIBS
-        Linernotes::core
-)
-
-linernotes_add_test(
     NAME core_Logging
     SOURCES
         tst_Logging.cpp

@@ -29,6 +29,7 @@ public:
     Database &operator=(Database &&) = delete;
 
     QString filePath() const;
+    [[nodiscard]] bool isOpen() const;
 
     /// 返回当前线程的连接，首次调用时打开并应用 PRAGMA；失败返回 Error{"db.open", ...}。
     core::Result<QSqlDatabase> connection();
@@ -43,6 +44,7 @@ private:
     quint64 m_instanceId { 0 };
     static std::atomic<quint64> s_instanceCounter;
 
+    std::atomic<bool> m_open { false };
     std::atomic_flag m_loggedFirstOpen = ATOMIC_FLAG_INIT;
 };
 
