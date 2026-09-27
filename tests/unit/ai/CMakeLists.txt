@@ -61,3 +61,27 @@ linernotes_add_test(
         Linernotes::core
 )
 
+linernotes_add_test(
+    NAME ai_LlmCache
+    SOURCES
+        tst_LlmCache.cpp
+    LIBS
+        Linernotes::ai
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+)
+
+linernotes_add_test(
+    NAME ai_LlmService
+    SOURCES
+        tst_LlmService.cpp
+    LIBS
+        Linernotes::ai
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+)
+

@@ -238,7 +238,7 @@
 | ✅ 5.3 | SSE 流式解析器（QNetworkReply 增量读取） |
 | ✅ 5.4 | 结构化输出保障：JSON Schema 校验（如 nlohmann/json + json-schema-validator），失败自动带错误信息重试一次 |
 | ✅ 5.5 | 按功能场景（cleanup / query / dj / guide / narrative）可选填不同的模型名或不同的服务配置，默认全部用同一个 |
-| 5.6 | 缓存：`llm_cache` 表（key = hash(model + prompt + params)），TTL 可配置 |
+| ✅ 5.6 | 缓存：`llm_cache` 表（key = hash(model + prompt + params)），TTL 可配置 |
 | 5.7 | 并发与限速：每个服务配置的并发上限、令牌桶限速、指数退避重试、429 处理 |
 | 5.8 | 用量计量：记录每次 token 数，按功能汇总展示 |
 | ✅ 5.9 | 密钥：QtKeychain 存储 API Key |

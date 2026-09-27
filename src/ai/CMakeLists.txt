@@ -18,10 +18,14 @@ add_library(linernotes_ai STATIC
     JsonSchema.h
     KeychainSecretStore.cpp
     KeychainSecretStore.h
+    LlmCache.cpp
+    LlmCache.h
     LlmClient.cpp
     LlmClient.h
     LlmReply.cpp
     LlmReply.h
+    LlmService.cpp
+    LlmService.h
     SecretStore.cpp
     SecretStore.h
     SseParser.cpp
@@ -41,6 +45,7 @@ target_include_directories(linernotes_ai
 target_link_libraries(linernotes_ai
     PUBLIC
         Linernotes::core
+        Linernotes::library
         Qt6::Core
         Qt6::Network
     PRIVATE
