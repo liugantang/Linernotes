@@ -30,14 +30,14 @@ Claude 的调用成本高，Gemini 便宜。因此：
    ```bash
    cd /home/liugantang/Code/AiMusic && agy -p "项目根目录是 /home/liugantang/Code/AiMusic，所有命令都在此目录下执行。请阅读 /home/liugantang/Code/AiMusic/.ai/tasks/<任务编号>.md 并完成其中的任务。" \
        --dangerously-skip-permissions --model gemini-3.7-flash-high \
-       --print-timeout 60m > .ai/logs/<任务编号>.log 2>&1
+       --print-timeout 20m > .ai/logs/<任务编号>.log 2>&1
    ```
 3. **审查**：看 `git status`、`git diff`；自己运行 `scripts/verify.sh`（agy 不编译，第一次常有编译错误：小错直接改，多了就返工）（并行跑 debug + ci 构建与 ctest、格式、全量 `clang-tidy --strict`，约半分钟；涉及 C 库封装、内存/线程的任务加 `--asan`）。不要只信汇报，但也不要拆成多条命令重复跑。对照任务说明与 DEVELOPMENT.md 检查范围、设计、测试是否充分、有无越界修改。
 4. **返工**：问题写进 `.ai/tasks/<任务编号>.review.md`，然后再次委托：
    ```bash
    cd /home/liugantang/Code/AiMusic && agy -p "项目根目录是 /home/liugantang/Code/AiMusic，所有命令都在此目录下执行。请阅读 /home/liugantang/Code/AiMusic/.ai/tasks/<任务编号>.review.md，按审查意见修改。" \
        --dangerously-skip-permissions --model gemini-3.7-flash-high \
-       --print-timeout 60m > .ai/logs/<任务编号>-r<N>.log 2>&1
+       --print-timeout 20m > .ai/logs/<任务编号>-r<N>.log 2>&1
    ```
    同一任务连续两轮返工仍不通过：换 `--model gemini-3.1-pro-high` 再试，或把任务拆小；仍不行再向用户说明情况。
 5. **提交**：审查通过后由 Claude 按 DEVELOPMENT.md 1.5 的格式提交，并在 ROADMAP 中标记任务完成。
