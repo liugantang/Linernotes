@@ -113,10 +113,11 @@ Refs: ROADMAP 2.6
 ### 2.4 模块边界
 
 ```
-app / qml  →  features/*（butler, nlq, dj, guide, archive）  →  ai / audio / library / player  →  core
+app / qml  →  features/*（butler, nlq, dj, guide, archive）  →  ai  →  audio / library / player  →  core
 ```
 
 - 只允许依赖箭头右侧（更底层）的模块，禁止反向和横向依赖；需要跨模块通信时通过接口或信号。
+- `ai` 只依赖 `library` 的数据库设施（把缓存、用量、批任务表放在 `library.db`），见 [decisions/0001](decisions/0001-ai-module-layering.md)。
 - **UI（QML）不直接访问数据库和网络**，只通过暴露给 QML 的 C++ 模型与服务对象。
 - 所有大模型调用必须经过 `ai` 模块的统一客户端，功能代码中不允许自己发 HTTP 请求给 LLM。
 - 每个模块一个 CMake 目标（静态库），依赖关系在 CMake 中显式声明，以便编译期就发现越界依赖。
