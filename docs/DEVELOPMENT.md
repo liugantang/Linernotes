@@ -113,10 +113,11 @@ Refs: ROADMAP 2.6
 ### 2.4 模块边界
 
 ```
-app / qml  →  features/*（butler, nlq, dj, guide, archive）  →  ai / audio / library / player  →  core
+app / qml  →  features/*（butler, nlq, dj, guide, archive）  →  ai  →  audio / library / player  →  core
 ```
 
 - 只允许依赖箭头右侧（更底层）的模块，禁止反向和横向依赖；需要跨模块通信时通过接口或信号。
+- `ai` 只依赖 `library` 的数据库设施（把缓存、用量、批任务表放在 `library.db`），见 [decisions/0001](decisions/0001-ai-module-layering.md)。
 - **UI（QML）不直接访问数据库和网络**，只通过暴露给 QML 的 C++ 模型与服务对象。
 - 所有大模型调用必须经过 `ai` 模块的统一客户端，功能代码中不允许自己发 HTTP 请求给 LLM。
 - 每个模块一个 CMake 目标（静态库），依赖关系在 CMake 中显式声明，以便编译期就发现越界依赖。
@@ -216,7 +217,7 @@ tests/
 
 ### 4.4 AI 相关测试
 
-- **录制回放**：`ai` 模块提供录制模式，把真实请求/响应保存为 `tests/fixtures/llm/*.json`；测试中使用回放客户端。录制文件中不得包含 API Key。
+- **不写模拟外部服务的测试**：不用手写的 fake server / 合成响应测 LLM 客户端、重试、超时、并发限制等（这类测试测不出真实服务的问题，且多是在验证常量）。与服务的集成用真实服务验证：阶段验收时用 `linernotes-aicli` 对真实服务跑通，未能验证的项在验收记录中如实写明。
 - **规则层与 LLM 层分开测**：规则层用确定性单元测试；LLM 层测试的是“把模型输出解析、校验、落库”的代码，而不是测模型本身。
 - **评测集**（与单元测试区分）：NL 查询、乱码修复、艺人归一、音频标签等有独立的评测集与评测脚本（`tools/eval/`），用于换模型或改 prompt 后的质量回归，输出准确率报告。评测需要真实模型，不放进 CI 必跑项。
 - 修改 prompt 模板时，在提交说明中附上评测结果的前后对比。

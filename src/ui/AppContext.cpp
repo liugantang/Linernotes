@@ -33,6 +33,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_settings(settings)
     , m_options(std::move(options))
     , m_db(m_options.databasePath)
+    , m_ai(m_settings, m_db, m_clock, m_options.promptsDir)
     , m_playStats(m_db)
     , m_tagEditor(m_db)
     , m_roots(m_db)
@@ -154,6 +155,8 @@ core::Result<void> AppContext::start()
             qPrintable(rebuildRes.error().toString()));
     }
 
+    m_ai.onDatabaseReady();
+
     m_nowPlaying.refresh();
     m_queueModel.refresh();
     m_search.refresh();
@@ -264,6 +267,16 @@ MarksController *AppContext::marks()
 SettingsController *AppContext::settings()
 {
     return &m_settingsController;
+}
+
+AiSettingsController *AppContext::aiSettings()
+{
+    return m_ai.settingsController();
+}
+
+LlmDebugController *AppContext::llmDebug()
+{
+    return m_ai.debugController();
 }
 
 LibraryRootsModel *AppContext::libraryRoots()

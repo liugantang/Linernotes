@@ -17,6 +17,7 @@ target_link_libraries(linernotes_testsupport
     PUBLIC
         Linernotes::core
         Qt6::Core
+        Qt6::Network
 )
 
 linernotes_set_target_options(linernotes_testsupport)

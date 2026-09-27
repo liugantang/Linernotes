@@ -22,12 +22,14 @@ depends=(
   'ffmpeg'
   'libebur128'
   'sqlite'
+  'json-schema-validator'
 )
 makedepends=(
   'git'
   'cmake'
   'ninja'
   'qt6-tools'
+  'nlohmann-json'
 )
 provides=('linernotes')
 conflicts=('linernotes')

@@ -66,6 +66,16 @@ Item {
                 Layout.fillWidth: true
             }
 
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: Theme.divider
+            }
+
+            SettingsAiSection {
+                Layout.fillWidth: true
+            }
+
             Item {
                 Layout.preferredHeight: Theme.spacingExtraLarge
             }

@@ -165,6 +165,7 @@ int main(int argc, char *argv[])
         .uiStatePath = QDir(paths.configDir()).filePath(QStringLiteral("ui-state.ini")),
         .playbackStatePath = QDir(paths.dataDir()).filePath(QStringLiteral("playback-state.json")),
         .backupDir = QDir(paths.dataDir()).filePath(QStringLiteral("backups")),
+        .promptsDir = QDir(paths.configDir()).filePath(QStringLiteral("prompts")),
     };
     if (isSmokeTest) {
         appOptions.playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } };

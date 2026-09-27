@@ -17,4 +17,6 @@ pacman -Syu --noconfirm --needed \
     ffmpeg \
     libebur128 \
     qtkeychain-qt6 \
+    nlohmann-json \
+    json-schema-validator \
     git

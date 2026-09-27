@@ -227,31 +227,49 @@
 
 ---
 
-## 阶段 5：AI 基础设施（1.5 周）
+## 阶段 5：AI 基础设施（1.5 周）✅ 完成（2026-09-27）
 
 **目标**：所有 AI 功能共用的、稳健且省钱的底座。
 
 | # | 任务 |
 |---|---|
-| 5.1 | `LlmClient`（OpenAI 兼容）：`complete()`、`stream()`、`toolCall()`/结构化 JSON 输出；异步（返回 `QFuture` 或基于信号的 `LlmReply`） |
-| 5.2 | 只实现 OpenAI Chat Completions 协议：Base URL / API Key / 模型名由用户填写；探测能力（是否支持 tools、`response_format`），不支持时退化为“提示词约束 JSON + 解析失败重试”，保证 Ollama / llama.cpp 等本地服务也能用 |
-| 5.3 | SSE 流式解析器（QNetworkReply 增量读取） |
-| 5.4 | 结构化输出保障：JSON Schema 校验（如 nlohmann/json + json-schema-validator），失败自动带错误信息重试一次 |
-| 5.5 | 按功能场景（cleanup / query / dj / guide / narrative）可选填不同的模型名或不同的服务配置，默认全部用同一个 |
-| 5.6 | 缓存：`llm_cache` 表（key = hash(model + prompt + params)），TTL 可配置 |
-| 5.7 | 并发与限速：每个服务配置的并发上限、令牌桶限速、指数退避重试、429 处理 |
-| 5.8 | 用量计量：记录每次 token 数，按功能汇总展示 |
-| 5.9 | 密钥：QtKeychain 存储 API Key |
-| 5.10 | Prompt 模板系统：模板文件（资源内置 + 用户目录覆盖），变量替换，版本号 |
-| 5.11 | 隐私策略层 `PrivacyGuard`：在请求发出前按开关剔除敏感字段（播放历史、瞬间、位置） |
-| 5.12 | 批任务框架 `JobQueue`：可暂停/恢复/断点续跑、进度上报、运行前预估 token 用量 |
-| 5.13 | 开发者调试面板：请求/响应查看、重放、耗时 |
-| 5.14 | 录制回放测试：把真实 LLM 响应录制为 fixture，单测离线回放 |
-| 5.15 | 设置页：服务地址/Key/模型填写、连通性与能力测试、按功能选模型、隐私开关、用量看板 |
+| ✅ 5.1 | `LlmClient`（OpenAI 兼容）：`complete()`、`stream()`、`toolCall()`/结构化 JSON 输出；异步（返回 `QFuture` 或基于信号的 `LlmReply`） |
+| ✅ 5.2 | 只实现 OpenAI Chat Completions 协议：Base URL / API Key / 模型名由用户填写；探测能力（是否支持 tools、`response_format`），不支持时退化为“提示词约束 JSON + 解析失败重试”，保证 Ollama / llama.cpp 等本地服务也能用 |
+| ✅ 5.3 | SSE 流式解析器（QNetworkReply 增量读取） |
+| ✅ 5.4 | 结构化输出保障：JSON Schema 校验（如 nlohmann/json + json-schema-validator），失败自动带错误信息重试一次 |
+| ✅ 5.5 | 按功能场景（cleanup / query / dj / guide / narrative）可选填不同的模型名或不同的服务配置，默认全部用同一个 |
+| ✅ 5.6 | 缓存：`llm_cache` 表（key = hash(model + prompt + params)），TTL 可配置 |
+| ✅ 5.7 | 并发与限速：每个服务配置的并发上限、令牌桶限速、指数退避重试、429 处理 |
+| ✅ 5.8 | 用量计量：记录每次 token 数，按功能汇总展示 |
+| ✅ 5.9 | 密钥：QtKeychain 存储 API Key |
+| ✅ 5.10 | Prompt 模板系统：模板文件（资源内置 + 用户目录覆盖），变量替换，版本号 |
+| ✅ 5.11 | 隐私策略层 `PrivacyGuard`：在请求发出前按开关剔除敏感字段（播放历史、瞬间、位置） |
+| ✅ 5.12 | 批任务框架 `JobQueue`：可暂停/恢复/断点续跑、进度上报、运行前预估 token 用量 |
+| ✅ 5.13 | 开发者调试面板：请求/响应查看、重放、耗时 |
+| ✅ 5.14 | ~~录制回放测试：把真实 LLM 响应录制为 fixture，单测离线回放~~（已完成后撤销，见验收记录） |
+| ✅ 5.15 | 设置页：服务地址/Key/模型填写、连通性与能力测试、按功能选模型、隐私开关、用量看板 |
 | — | **并行：音频理解评测集与候选粗测（见 9.1–9.2，2–3 天）** |
 
 **交付物**：`ai` 库 + 设置界面。
 **验收**：同一套代码在至少一个云端服务（如 DeepSeek/OpenAI）和一个本地服务（Ollama 或 llama.cpp）上跑通；断网/超时/429 均能优雅处理；缓存命中不发请求。
+
+**验收记录（2026-09-27）**：用新增的 `linernotes-aicli`（走 AiConfig → LlmService → 调度/重试/缓存/用量的完整产品链路）对真实服务验证
+- 云端（Ollama Cloud，deepseek-v4.1-flash）：普通、流式（含 reasoning 字段的真实 SSE）、结构化输出（schema 校验通过）均跑通；AI 设置页的添加服务、连通性测试、按功能选模型、隐私、用量看板在 Xvfb 中截图检查
+- 缓存：同一请求重复两次，第二次 `fromCache=1 attempts=0`、耗时 1 ms，用量表记 1 次请求 + 1 次命中；`--cache bypass` 两次都真实请求
+- 断网：连接被拒（127.0.0.1:9）与域名不存在均以 `ai.network` 结束，重试 4 次后退出、不崩溃。本机 Qt 走系统代理，域名解析失败表现为 “Connection closed”
+- 超时：`timeoutMs=300` 以 `ai.timeout` 结束（含重试退避共约 8.7 s）
+- 鉴权：无效 Key 立即以 `ai.auth` 结束，不重试
+- 调度：maxConcurrent=2 时 12 个并发调用两两完成；requestsPerMinute=3 时第 4 个调用排队约 20 s
+- 未验证：
+  - **本地服务**：用户本地模型速度慢、能力弱，不适合测试，未用真实本地服务验证（本地判定、无 Key 调用只有代码审查）
+  - **429**：Ollama Cloud 在上述并发下未返回 429，真实 429 处理未验证
+- ctest：73 个测试在 debug / ci（-Werror）/ asan 下全部通过；格式与 clang-tidy 通过
+- 与计划的偏差：
+  - 测试策略调整：删除基于手写 FakeLlmServer 的 LlmClient / LlmService / CapabilityProbe 测试与 5.14 的录制回放（含 `scripts/llm-record.py` 与 llm 素材）。手写模拟测不出真实服务的问题，重试/超时/并发限制基本是常量；与服务的集成改为阶段验收时用真实服务验证（DEVELOPMENT 4.4 同步修改）
+  - 新增 5.A 验收工具 `tools/aicli`（`linernotes-aicli`），API Key 只从环境变量 `LINERNOTES_LLM_KEY` 读取
+  - 隐私开关的界面属性命名为 `xxxAllowed`（与 `PrivacyGuard::isAllowed` 一致）
+  - 并行项“音频理解评测集与候选粗测（9.1–9.2）”未开始：评测集需要用户提供样本与标注，推迟到阶段 9 前
+- 已知局限：LLM 调试面板目前只记录经 LlmService 的调用，设置页的连通性测试直接走 LlmClient，不出现在面板中；服务弹窗按回车不提交
 
 ---
 

@@ -2,6 +2,10 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 add_library(linernotes_ui STATIC
+    AiContext.cpp
+    AiContext.h
+    AiSettingsController.cpp
+    AiSettingsController.h
     AlbumGridModel.cpp
     AlbumGridModel.h
     AppContext.cpp
@@ -18,6 +22,10 @@ add_library(linernotes_ui STATIC
     LibraryActions.h
     LibraryRootsModel.cpp
     LibraryRootsModel.h
+    LlmDebugController.cpp
+    LlmDebugController.h
+    LlmDebugModel.cpp
+    LlmDebugModel.h
     MarksController.cpp
     MarksController.h
     NotificationSink.h
@@ -38,6 +46,8 @@ add_library(linernotes_ui STATIC
     RowSelection.h
     SearchController.cpp
     SearchController.h
+    ServiceListModel.cpp
+    ServiceListModel.h
     SettingsController.cpp
     SettingsController.h
     TagEditorModel.cpp
@@ -50,6 +60,8 @@ add_library(linernotes_ui STATIC
     Translations.h
     UiLogging.cpp
     UiLogging.h
+    UsageSummaryModel.cpp
+    UsageSummaryModel.h
 )
 add_library(Linernotes::ui ALIAS linernotes_ui)
 
@@ -79,6 +91,7 @@ target_include_directories(linernotes_ui
 
 target_link_libraries(linernotes_ui
     PUBLIC
+        Linernotes::ai
         Linernotes::core
         Linernotes::library
         Linernotes::player
