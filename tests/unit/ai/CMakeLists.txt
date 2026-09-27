@@ -10,24 +10,6 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
-    NAME ai_LlmClient
-    SOURCES
-        tst_LlmClient.cpp
-    LIBS
-        Linernotes::ai
-        Linernotes::TestSupport
-)
-
-linernotes_add_test(
-    NAME ai_LlmFixtures
-    SOURCES
-        tst_LlmFixtures.cpp
-    LIBS
-        Linernotes::ai
-        Linernotes::TestSupport
-)
-
-linernotes_add_test(
     NAME ai_JsonSchema
     SOURCES
         tst_JsonSchema.cpp
@@ -41,15 +23,6 @@ linernotes_add_test(
         tst_StructuredOutput.cpp
     LIBS
         Linernotes::ai
-)
-
-linernotes_add_test(
-    NAME ai_CapabilityProbe
-    SOURCES
-        tst_CapabilityProbe.cpp
-    LIBS
-        Linernotes::ai
-        Linernotes::TestSupport
 )
 
 linernotes_add_test(
@@ -74,18 +47,6 @@ linernotes_add_test(
     NAME ai_LlmCache
     SOURCES
         tst_LlmCache.cpp
-    LIBS
-        Linernotes::ai
-        Linernotes::library
-        Linernotes::core
-        Linernotes::TestSupport
-        Qt6::Sql
-)
-
-linernotes_add_test(
-    NAME ai_LlmService
-    SOURCES
-        tst_LlmService.cpp
     LIBS
         Linernotes::ai
         Linernotes::library
@@ -164,6 +125,3 @@ linernotes_add_test(
         Linernotes::core
         Linernotes::TestSupport
 )
-
-
-

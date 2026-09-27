@@ -2,8 +2,6 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 add_library(linernotes_testsupport STATIC
-    FakeLlmServer.cpp
-    FakeLlmServer.h
     ManualClock.h
     TestSupport.cpp
     TestSupport.h

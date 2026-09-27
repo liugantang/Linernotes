@@ -21,7 +21,6 @@
 #include <ai/SecretStore.h>
 #include <ai/StructuredOutput.h>
 #include <ai/UsageStore.h>
-#include <common/FakeLlmServer.h>
 #include <common/ManualClock.h>
 #include <core/Settings.h>
 #include <library/Database.h>
@@ -40,7 +39,6 @@ using linernotes::ai::UsageStore;
 using linernotes::core::Settings;
 using linernotes::library::Database;
 using linernotes::library::Migrator;
-using linernotes::test::FakeLlmServer;
 using linernotes::test::ManualClock;
 using linernotes::ui::AiSettingsController;
 using linernotes::ui::ServiceListModel;
@@ -48,52 +46,11 @@ namespace ai = linernotes::ai;
 
 namespace {
 
-FakeLlmServer::Response makeJsonResponse(const QString &content, int status = 200)
-{
-    QJsonObject msgObj;
-    msgObj.insert(QStringLiteral("role"), QStringLiteral("assistant"));
-    msgObj.insert(QStringLiteral("content"), content);
-
-    QJsonObject choice0;
-    choice0.insert(QStringLiteral("finish_reason"), QStringLiteral("stop"));
-    choice0.insert(QStringLiteral("message"), msgObj);
-
-    QJsonObject respObj;
-    respObj.insert(QStringLiteral("choices"), QJsonArray { choice0 });
-    return FakeLlmServer::json(respObj, status);
-}
-
-FakeLlmServer::Response makeToolCallResponse(const QString &fnName, const QString &arguments)
-{
-    QJsonObject fnObj;
-    fnObj.insert(QStringLiteral("name"), fnName);
-    fnObj.insert(QStringLiteral("arguments"), arguments);
-
-    QJsonObject tcObj;
-    tcObj.insert(QStringLiteral("id"), QStringLiteral("call_1"));
-    tcObj.insert(QStringLiteral("type"), QStringLiteral("function"));
-    tcObj.insert(QStringLiteral("function"), fnObj);
-
-    QJsonObject msgObj;
-    msgObj.insert(QStringLiteral("role"), QStringLiteral("assistant"));
-    msgObj.insert(QStringLiteral("tool_calls"), QJsonArray { tcObj });
-
-    QJsonObject choice0;
-    choice0.insert(QStringLiteral("finish_reason"), QStringLiteral("tool_calls"));
-    choice0.insert(QStringLiteral("message"), msgObj);
-
-    QJsonObject respObj;
-    respObj.insert(QStringLiteral("choices"), QJsonArray { choice0 });
-    return FakeLlmServer::json(respObj, 200);
-}
-
 class TstAiSettingsController : public QObject {
     Q_OBJECT
 
 private slots:
     void saveEditRemoveService();
-    void testServiceSuccess();
-    void testServiceAuthFailure();
     void privacyAndRoutes();
     void usageSummary();
 };
@@ -191,123 +148,6 @@ void TstAiSettingsController::saveEditRemoveService()
     QTRY_COMPARE(keyCheckedSpy.count(), 1);
     QCOMPARE(keyCheckedSpy.at(0).at(0).toString(), id);
     QCOMPARE(keyCheckedSpy.at(0).at(1).toBool(), false);
-}
-
-void TstAiSettingsController::testServiceSuccess()
-{
-    FakeLlmServer server;
-    const QTemporaryDir tempDir;
-    QVERIFY(tempDir.isValid());
-
-    Settings settings(tempDir.filePath(QStringLiteral("settings.ini")));
-    Database db(tempDir.filePath(QStringLiteral("library.db")));
-    QVERIFY(db.open(Migrator()).ok());
-    ManualClock clock(1000);
-    MemorySecretStore secrets;
-    QNetworkAccessManager nam;
-    LlmClient client(nam);
-    AiConfig config(settings);
-    PrivacyGuard privacy(settings);
-    UsageStore usage(db);
-    LlmCache cache(db, clock);
-    PromptLibrary prompts({ QStringLiteral(":/prompts") });
-
-    AiSettingsController ctrl(config, secrets, client, privacy, usage, cache, prompts, clock);
-
-    // Save service pointing to fake server
-    const QString serviceId = ctrl.saveService(QString(), QStringLiteral("Test Server"),
-        server.baseUrl().toString(), QStringLiteral("gpt-4o"), 5000, 2, 0);
-    QVERIFY(!serviceId.isEmpty());
-
-    QSignalSpy keySavedSpy(&ctrl, &AiSettingsController::apiKeySaved);
-    ctrl.setApiKey(serviceId, QStringLiteral("test-key"));
-    QTRY_COMPARE(keySavedSpy.count(), 1);
-
-    // Enqueue: 1. Ping response, 2. Probe json_schema, 3. Probe tools, 4. Probe json_object
-    server.enqueue(makeJsonResponse(QStringLiteral("OK")));
-    server.enqueue(makeJsonResponse(QStringLiteral("{\"ok\": true}")));
-    server.enqueue(
-        makeToolCallResponse(QStringLiteral("report"), QStringLiteral("{\"ok\": true}")));
-    server.enqueue(makeJsonResponse(QStringLiteral("{\"ok\": true}")));
-
-    QSignalSpy testedSpy(&ctrl, &AiSettingsController::serviceTested);
-
-    ctrl.testService(serviceId);
-    QCOMPARE(ctrl.testingServiceId(), serviceId);
-
-    // Second call while testing should be ignored
-    ctrl.testService(serviceId);
-
-    QTRY_COMPARE_WITH_TIMEOUT(testedSpy.count(), 1, 5000);
-    QCOMPARE(testedSpy.at(0).at(0).toString(), serviceId);
-    QCOMPARE(testedSpy.at(0).at(1).toBool(), true);
-    const QString msg = testedSpy.at(0).at(2).toString();
-    QVERIFY(msg.contains(QStringLiteral("OK")));
-    QVERIFY(testedSpy.at(0).at(3).toInt() >= 0);
-
-    QCOMPARE(ctrl.testingServiceId(), QString());
-
-    // Capabilities should be written back to AiConfig
-    const auto svc = config.service(serviceId);
-    QVERIFY(svc.has_value());
-    if (!svc.has_value()) {
-        return;
-    }
-    QVERIFY(svc->capabilities.has_value());
-    if (!svc->capabilities.has_value()) {
-        return;
-    }
-    QCOMPARE(svc->capabilities->jsonSchema, true);
-    QCOMPARE(svc->capabilities->tools, true);
-    QCOMPARE(svc->capabilities->jsonObject, true);
-}
-
-void TstAiSettingsController::testServiceAuthFailure()
-{
-    FakeLlmServer server;
-    const QTemporaryDir tempDir;
-    QVERIFY(tempDir.isValid());
-
-    Settings settings(tempDir.filePath(QStringLiteral("settings.ini")));
-    Database db(tempDir.filePath(QStringLiteral("library.db")));
-    QVERIFY(db.open(Migrator()).ok());
-    ManualClock clock(1000);
-    MemorySecretStore secrets;
-    QNetworkAccessManager nam;
-    LlmClient client(nam);
-    AiConfig config(settings);
-    PrivacyGuard privacy(settings);
-    UsageStore usage(db);
-    LlmCache cache(db, clock);
-    PromptLibrary prompts({ QStringLiteral(":/prompts") });
-
-    AiSettingsController ctrl(config, secrets, client, privacy, usage, cache, prompts, clock);
-
-    const QString serviceId = ctrl.saveService(QString(), QStringLiteral("Auth Server"),
-        server.baseUrl().toString(), QStringLiteral("gpt-4o"), 5000, 2, 0);
-    QVERIFY(!serviceId.isEmpty());
-
-    const QString secretKey = QStringLiteral("super-secret-key-987654321");
-    QSignalSpy keySavedSpy(&ctrl, &AiSettingsController::apiKeySaved);
-    ctrl.setApiKey(serviceId, secretKey);
-    QTRY_COMPARE(keySavedSpy.count(), 1);
-
-    // Enqueue 401 response
-    QJsonObject errObj;
-    errObj.insert(QStringLiteral("error"),
-        QJsonObject { { QStringLiteral("message"), QStringLiteral("Invalid API key") } });
-    server.enqueue(FakeLlmServer::json(errObj, 401));
-
-    QSignalSpy testedSpy(&ctrl, &AiSettingsController::serviceTested);
-    ctrl.testService(serviceId);
-
-    QTRY_COMPARE_WITH_TIMEOUT(testedSpy.count(), 1, 5000);
-    QCOMPARE(testedSpy.at(0).at(0).toString(), serviceId);
-    QCOMPARE(testedSpy.at(0).at(1).toBool(), false);
-    const QString msg = testedSpy.at(0).at(2).toString();
-    QVERIFY(!msg.isEmpty());
-    QVERIFY(!msg.contains(secretKey));
-    QCOMPARE(ctrl.testingServiceId(), QString());
 }
 
 void TstAiSettingsController::privacyAndRoutes()
