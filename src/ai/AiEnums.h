@@ -17,4 +17,11 @@ Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
 enum class Purpose : std::uint8_t { Cleanup, Query, Dj, Guide, Narrative };
 Q_ENUM_NS(Purpose)
 
+enum class DataCategory : std::uint8_t {
+    PlayHistory, // 播放记录、播放次数、跳过等行为数据
+    Moments, // 用户写的“瞬间”内容
+    Location, // 位置
+};
+Q_ENUM_NS(DataCategory)
+
 } // namespace linernotes::ai

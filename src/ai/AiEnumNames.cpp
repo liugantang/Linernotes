@@ -46,4 +46,22 @@ std::optional<Purpose> purposeFromName(QStringView name)
     return enumFromName<Purpose>(name, purposeName);
 }
 
+QString dataCategoryName(DataCategory category)
+{
+    switch (category) {
+    case DataCategory::PlayHistory:
+        return QStringLiteral("play_history");
+    case DataCategory::Moments:
+        return QStringLiteral("moments");
+    case DataCategory::Location:
+        return QStringLiteral("location");
+    }
+    return { };
+}
+
+std::optional<DataCategory> dataCategoryFromName(QStringView name)
+{
+    return enumFromName<DataCategory>(name, dataCategoryName);
+}
+
 } // namespace linernotes::ai

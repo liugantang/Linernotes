@@ -21,5 +21,6 @@ inline constexpr QLatin1StringView kSecretStore { "ai.secret_store" };
 inline constexpr QLatin1StringView kNotConfigured { "ai.not_configured" };
 inline constexpr QLatin1StringView kPromptNotFound { "ai.prompt_not_found" };
 inline constexpr QLatin1StringView kPromptInvalid { "ai.prompt_invalid" };
+inline constexpr QLatin1StringView kPrivacyBlocked { "ai.privacy_blocked" };
 
 } // namespace linernotes::ai::errc

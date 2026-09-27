@@ -19,6 +19,7 @@
 #include <ai/LlmCache.h>
 #include <ai/LlmClient.h>
 #include <ai/LlmService.h>
+#include <ai/PrivacyGuard.h>
 #include <ai/RetryPolicy.h>
 #include <ai/SecretStore.h>
 #include <ai/StructuredOutput.h>
@@ -33,6 +34,7 @@ using linernotes::ai::AiConfig;
 using linernotes::ai::CachePolicy;
 using linernotes::ai::Capabilities;
 using linernotes::ai::ChatResponse;
+using linernotes::ai::DataCategory;
 using linernotes::ai::LlmCache;
 using linernotes::ai::LlmCall;
 using linernotes::ai::LlmClient;
@@ -40,6 +42,7 @@ using linernotes::ai::LlmService;
 using linernotes::ai::LlmTask;
 using linernotes::ai::makeMessage;
 using linernotes::ai::MemorySecretStore;
+using linernotes::ai::PrivacyGuard;
 using linernotes::ai::Purpose;
 using linernotes::ai::RetryPolicy;
 using linernotes::ai::Role;
@@ -93,6 +96,7 @@ struct Fixture {
     ManualClock clock;
     LlmCache cache;
     UsageStore usage;
+    PrivacyGuard privacy;
     LlmService service;
 
     explicit Fixture(
@@ -104,7 +108,8 @@ struct Fixture {
         , clock(1000)
         , cache(db, clock)
         , usage(db)
-        , service(config, secrets, client, cache, usage, clock)
+        , privacy(settings)
+        , service(config, secrets, client, cache, usage, privacy, clock)
     {
         const auto openRes = db.open(migrator);
         Q_ASSERT(openRes.ok());
@@ -143,6 +148,7 @@ private slots:
     void retry429WithRetryAfter0();
     void noRetryOn401();
     void concurrencyLimitBlocksSecondCall();
+    void privacyBlockedSendsNoRequest();
 };
 
 void TstLlmService::notConfiguredFinishesAsynchronously()
@@ -725,6 +731,66 @@ void TstLlmService::concurrencyLimitBlocksSecondCall()
     QTRY_VERIFY(task2->isFinished());
     QVERIFY(task2->result().ok());
     QCOMPARE(task2->result().value().response.content, QStringLiteral("call 2 ok"));
+}
+
+void TstLlmService::privacyBlockedSendsNoRequest()
+{
+    Fixture fix(false);
+
+    // 1. Configure cloud service with unreachable/invalid cloud URL
+    ServiceProfile cloudProfile;
+    cloudProfile.id = QStringLiteral("cloud_svc");
+    cloudProfile.name = QStringLiteral("Cloud Service");
+    cloudProfile.baseUrl = QUrl(QStringLiteral("https://cloud.invalid/v1"));
+    cloudProfile.defaultModel = QStringLiteral("cloud-model");
+    cloudProfile.timeoutMs = 5000;
+    fix.config.saveService(cloudProfile);
+
+    // Moments is disabled by default in PrivacyGuard
+    QVERIFY(!fix.privacy.isAllowed(DataCategory::Moments));
+
+    LlmCall cloudCall;
+    cloudCall.purpose = Purpose::Query;
+    cloudCall.dataCategories = { DataCategory::Moments };
+    cloudCall.request.messages.append(
+        makeMessage(Role::User, QStringLiteral("cloud query with moments")));
+
+    auto cloudTask = fix.service.start(cloudCall);
+    QSignalSpy cloudSpy(cloudTask.get(), &LlmTask::finished);
+    QVERIFY(cloudSpy.wait(2000));
+    QVERIFY(cloudTask->isFinished());
+    QVERIFY(!cloudTask->result().ok());
+    QCOMPARE(cloudTask->result().error().code, linernotes::ai::errc::kPrivacyBlocked);
+    QVERIFY(cloudTask->result().error().detail.contains(QStringLiteral("moments")));
+    // Verify no secret reading or network requests occurred
+    QCOMPARE(fix.server.requests().size(), 0);
+
+    // 2. Local service with same Moments data category completes normally
+    ServiceProfile localProfile;
+    localProfile.id = QStringLiteral("local_svc");
+    localProfile.name = QStringLiteral("Local Service");
+    localProfile.baseUrl = fix.server.baseUrl();
+    localProfile.defaultModel = QStringLiteral("local-model");
+    localProfile.timeoutMs = 5000;
+    fix.config.saveService(localProfile);
+    fix.config.setDefaultServiceId(localProfile.id);
+    fix.secrets.write(localProfile.id, QStringLiteral("local-token"), nullptr, nullptr);
+
+    fix.server.enqueue(makeJsonResponse(QStringLiteral("local response ok")));
+
+    LlmCall localCall;
+    localCall.purpose = Purpose::Query;
+    localCall.dataCategories = { DataCategory::Moments };
+    localCall.request.messages.append(
+        makeMessage(Role::User, QStringLiteral("local query with moments")));
+
+    auto localTask = fix.service.start(localCall);
+    QSignalSpy localSpy(localTask.get(), &LlmTask::finished);
+    QVERIFY(localSpy.wait(2000));
+    QVERIFY(localTask->isFinished());
+    QVERIFY(localTask->result().ok());
+    QCOMPARE(localTask->result().value().response.content, QStringLiteral("local response ok"));
+    QCOMPARE(fix.server.requests().size(), 1);
 }
 
 } // namespace

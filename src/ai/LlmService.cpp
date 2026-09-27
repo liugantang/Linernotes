@@ -8,6 +8,7 @@
 #include <ai/AiEnumNames.h>
 #include <ai/AiLogging.h>
 #include <ai/Errors.h>
+#include <ai/PrivacyGuard.h>
 
 #include <utility>
 
@@ -96,6 +97,23 @@ void LlmTask::run()
     }
 
     m_resolved = resolvedOpt.value();
+
+    const auto blockedCategories
+        = m_service.m_privacy.blocked(m_call.dataCategories, m_resolved.profile.baseUrl);
+    if (!blockedCategories.isEmpty()) {
+        QStringList names;
+        names.reserve(blockedCategories.size());
+        for (const auto cat : blockedCategories) {
+            names.append(dataCategoryName(cat));
+        }
+        core::Error err;
+        err.code = QString(errc::kPrivacyBlocked);
+        err.message = QStringLiteral("Privacy guard blocked data category");
+        err.detail = names.join(QStringLiteral(", "));
+        finishWithError(std::move(err));
+        return;
+    }
+
     m_service.m_secrets.read(m_resolved.profile.id, this,
         [this](const core::Result<QString> &keyRes) { onSecretRead(keyRes); });
 }
@@ -414,13 +432,14 @@ void LlmTask::finishWithError(core::Error error)
 }
 
 LlmService::LlmService(AiConfig &config, SecretStore &secrets, LlmClient &client, LlmCache &cache,
-    UsageStore &usage, const core::Clock &clock, QObject *parent)
+    UsageStore &usage, PrivacyGuard &privacy, const core::Clock &clock, QObject *parent)
     : QObject(parent)
     , m_config(config)
     , m_secrets(secrets)
     , m_client(client)
     , m_cache(cache)
     , m_usage(usage)
+    , m_privacy(privacy)
     , m_clock(clock)
     , m_defaultCacheTtlMs(kDefaultCacheTtlMs)
     , m_scheduler(clock, this)

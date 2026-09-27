@@ -28,6 +28,8 @@ add_library(linernotes_ai STATIC
     LlmReply.h
     LlmService.cpp
     LlmService.h
+    PrivacyGuard.cpp
+    PrivacyGuard.h
     PromptLibrary.cpp
     PromptLibrary.h
     RequestScheduler.cpp

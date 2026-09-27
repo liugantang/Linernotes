@@ -15,4 +15,7 @@ namespace linernotes::ai {
 QString purposeName(Purpose purpose);
 std::optional<Purpose> purposeFromName(QStringView name);
 
+QString dataCategoryName(DataCategory category);
+std::optional<DataCategory> dataCategoryFromName(QStringView name);
+
 } // namespace linernotes::ai

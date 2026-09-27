@@ -125,5 +125,14 @@ linernotes_add_test(
         Linernotes::core
 )
 
+linernotes_add_test(
+    NAME ai_PrivacyGuard
+    SOURCES
+        tst_PrivacyGuard.cpp
+    LIBS
+        Linernotes::ai
+        Linernotes::core
+)
+
 
 

@@ -7,6 +7,7 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QObject>
+#include <QSet>
 #include <QString>
 
 #include <ai/AiConfig.h>
@@ -33,6 +34,7 @@ class QTimer;
 namespace linernotes::ai {
 
 class LlmService;
+class PrivacyGuard;
 
 enum class CachePolicy : std::uint8_t {
     Use, // 命中则直接返回；未命中请求后写入
@@ -47,6 +49,7 @@ struct LlmCall {
     bool stream = false; // 与 structured 同时设置时视为 false（结构化结果要完整才能校验）
     CachePolicy cachePolicy = CachePolicy::Use;
     std::optional<qint64> cacheTtlMs; // 为空用 LlmService 的默认 TTL
+    QSet<DataCategory> dataCategories;
 };
 
 struct LlmResult {
@@ -132,7 +135,8 @@ public:
 
     /// 依赖都由调用方持有，生命周期长于 LlmService。
     LlmService(AiConfig &config, SecretStore &secrets, LlmClient &client, LlmCache &cache,
-        UsageStore &usage, const core::Clock &clock, QObject *parent = nullptr);
+        UsageStore &usage, PrivacyGuard &privacy, const core::Clock &clock,
+        QObject *parent = nullptr);
     ~LlmService() override = default;
 
     void setDefaultCacheTtlMs(std::optional<qint64> ttlMs); // 默认 30 天
@@ -147,6 +151,7 @@ private:
     LlmClient &m_client;
     LlmCache &m_cache;
     UsageStore &m_usage;
+    PrivacyGuard &m_privacy;
     const core::Clock &m_clock;
     std::optional<qint64> m_defaultCacheTtlMs;
     RetryPolicy m_retryPolicy;
