@@ -233,9 +233,9 @@
 
 | # | 任务 |
 |---|---|
-| 5.1 | `LlmClient`（OpenAI 兼容）：`complete()`、`stream()`、`toolCall()`/结构化 JSON 输出；异步（返回 `QFuture` 或基于信号的 `LlmReply`） |
+| ✅ 5.1 | `LlmClient`（OpenAI 兼容）：`complete()`、`stream()`、`toolCall()`/结构化 JSON 输出；异步（返回 `QFuture` 或基于信号的 `LlmReply`） |
 | 5.2 | 只实现 OpenAI Chat Completions 协议：Base URL / API Key / 模型名由用户填写；探测能力（是否支持 tools、`response_format`），不支持时退化为“提示词约束 JSON + 解析失败重试”，保证 Ollama / llama.cpp 等本地服务也能用 |
-| 5.3 | SSE 流式解析器（QNetworkReply 增量读取） |
+| ✅ 5.3 | SSE 流式解析器（QNetworkReply 增量读取） |
 | 5.4 | 结构化输出保障：JSON Schema 校验（如 nlohmann/json + json-schema-validator），失败自动带错误信息重试一次 |
 | 5.5 | 按功能场景（cleanup / query / dj / guide / narrative）可选填不同的模型名或不同的服务配置，默认全部用同一个 |
 | 5.6 | 缓存：`llm_cache` 表（key = hash(model + prompt + params)），TTL 可配置 |
