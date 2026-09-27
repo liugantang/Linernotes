@@ -10,12 +10,20 @@
 2. **版权与合规**：使用自行合成/生成的音频，或具有明确自由分发许可（如 CC0 / CC-BY / 公有领域）的素材，严禁提交受版权保护的完整音频文件。
 3. **异常与边界样本**：真实曲库中的“怪样本”（如奇怪字符编码、损坏文件、非标元数据），只提取标签或最小复现片段，避免引入冗余数据。
 4. **AI 录制数据**：LLM 录制回放文件存放在 `llm/` 子目录，文件中严禁包含真实 API Key 或用户敏感隐私数据。
+5. **LLM 录制回放规范**：
+   - **文件格式**：`tests/fixtures/llm/<名称>.json`（UTF-8 编码，2 空格缩进）。包含 `format`、`source`（`recorded` 表示脚本录制，`synthetic` 表示手写合成）、`description`、`recordedAt`、`service`、`model`、`request`（请求体，不包含任何请求头）、`response`（`status`、`contentType`、`headers`、`chunks`）。
+   - **录制命令**：
+     ```bash
+     scripts/llm-record.py --base-url http://127.0.0.1:8080/v1 --request req.json \
+         --out tests/fixtures/llm/xxx.json --description "..." [--service "llama.cpp b1234"]
+     ```
+   - **安全与 Key 管理**：API Key 仅从环境变量 `LINERNOTES_LLM_KEY` 读取，严禁通过命令行参数传入。录制脚本在写出前及单元测试中均会执行严格的安全正则匹配（拒绝 `sk-...`、`Bearer`、`authorization` 等凭证），确保零泄露。
+   - **响应头与分块**：`response.headers` 仅保留 `Retry-After` 等必要白名单；SSE 响应按事件边界（空行）切成 chunks，以 `\n\n` 结尾，非流式响应单个 chunk 包含完整 body。
 
 ## 素材来源登记表
 
 | 文件名 / 路径 | 格式 / 类型 | 大小 / 时长 | 来源 / 授权 | 说明 |
 | :--- | :--- | :--- | :--- | :--- |
-
 | `audio/tone_440_1s.flac` | FLAC / 单声道 22050 Hz | ~16 KB / 1.0 s | `generate.sh` 自行合成，CC0 | 440 Hz 正弦测试音频 |
 | `audio/tone_660_1s.flac` | FLAC / 单声道 22050 Hz | ~17 KB / 1.0 s | `generate.sh` 自行合成，CC0 | 660 Hz 正弦测试音频，用于 gapless 测试 |
 | `audio/tone_880_1s.ogg` | OGG (Vorbis) / 单声道 22050 Hz | ~5 KB / 1.0 s | `generate.sh` 自行合成，CC0 | 880 Hz 正弦测试音频 |
@@ -45,3 +53,8 @@
 | `library/cover_1600_embed.flac` | FLAC / Picture 1600×1600 JPEG | ~63 KB / 1.0 s | `generate.py` 自行合成，CC0 | 内嵌 1600×1600 大封面 JPEG 样本 (FLAC，与 MP3 封面完全一致) |
 | `library/dir_folder_cover/` | 目录样本 / Cover.JPG + FLAC | ~26 KB | `generate.py` 自行合成，CC0 | 带 `Cover.JPG` (800×800) 的目录样本，音频文件无内嵌封面 |
 | `library/dir_embed_and_folder/` | 目录样本 / folder.png + 内嵌封面 FLAC | ~20 KB | `generate.py` 自行合成，CC0 | 同时包含内嵌封面音频与 `folder.png` 的目录样本，用于验证内嵌优先 |
+| `llm/synthetic_stream_usage.json` | JSON / SSE 流式 LLM 响应 | ~1.5 KB | 手写合成，CC0 | 流式回复测试：前序 delta 携带 reasoning 字段（验证忽略）、末尾携带 usage 统计、`[DONE]` 结尾 |
+| `llm/synthetic_tool_call.json` | JSON / 非流式 LLM 响应 | ~1.0 KB | 手写合成，CC0 | 单工具调用测试：`finish_reason: "tool_calls"`、含单个 `tool_calls` 项与 JSON 字符串 arguments |
+| `llm/ollama_cloud_stream_reasoning.json` | JSON / SSE 流式 LLM 响应 | ~10 KB | `scripts/llm-record.py` 录制自 Ollama Cloud（deepseek-v4.1-flash） | 真实流式回复：delta 含 reasoning、末尾 usage |
+| `llm/ollama_cloud_tool_call.json` | JSON / 非流式 LLM 响应 | ~2.5 KB | 同上 | 真实强制 tool_choice 的工具调用 |
+| `llm/ollama_cloud_401.json` | JSON / 错误响应 | ~0.6 KB | 同上（使用无效 Key） | 真实 401 错误体 |

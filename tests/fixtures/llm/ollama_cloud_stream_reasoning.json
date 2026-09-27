@@ -1,0 +1,69 @@
+{
+  "format": 1,
+  "source": "recorded",
+  "description": "Ollama Cloud deepseek-v4.1-flash 流式回复，delta 含 reasoning 字段，末尾带 usage",
+  "recordedAt": "2026-09-27",
+  "service": "Ollama Cloud",
+  "model": "deepseek-v4.1-flash",
+  "request": {
+    "model": "deepseek-v4.1-flash",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a concise music assistant."
+      },
+      {
+        "role": "user",
+        "content": "用一句话介绍专辑 Kind of Blue。"
+      }
+    ],
+    "stream": true,
+    "stream_options": {
+      "include_usage": true
+    }
+  },
+  "response": {
+    "status": 200,
+    "contentType": "text/event-stream",
+    "headers": [],
+    "chunks": [
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"role\":\"assistant\",\"content\":\"\",\"reasoning\":\"We\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\",\"reasoning\":\" need answer in Chinese.\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\",\"reasoning\":\" One sentence intro\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\",\"reasoning\":\" album Kind\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\",\"reasoning\":\" of Blue. Conc\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\",\"reasoning\":\"ise. Need maybe mention\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\",\"reasoning\":\" Miles\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\",\"reasoning\":\" Davis, 195\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\",\"reasoning\":\"9, modal\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\",\"reasoning\":\" jazz, best\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\",\"reasoning\":\"-selling jazz\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\",\"reasoning\":\" album.\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\",\"reasoning\":\" One sentence. Ensure\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\",\"reasoning\":\" one\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"reasoning\":\"sentence.\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"《\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"Kind of Blue》\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"是迈尔斯·戴\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"维斯于1959年\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520246,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"发行的\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520247,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"爵士乐经典\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520247,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"专辑\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520247,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"，以调式\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520247,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"爵士革新\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520247,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"了即\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520247,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"兴演奏\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520247,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"，并被\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520247,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"广泛\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520247,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"视为史上\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520247,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"最重要\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520247,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"、最\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520247,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"畅销的爵士专辑\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520247,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"之一。\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520247,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{\"content\":\"\"},\"finish_reason\":null}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520247,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"delta\":{},\"finish_reason\":\"stop\"}]}\n\n",
+      "data: {\"id\":\"chatcmpl-250\",\"object\":\"chat.completion.chunk\",\"created\":1790520247,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[],\"usage\":{\"prompt_tokens\":45,\"completion_tokens\":88,\"total_tokens\":133}}\n\n",
+      "data: [DONE]\n\n"
+    ]
+  }
+}

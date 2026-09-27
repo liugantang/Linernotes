@@ -1,0 +1,59 @@
+{
+  "format": 1,
+  "source": "recorded",
+  "description": "Ollama Cloud deepseek-v4.1-flash 强制 tool_choice 的非流式工具调用",
+  "recordedAt": "2026-09-27",
+  "service": "Ollama Cloud",
+  "model": "deepseek-v4.1-flash",
+  "request": {
+    "model": "deepseek-v4.1-flash",
+    "messages": [
+      {
+        "role": "user",
+        "content": "整理这条曲目标签：title='kind of blue - so what (remastered 2009)', artist='miles davis'"
+      }
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "submit_tags",
+          "description": "Submit cleaned track tags",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "artist": {
+                "type": "string"
+              },
+              "version": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "title",
+              "artist"
+            ]
+          }
+        }
+      }
+    ],
+    "tool_choice": {
+      "type": "function",
+      "function": {
+        "name": "submit_tags"
+      }
+    },
+    "stream": false
+  },
+  "response": {
+    "status": 200,
+    "contentType": "application/json",
+    "headers": [],
+    "chunks": [
+      "{\"id\":\"chatcmpl-629\",\"object\":\"chat.completion\",\"created\":1790520249,\"model\":\"deepseek-v4.1-flash\",\"system_fingerprint\":\"fp_ollama\",\"choices\":[{\"index\":0,\"message\":{\"role\":\"assistant\",\"content\":\"\",\"reasoning\":\"The user wants me to clean up track tags. Title: \\\"kind of blue - so what (remastered 2009)\\\", artist: \\\"miles davis\\\".\\n\\nThe title contains album name \\\"Kind of Blue\\\" and track \\\"So What\\\" and version \\\"(Remastered 2009)\\\".\\n\\nSo title should be \\\"So What\\\", artist \\\"Miles Davis\\\", version \\\"Remastered 2009\\\".\\n\\nShould I capitalize properly? Yes, title case.\\n\\nLet me submit: title \\\"So What\\\", artist \\\"Miles Davis\\\", version \\\"Remastered 2009\\\".\",\"tool_calls\":[{\"id\":\"call_3kpft8ob\",\"index\":0,\"type\":\"function\",\"function\":{\"name\":\"submit_tags\",\"arguments\":\"{\\\"title\\\":\\\"So What\\\",\\\"artist\\\":\\\"Miles Davis\\\",\\\"version\\\":\\\"Remastered 2009\\\"}\"}}]},\"finish_reason\":\"tool_calls\"}],\"usage\":{\"prompt_tokens\":336,\"completion_tokens\":198,\"total_tokens\":534}}\n"
+    ]
+  }
+}

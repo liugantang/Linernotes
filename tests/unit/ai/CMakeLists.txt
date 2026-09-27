@@ -19,6 +19,15 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME ai_LlmFixtures
+    SOURCES
+        tst_LlmFixtures.cpp
+    LIBS
+        Linernotes::ai
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
     NAME ai_JsonSchema
     SOURCES
         tst_JsonSchema.cpp

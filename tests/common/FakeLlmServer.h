@@ -35,12 +35,20 @@ public:
         QByteArray body;
     };
 
+    struct Fixture {
+        QJsonObject request; // 录制时的请求体
+        Response response;
+    };
+
     FakeLlmServer(); // 构造即监听；失败 qFatal
     ~FakeLlmServer() override;
 
     QUrl baseUrl() const; // http://127.0.0.1:<port>/v1
     void enqueue(Response response); // 按请求到达顺序依次使用；队列空时回 500
     QList<Request> requests() const;
+
+    /// 读取 tests/fixtures/llm/ 下的文件（参数为相对 llm/ 的文件名）；文件缺失或格式不对时 qFatal。
+    static Fixture loadFixture(const QString &name);
 
     static Response sse(const QList<QByteArray>
             &dataPayloads); // 把每个 payload 包成 "data: ...\n\n" 一块，最后追加 "data: [DONE]\n\n"

@@ -3,8 +3,13 @@
 
 #include "FakeLlmServer.h"
 
+#include "TestSupport.h"
+
+#include <QFile>
 #include <QHostAddress>
+#include <QJsonArray>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <QTimer>
@@ -64,6 +69,55 @@ void FakeLlmServer::enqueue(Response response)
 QList<FakeLlmServer::Request> FakeLlmServer::requests() const
 {
     return m_requests;
+}
+
+FakeLlmServer::Fixture FakeLlmServer::loadFixture(const QString &name)
+{
+    const QString path = fixturePath(QStringLiteral("llm/") + name);
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qFatal("FakeLlmServer::loadFixture: failed to open fixture file %s", qPrintable(path));
+    }
+
+    QJsonParseError parseErr;
+    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll(), &parseErr);
+    if (parseErr.error != QJsonParseError::NoError || !doc.isObject()) {
+        qFatal("FakeLlmServer::loadFixture: failed to parse JSON in %s: %s", qPrintable(path),
+            qPrintable(parseErr.errorString()));
+    }
+
+    const QJsonObject root = doc.object();
+    if (!root.value(QStringLiteral("request")).isObject()
+        || !root.value(QStringLiteral("response")).isObject()) {
+        qFatal("FakeLlmServer::loadFixture: invalid fixture structure in %s", qPrintable(path));
+    }
+
+    Fixture fixture;
+    fixture.request = root.value(QStringLiteral("request")).toObject();
+
+    const QJsonObject respObj = root.value(QStringLiteral("response")).toObject();
+    fixture.response.status = respObj.value(QStringLiteral("status")).toInt(200);
+    fixture.response.contentType = respObj.value(QStringLiteral("contentType"))
+                                       .toString(QStringLiteral("application/json"))
+                                       .toUtf8();
+
+    const QJsonArray headersArr = respObj.value(QStringLiteral("headers")).toArray();
+    for (const auto &hVal : headersArr) {
+        if (hVal.isArray()) {
+            const QJsonArray pairArr = hVal.toArray();
+            if (pairArr.size() == 2) {
+                fixture.response.headers.append(qMakePair(
+                    pairArr.at(0).toString().toUtf8(), pairArr.at(1).toString().toUtf8()));
+            }
+        }
+    }
+
+    const QJsonArray chunksArr = respObj.value(QStringLiteral("chunks")).toArray();
+    for (const auto &cVal : chunksArr) {
+        fixture.response.chunks.append(cVal.toString().toUtf8());
+    }
+
+    return fixture;
 }
 
 FakeLlmServer::Response FakeLlmServer::sse(const QList<QByteArray> &dataPayloads)
