@@ -43,5 +43,7 @@ inline const core::SettingKey<bool> kNotificationsTrackChange { u"notifications/
     true };
 // NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 inline const core::SettingKey<bool> kAppFirstRunCompleted { u"app/firstRunCompleted", false };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<int> kLibraryBackupKeep { u"library/backupKeep", 7 };
 
 } // namespace linernotes::ui

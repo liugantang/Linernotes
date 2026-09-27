@@ -8,6 +8,8 @@ add_library(linernotes_library STATIC
     CoverStore.h
     Database.cpp
     Database.h
+    DatabaseBackup.cpp
+    DatabaseBackup.h
     DirectoryWalker.cpp
     DirectoryWalker.h
     EntityLinker.cpp

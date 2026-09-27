@@ -104,6 +104,7 @@ void TstTrackNotifier::testTrackNotificationAndDeduplication()
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
         .playbackStatePath = { },
+        .backupDir = { },
     };
 
     AppContext ctx(settings, options);
@@ -151,6 +152,7 @@ void TstTrackNotifier::testNotificationDisabled()
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
         .playbackStatePath = { },
+        .backupDir = { },
     };
 
     AppContext ctx(settings, options);

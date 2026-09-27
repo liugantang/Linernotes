@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <QFuture>
+#include <QFutureWatcher>
 #include <QObject>
 #include <QString>
 #include <QTimer>
@@ -73,6 +75,7 @@ public:
         // 改变 QStandardPaths 的目录，所以显式指定文件位置
         QString uiStatePath;
         QString playbackStatePath;
+        QString backupDir;
     };
 
     explicit AppContext(core::Settings &settings, Options options, QObject *parent = nullptr);
@@ -114,6 +117,8 @@ signals:
     void playStatsChanged();
 
 private:
+    void triggerBackupIfDue();
+
     // 声明顺序即依赖顺序，析构逆序进行，依赖方先于被依赖方析构
     core::Settings &m_settings;
     Options m_options;
@@ -136,6 +141,9 @@ private:
     std::unique_ptr<library::Scanner> m_scanner;
     std::unique_ptr<library::LibraryWatcher> m_watcher;
     QTimer m_saveTimer;
+    QTimer m_backupTimer;
+    QFutureWatcher<core::Result<QString>> m_backupWatcher;
+    QFuture<core::Result<QString>> m_backupFuture;
 
     bool m_libraryReady { false };
     QString m_startupError;

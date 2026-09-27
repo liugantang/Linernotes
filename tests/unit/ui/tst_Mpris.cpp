@@ -63,6 +63,7 @@ void TstMpris::testInitialState()
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
         .playbackStatePath = { },
+        .backupDir = { },
     };
 
     AppContext ctx(settings, options);
@@ -111,6 +112,7 @@ void TstMpris::testMetadataWithTrack()
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
         .playbackStatePath = { },
+        .backupDir = { },
     };
 
     AppContext ctx(settings, options);
@@ -150,6 +152,7 @@ void TstMpris::testLoopAndShuffle()
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
         .playbackStatePath = { },
+        .backupDir = { },
     };
 
     AppContext ctx(settings, options);
@@ -198,6 +201,7 @@ void TstMpris::testVolume()
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
         .playbackStatePath = { },
+        .backupDir = { },
     };
 
     AppContext ctx(settings, options);
@@ -238,6 +242,7 @@ void TstMpris::testRootAdaptor()
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
         .playbackStatePath = { },
+        .backupDir = { },
     };
 
     AppContext ctx(settings, options);

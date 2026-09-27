@@ -85,6 +85,7 @@ target_link_libraries(linernotes_ui
         Qt6::Core
         Qt6::Gui
         Qt6::Quick # Required by CoverImageProvider (QQuickImageProvider)
+        Qt6::Concurrent
 )
 
 linernotes_set_target_options(linernotes_ui)

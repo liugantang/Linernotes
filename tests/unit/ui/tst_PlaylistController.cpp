@@ -73,6 +73,7 @@ void TstPlaylistController::testPlaylistController()
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
         .playbackStatePath = { },
+        .backupDir = { },
     };
 
     AppContext ctx(settings, options);

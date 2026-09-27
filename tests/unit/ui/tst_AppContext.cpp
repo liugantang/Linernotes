@@ -53,6 +53,7 @@ void TstAppContext::startSuccessNoRoots()
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
         .playbackStatePath = { },
+        .backupDir = { },
     };
 
     AppContext ctx(settings, options);
@@ -99,6 +100,7 @@ void TstAppContext::startFailureInvalidPath()
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
         .playbackStatePath = { },
+        .backupDir = { },
     };
 
     AppContext ctx(settings, options);
@@ -142,6 +144,7 @@ void TstAppContext::startWithLibraryRootScansAndEmitsChanged()
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
         .playbackStatePath = { },
+        .backupDir = { },
     };
 
     AppContext ctx(settings, options);
@@ -194,6 +197,7 @@ void TstAppContext::destructorCancelsScanningGracefully()
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
         .playbackStatePath = { },
+        .backupDir = { },
     };
 
     auto ctx = std::make_unique<AppContext>(settings, options);
@@ -218,6 +222,7 @@ void TstAppContext::playerOptionsAoNull()
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
         .playbackStatePath = { },
+        .backupDir = { },
     };
 
     AppContext ctx(settings, options);
@@ -240,6 +245,7 @@ void TstAppContext::playbackStatePersistence()
         .playerOptions = { { QStringLiteral("ao"), QStringLiteral("null") } },
         .uiStatePath = tempDir.filePath(QStringLiteral("ui-state.ini")),
         .playbackStatePath = statePath,
+        .backupDir = { },
     };
 
     {

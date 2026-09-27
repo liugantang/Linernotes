@@ -5,17 +5,21 @@
 
 #include "UiLogging.h"
 
+#include <QDateTime>
 #include <QTimer>
+#include <QtConcurrent/QtConcurrent>
 
 #include <core/Settings.h>
 #include <library/CoverStore.h>
 #include <library/Database.h>
+#include <library/DatabaseBackup.h>
 #include <library/LibraryRoots.h>
 #include <library/LibraryWatcher.h>
 #include <library/Migrator.h>
 #include <library/Scanner.h>
 #include <player/PlaybackSnapshot.h>
 #include <player/Player.h>
+#include <ui/AppSettings.h>
 #include <ui/LibraryActions.h>
 
 #include <algorithm>
@@ -94,10 +98,25 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
         });
         m_saveTimer.start();
     }
+
+    m_backupTimer.setInterval(std::chrono::hours(1));
+    connect(&m_backupTimer, &QTimer::timeout, this, &AppContext::triggerBackupIfDue);
+    connect(&m_backupWatcher, &QFutureWatcher<core::Result<QString>>::finished, this, [this]() {
+        const auto res = m_backupWatcher.result();
+        if (res.ok()) {
+            qCInfo(lcUi, "Database backup completed successfully: %s", qPrintable(res.value()));
+        } else {
+            qCWarning(lcUi, "Database backup failed: %s", qPrintable(res.error().toString()));
+        }
+    });
 }
 
 AppContext::~AppContext()
 {
+    m_backupTimer.stop();
+    if (m_backupFuture.isRunning()) {
+        m_backupFuture.waitForFinished();
+    }
     if (m_scanner) {
         m_scanner->cancel();
     }
@@ -181,6 +200,11 @@ core::Result<void> AppContext::start()
 
     m_watcher->reload();
     rescan();
+
+    if (!m_options.backupDir.isEmpty()) {
+        triggerBackupIfDue();
+        m_backupTimer.start();
+    }
 
     return { };
 }
@@ -290,6 +314,33 @@ bool AppContext::isScanning() const
 QUrl AppContext::uiStateUrl() const
 {
     return QUrl::fromLocalFile(m_options.uiStatePath);
+}
+
+void AppContext::triggerBackupIfDue()
+{
+    if (m_options.backupDir.isEmpty()) {
+        return;
+    }
+    if (m_backupFuture.isRunning()) {
+        return;
+    }
+
+    const int keep = m_settings.value(kLibraryBackupKeep);
+    const library::DatabaseBackup::Options opts {
+        .backupDir = m_options.backupDir,
+        .keep = keep,
+    };
+    const library::DatabaseBackup backup(m_db, opts);
+    const QDateTime now = QDateTime::currentDateTime();
+    if (!backup.isDue(now)) {
+        return;
+    }
+
+    m_backupFuture = QtConcurrent::run([opts, &db = m_db, now]() -> core::Result<QString> {
+        library::DatabaseBackup workerBackup(db, opts);
+        return workerBackup.backupNow(now);
+    });
+    m_backupWatcher.setFuture(m_backupFuture);
 }
 
 } // namespace linernotes::ui

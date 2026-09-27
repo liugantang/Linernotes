@@ -178,6 +178,15 @@ linernotes_add_test(
         Linernotes::library
 )
 
+linernotes_add_test(
+    NAME library_DatabaseBackup
+    SOURCES
+        tst_DatabaseBackup.cpp
+    LIBS
+        Linernotes::library
+)
+
+
 
 
 
