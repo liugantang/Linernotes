@@ -84,7 +84,13 @@ Q_ENUM_NS(SmartMatch)
 enum class SmartFieldKind : std::uint8_t { Text, Number, Bool, Date };
 Q_ENUM_NS(SmartFieldKind)
 
-enum class CorrectionKind : std::uint8_t { Manual, Mojibake, ArtistSplit, ArtistMerge };
+enum class CorrectionKind : std::uint8_t {
+    Manual,
+    Mojibake,
+    ArtistSplit,
+    ArtistMerge,
+    ArtistCredit
+};
 Q_ENUM_NS(CorrectionKind)
 
 enum class CorrectionSource : std::uint8_t { Rule, Llm, MusicBrainz, User };

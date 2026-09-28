@@ -35,7 +35,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_options(std::move(options))
     , m_db(m_options.databasePath)
     , m_ai(m_settings, m_db, m_clock, m_options.promptsDir)
-    , m_cleanup(m_db, m_clock, m_ai.jobs(), m_ai.config(), m_settings)
+    , m_cleanup(m_db, m_clock, m_ai.jobs(), m_ai.prompts(), m_ai.config(), m_settings)
     , m_playStats(m_db)
     , m_tagEditor(m_db)
     , m_review(m_db, m_clock)

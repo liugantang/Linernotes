@@ -22,7 +22,8 @@ struct ServiceProfile {
     QString name; // 显示名
     QUrl baseUrl;
     QString defaultModel;
-    int timeoutMs = 60000;
+    int timeoutMs = 60000; // 连续多久没有收到数据就放弃（setTransferTimeout
+                           // 的语义），流式请求时长时间思考不会触发
     std::optional<Capabilities> capabilities; // 未探测为空
     int maxConcurrent = 2; // 同时进行的请求数上限，≥1
     int requestsPerMinute = 0; // 0 = 不限

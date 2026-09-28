@@ -10,7 +10,7 @@
 #include <QString>
 #include <QStringList>
 
-#include <butler/ArtistCluster.h>
+#include <butler/ArtistGroup.h>
 #include <core/Result.h>
 #include <library/ArtistAliasCorrections.h>
 
@@ -18,26 +18,33 @@
 
 namespace linernotes::butler {
 
-struct ArtistMergeCandidatePair {
-    int id = 0;
-    ArtistEntry artistA;
-    QStringList albumsA;
-    ArtistEntry artistB;
-    QStringList albumsB;
-
-    bool operator==(const ArtistMergeCandidatePair &) const = default;
+struct ArtistMergeMember {
+    ArtistEntry entry;
+    QStringList albums; // sampleAlbums，最多 3 个
+    QStringList aka; // altNames 中该艺人的其他写法
+    bool operator==(const ArtistMergeMember &) const = default;
 };
 
-/// 模板变量：pairs（每个候选对：id、两边的名字、曲目数、示例专辑）
-QHash<QString, QString> artistMergePromptVars(const QList<ArtistMergeCandidatePair> &pairs);
+struct ArtistMergeGroup {
+    int id = 0; // 本次请求内的序号
+    QList<ArtistMergeMember> members;
+    bool operator==(const ArtistMergeGroup &) const = default;
+};
 
-QJsonObject artistMergeSchema(); // 从资源 ":/schemas/cleanup/artist_merge.json" 读取
+/// 模板变量 groups：每组 id 与成员（artistId、名字、曲目数、示例专辑、aka）。
+QHash<QString, QString> artistMergePromptVars(const QList<ArtistMergeGroup> &groups);
 
-/// 把校验通过的结构化结果转成提议。
-/// id 越界或重复 → 错误；只对 same=true 且 confidence >= 0.5 的生成提议：
-/// pickCanonical 两者，另一个作为别名，source Llm，confidence 取 LLM 值（夹到 [0,1]），reason 用
-/// LLM 原文。
-core::Result<QList<library::ArtistAliasProposal>> parseArtistMergeResult(const QJsonValue &value,
-    const QList<ArtistMergeCandidatePair> &pairs, const QHash<qint64, ArtistEntry> &entriesById);
+QJsonObject artistMergeSchema();
+
+/// 结构化结果：{"groups":[{"id":0,"subsets":[{"members":[artistId,...],"confidence":0.9,"reason":"..."}]}]}
+/// 每个 subset 是模型认定的同一实体。
+/// - 顶层结构错误 → 错误；
+/// - 组 id 不存在或重复、subset 中的 artistId 不属于该组或在该组的多个 subset 中重复出现 →
+/// 跳过这个组（不报错）；
+/// - 成员少于 2 个或 confidence < 0.5 的 subset 忽略；
+/// - 其余 subset：pickCanonical 选规范艺人，其余成员作为它的别名，source Llm，confidence 夹到
+/// [0,1]，reason 用原文。 没有出现在任何 subset 中的成员视为各自独立。
+core::Result<QList<library::ArtistAliasProposal>> parseArtistMergeResult(
+    const QJsonValue &value, const QList<ArtistMergeGroup> &groups);
 
 } // namespace linernotes::butler

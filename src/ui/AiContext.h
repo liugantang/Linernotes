@@ -17,7 +17,6 @@
 #include <ai/PrivacyGuard.h>
 #include <ai/PromptLibrary.h>
 #include <ai/UsageStore.h>
-#include <butler/MusicBrainzClient.h>
 #include <core/Clock.h>
 #include <library/Database.h>
 #include <ui/AiSettingsController.h>
@@ -62,7 +61,6 @@ private:
     ai::PromptLibrary m_prompts;
     ai::LlmDebugLog m_debugLog;
     ai::LlmService m_llm;
-    butler::MusicBrainzClient m_musicBrainz;
     ai::JobQueue m_jobs;
     AiSettingsController m_settingsController;
     LlmDebugController m_debugController;

@@ -13,6 +13,7 @@
 #include <butler/ArtistMerge.h>
 #include <butler/ArtistMergeLlm.h>
 #include <butler/ArtistMergeSource.h>
+#include <butler/ArtistName.h>
 #include <butler/Errors.h>
 #include <core/Clock.h>
 #include <library/CorrectionStore.h>
@@ -24,11 +25,10 @@
 namespace linernotes::butler {
 
 ArtistMergeJobHandler::ArtistMergeJobHandler(library::Database &db, ai::LlmService &llm,
-    const ai::PromptLibrary &prompts, MusicBrainzClient &mbClient, const core::Clock &clock)
+    const ai::PromptLibrary &prompts, const core::Clock &clock)
     : m_db(db)
     , m_llm(llm)
     , m_prompts(prompts)
-    , m_mbClient(mbClient)
     , m_clock(clock)
 {
 }
@@ -53,71 +53,31 @@ ai::TokenUsage ArtistMergeJobHandler::estimate(
 
     const QJsonObject keyObj = doc.object();
     const QString type = keyObj.value(QStringLiteral("type")).toString();
-    if (type != QLatin1StringView("fuzzy")) {
+    if (type != QLatin1StringView("confirm")) {
         return ai::TokenUsage { .promptTokens = 0, .completionTokens = 0 };
     }
 
-    const QJsonArray pairsArr = keyObj.value(QStringLiteral("pairs")).toArray();
-    if (pairsArr.isEmpty()) {
+    const QJsonArray groupsArr = keyObj.value(QStringLiteral("groups")).toArray();
+    if (groupsArr.isEmpty()) {
         return ai::TokenUsage { .promptTokens = 0, .completionTokens = 0 };
     }
 
-    const ArtistMergeSource source(m_db);
-    const auto artistsRes = source.loadArtists();
-    if (!artistsRes.ok()) {
-        const int count = static_cast<int>(pairsArr.size());
-        return ai::TokenUsage {
-            .promptTokens = (count * 80) + 200,
-            .completionTokens = count * 40,
-        };
-    }
-
-    QHash<qint64, ArtistEntry> entriesById;
-    for (const auto &entry : artistsRes.value()) {
-        entriesById.insert(entry.artistId, entry);
-    }
-
-    QList<ArtistMergeCandidatePair> candidatePairs;
-    int candId = 0;
-    for (const auto &elem : pairsArr) {
-        if (!elem.isArray()) {
-            continue;
+    int totalMembers = 0;
+    for (const auto &gElem : groupsArr) {
+        if (gElem.isArray()) {
+            totalMembers += static_cast<int>(gElem.toArray().size());
         }
-        const auto p = elem.toArray();
-        if (p.size() < 2) {
-            continue;
-        }
-        const qint64 idA = p.at(0).toInteger();
-        const qint64 idB = p.at(1).toInteger();
-        if (!entriesById.contains(idA) || !entriesById.contains(idB)) {
-            continue;
-        }
-        const auto albumsA = source.sampleAlbums(idA);
-        const auto albumsB = source.sampleAlbums(idB);
-        candidatePairs.append(ArtistMergeCandidatePair {
-            .id = candId++,
-            .artistA = entriesById.value(idA),
-            .albumsA = albumsA.ok() ? albumsA.value() : QStringList { },
-            .artistB = entriesById.value(idB),
-            .albumsB = albumsB.ok() ? albumsB.value() : QStringList { },
-        });
     }
 
-    if (candidatePairs.isEmpty()) {
-        return ai::TokenUsage { .promptTokens = 0, .completionTokens = 0 };
-    }
+    constexpr int kPromptTokensPerMember = 60;
+    constexpr int kPromptTokensBase = 300;
+    // Reasoning overhead is per-request
+    constexpr int kFixedReasoningTokensPerRequest = 8000;
+    constexpr int kCompletionTokensPerGroup = 80;
 
-    const auto vars = artistMergePromptVars(candidatePairs);
-    const auto rendered = m_prompts.render(QStringLiteral("cleanup/artist_merge"), vars);
-
-    int promptTokens = 0;
-    if (rendered.ok()) {
-        promptTokens = ai::roughTokenCount(rendered.value().system)
-            + ai::roughTokenCount(rendered.value().user);
-    } else {
-        promptTokens = (static_cast<int>(candidatePairs.size()) * 80) + 200;
-    }
-    const int completionTokens = static_cast<int>(candidatePairs.size()) * 40;
+    const int promptTokens = (totalMembers * kPromptTokensPerMember) + kPromptTokensBase;
+    const int completionTokens = kFixedReasoningTokensPerRequest
+        + (static_cast<int>(groupsArr.size()) * kCompletionTokensPerGroup);
 
     return ai::TokenUsage {
         .promptTokens = promptTokens,
@@ -157,14 +117,11 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::process(const QString &itemKey,
     const QJsonObject keyObj = doc.object();
     const QString type = keyObj.value(QStringLiteral("type")).toString();
 
-    if (type == QLatin1StringView("cluster")) {
-        return processCluster(keyObj, batchId, autoAcceptThreshold, done);
+    if (type == QLatin1StringView("group")) {
+        return processGroup(keyObj, batchId, autoAcceptThreshold, done);
     }
-    if (type == QLatin1StringView("fuzzy")) {
-        return processFuzzy(keyObj, params, batchId, autoAcceptThreshold, std::move(done));
-    }
-    if (type == QLatin1StringView("mb")) {
-        return processMb(keyObj, batchId, autoAcceptThreshold, std::move(done));
+    if (type == QLatin1StringView("confirm")) {
+        return processConfirm(keyObj, params, batchId, autoAcceptThreshold, std::move(done));
     }
 
     done(core::Error {
@@ -175,7 +132,7 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::process(const QString &itemKey,
     return nullptr;
 }
 
-std::unique_ptr<QObject> ArtistMergeJobHandler::processCluster(const QJsonObject &keyObj,
+std::unique_ptr<QObject> ArtistMergeJobHandler::processGroup(const QJsonObject &keyObj,
     qint64 batchId, std::optional<double> autoAcceptThreshold,
     const std::function<void(const core::Result<void> &)> &done)
 {
@@ -185,7 +142,7 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::processCluster(const QJsonObject
         return nullptr;
     }
 
-    const ArtistMergeSource source(m_db);
+    const ArtistMergeSource source(m_db, m_clock);
     const auto artistsRes = source.loadArtists();
     if (!artistsRes.ok()) {
         done(artistsRes.error());
@@ -201,28 +158,28 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::processCluster(const QJsonObject
     memberEntries.reserve(idsArr.size());
     for (const auto &elem : idsArr) {
         const qint64 id = elem.toInteger();
-        if (!entriesById.contains(id)) {
-            done({ });
-            return nullptr;
+        if (entriesById.contains(id)) {
+            memberEntries.append(entriesById.value(id));
         }
-        memberEntries.append(entriesById.value(id));
     }
 
-    const auto clustering = clusterArtists(memberEntries);
-    if (clustering.clusters.isEmpty()) {
+    if (memberEntries.size() < 2) {
         done({ });
         return nullptr;
     }
 
-    library::CorrectionStore store(m_db, m_clock);
-    for (const auto &cluster : clustering.clusters) {
-        const auto proposals = clusterProposals(cluster);
-        if (!proposals.isEmpty()) {
-            auto addRes = store.addArtistAliasProposals(batchId, proposals, autoAcceptThreshold);
-            if (!addRes.ok()) {
-                done(addRes);
-                return nullptr;
-            }
+    const ArtistGroup group {
+        .members = memberEntries,
+        .exactOnly = true,
+    };
+
+    const auto proposals = groupProposals(group);
+    if (!proposals.isEmpty()) {
+        library::CorrectionStore store(m_db, m_clock);
+        auto addRes = store.addArtistAliasProposals(batchId, proposals, autoAcceptThreshold);
+        if (!addRes.ok()) {
+            done(addRes);
+            return nullptr;
         }
     }
 
@@ -230,7 +187,7 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::processCluster(const QJsonObject
     return nullptr;
 }
 
-std::unique_ptr<QObject> ArtistMergeJobHandler::processFuzzy(const QJsonObject &keyObj,
+std::unique_ptr<QObject> ArtistMergeJobHandler::processConfirm(const QJsonObject &keyObj,
     const QJsonObject &params, qint64 batchId, std::optional<double> autoAcceptThreshold,
     std::function<void(const core::Result<void> &)> done)
 {
@@ -240,13 +197,13 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::processFuzzy(const QJsonObject &
         return nullptr;
     }
 
-    const QJsonArray pairsArr = keyObj.value(QStringLiteral("pairs")).toArray();
-    if (pairsArr.isEmpty()) {
+    const QJsonArray groupsArr = keyObj.value(QStringLiteral("groups")).toArray();
+    if (groupsArr.isEmpty()) {
         done({ });
         return nullptr;
     }
 
-    const ArtistMergeSource source(m_db);
+    const ArtistMergeSource source(m_db, m_clock);
     const auto artistsRes = source.loadArtists();
     if (!artistsRes.ok()) {
         done(artistsRes.error());
@@ -258,46 +215,57 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::processFuzzy(const QJsonObject &
         entriesById.insert(entry.artistId, entry);
     }
 
-    QList<ArtistMergeCandidatePair> candidatePairs;
-    int candId = 0;
-    for (const auto &elem : pairsArr) {
+    const auto altNamesRes = source.loadAltNames();
+    const auto altNames = altNamesRes.ok() ? altNamesRes.value() : QHash<QString, QStringList> { };
+
+    QList<ArtistMergeGroup> mergeGroups;
+    int nextGroupId = 0;
+
+    for (const auto &elem : groupsArr) {
         if (!elem.isArray()) {
             continue;
         }
-        const auto p = elem.toArray();
-        if (p.size() < 2) {
-            continue;
+        const auto idArr = elem.toArray();
+        QList<ArtistMergeMember> members;
+        for (const auto &idVal : idArr) {
+            const qint64 id = idVal.toInteger();
+            if (!entriesById.contains(id)) {
+                continue;
+            }
+            const auto entry = entriesById.value(id);
+            const auto albumsRes = source.sampleAlbums(id, 3);
+            const QStringList albums = albumsRes.ok() ? albumsRes.value() : QStringList { };
+            const QString key = exactKey(entry.name);
+            const QStringList aka = altNames.value(key);
+
+            members.append(ArtistMergeMember {
+                .entry = entry,
+                .albums = albums,
+                .aka = aka,
+            });
         }
-        const qint64 idA = p.at(0).toInteger();
-        const qint64 idB = p.at(1).toInteger();
-        if (!entriesById.contains(idA) || !entriesById.contains(idB)) {
-            continue;
+
+        if (members.size() >= 2) {
+            mergeGroups.append(ArtistMergeGroup {
+                .id = nextGroupId++,
+                .members = std::move(members),
+            });
         }
-        const auto albumsA = source.sampleAlbums(idA);
-        const auto albumsB = source.sampleAlbums(idB);
-        candidatePairs.append(ArtistMergeCandidatePair {
-            .id = candId++,
-            .artistA = entriesById.value(idA),
-            .albumsA = albumsA.ok() ? albumsA.value() : QStringList { },
-            .artistB = entriesById.value(idB),
-            .albumsB = albumsB.ok() ? albumsB.value() : QStringList { },
-        });
     }
 
-    if (candidatePairs.isEmpty()) {
+    if (mergeGroups.isEmpty()) {
         done({ });
         return nullptr;
     }
 
-    return startLlm(candidatePairs, entriesById, batchId, autoAcceptThreshold, std::move(done));
+    return startLlm(mergeGroups, batchId, autoAcceptThreshold, std::move(done));
 }
 
-std::unique_ptr<QObject> ArtistMergeJobHandler::startLlm(
-    const QList<ArtistMergeCandidatePair> &pairs, const QHash<qint64, ArtistEntry> &entriesById,
+std::unique_ptr<QObject> ArtistMergeJobHandler::startLlm(const QList<ArtistMergeGroup> &groups,
     qint64 batchId, std::optional<double> autoAcceptThreshold,
     std::function<void(const core::Result<void> &)> done)
 {
-    const auto vars = artistMergePromptVars(pairs);
+    const auto vars = artistMergePromptVars(groups);
     const auto renderedRes = m_prompts.render(QStringLiteral("cleanup/artist_merge"), vars);
     if (!renderedRes.ok()) {
         done(renderedRes.error());
@@ -317,7 +285,7 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::startLlm(
         .purpose = ai::Purpose::Cleanup,
         .request = std::move(req),
         .structured = spec,
-        .stream = false,
+        .stream = true,
         .cachePolicy = ai::CachePolicy::Use,
         .cacheTtlMs = std::nullopt,
         .dataCategories = { },
@@ -327,8 +295,7 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::startLlm(
     auto *taskPtr = task.get();
 
     QObject::connect(taskPtr, &ai::LlmTask::finished, taskPtr,
-        [this, taskPtr, batchId, autoAcceptThreshold, pairs, entriesById,
-            done = std::move(done)]() {
+        [this, taskPtr, batchId, autoAcceptThreshold, groups, done = std::move(done)]() {
             const auto &res = taskPtr->result();
             if (!res.ok()) {
                 done(res.error());
@@ -345,8 +312,7 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::startLlm(
                 return;
             }
 
-            const auto parsedProposals
-                = parseArtistMergeResult(*llmResult.structured, pairs, entriesById);
+            const auto parsedProposals = parseArtistMergeResult(*llmResult.structured, groups);
             if (!parsedProposals.ok()) {
                 done(parsedProposals.error());
                 return;
@@ -366,87 +332,6 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::startLlm(
         });
 
     return task;
-}
-
-std::unique_ptr<QObject> ArtistMergeJobHandler::processMb(const QJsonObject &keyObj, qint64 batchId,
-    std::optional<double> autoAcceptThreshold, std::function<void(const core::Result<void> &)> done)
-{
-    const qint64 id = keyObj.value(QStringLiteral("id")).toInteger(0);
-    if (id <= 0) {
-        done(core::Error {
-            .code = QString(errc::kArtistMergeInvalidKey),
-            .message = QStringLiteral("Invalid artist id in mb key"),
-            .detail = QString::number(id),
-        });
-        return nullptr;
-    }
-
-    const ArtistMergeSource source(m_db);
-    const auto artistsRes = source.loadArtists();
-    if (!artistsRes.ok()) {
-        done(artistsRes.error());
-        return nullptr;
-    }
-
-    ArtistEntry ours;
-    bool found = false;
-    for (const auto &entry : artistsRes.value()) {
-        if (entry.artistId == id) {
-            ours = entry;
-            found = true;
-            break;
-        }
-    }
-
-    if (!found) {
-        done({ });
-        return nullptr;
-    }
-
-    auto searchTask = m_mbClient.searchArtist(ours.name);
-    auto *taskPtr = searchTask.get();
-
-    QObject::connect(taskPtr, &MbSearchTask::finished, taskPtr,
-        [this, taskPtr, ours, batchId, autoAcceptThreshold, done = std::move(done)]() {
-            const auto &res = taskPtr->result();
-            if (!res.ok()) {
-                done(res.error());
-                return;
-            }
-
-            const ArtistMergeSource reloadSource(m_db);
-            const auto reloadRes = reloadSource.loadArtists();
-            if (!reloadRes.ok()) {
-                done(reloadRes.error());
-                return;
-            }
-
-            QHash<QString, ArtistEntry> libraryByName;
-            for (const auto &entry : reloadRes.value()) {
-                libraryByName.insert(entry.name, entry);
-            }
-
-            if (!libraryByName.contains(ours.name)) {
-                done({ });
-                return;
-            }
-
-            const auto currentOurs = libraryByName.value(ours.name);
-            const auto proposals = musicBrainzProposals(currentOurs, res.value(), libraryByName);
-            if (!proposals.isEmpty()) {
-                library::CorrectionStore store(m_db, m_clock);
-                auto addRes
-                    = store.addArtistAliasProposals(batchId, proposals, autoAcceptThreshold);
-                if (!addRes.ok()) {
-                    done(addRes);
-                    return;
-                }
-            }
-
-            done({ });
-        });
-
-    return searchTask;
 }
 
 } // namespace linernotes::butler

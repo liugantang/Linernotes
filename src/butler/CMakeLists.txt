@@ -4,8 +4,18 @@
 file(GLOB SCHEMA_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/schemas/*/*.json")
 
 add_library(linernotes_butler STATIC
-    ArtistCluster.cpp
-    ArtistCluster.h
+    ArtistCredit.cpp
+    ArtistCredit.h
+    ArtistCreditJobHandler.cpp
+    ArtistCreditJobHandler.h
+    ArtistCreditLlm.cpp
+    ArtistCreditLlm.h
+    ArtistCreditSource.cpp
+    ArtistCreditSource.h
+    ArtistCreditStore.cpp
+    ArtistCreditStore.h
+    ArtistGroup.cpp
+    ArtistGroup.h
     ArtistMerge.cpp
     ArtistMerge.h
     ArtistMergeJobHandler.cpp
@@ -16,14 +26,6 @@ add_library(linernotes_butler STATIC
     ArtistMergeSource.h
     ArtistName.cpp
     ArtistName.h
-    ArtistSplit.cpp
-    ArtistSplit.h
-    ArtistSplitJobHandler.cpp
-    ArtistSplitJobHandler.h
-    ArtistSplitLlm.cpp
-    ArtistSplitLlm.h
-    ArtistSplitSource.cpp
-    ArtistSplitSource.h
     ButlerLogging.cpp
     ButlerLogging.h
     CharFrequency.cpp
@@ -41,10 +43,7 @@ add_library(linernotes_butler STATIC
     MojibakeLlm.h
     MojibakeSource.cpp
     MojibakeSource.h
-    MusicBrainz.cpp
-    MusicBrainz.h
-    MusicBrainzClient.cpp
-    MusicBrainzClient.h
+    TrackFieldTarget.h
 )
 add_library(Linernotes::butler ALIAS linernotes_butler)
 

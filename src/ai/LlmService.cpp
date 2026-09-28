@@ -168,8 +168,8 @@ void LlmTask::onSecretRead(const core::Result<QString> &keyRes)
 
 void LlmTask::handleExecution()
 {
+    m_stream = m_call.stream;
     if (m_call.structured.has_value()) {
-        m_stream = false;
         m_spec = m_call.structured.value();
         const auto schemaRes = JsonSchema::compile(m_spec.schema);
         if (!schemaRes.ok()) {
@@ -179,7 +179,6 @@ void LlmTask::handleExecution()
         m_compiledSchema = schemaRes.value();
         m_mode = chooseStructuredMode(m_resolved.profile.capabilities.value_or(Capabilities { }));
     } else {
-        m_stream = m_call.stream;
         m_mode = StructuredMode::Prompt;
     }
 
@@ -230,7 +229,7 @@ bool LlmTask::tryReturnFromCache()
     res.attempts = 0;
     res.totalUsage = TokenUsage { };
     res.model = m_serviceConfig.model;
-    if (m_stream) {
+    if (m_stream && !m_call.structured.has_value()) {
         emit delta(res.response.content);
     }
     finishWithSuccess(std::move(res));
@@ -258,7 +257,9 @@ void LlmTask::sendAttempt(const ChatRequest &req)
 
     if (m_stream) {
         m_currentReply = m_service.m_client.stream(m_serviceConfig, req);
-        connect(m_currentReply.get(), &LlmReply::delta, this, &LlmTask::delta);
+        if (!m_call.structured.has_value()) {
+            connect(m_currentReply.get(), &LlmReply::delta, this, &LlmTask::delta);
+        }
     } else {
         m_currentReply = m_service.m_client.complete(m_serviceConfig, req);
     }

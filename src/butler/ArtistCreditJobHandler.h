@@ -3,9 +3,14 @@
 
 #pragma once
 
-#include <ai/JobHandler.h>
-#include <butler/ArtistSplitSource.h>
+#include <QHash>
 
+#include <ai/JobHandler.h>
+#include <butler/ArtistCredit.h>
+#include <core/Result.h>
+
+#include <functional>
+#include <memory>
 #include <optional>
 
 namespace linernotes::core {
@@ -23,21 +28,24 @@ class PromptLibrary;
 
 namespace linernotes::butler {
 
-class ArtistSplitJobHandler final : public ai::JobHandler {
+class ArtistCreditJobHandler final : public ai::JobHandler {
 public:
-    ArtistSplitJobHandler(library::Database &db, ai::LlmService &llm,
+    ArtistCreditJobHandler(library::Database &db, ai::LlmService &llm,
         const ai::PromptLibrary &prompts, const core::Clock &clock);
-    ~ArtistSplitJobHandler() override = default;
-    Q_DISABLE_COPY_MOVE(ArtistSplitJobHandler)
+    ~ArtistCreditJobHandler() override = default;
+    Q_DISABLE_COPY_MOVE(ArtistCreditJobHandler)
 
-    [[nodiscard]] QString kind() const override; // "butler.artist_split"
+    [[nodiscard]] QString kind() const override; // "butler.artist_credit"
     [[nodiscard]] ai::TokenUsage estimate(
         const QString &itemKey, const QJsonObject &params) const override;
     std::unique_ptr<QObject> process(const QString &itemKey, const QJsonObject &params,
         std::function<void(const core::Result<void> &)> done) override;
 
 private:
-    std::unique_ptr<QObject> startLlm(const ArtistSplitGroup &group, qint64 batchId,
+    core::Result<void> addCreditProposals(const QHash<QString, ArtistCredit> &credits,
+        qint64 batchId, std::optional<double> autoAcceptThreshold) const;
+
+    std::unique_ptr<QObject> startLlm(const QStringList &values, qint64 batchId,
         std::optional<double> autoAcceptThreshold,
         std::function<void(const core::Result<void> &)> done);
 

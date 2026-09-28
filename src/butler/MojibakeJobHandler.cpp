@@ -178,7 +178,7 @@ std::unique_ptr<QObject> MojibakeJobHandler::startLlm(const MojibakeGroup &group
         .purpose = ai::Purpose::Cleanup,
         .request = std::move(req),
         .structured = spec,
-        .stream = false,
+        .stream = true,
         .cachePolicy = ai::CachePolicy::Use,
         .cacheTtlMs = std::nullopt,
         .dataCategories = { },

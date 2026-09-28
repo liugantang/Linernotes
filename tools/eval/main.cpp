@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Linernotes contributors
 
+#include "ArtistCreditEval.h"
 #include "ArtistMergeEval.h"
+#include "EvalHarness.h"
 
 #include <QCommandLineOption>
 #include <QCommandLineParser>
 #include <QCoreApplication>
+#include <QFile>
 #include <QLoggingCategory>
 #include <QTimer>
 
@@ -16,6 +19,10 @@
 #define DEFAULT_ARTIST_MERGE_CORPUS_PATH ""
 #endif
 
+#ifndef DEFAULT_ARTIST_CREDIT_CORPUS_PATH
+#define DEFAULT_ARTIST_CREDIT_CORPUS_PATH ""
+#endif
+
 namespace {
 
 struct CliOptions {
@@ -24,10 +31,12 @@ struct CliOptions {
     QCommandLineOption modelOption { QStringLiteral("model"),
         QStringLiteral("Model name to use (required)."), QStringLiteral("name") };
     QCommandLineOption corpusOption { QStringLiteral("corpus"),
-        QStringLiteral("Path to corpus JSON file (default: embedded/source default path)."),
-        QStringLiteral("path"), QStringLiteral(DEFAULT_ARTIST_MERGE_CORPUS_PATH) };
-    QCommandLineOption mbOption { QStringLiteral("mb"),
-        QStringLiteral("Enable MusicBrainz lookup (default: false).") };
+        QStringLiteral("Path to corpus JSON file (default: default corpus for subcommand)."),
+        QStringLiteral("path") };
+    QCommandLineOption libraryOption { QStringLiteral("library"),
+        QStringLiteral(
+            "Path to a library.db file for real library evaluation (artist-credit only)."),
+        QStringLiteral("path") };
     QCommandLineOption keepDbOption { QStringLiteral("keep-db"),
         QStringLiteral(
             "Path to persist SQLite database file for inspection (default: temporary db)."),
@@ -42,18 +51,23 @@ struct CliOptions {
         QStringLiteral("Enable verbose debug logging.") };
 };
 
+struct ParsedArgs {
+    QString subcommand { };
+    linernotes::eval::EvalConfig config;
+};
+
 void setupParser(QCommandLineParser &parser, const CliOptions &opts)
 {
     parser.setApplicationDescription(QStringLiteral("Linernotes evaluation tool"));
     parser.addHelpOption();
     parser.addVersionOption();
     parser.addPositionalArgument(QStringLiteral("subcommand"),
-        QStringLiteral("Evaluation subcommand to run (e.g. artist-merge)."),
-        QStringLiteral("<artist-merge>"));
+        QStringLiteral("Evaluation subcommand to run (artist-merge, artist-credit)."),
+        QStringLiteral("<subcommand>"));
     parser.addOption(opts.baseUrlOption);
     parser.addOption(opts.modelOption);
     parser.addOption(opts.corpusOption);
-    parser.addOption(opts.mbOption);
+    parser.addOption(opts.libraryOption);
     parser.addOption(opts.keepDbOption);
     parser.addOption(opts.timeoutMsOption);
     parser.addOption(opts.rpmOption);
@@ -71,7 +85,132 @@ std::optional<int> parsePositiveInt(const QString &str, const char *name)
     return val;
 }
 
-std::optional<linernotes::eval::EvalConfig> parseAndValidateArgs(
+std::optional<QString> extractSubcommand(const QCommandLineParser &parser, int &exitCode)
+{
+    const QStringList positionalArgs = parser.positionalArguments();
+    if (positionalArgs.isEmpty()) {
+        std::cerr << "Error: Missing subcommand. Available subcommands: artist-merge, "
+                     "artist-credit\n\n";
+        std::cerr << qPrintable(parser.helpText());
+        exitCode = 2;
+        return std::nullopt;
+    }
+
+    const QString &subcommand = positionalArgs.at(0);
+    if (subcommand != QStringLiteral("artist-merge")
+        && subcommand != QStringLiteral("artist-credit")) {
+        std::cerr << "Error: Unknown subcommand: " << qPrintable(subcommand)
+                  << ". Available subcommands: artist-merge, artist-credit\n\n";
+        std::cerr << qPrintable(parser.helpText());
+        exitCode = 2;
+        return std::nullopt;
+    }
+    return subcommand;
+}
+
+std::optional<QUrl> parseBaseUrl(
+    const QCommandLineParser &parser, const QCommandLineOption &opt, int &exitCode)
+{
+    const QString baseUrlStr = parser.value(opt).trimmed();
+    QUrl baseUrl(baseUrlStr);
+    const QString scheme = baseUrl.scheme().toLower();
+    if (!baseUrl.isValid()
+        || (scheme != QStringLiteral("http") && scheme != QStringLiteral("https"))) {
+        std::cerr << "Invalid --base-url specified: " << qPrintable(baseUrlStr)
+                  << " (must be http:// or https://)\n";
+        exitCode = 2;
+        return std::nullopt;
+    }
+    return baseUrl;
+}
+
+std::optional<QString> parseModel(
+    const QCommandLineParser &parser, const QCommandLineOption &opt, int &exitCode)
+{
+    QString model = parser.value(opt).trimmed();
+    if (model.isEmpty()) {
+        std::cerr << "Error: --model cannot be empty.\n";
+        exitCode = 2;
+        return std::nullopt;
+    }
+    return model;
+}
+
+std::optional<int> parseRpm(
+    const QCommandLineParser &parser, const QCommandLineOption &opt, int &exitCode)
+{
+    bool ok = false;
+    const int rpm = parser.value(opt).toInt(&ok);
+    if (!ok || rpm < 0) {
+        std::cerr << "Invalid --rpm specified: " << qPrintable(parser.value(opt))
+                  << " (must be >= 0)\n";
+        exitCode = 2;
+        return std::nullopt;
+    }
+    return rpm;
+}
+
+bool resolveArtistMergeCorpus(
+    const QCommandLineParser &parser, const CliOptions &opts, QString &corpusPath, int &exitCode)
+{
+    if (parser.isSet(opts.libraryOption)) {
+        std::cerr << "Error: --library option is not supported for artist-merge subcommand.\n";
+        exitCode = 2;
+        return false;
+    }
+    corpusPath = parser.isSet(opts.corpusOption) ? parser.value(opts.corpusOption)
+                                                 : QStringLiteral(DEFAULT_ARTIST_MERGE_CORPUS_PATH);
+    if (corpusPath.isEmpty()) {
+        std::cerr << "Error: --corpus path is not specified and default path is not set.\n";
+        exitCode = 2;
+        return false;
+    }
+    return true;
+}
+
+bool resolveArtistCreditPaths(const QCommandLineParser &parser, const CliOptions &opts,
+    QString &corpusPath, QString &libraryPath, int &exitCode)
+{
+    if (parser.isSet(opts.corpusOption) && parser.isSet(opts.libraryOption)) {
+        std::cerr << "Error: --corpus and --library options are mutually exclusive.\n";
+        exitCode = 2;
+        return false;
+    }
+    if (parser.isSet(opts.libraryOption)) {
+        libraryPath = parser.value(opts.libraryOption);
+        if (!QFile::exists(libraryPath)) {
+            std::cerr << "Error: Specified library database file does not exist: "
+                      << qPrintable(libraryPath) << "\n";
+            exitCode = 2;
+            return false;
+        }
+        return true;
+    }
+
+    corpusPath = parser.isSet(opts.corpusOption)
+        ? parser.value(opts.corpusOption)
+        : QStringLiteral(DEFAULT_ARTIST_CREDIT_CORPUS_PATH);
+    if (corpusPath.isEmpty()) {
+        std::cerr << "Error: --corpus path is not specified and default path is not set.\n";
+        exitCode = 2;
+        return false;
+    }
+    return true;
+}
+
+bool resolveSubcommandPaths(const QString &subcommand, const QCommandLineParser &parser,
+    const CliOptions &opts, QString &corpusPath, QString &libraryPath, int &exitCode)
+{
+    if (subcommand == QStringLiteral("artist-merge")) {
+        return resolveArtistMergeCorpus(parser, opts, corpusPath, exitCode);
+    }
+    if (subcommand == QStringLiteral("artist-credit")) {
+        return resolveArtistCreditPaths(parser, opts, corpusPath, libraryPath, exitCode);
+    }
+    return false;
+}
+
+std::optional<ParsedArgs> parseAndValidateArgs(
     QCommandLineParser &parser, const CliOptions &opts, int &exitCode)
 {
     if (!parser.parse(QCoreApplication::arguments())) {
@@ -87,14 +226,11 @@ std::optional<linernotes::eval::EvalConfig> parseAndValidateArgs(
         parser.showVersion();
     }
 
-    const QStringList positionalArgs = parser.positionalArguments();
-    if (positionalArgs.isEmpty() || positionalArgs.at(0) != QStringLiteral("artist-merge")) {
-        std::cerr
-            << "Error: Unknown or missing subcommand. Available subcommands: artist-merge\n\n";
-        std::cerr << qPrintable(parser.helpText());
-        exitCode = 2;
+    const auto subcommandOpt = extractSubcommand(parser, exitCode);
+    if (!subcommandOpt.has_value()) {
         return std::nullopt;
     }
+    const QString &subcommand = *subcommandOpt;
 
     if (!parser.isSet(opts.baseUrlOption) || !parser.isSet(opts.modelOption)) {
         std::cerr << "Error: --base-url and --model are required options.\n\n";
@@ -103,21 +239,13 @@ std::optional<linernotes::eval::EvalConfig> parseAndValidateArgs(
         return std::nullopt;
     }
 
-    const QString baseUrlStr = parser.value(opts.baseUrlOption).trimmed();
-    const QUrl baseUrl(baseUrlStr);
-    const QString scheme = baseUrl.scheme().toLower();
-    if (!baseUrl.isValid()
-        || (scheme != QStringLiteral("http") && scheme != QStringLiteral("https"))) {
-        std::cerr << "Invalid --base-url specified: " << qPrintable(baseUrlStr)
-                  << " (must be http:// or https://)\n";
-        exitCode = 2;
+    const auto baseUrlOpt = parseBaseUrl(parser, opts.baseUrlOption, exitCode);
+    if (!baseUrlOpt.has_value()) {
         return std::nullopt;
     }
 
-    const QString model = parser.value(opts.modelOption).trimmed();
-    if (model.isEmpty()) {
-        std::cerr << "Error: --model cannot be empty.\n";
-        exitCode = 2;
+    const auto modelOpt = parseModel(parser, opts.modelOption, exitCode);
+    if (!modelOpt.has_value()) {
         return std::nullopt;
     }
 
@@ -127,19 +255,14 @@ std::optional<linernotes::eval::EvalConfig> parseAndValidateArgs(
         return std::nullopt;
     }
 
-    bool ok = false;
-    const int rpm = parser.value(opts.rpmOption).toInt(&ok);
-    if (!ok || rpm < 0) {
-        std::cerr << "Invalid --rpm specified: " << qPrintable(parser.value(opts.rpmOption))
-                  << " (must be >= 0)\n";
-        exitCode = 2;
+    const auto rpmOpt = parseRpm(parser, opts.rpmOption, exitCode);
+    if (!rpmOpt.has_value()) {
         return std::nullopt;
     }
 
-    const QString corpusPath = parser.value(opts.corpusOption);
-    if (corpusPath.isEmpty()) {
-        std::cerr << "Error: --corpus path is not specified and default path is not set.\n";
-        exitCode = 2;
+    QString corpusPath;
+    QString libraryPath;
+    if (!resolveSubcommandPaths(subcommand, parser, opts, corpusPath, libraryPath, exitCode)) {
         return std::nullopt;
     }
 
@@ -148,15 +271,18 @@ std::optional<linernotes::eval::EvalConfig> parseAndValidateArgs(
         keepDbPath = parser.value(opts.keepDbOption);
     }
 
-    return linernotes::eval::EvalConfig {
-        .baseUrl = baseUrl,
-        .model = model,
-        .corpusPath = corpusPath,
-        .keepDbPath = keepDbPath,
-        .useMusicBrainz = parser.isSet(opts.mbOption),
-        .timeoutMs = *timeoutVal,
-        .requestsPerMinute = rpm,
-        .verbose = parser.isSet(opts.verboseOption),
+    return ParsedArgs {
+        .subcommand = subcommand,
+        .config = linernotes::eval::EvalConfig {
+            .baseUrl = *baseUrlOpt,
+            .model = *modelOpt,
+            .corpusPath = corpusPath,
+            .libraryPath = libraryPath,
+            .keepDbPath = keepDbPath,
+            .timeoutMs = *timeoutVal,
+            .requestsPerMinute = *rpmOpt,
+            .verbose = parser.isSet(opts.verboseOption),
+        },
     };
 }
 
@@ -174,23 +300,35 @@ int main(int argc, char *argv[])
         setupParser(parser, opts);
 
         int exitCode = 0;
-        const auto configOpt = parseAndValidateArgs(parser, opts, exitCode);
-        if (!configOpt.has_value()) {
+        const auto parsedArgsOpt = parseAndValidateArgs(parser, opts, exitCode);
+        if (!parsedArgsOpt.has_value()) {
             return exitCode;
         }
 
-        if (!configOpt->verbose) {
+        const auto &parsedArgs = *parsedArgsOpt;
+        if (!parsedArgs.config.verbose) {
             QLoggingCategory::setFilterRules(QStringLiteral("linernotes.*.debug=false"));
         }
 
-        linernotes::eval::ArtistMergeEval eval(*configOpt);
-        if (!eval.init()) {
-            return 2;
+        if (parsedArgs.subcommand == QStringLiteral("artist-merge")) {
+            linernotes::eval::ArtistMergeEval eval(parsedArgs.config);
+            if (!eval.init()) {
+                return 2;
+            }
+            QTimer::singleShot(0, &eval, &linernotes::eval::ArtistMergeEval::start);
+            return QCoreApplication::exec();
         }
 
-        QTimer::singleShot(0, &eval, &linernotes::eval::ArtistMergeEval::start);
+        if (parsedArgs.subcommand == QStringLiteral("artist-credit")) {
+            linernotes::eval::ArtistCreditEval eval(parsedArgs.config);
+            if (!eval.init()) {
+                return 2;
+            }
+            QTimer::singleShot(0, &eval, &linernotes::eval::ArtistCreditEval::start);
+            return QCoreApplication::exec();
+        }
 
-        return QCoreApplication::exec();
+        return 0;
     } catch (const std::exception &e) {
         std::cerr << "Fatal exception: " << e.what() << "\n";
         return 2;

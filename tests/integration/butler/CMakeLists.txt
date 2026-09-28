@@ -18,6 +18,24 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME integration_ArtistCreditJob
+    SOURCES
+        tst_ArtistCreditJob.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::ai
+        Linernotes::TestSupport
+        Qt6::Network
+        Qt6::Sql
+    LABELS
+        integration
+    TIMEOUT
+        60
+)
+
+linernotes_add_test(
     NAME integration_ArtistMergeJob
     SOURCES
         tst_ArtistMergeJob.cpp
@@ -25,7 +43,9 @@ linernotes_add_test(
         Linernotes::butler
         Linernotes::library
         Linernotes::core
+        Linernotes::ai
         Linernotes::TestSupport
+        Qt6::Network
         Qt6::Sql
     LABELS
         integration

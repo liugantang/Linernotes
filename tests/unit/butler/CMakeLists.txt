@@ -36,27 +36,27 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
-    NAME butler_ArtistSplit
+    NAME butler_ArtistGroup
     SOURCES
-        tst_ArtistSplit.cpp
+        tst_ArtistGroup.cpp
     LIBS
         Linernotes::butler
         Linernotes::library
         Linernotes::core
         Linernotes::TestSupport
-        Qt6::Sql
 )
 
 linernotes_add_test(
-    NAME butler_ArtistSplitLlm
+    NAME butler_ArtistCreditLlm
     SOURCES
-        tst_ArtistSplitLlm.cpp
+        tst_ArtistCreditLlm.cpp
     LIBS
         Linernotes::butler
         Linernotes::library
         Linernotes::core
         Linernotes::TestSupport
 )
+
 
 linernotes_add_test(
     NAME butler_ArtistMerge
@@ -89,19 +89,6 @@ linernotes_add_test(
         Linernotes::core
         Linernotes::TestSupport
         Linernotes::Deps::ICU
-)
-
-linernotes_add_test(
-    NAME butler_MusicBrainz
-    SOURCES
-        tst_MusicBrainz.cpp
-    LIBS
-        Linernotes::butler
-        Linernotes::library
-        Linernotes::core
-        Linernotes::TestSupport
-        Qt6::Network
-        Qt6::Sql
 )
 
 

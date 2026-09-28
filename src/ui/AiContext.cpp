@@ -7,8 +7,8 @@
 
 #include <QStringList>
 
+#include <butler/ArtistCreditJobHandler.h>
 #include <butler/ArtistMergeJobHandler.h>
-#include <butler/ArtistSplitJobHandler.h>
 #include <butler/MojibakeJobHandler.h>
 
 #include <memory>
@@ -38,7 +38,6 @@ AiContext::AiContext(core::Settings &settings, library::Database &db, const core
     , m_prompts(buildPromptDirs(promptsDir))
     , m_debugLog(settings)
     , m_llm(m_config, m_secrets, m_client, m_cache, m_usage, m_privacy, m_debugLog, clock)
-    , m_musicBrainz(m_network, db, clock)
     , m_jobs(db, clock)
     , m_settingsController(
           m_config, m_secrets, m_client, m_privacy, m_usage, m_cache, m_prompts, clock)
@@ -47,9 +46,9 @@ AiContext::AiContext(core::Settings &settings, library::Database &db, const core
     m_jobs.registerHandler(
         std::make_unique<butler::MojibakeJobHandler>(db, m_llm, m_prompts, clock));
     m_jobs.registerHandler(
-        std::make_unique<butler::ArtistSplitJobHandler>(db, m_llm, m_prompts, clock));
-    m_jobs.registerHandler(std::make_unique<butler::ArtistMergeJobHandler>(
-        db, m_llm, m_prompts, m_musicBrainz, clock));
+        std::make_unique<butler::ArtistCreditJobHandler>(db, m_llm, m_prompts, clock));
+    m_jobs.registerHandler(
+        std::make_unique<butler::ArtistMergeJobHandler>(db, m_llm, m_prompts, clock));
 }
 
 void AiContext::onDatabaseReady()

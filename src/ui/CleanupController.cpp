@@ -14,8 +14,9 @@
 
 #include <ai/AiConfig.h>
 #include <ai/JobQueue.h>
+#include <ai/PromptLibrary.h>
+#include <butler/ArtistCreditSource.h>
 #include <butler/ArtistMergeSource.h>
-#include <butler/ArtistSplitSource.h>
 #include <butler/MojibakeSource.h>
 #include <core/Clock.h>
 #include <core/Settings.h>
@@ -27,13 +28,14 @@ namespace linernotes::ui {
 
 namespace {
 
-int countSplitValues(const QStringList &items)
+int countCreditValues(const QStringList &items)
 {
     int count = 0;
     for (const auto &key : items) {
         const auto doc = QJsonDocument::fromJson(key.toUtf8());
-        if (doc.isArray()) {
-            count += static_cast<int>(doc.array().size());
+        if (doc.isObject()) {
+            const auto obj = doc.object();
+            count += static_cast<int>(obj.value(QStringLiteral("values")).toArray().size());
         }
     }
     return count;
@@ -47,8 +49,10 @@ int countMergeClusters(const QStringList &items)
         if (doc.isObject()) {
             const auto obj = doc.object();
             const QString type = obj.value(QStringLiteral("type")).toString();
-            if (type == QLatin1StringView("cluster")) {
+            if (type == QLatin1StringView("group") || type == QLatin1StringView("cluster")) {
                 count += 1;
+            } else if (type == QLatin1StringView("confirm")) {
+                count += static_cast<int>(obj.value(QStringLiteral("groups")).toArray().size());
             } else if (type == QLatin1StringView("fuzzy")) {
                 count += static_cast<int>(obj.value(QStringLiteral("pairs")).toArray().size());
             }
@@ -78,11 +82,13 @@ int queryMissingAlbumTracks(library::Database &db)
 } // namespace
 
 CleanupController::CleanupController(library::Database &db, const core::Clock &clock,
-    ai::JobQueue &jobs, const ai::AiConfig &aiConfig, core::Settings &settings, QObject *parent)
+    ai::JobQueue &jobs, const ai::PromptLibrary &prompts, const ai::AiConfig &aiConfig,
+    core::Settings &settings, QObject *parent)
     : QObject(parent)
     , m_db(db)
     , m_clock(clock)
     , m_jobs(jobs)
+    , m_prompts(prompts)
     , m_aiConfig(aiConfig)
     , m_settings(settings)
 {
@@ -119,9 +125,9 @@ int CleanupController::mojibakeGroups() const
     return m_mojibakeGroups;
 }
 
-int CleanupController::splitValues() const
+int CleanupController::creditValues() const
 {
-    return m_splitValues;
+    return m_creditValues;
 }
 
 int CleanupController::mergeClusters() const
@@ -139,9 +145,9 @@ int CleanupController::mojibakeTokens() const
     return m_mojibakeTokens;
 }
 
-int CleanupController::splitTokens() const
+int CleanupController::creditTokens() const
 {
-    return m_splitTokens;
+    return m_creditTokens;
 }
 
 int CleanupController::mergeTokens() const
@@ -203,20 +209,6 @@ void CleanupController::setAutoAcceptThreshold(double threshold)
     emit autoAcceptThresholdChanged();
 }
 
-bool CleanupController::useMusicBrainz() const
-{
-    return m_settings.value(kButlerUseMusicBrainz);
-}
-
-void CleanupController::setUseMusicBrainz(bool use)
-{
-    if (useMusicBrainz() == use) {
-        return;
-    }
-    m_settings.setValue(kButlerUseMusicBrainz, use);
-    emit useMusicBrainzChanged();
-}
-
 bool CleanupController::isLlmConfigured() const
 {
     return m_llmConfigured;
@@ -239,30 +231,40 @@ void CleanupController::checkHealth()
     m_checking = true;
     emit checkingChanged();
 
-    auto future = QtConcurrent::run([&db = m_db]() -> HealthReportData {
-        HealthReportData report;
+    int promptVersion = 0;
+    if (const auto promptRes = m_prompts.load(QStringLiteral("cleanup/artist_credit"));
+        promptRes.ok()) {
+        promptVersion = promptRes.value().version;
+    } else {
+        qCWarning(lcUi, "Failed to load cleanup/artist_credit prompt: %s",
+            qPrintable(promptRes.error().toString()));
+    }
 
-        const butler::MojibakeSource mojibakeSource(db);
-        if (auto res = mojibakeSource.findGroups(); res.ok()) {
-            report.mojibakeItems = res.value();
-            report.mojibakeGroups = static_cast<int>(report.mojibakeItems.size());
-        }
+    auto future
+        = QtConcurrent::run([&db = m_db, &clock = m_clock, promptVersion]() -> HealthReportData {
+              HealthReportData report;
 
-        const butler::ArtistSplitSource splitSource(db);
-        if (auto res = splitSource.findItems(); res.ok()) {
-            report.splitItems = res.value();
-            report.splitValues = countSplitValues(report.splitItems);
-        }
+              const butler::MojibakeSource mojibakeSource(db);
+              if (auto res = mojibakeSource.findGroups(); res.ok()) {
+                  report.mojibakeItems = res.value();
+                  report.mojibakeGroups = static_cast<int>(report.mojibakeItems.size());
+              }
 
-        const butler::ArtistMergeSource mergeSource(db);
-        if (auto res = mergeSource.findItems(false); res.ok()) {
-            report.mergeItems = res.value();
-            report.mergeClusters = countMergeClusters(report.mergeItems);
-        }
+              const butler::ArtistCreditSource creditSource(db);
+              if (auto res = creditSource.findItems(promptVersion); res.ok()) {
+                  report.creditItems = res.value();
+                  report.creditValues = countCreditValues(report.creditItems);
+              }
 
-        report.missingAlbumTracks = queryMissingAlbumTracks(db);
-        return report;
-    });
+              const butler::ArtistMergeSource mergeSource(db, clock);
+              if (auto res = mergeSource.findItems(); res.ok()) {
+                  report.mergeItems = res.value();
+                  report.mergeClusters = countMergeClusters(report.mergeItems);
+              }
+
+              report.missingAlbumTracks = queryMissingAlbumTracks(db);
+              return report;
+          });
 
     m_healthWatcher.setFuture(future);
 }
@@ -271,7 +273,7 @@ void CleanupController::onHealthCheckFinished()
 {
     const auto data = m_healthWatcher.result();
     m_mojibakeGroups = data.mojibakeGroups;
-    m_splitValues = data.splitValues;
+    m_creditValues = data.creditValues;
     m_mergeClusters = data.mergeClusters;
     m_missingAlbumTracks = data.missingAlbumTracks;
 
@@ -282,11 +284,11 @@ void CleanupController::onHealthCheckFinished()
         m_mojibakeTokens = 0;
     }
 
-    if (auto est = m_jobs.estimate(QStringLiteral("butler.artist_split"), data.splitItems);
+    if (auto est = m_jobs.estimate(QStringLiteral("butler.artist_credit"), data.creditItems);
         est.ok()) {
-        m_splitTokens = est.value().promptTokens + est.value().completionTokens;
+        m_creditTokens = est.value().promptTokens + est.value().completionTokens;
     } else {
-        m_splitTokens = 0;
+        m_creditTokens = 0;
     }
 
     if (auto est = m_jobs.estimate(QStringLiteral("butler.artist_merge"), data.mergeItems);
@@ -302,7 +304,7 @@ void CleanupController::onHealthCheckFinished()
     emit healthChanged();
 }
 
-void CleanupController::run(bool mojibake, bool split, bool merge, bool useMusicBrainz)
+void CleanupController::run(bool mojibake, bool credit, bool merge)
 {
     if (m_running) {
         return;
@@ -312,13 +314,12 @@ void CleanupController::run(bool mojibake, bool split, bool merge, bool useMusic
     if (mojibake) {
         m_pendingSteps.append(Step::Mojibake);
     }
-    if (split) {
-        m_pendingSteps.append(Step::Split);
+    if (credit) {
+        m_pendingSteps.append(Step::Credit);
     }
     if (merge) {
         m_pendingSteps.append(Step::Merge);
     }
-    m_useMusicBrainzForRun = useMusicBrainz;
 
     if (m_pendingSteps.isEmpty()) {
         return;
@@ -357,29 +358,40 @@ void CleanupController::startNextStep()
     emit pausedChanged();
 
     const Step step = m_currentStep;
-    const bool useMb = m_useMusicBrainzForRun;
 
-    auto future = QtConcurrent::run([&db = m_db, step, useMb]() -> StepItemData {
-        StepItemData res;
-        res.step = step;
-        if (step == Step::Mojibake) {
-            const butler::MojibakeSource src(db);
-            if (auto r = src.findGroups(); r.ok()) {
-                res.items = r.value();
-            }
-        } else if (step == Step::Split) {
-            const butler::ArtistSplitSource src(db);
-            if (auto r = src.findItems(); r.ok()) {
-                res.items = r.value();
-            }
-        } else if (step == Step::Merge) {
-            const butler::ArtistMergeSource src(db);
-            if (auto r = src.findItems(useMb); r.ok()) {
-                res.items = r.value();
-            }
+    int promptVersion = 0;
+    if (step == Step::Credit) {
+        if (const auto promptRes = m_prompts.load(QStringLiteral("cleanup/artist_credit"));
+            promptRes.ok()) {
+            promptVersion = promptRes.value().version;
+        } else {
+            qCWarning(lcUi, "Failed to load cleanup/artist_credit prompt: %s",
+                qPrintable(promptRes.error().toString()));
         }
-        return res;
-    });
+    }
+
+    auto future
+        = QtConcurrent::run([&db = m_db, &clock = m_clock, step, promptVersion]() -> StepItemData {
+              StepItemData res;
+              res.step = step;
+              if (step == Step::Mojibake) {
+                  const butler::MojibakeSource src(db);
+                  if (auto r = src.findGroups(); r.ok()) {
+                      res.items = r.value();
+                  }
+              } else if (step == Step::Credit) {
+                  const butler::ArtistCreditSource src(db);
+                  if (auto r = src.findItems(promptVersion); r.ok()) {
+                      res.items = r.value();
+                  }
+              } else if (step == Step::Merge) {
+                  const butler::ArtistMergeSource src(db, clock);
+                  if (auto r = src.findItems(); r.ok()) {
+                      res.items = r.value();
+                  }
+              }
+              return res;
+          });
 
     m_stepWatcher.setFuture(future);
 }
@@ -406,16 +418,16 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
 {
     QString jobKind;
     QString title;
-    library::CorrectionKind batchKind = library::CorrectionKind::Manual;
+    std::optional<library::CorrectionKind> batchKind;
 
     if (step == Step::Mojibake) {
         jobKind = QStringLiteral("butler.mojibake");
         title = QStringLiteral("Fix garbled tags");
         batchKind = library::CorrectionKind::Mojibake;
-    } else if (step == Step::Split) {
-        jobKind = QStringLiteral("butler.artist_split");
-        title = QStringLiteral("Split multi-artist credits");
-        batchKind = library::CorrectionKind::ArtistSplit;
+    } else if (step == Step::Credit) {
+        jobKind = QStringLiteral("butler.artist_credit");
+        title = QStringLiteral("Normalize artist credits");
+        batchKind = library::CorrectionKind::ArtistCredit;
     } else if (step == Step::Merge) {
         jobKind = QStringLiteral("butler.artist_merge");
         title = QStringLiteral("Merge duplicate artists");
@@ -425,24 +437,23 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
         return;
     }
 
-    library::CorrectionStore store(m_db, m_clock);
-    auto batchRes = store.createBatch(batchKind, title);
-    if (!batchRes.ok()) {
-        qCWarning(lcUi, "Failed to create correction batch for step: %s",
-            qPrintable(batchRes.error().toString()));
-        startNextStep();
-        return;
-    }
-
-    const qint64 batchId = batchRes.value();
     QJsonObject params;
-    params.insert(QStringLiteral("batchId"), batchId);
-    const double threshold = autoAcceptThreshold();
-    if (threshold > 0.0) {
-        params.insert(QStringLiteral("autoAccept"), threshold);
-    }
-    if (step == Step::Merge) {
-        params.insert(QStringLiteral("useMusicBrainz"), m_useMusicBrainzForRun);
+    if (batchKind.has_value()) {
+        library::CorrectionStore store(m_db, m_clock);
+        auto batchRes = store.createBatch(batchKind.value(), title);
+        if (!batchRes.ok()) {
+            qCWarning(lcUi, "Failed to create correction batch for step: %s",
+                qPrintable(batchRes.error().toString()));
+            startNextStep();
+            return;
+        }
+
+        const qint64 batchId = batchRes.value();
+        params.insert(QStringLiteral("batchId"), batchId);
+        const double threshold = autoAcceptThreshold();
+        if (threshold > 0.0) {
+            params.insert(QStringLiteral("autoAccept"), threshold);
+        }
     }
 
     auto enqueueRes = m_jobs.enqueue(jobKind, title, items, params);

@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "ArtistSplit",
+  "title": "ArtistCredit",
   "type": "object",
   "properties": {
     "items": {
@@ -11,7 +11,26 @@
           "id": {
             "type": "integer"
           },
-          "parts": {
+          "performers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "aka": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": ["name"],
+              "additionalProperties": false
+            }
+          },
+          "roles": {
             "type": "array",
             "items": {
               "type": "string"
@@ -26,7 +45,7 @@
             "type": "string"
           }
         },
-        "required": ["id", "parts", "confidence", "reason"],
+        "required": ["id", "performers", "confidence", "reason"],
         "additionalProperties": false
       }
     }

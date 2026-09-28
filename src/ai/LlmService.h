@@ -48,7 +48,9 @@ struct LlmCall {
     Purpose purpose = Purpose::Query;
     ChatRequest request;
     std::optional<StructuredSpec> structured; // 设置时走结构化流程，结果放在 LlmResult::structured
-    bool stream = false; // 与 structured 同时设置时视为 false（结构化结果要完整才能校验）
+    bool stream
+        = false; // 是否使用流式传输。对结构化调用也生效（用于保持连接活跃、避免长时间思考超时），但结构化调用不向调用方发送
+                 // delta 信号
     CachePolicy cachePolicy = CachePolicy::Use;
     std::optional<qint64> cacheTtlMs; // 为空用 LlmService 的默认 TTL
     QSet<DataCategory> dataCategories;

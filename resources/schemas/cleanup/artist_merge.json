@@ -3,7 +3,7 @@
   "title": "ArtistMerge",
   "type": "object",
   "properties": {
-    "pairs": {
+    "groups": {
       "type": "array",
       "items": {
         "type": "object",
@@ -11,23 +11,36 @@
           "id": {
             "type": "integer"
           },
-          "same": {
-            "type": "boolean"
-          },
-          "confidence": {
-            "type": "number",
-            "minimum": 0.0,
-            "maximum": 1.0
-          },
-          "reason": {
-            "type": "string"
+          "subsets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "members": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                "confidence": {
+                  "type": "number",
+                  "minimum": 0.0,
+                  "maximum": 1.0
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": ["members", "confidence", "reason"],
+              "additionalProperties": false
+            }
           }
         },
-        "required": ["id", "same", "confidence", "reason"],
+        "required": ["id", "subsets"],
         "additionalProperties": false
       }
     }
   },
-  "required": ["pairs"],
+  "required": ["groups"],
   "additionalProperties": false
 }
