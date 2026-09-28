@@ -28,5 +28,7 @@ inline constexpr QLatin1StringView kPlaylistInvalid { "playlist.invalid" };
 inline constexpr QLatin1StringView kPlaylistRuleInvalid { "playlist.rule_invalid" };
 inline constexpr QLatin1StringView kRatingInvalid { "rating.invalid" };
 inline constexpr QLatin1StringView kTagOverrideInvalid { "tag.override_invalid" };
+inline constexpr QLatin1StringView kCorrectionInvalid { "correction.invalid" };
+inline constexpr QLatin1StringView kCorrectionNotFound { "correction.not_found" };
 
 } // namespace linernotes::library::errc

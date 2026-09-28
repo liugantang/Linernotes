@@ -7,9 +7,13 @@
 #include <QString>
 #include <QStringView>
 
+#include <library/LibraryEnums.h>
+
 #include <optional>
 
-namespace linernotes::library::detail {
+namespace linernotes::library {
+
+namespace detail {
 
 /// 按名字反查枚举值：遍历 Q_ENUM_NS / Q_ENUM 登记的全部取值，与名字函数比对，保证两个方向一致。
 template <typename E, typename NameFunc>
@@ -25,4 +29,100 @@ std::optional<E> enumFromName(QStringView name, NameFunc nameOf)
     return std::nullopt;
 }
 
-} // namespace linernotes::library::detail
+} // namespace detail
+
+inline QString tagFieldToColumn(TagField field)
+{
+    switch (field) {
+    case TagField::Title:
+        return QStringLiteral("title");
+    case TagField::Artist:
+        return QStringLiteral("artist");
+    case TagField::Album:
+        return QStringLiteral("album");
+    case TagField::AlbumArtist:
+        return QStringLiteral("album_artist");
+    case TagField::Genre:
+        return QStringLiteral("genre");
+    case TagField::Composer:
+        return QStringLiteral("composer");
+    case TagField::Year:
+        return QStringLiteral("year");
+    case TagField::TrackNumber:
+        return QStringLiteral("track_number");
+    case TagField::TrackTotal:
+        return QStringLiteral("track_total");
+    case TagField::DiscNumber:
+        return QStringLiteral("disc_number");
+    case TagField::DiscTotal:
+        return QStringLiteral("disc_total");
+    }
+    return { };
+}
+
+inline std::optional<TagField> tagFieldFromColumn(QStringView name)
+{
+    return detail::enumFromName<TagField>(name, tagFieldToColumn);
+}
+
+inline QString correctionKindToString(CorrectionKind kind)
+{
+    switch (kind) {
+    case CorrectionKind::Manual:
+        return QStringLiteral("manual");
+    case CorrectionKind::Mojibake:
+        return QStringLiteral("mojibake");
+    case CorrectionKind::ArtistSplit:
+        return QStringLiteral("artist_split");
+    case CorrectionKind::ArtistMerge:
+        return QStringLiteral("artist_merge");
+    }
+    return { };
+}
+
+inline std::optional<CorrectionKind> correctionKindFromString(QStringView name)
+{
+    return detail::enumFromName<CorrectionKind>(name, correctionKindToString);
+}
+
+inline QString correctionSourceToString(CorrectionSource source)
+{
+    switch (source) {
+    case CorrectionSource::Rule:
+        return QStringLiteral("rule");
+    case CorrectionSource::Llm:
+        return QStringLiteral("llm");
+    case CorrectionSource::MusicBrainz:
+        return QStringLiteral("musicbrainz");
+    case CorrectionSource::User:
+        return QStringLiteral("user");
+    }
+    return { };
+}
+
+inline std::optional<CorrectionSource> correctionSourceFromString(QStringView name)
+{
+    return detail::enumFromName<CorrectionSource>(name, correctionSourceToString);
+}
+
+inline QString correctionStatusToString(CorrectionStatus status)
+{
+    switch (status) {
+    case CorrectionStatus::Pending:
+        return QStringLiteral("pending");
+    case CorrectionStatus::Accepted:
+        return QStringLiteral("accepted");
+    case CorrectionStatus::Rejected:
+        return QStringLiteral("rejected");
+    case CorrectionStatus::Reverted:
+        return QStringLiteral("reverted");
+    }
+    return { };
+}
+
+inline std::optional<CorrectionStatus> correctionStatusFromString(QStringView name)
+{
+    return detail::enumFromName<CorrectionStatus>(name, correctionStatusToString);
+}
+
+} // namespace linernotes::library

@@ -146,6 +146,15 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME library_CorrectionStore
+    SOURCES
+        tst_CorrectionStore.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
     NAME library_OverrideStore
     SOURCES
         tst_OverrideStore.cpp

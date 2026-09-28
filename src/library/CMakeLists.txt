@@ -6,6 +6,8 @@ file(GLOB MIGRATION_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/mig
 add_library(linernotes_library STATIC
     CoverStore.cpp
     CoverStore.h
+    CorrectionStore.cpp
+    CorrectionStore.h
     Database.cpp
     Database.h
     DatabaseBackup.cpp
@@ -34,6 +36,8 @@ add_library(linernotes_library STATIC
     LibraryWatcher.h
     MarkStore.cpp
     MarkStore.h
+    MetadataRefresh.cpp
+    MetadataRefresh.h
     Migrator.cpp
     Migrator.h
     OverrideStore.cpp

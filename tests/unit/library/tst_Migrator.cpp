@@ -44,6 +44,7 @@ private slots:
     void upgradesTo0007AddsTrackPlayStats();
     void upgradesTo0009AddsLlmUsage();
     void upgradesTo0010AddsJobs();
+    void upgradesTo0011AddsButlerTables();
 };
 
 void TstMigrator::appliesMigrationsInOrder()
@@ -452,6 +453,84 @@ void TstMigrator::upgradesTo0010AddsJobs()
     QVERIFY(q.next());
     QCOMPARE(q.value(0).toInt(), 1);
     QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM job_items;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 1);
+}
+
+void TstMigrator::upgradesTo0011AddsButlerTables()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 11);
+
+    // Write migrations 1..10
+    for (int i = 0; i < 10; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 10);
+
+    // Insert correction_batches row in v10 schema
+    {
+        QSqlQuery q(conn);
+        QVERIFY(q.exec(
+            QStringLiteral("INSERT INTO correction_batches (id, source, description, created_at) "
+                           "VALUES (1, 'rule', 'Old Batch', 1000);")));
+    }
+
+    // Add migration 11
+    const auto &m11 = allMigrations.at(10);
+    const QString fileName11
+        = QStringLiteral("%1_%2.sql").arg(m11.version, 4, 10, QLatin1Char('0')).arg(m11.name);
+    writeSqlFile(migDir.path(), fileName11, m11.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 11);
+
+    // Verify existing correction_batches row has default kind 'manual'
+    QSqlQuery q(conn);
+    QVERIFY(q.exec(QStringLiteral("SELECT kind FROM correction_batches WHERE id = 1;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toString(), QStringLiteral("manual"));
+
+    // Verify track_issues and mb_cache tables exist and can be inserted/queried
+    QVERIFY(q.exec(QStringLiteral("INSERT INTO library_roots (id, path, enabled, added_at) "
+                                  "VALUES (1, '/music', 1, 100);")));
+    QVERIFY(q.exec(QStringLiteral("INSERT INTO files (id, root_id, path, duration_ms, size, "
+                                  "mtime, first_seen_at, scanned_at) VALUES "
+                                  "(1, 1, '/music/1.mp3', 60000, 1, 1, 1, 1);")));
+    QVERIFY(q.exec(QStringLiteral("INSERT INTO tracks (id, file_id, tags_read_at, created_at) "
+                                  "VALUES (1, 1, 1, 1);")));
+    QVERIFY(q.exec(
+        QStringLiteral("INSERT INTO track_issues (track_id, kind, field, detail, created_at) "
+                       "VALUES (1, 'needs_online', 'title', 'damaged', 1000);")));
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM track_issues;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 1);
+
+    QVERIFY(q.exec(QStringLiteral(
+        "INSERT INTO mb_cache (url, body, fetched_at) "
+        "VALUES ('https://musicbrainz.org/ws/2/recording/123', '{\"test\": 1}', 1000);")));
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM mb_cache;")));
     QVERIFY(q.next());
     QCOMPARE(q.value(0).toInt(), 1);
 }
