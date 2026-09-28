@@ -19,6 +19,7 @@
 #include <player/Player.h>
 #include <ui/AiContext.h>
 #include <ui/AiSettingsController.h>
+#include <ui/CorrectionReviewController.h>
 #include <ui/LibraryActions.h>
 #include <ui/LibraryRootsModel.h>
 #include <ui/LlmDebugController.h>
@@ -66,6 +67,7 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::LlmDebugController *llmDebug READ llmDebug CONSTANT)
     Q_PROPERTY(linernotes::ui::LibraryRootsModel *libraryRoots READ libraryRoots CONSTANT)
     Q_PROPERTY(linernotes::ui::TagEditorModel *tagEditor READ tagEditor CONSTANT)
+    Q_PROPERTY(linernotes::ui::CorrectionReviewController *review READ review CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
     Q_PROPERTY(QString startupError READ startupError NOTIFY startupErrorChanged)
     Q_PROPERTY(bool scanning READ isScanning NOTIFY scanningChanged)
@@ -108,6 +110,7 @@ public:
     [[nodiscard]] LlmDebugController *llmDebug();
     [[nodiscard]] LibraryRootsModel *libraryRoots();
     [[nodiscard]] TagEditorModel *tagEditor();
+    [[nodiscard]] CorrectionReviewController *review();
     [[nodiscard]] library::Database &database();
     [[nodiscard]] const library::Database &database() const;
     [[nodiscard]] library::CoverStore *coverStore();
@@ -135,6 +138,7 @@ private:
     AiContext m_ai;
     library::PlayStats m_playStats;
     TagEditorModel m_tagEditor;
+    CorrectionReviewController m_review;
     LibraryRootsModel m_roots;
     MarksController m_marks;
     player::Player m_player;

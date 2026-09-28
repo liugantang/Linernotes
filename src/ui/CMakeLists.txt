@@ -13,6 +13,12 @@ add_library(linernotes_ui STATIC
     AppSettings.h
     ArtistListModel.cpp
     ArtistListModel.h
+    CorrectionBatchModel.cpp
+    CorrectionBatchModel.h
+    CorrectionListModel.cpp
+    CorrectionListModel.h
+    CorrectionReviewController.cpp
+    CorrectionReviewController.h
     CoverAccent.cpp
     CoverAccent.h
     CoverImageProvider.cpp

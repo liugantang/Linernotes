@@ -36,6 +36,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_ai(m_settings, m_db, m_clock, m_options.promptsDir)
     , m_playStats(m_db)
     , m_tagEditor(m_db)
+    , m_review(m_db, m_clock)
     , m_roots(m_db)
     , m_marks(m_db)
     , m_player(m_options.playerOptions)
@@ -51,6 +52,8 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     connect(this, &AppContext::libraryChanged, &m_nowPlaying, &NowPlaying::refresh);
     connect(&m_marks, &MarksController::marksChanged, &m_nowPlaying, &NowPlaying::refresh);
     connect(&m_tagEditor, &TagEditorModel::saved, this, &AppContext::libraryChanged);
+    connect(
+        &m_review, &CorrectionReviewController::libraryModified, this, &AppContext::libraryChanged);
     connect(this, &AppContext::libraryChanged, &m_queueModel, &QueueModel::refresh);
     connect(this, &AppContext::libraryChanged, &m_search, &SearchController::refresh);
     connect(this, &AppContext::libraryChanged, &m_playlists, &PlaylistController::refresh);
@@ -287,6 +290,11 @@ LibraryRootsModel *AppContext::libraryRoots()
 TagEditorModel *AppContext::tagEditor()
 {
     return &m_tagEditor;
+}
+
+CorrectionReviewController *AppContext::review()
+{
+    return &m_review;
 }
 
 library::Database &AppContext::database()

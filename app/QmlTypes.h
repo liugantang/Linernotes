@@ -19,6 +19,9 @@
 #include <ui/AlbumGridModel.h>
 #include <ui/AppContext.h>
 #include <ui/ArtistListModel.h>
+#include <ui/CorrectionBatchModel.h>
+#include <ui/CorrectionListModel.h>
+#include <ui/CorrectionReviewController.h>
 #include <ui/LibraryActions.h>
 #include <ui/LibraryRootsModel.h>
 #include <ui/LlmDebugController.h>
@@ -235,4 +238,25 @@ struct LlmDebugModelForeign {
     QML_FOREIGN(linernotes::ui::LlmDebugModel)
     QML_NAMED_ELEMENT(LlmDebugModel)
     QML_UNCREATABLE("LlmDebugModel is managed by LlmDebugController")
+};
+
+struct CorrectionReviewControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::CorrectionReviewController)
+    QML_NAMED_ELEMENT(CorrectionReviewController)
+    QML_UNCREATABLE("CorrectionReviewController is managed by AppContext")
+};
+
+struct CorrectionBatchModelForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::CorrectionBatchModel)
+    QML_NAMED_ELEMENT(CorrectionBatchModel)
+    QML_UNCREATABLE("CorrectionBatchModel is managed by CorrectionReviewController")
+};
+
+struct CorrectionListModelForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::CorrectionListModel)
+    QML_NAMED_ELEMENT(CorrectionListModel)
+    QML_UNCREATABLE("CorrectionListModel is managed by CorrectionReviewController")
 };

@@ -3,6 +3,7 @@
 
 #include "TagEditorModel.h"
 
+#include "Format.h"
 #include "UiLogging.h"
 
 #include <QByteArray>
@@ -20,42 +21,7 @@ namespace {
 
 QString labelForField(library::TagField field)
 {
-    switch (field) {
-    case library::TagField::Title:
-        //: Tag field name for track title
-        return TagEditorModel::tr("Title");
-    case library::TagField::Artist:
-        //: Tag field name for track artist
-        return TagEditorModel::tr("Artist");
-    case library::TagField::Album:
-        //: Tag field name for album name
-        return TagEditorModel::tr("Album");
-    case library::TagField::AlbumArtist:
-        //: Tag field name for album artist
-        return TagEditorModel::tr("Album Artist");
-    case library::TagField::Genre:
-        //: Tag field name for music genre
-        return TagEditorModel::tr("Genre");
-    case library::TagField::Composer:
-        //: Tag field name for music composer
-        return TagEditorModel::tr("Composer");
-    case library::TagField::Year:
-        //: Tag field name for release year
-        return TagEditorModel::tr("Year");
-    case library::TagField::TrackNumber:
-        //: Tag field name for track number
-        return TagEditorModel::tr("Track Number");
-    case library::TagField::TrackTotal:
-        //: Tag field name for total track count in album
-        return TagEditorModel::tr("Track Total");
-    case library::TagField::DiscNumber:
-        //: Tag field name for disc number
-        return TagEditorModel::tr("Disc Number");
-    case library::TagField::DiscTotal:
-        //: Tag field name for total disc count in album
-        return TagEditorModel::tr("Disc Total");
-    }
-    return { };
+    return formatTagField(field);
 }
 
 } // namespace

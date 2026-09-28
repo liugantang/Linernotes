@@ -70,6 +70,28 @@
     </message>
 </context>
 <context>
+    <name>CorrectionBatchList</name>
+    <message numerus="yes">
+        <location filename="../qml/CorrectionBatchList.qml" line="54"/>
+        <source>%n batch(es)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>CorrectionFilterBar</name>
+    <message numerus="yes">
+        <location filename="../qml/CorrectionFilterBar.qml" line="126"/>
+        <source>%n item(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>Main</name>
     <message numerus="yes">
         <location filename="../qml/Main.qml" line="118"/>

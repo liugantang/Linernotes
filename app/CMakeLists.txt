@@ -67,9 +67,34 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS pages/PlaylistsPage.qml
 )
 set_source_files_properties(
-    ${CMAKE_SOURCE_DIR}/qml/pages/AiPage.qml
+    ${CMAKE_SOURCE_DIR}/qml/pages/CleanupPage.qml
     PROPERTIES
-        QT_RESOURCE_ALIAS pages/AiPage.qml
+        QT_RESOURCE_ALIAS pages/CleanupPage.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/CorrectionBatchList.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS CorrectionBatchList.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/CorrectionFilterBar.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS CorrectionFilterBar.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/CorrectionList.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS CorrectionList.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/CorrectionRowItem.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS CorrectionRowItem.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/CorrectionActionBar.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS CorrectionActionBar.qml
 )
 set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/pages/SettingsPage.qml
@@ -574,11 +599,16 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/TrackTableRow.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackTable.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackTableReorder.qml
+        ${CMAKE_SOURCE_DIR}/qml/CorrectionBatchList.qml
+        ${CMAKE_SOURCE_DIR}/qml/CorrectionFilterBar.qml
+        ${CMAKE_SOURCE_DIR}/qml/CorrectionList.qml
+        ${CMAKE_SOURCE_DIR}/qml/CorrectionRowItem.qml
+        ${CMAKE_SOURCE_DIR}/qml/CorrectionActionBar.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/TracksPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/AlbumsPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/ArtistsPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/PlaylistsPage.qml
-        ${CMAKE_SOURCE_DIR}/qml/pages/AiPage.qml
+        ${CMAKE_SOURCE_DIR}/qml/pages/CleanupPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/SettingsPage.qml
     RESOURCES
         ${CMAKE_SOURCE_DIR}/resources/icons/play.svg

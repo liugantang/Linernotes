@@ -4,14 +4,12 @@
 <context>
     <name>AiPage</name>
     <message>
-        <location filename="../qml/pages/AiPage.qml" line="17"/>
         <source>AI</source>
-        <translation>AI</translation>
+        <translation type="vanished">AI</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AiPage.qml" line="25"/>
         <source>Smart assistant and music generation (Coming soon).</source>
-        <translation>智能助手与音乐生成（敬请期待）。</translation>
+        <translation type="vanished">智能助手与音乐生成（敬请期待）。</translation>
     </message>
 </context>
 <context>
@@ -382,6 +380,234 @@
     </message>
 </context>
 <context>
+    <name>CleanupPage</name>
+    <message>
+        <location filename="../qml/pages/CleanupPage.qml" line="83"/>
+        <source>No Cleanup Batches</source>
+        <translation>暂无整理批次</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/CleanupPage.qml" line="91"/>
+        <source>No cleanup batches yet. Run a library cleanup to see proposed fixes here.</source>
+        <translation>还没有整理批次。运行一次曲库整理后，建议的修正会显示在这里。</translation>
+    </message>
+</context>
+<context>
+    <name>CorrectionActionBar</name>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="58"/>
+        <source>Accept Selected</source>
+        <translation>接受所选</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="69"/>
+        <source>Reject Selected</source>
+        <translation>拒绝所选</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="79"/>
+        <source>Accept All Pending (≥ %1%)</source>
+        <translation>接受全部待审（≥ %1%）</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="89"/>
+        <location filename="../qml/CorrectionActionBar.qml" line="123"/>
+        <source>Revert Batch</source>
+        <translation>撤销批次</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="131"/>
+        <source>Are you sure you want to revert this batch? All accepted changes will be reverted, and pending proposals will be rejected.</source>
+        <translation>确定要撤销此批次吗？已接受的修改将被还原，待审的建议将被拒绝。</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="148"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="153"/>
+        <source>Revert</source>
+        <translation>撤销</translation>
+    </message>
+</context>
+<context>
+    <name>CorrectionBatchList</name>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="23"/>
+        <source>Mojibake Fix</source>
+        <translation>乱码修复</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="24"/>
+        <source>Split Artists</source>
+        <translation>拆分艺人</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="25"/>
+        <source>Merge Artists</source>
+        <translation>合并艺人</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="26"/>
+        <source>Manual Fix</source>
+        <translation>手动修正</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="46"/>
+        <source>Batches</source>
+        <translation>批次</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CorrectionBatchList.qml" line="54"/>
+        <source>%n batch(es)</source>
+        <translation>
+            <numerusform>%n 个批次</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="174"/>
+        <source>Reverted</source>
+        <translation>已撤销</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="182"/>
+        <source>%1 pending · %2 accepted</source>
+        <translation>%1 待审 · %2 已接受</translation>
+    </message>
+</context>
+<context>
+    <name>CorrectionFilterBar</name>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="27"/>
+        <source>Status:</source>
+        <translation>状态：</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="36"/>
+        <source>All</source>
+        <translation>所有</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="37"/>
+        <source>Pending</source>
+        <translation>待审</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="38"/>
+        <source>Accepted</source>
+        <translation>已接受</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="39"/>
+        <source>Rejected</source>
+        <translation>已拒绝</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="40"/>
+        <source>Reverted</source>
+        <translation>已撤销</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="58"/>
+        <source>Min: %1%</source>
+        <translation>最低：%1%</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="59"/>
+        <source>Min Confidence: %1%</source>
+        <translation>最低置信度：%1%</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="112"/>
+        <source>Reset</source>
+        <translation>重置</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CorrectionFilterBar.qml" line="126"/>
+        <source>%n item(s)</source>
+        <translation>
+            <numerusform>%n 项</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>CorrectionList</name>
+    <message>
+        <location filename="../qml/CorrectionList.qml" line="54"/>
+        <source>Correction / Field / Change</source>
+        <translation>修正 / 字段 / 变更</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionList.qml" line="67"/>
+        <source>Confidence</source>
+        <translation>置信度</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionList.qml" line="77"/>
+        <source>Source</source>
+        <translation>来源</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionList.qml" line="88"/>
+        <source>Status</source>
+        <translation>状态</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionList.qml" line="117"/>
+        <source>No corrections match the current filter.</source>
+        <translation>没有符合当前筛选条件的修正。</translation>
+    </message>
+</context>
+<context>
+    <name>CorrectionRowItem</name>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="22"/>
+        <source>Rule</source>
+        <translation>规则</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="23"/>
+        <source>LLM</source>
+        <translation>LLM</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="25"/>
+        <source>User</source>
+        <translation>用户</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="28"/>
+        <source>Pending</source>
+        <translation>待审</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="29"/>
+        <source>Accepted</source>
+        <translation>已接受</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="30"/>
+        <source>Rejected</source>
+        <translation>已拒绝</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="31"/>
+        <source>Reverted</source>
+        <translation>已撤销</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="188"/>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="194"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+</context>
+<context>
     <name>FavoriteButton</name>
     <message>
         <location filename="../qml/controls/FavoriteButton.qml" line="22"/>
@@ -637,13 +863,16 @@
     </message>
     <message>
         <location filename="../qml/NavigationSidebar.qml" line="33"/>
-        <source>AI</source>
-        <translation>AI</translation>
+        <source>Library Cleanup</source>
+        <translation>曲库整理</translation>
     </message>
     <message>
-        <location filename="../qml/NavigationSidebar.qml" line="33"/>
+        <source>AI</source>
+        <translation type="vanished">AI</translation>
+    </message>
+    <message>
         <source>Coming soon</source>
-        <translation>敬请期待</translation>
+        <translation type="vanished">敬请期待</translation>
     </message>
     <message>
         <location filename="../qml/NavigationSidebar.qml" line="198"/>
@@ -2390,6 +2619,19 @@
     </message>
 </context>
 <context>
+    <name>linernotes::ui::CorrectionListModel</name>
+    <message>
+        <location filename="../src/ui/CorrectionListModel.cpp" line="187"/>
+        <source>Alias (%1)</source>
+        <translation>别名（%1）</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/CorrectionListModel.cpp" line="188"/>
+        <source>Alias</source>
+        <translation>别名</translation>
+    </message>
+</context>
+<context>
     <name>linernotes::ui::PlaylistController</name>
     <message>
         <location filename="../src/ui/PlaylistController.cpp" line="233"/>
@@ -2561,67 +2803,67 @@ Sort by track duration</extracomment>
 <context>
     <name>linernotes::ui::TagEditorModel</name>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="26"/>
+        <location filename="../src/ui/Format.h" line="46"/>
         <source>Title</source>
         <extracomment>Tag field name for track title</extracomment>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="29"/>
+        <location filename="../src/ui/Format.h" line="49"/>
         <source>Artist</source>
         <extracomment>Tag field name for track artist</extracomment>
         <translation>艺人</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="32"/>
+        <location filename="../src/ui/Format.h" line="52"/>
         <source>Album</source>
         <extracomment>Tag field name for album name</extracomment>
         <translation>专辑</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="35"/>
+        <location filename="../src/ui/Format.h" line="55"/>
         <source>Album Artist</source>
         <extracomment>Tag field name for album artist</extracomment>
         <translation>专辑艺人</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="38"/>
+        <location filename="../src/ui/Format.h" line="58"/>
         <source>Genre</source>
         <extracomment>Tag field name for music genre</extracomment>
         <translation>流派</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="41"/>
+        <location filename="../src/ui/Format.h" line="61"/>
         <source>Composer</source>
         <extracomment>Tag field name for music composer</extracomment>
         <translation>作曲</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="44"/>
+        <location filename="../src/ui/Format.h" line="64"/>
         <source>Year</source>
         <extracomment>Tag field name for release year</extracomment>
         <translation>年份</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="47"/>
+        <location filename="../src/ui/Format.h" line="67"/>
         <source>Track Number</source>
         <extracomment>Tag field name for track number</extracomment>
         <translation>音轨编号</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="50"/>
+        <location filename="../src/ui/Format.h" line="70"/>
         <source>Track Total</source>
         <extracomment>Tag field name for total track count in album</extracomment>
         <translation>音轨总数</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="53"/>
+        <location filename="../src/ui/Format.h" line="73"/>
         <source>Disc Number</source>
         <extracomment>Tag field name for disc number</extracomment>
         <translation>光盘编号</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="56"/>
+        <location filename="../src/ui/Format.h" line="76"/>
         <source>Disc Total</source>
         <extracomment>Tag field name for total disc count in album</extracomment>
         <translation>光盘总数</translation>
