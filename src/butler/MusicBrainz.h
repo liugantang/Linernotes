@@ -9,7 +9,14 @@
 
 #include <core/Result.h>
 
+#include <cstdint>
+#include <optional>
+
+class QSqlDatabase;
+
 namespace linernotes::butler {
+
+constexpr qint64 kMaxCacheAgeMs = 30LL * 24LL * 3600LL * 1000LL; // 30 days
 
 struct MbAlias {
     QString name;
@@ -41,5 +48,9 @@ core::Result<QList<MbArtist>> parseArtistSearch(const QByteArray &body);
 /// name 中的 Lucene 特殊字符（+ - && || ! ( ) { } [ ] ^ " ~ * ? : \ /）用反斜杠转义，
 /// 再整体放进双引号做短语查询；用 QUrlQuery 编码。
 QUrl artistSearchUrl(const QString &name, int limit = 5);
+
+/// 从 mb_cache 查缓存结果。未缓存、已过期（kMaxCacheAgeMs）或解析失败 → nullopt。
+std::optional<QList<MbArtist>> cachedArtistSearch(
+    const QSqlDatabase &db, const QString &name, qint64 nowMs);
 
 } // namespace linernotes::butler

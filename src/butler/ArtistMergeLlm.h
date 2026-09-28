@@ -11,10 +11,12 @@
 #include <QStringList>
 
 #include <butler/ArtistGroup.h>
+#include <butler/MusicBrainz.h>
 #include <core/Result.h>
 #include <library/ArtistAliasCorrections.h>
 
 #include <cstdint>
+#include <optional>
 
 namespace linernotes::butler {
 
@@ -22,6 +24,7 @@ struct ArtistMergeMember {
     ArtistEntry entry;
     QStringList albums; // sampleAlbums，最多 3 个
     QStringList aka; // altNames 中该艺人的其他写法
+    std::optional<MbArtist> mb;
     bool operator==(const ArtistMergeMember &) const = default;
 };
 

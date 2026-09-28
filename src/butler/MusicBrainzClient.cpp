@@ -21,7 +21,6 @@ namespace linernotes::butler {
 
 namespace {
 
-constexpr qint64 kMaxCacheAgeMs = 30LL * 24LL * 3600LL * 1000LL; // 30 days
 constexpr int kTransferTimeoutMs = 15000; // 15 seconds
 
 } // namespace
@@ -86,35 +85,32 @@ MusicBrainzClient::~MusicBrainzClient()
     m_queue.clear();
 }
 
+std::optional<QList<MbArtist>> MusicBrainzClient::cachedSearch(const QString &name) const
+{
+    auto connRes = m_db.connection();
+    if (!connRes.ok()) {
+        return std::nullopt;
+    }
+    return cachedArtistSearch(connRes.value(), name, m_clock.nowMs());
+}
+
 std::unique_ptr<MbSearchTask> MusicBrainzClient::searchArtist(const QString &name)
 {
     auto task = std::unique_ptr<MbSearchTask>(new MbSearchTask(this));
-    const QUrl url = artistSearchUrl(name);
-    const QString urlString = url.toString();
 
     // Check cache
-    auto connRes = m_db.connection();
-    if (connRes.ok()) {
-        QSqlQuery q(connRes.value());
-        q.prepare(QStringLiteral("SELECT body, fetched_at FROM mb_cache WHERE url = ?;"));
-        q.addBindValue(urlString);
-        if (q.exec() && q.next()) {
-            const QString body = q.value(0).toString();
-            const qint64 fetchedAt = q.value(1).toLongLong();
-            const qint64 now = m_clock.nowMs();
-            if (now >= fetchedAt && (now - fetchedAt) < kMaxCacheAgeMs) {
-                qCDebug(lcButler) << "MusicBrainz cache hit for" << urlString;
-                auto parseRes = parseArtistSearch(body.toUtf8());
-                QTimer::singleShot(
-                    0, task.get(), [t = task.get(), res = std::move(parseRes)]() mutable {
-                        t->finish(std::move(res));
-                    });
-                return task;
-            }
-        }
+    auto cached = cachedSearch(name);
+    if (cached.has_value()) {
+        qCDebug(lcButler) << "MusicBrainz cache hit for" << name;
+        QTimer::singleShot(
+            0, task.get(), [t = task.get(), res = std::move(cached.value())]() mutable {
+                t->finish(std::move(res));
+            });
+        return task;
     }
 
-    qCDebug(lcButler) << "MusicBrainz cache miss for" << urlString;
+    const QUrl url = artistSearchUrl(name);
+    qCDebug(lcButler) << "MusicBrainz cache miss for" << url.toString();
     enqueueRequest(task.get(), url);
     return task;
 }

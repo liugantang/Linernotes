@@ -37,6 +37,7 @@ public:
         None,
         Mojibake,
         Credit,
+        MusicBrainz,
         Merge,
     };
     Q_ENUM(Step)

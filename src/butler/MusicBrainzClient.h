@@ -57,6 +57,9 @@ public:
         const core::Clock &clock, QObject *parent = nullptr);
     ~MusicBrainzClient() override;
 
+    /// 只查 mb_cache，不发请求。未缓存、已过期（kMaxCacheAgeMs）或解析失败 → nullopt。
+    [[nodiscard]] std::optional<QList<MbArtist>> cachedSearch(const QString &name) const;
+
     std::unique_ptr<MbSearchTask> searchArtist(const QString &name);
 
 private:

@@ -396,61 +396,61 @@
         <translation type="vanished">正在拆分多艺人署名…</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="43"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="44"/>
         <source>Merging duplicate artists...</source>
         <translation>正在合并重复艺人…</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="44"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="45"/>
         <source>Cleaning up library...</source>
         <translation>正在整理曲库…</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="92"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="93"/>
         <source>Library Health &amp; Cleanup</source>
         <translation>曲库健康与整理</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="99"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="100"/>
         <source>Checking...</source>
         <translation>正在检查…</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="108"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="109"/>
         <source>Check again</source>
         <translation>重新检查</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="115"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="116"/>
         <source>Show</source>
         <translation>展开</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="115"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="116"/>
         <source>Hide</source>
         <translation>收起</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="141"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="142"/>
         <source>No AI service is set up for cleanup. Configure one in Settings to run these tasks.</source>
         <translation>尚未为曲库整理配置 AI 服务。请先在设置中配置，才能运行这些任务。</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="156"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="157"/>
         <source>Fix garbled tags</source>
         <translation>修复乱码标签</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="160"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="161"/>
         <source>%n folder(s) with garbled tags</source>
         <translation>
             <numerusform>%n 个文件夹存在乱码标签</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="161"/>
-        <location filename="../qml/CleanupHealthPanel.qml" line="179"/>
-        <location filename="../qml/CleanupHealthPanel.qml" line="201"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="162"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="180"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="202"/>
         <source> · ≈ %1 tokens</source>
         <translation> · 约 %1 token</translation>
     </message>
@@ -470,88 +470,93 @@
         <translation>正在规范艺人署名…</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="174"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="43"/>
+        <source>Looking up artists on MusicBrainz...</source>
+        <translation>正在查询 MusicBrainz 艺人信息…</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="175"/>
         <source>Normalize artist credits</source>
         <translation>规范艺人署名</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="178"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="179"/>
         <source>%n artist credit(s) to check</source>
         <translation>
             <numerusform>%n 个署名待检查</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="196"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="197"/>
         <source>Merge duplicate artists</source>
         <translation>合并重复艺人</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="200"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="201"/>
         <source>%n possible duplicate artist(s)</source>
         <translation>
             <numerusform>%n 组疑似重复艺人</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="213"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="214"/>
         <source>Look up MusicBrainz for CJK names</source>
         <translation>为中日韩艺人名查询 MusicBrainz</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="226"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="227"/>
         <source>Missing album metadata: %n track(s) (online lookup comes later)</source>
         <translation>
             <numerusform>缺少专辑信息：%n 首（在线补全将在后续版本提供）</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="248"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="249"/>
         <source>Auto-accept:</source>
         <translation>自动接受：</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="255"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="256"/>
         <source>Off</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="255"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="256"/>
         <source>≥ 0.95</source>
         <translation>≥ 0.95</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="255"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="256"/>
         <source>≥ 0.90</source>
         <translation>≥ 0.90</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="270"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="271"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="305"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="306"/>
         <source>%1 / %2</source>
         <translation>%1 / %2</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="311"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="312"/>
         <source>(%1 failed)</source>
         <translation>（%1 项失败）</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="318"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="319"/>
         <source>Resume</source>
         <translation>继续</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="318"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="319"/>
         <source>Pause</source>
         <translation>暂停</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="323"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="324"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -2658,40 +2663,28 @@
 <context>
     <name>butler</name>
     <message>
-        <location filename="../src/butler/ArtistSplit.cpp" line="245"/>
         <source>All parts are known artists in the library</source>
-        <translation>拆分出的各部分都是曲库中已有的艺人</translation>
+        <translation type="vanished">拆分出的各部分都是曲库中已有的艺人</translation>
     </message>
     <message>
-        <location filename="../src/butler/ArtistSplit.cpp" line="260"/>
-        <location filename="../src/butler/ArtistSplit.cpp" line="394"/>
         <source>Explicit separator (feat., ×, 、)</source>
-        <translation>含明确的分隔符（feat.、×、、）</translation>
+        <translation type="vanished">含明确的分隔符（feat.、×、、）</translation>
     </message>
     <message>
-        <location filename="../src/butler/ArtistSplit.cpp" line="269"/>
-        <location filename="../src/butler/ArtistSplit.cpp" line="383"/>
         <source>Ambiguous separator; needs AI review</source>
-        <translation>分隔符有歧义，需由 AI 确认</translation>
+        <translation type="vanished">分隔符有歧义，需由 AI 确认</translation>
     </message>
     <message>
-        <location filename="../src/butler/ArtistSplit.cpp" line="281"/>
-        <location filename="../src/butler/ArtistSplit.cpp" line="291"/>
-        <location filename="../src/butler/ArtistSplit.cpp" line="374"/>
-        <location filename="../src/butler/ArtistSplit.cpp" line="404"/>
-        <location filename="../src/butler/ArtistSplit.cpp" line="431"/>
         <source>No split needed</source>
-        <translation>无需拆分</translation>
+        <translation type="vanished">无需拆分</translation>
     </message>
     <message>
-        <location filename="../src/butler/ArtistSplit.cpp" line="301"/>
         <source>Contains a numeric part; not split</source>
-        <translation>含纯数字部分，不拆分</translation>
+        <translation type="vanished">含纯数字部分，不拆分</translation>
     </message>
     <message>
-        <location filename="../src/butler/ArtistSplit.cpp" line="311"/>
         <source>Contains a CV credit; needs AI review</source>
-        <translation>含 CV 署名，需由 AI 确认</translation>
+        <translation type="vanished">含 CV 署名，需由 AI 确认</translation>
     </message>
     <message>
         <location filename="../src/butler/MojibakeAnalysis.cpp" line="34"/>
@@ -2736,22 +2729,20 @@
         <translation>未经 AI 确认</translation>
     </message>
     <message>
-        <location filename="../src/butler/ArtistMerge.cpp" line="118"/>
         <source>Matched via MusicBrainz</source>
-        <translation>经 MusicBrainz 确认为同一艺人</translation>
+        <translation type="vanished">经 MusicBrainz 确认为同一艺人</translation>
     </message>
     <message>
-        <location filename="../src/butler/ArtistMerge.cpp" line="161"/>
+        <location filename="../src/butler/ArtistMerge.cpp" line="143"/>
         <source>MusicBrainz localized alias</source>
         <translation>MusicBrainz 提供的其他语言名</translation>
     </message>
     <message>
-        <location filename="../src/butler/ArtistMerge.cpp" line="217"/>
         <source>Same romanized name (word order or long vowels differ)</source>
-        <translation>罗马字相同（姓名顺序或长音写法不同）</translation>
+        <translation type="vanished">罗马字相同（姓名顺序或长音写法不同）</translation>
     </message>
     <message>
-        <location filename="../src/butler/ArtistMerge.cpp" line="218"/>
+        <location filename="../src/butler/ArtistMerge.cpp" line="81"/>
         <source>Same name with different spelling</source>
         <translation>同名，仅写法不同</translation>
     </message>

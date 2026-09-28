@@ -55,6 +55,7 @@ public:
 private:
     bool loadCorpus();
     bool importCorpusToDb();
+    void startMbLookupJob();
     void startMergeJob();
     void evaluateAndFinish();
     void printReport(const QList<MisMergeItem> &mismerges, const QList<MissedPairItem> &missedPairs,

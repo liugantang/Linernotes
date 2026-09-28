@@ -254,30 +254,31 @@ void CleanupController::checkHealth()
             qPrintable(promptRes.error().toString()));
     }
 
-    auto future = QtConcurrent::run([&db = m_db, promptVersion]() -> HealthReportData {
-        HealthReportData report;
+    auto future
+        = QtConcurrent::run([&db = m_db, &clock = m_clock, promptVersion]() -> HealthReportData {
+              HealthReportData report;
 
-        const butler::MojibakeSource mojibakeSource(db);
-        if (auto res = mojibakeSource.findGroups(); res.ok()) {
-            report.mojibakeItems = res.value();
-            report.mojibakeGroups = static_cast<int>(report.mojibakeItems.size());
-        }
+              const butler::MojibakeSource mojibakeSource(db);
+              if (auto res = mojibakeSource.findGroups(); res.ok()) {
+                  report.mojibakeItems = res.value();
+                  report.mojibakeGroups = static_cast<int>(report.mojibakeItems.size());
+              }
 
-        const butler::ArtistCreditSource creditSource(db);
-        if (auto res = creditSource.findItems(promptVersion); res.ok()) {
-            report.creditItems = res.value();
-            report.creditValues = countCreditValues(report.creditItems);
-        }
+              const butler::ArtistCreditSource creditSource(db);
+              if (auto res = creditSource.findItems(promptVersion); res.ok()) {
+                  report.creditItems = res.value();
+                  report.creditValues = countCreditValues(report.creditItems);
+              }
 
-        const butler::ArtistMergeSource mergeSource(db);
-        if (auto res = mergeSource.findItems(false); res.ok()) {
-            report.mergeItems = res.value();
-            report.mergeClusters = countMergeClusters(report.mergeItems);
-        }
+              const butler::ArtistMergeSource mergeSource(db, clock);
+              if (auto res = mergeSource.findItems(false); res.ok()) {
+                  report.mergeItems = res.value();
+                  report.mergeClusters = countMergeClusters(report.mergeItems);
+              }
 
-        report.missingAlbumTracks = queryMissingAlbumTracks(db);
-        return report;
-    });
+              report.missingAlbumTracks = queryMissingAlbumTracks(db);
+              return report;
+          });
 
     m_healthWatcher.setFuture(future);
 }
@@ -329,6 +330,9 @@ void CleanupController::run(bool mojibake, bool credit, bool merge, bool useMusi
     }
     if (credit) {
         m_pendingSteps.append(Step::Credit);
+    }
+    if (merge && useMusicBrainz) {
+        m_pendingSteps.append(Step::MusicBrainz);
     }
     if (merge) {
         m_pendingSteps.append(Step::Merge);
@@ -385,27 +389,33 @@ void CleanupController::startNextStep()
         }
     }
 
-    auto future = QtConcurrent::run([&db = m_db, step, useMb, promptVersion]() -> StepItemData {
-        StepItemData res;
-        res.step = step;
-        if (step == Step::Mojibake) {
-            const butler::MojibakeSource src(db);
-            if (auto r = src.findGroups(); r.ok()) {
-                res.items = r.value();
+    auto future = QtConcurrent::run(
+        [&db = m_db, &clock = m_clock, step, useMb, promptVersion]() -> StepItemData {
+            StepItemData res;
+            res.step = step;
+            if (step == Step::Mojibake) {
+                const butler::MojibakeSource src(db);
+                if (auto r = src.findGroups(); r.ok()) {
+                    res.items = r.value();
+                }
+            } else if (step == Step::Credit) {
+                const butler::ArtistCreditSource src(db);
+                if (auto r = src.findItems(promptVersion); r.ok()) {
+                    res.items = r.value();
+                }
+            } else if (step == Step::MusicBrainz) {
+                const butler::ArtistMergeSource src(db, clock);
+                if (auto r = src.findLookupItems(); r.ok()) {
+                    res.items = r.value();
+                }
+            } else if (step == Step::Merge) {
+                const butler::ArtistMergeSource src(db, clock);
+                if (auto r = src.findItems(useMb); r.ok()) {
+                    res.items = r.value();
+                }
             }
-        } else if (step == Step::Credit) {
-            const butler::ArtistCreditSource src(db);
-            if (auto r = src.findItems(promptVersion); r.ok()) {
-                res.items = r.value();
-            }
-        } else if (step == Step::Merge) {
-            const butler::ArtistMergeSource src(db);
-            if (auto r = src.findItems(useMb); r.ok()) {
-                res.items = r.value();
-            }
-        }
-        return res;
-    });
+            return res;
+        });
 
     m_stepWatcher.setFuture(future);
 }
@@ -432,7 +442,7 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
 {
     QString jobKind;
     QString title;
-    library::CorrectionKind batchKind = library::CorrectionKind::Manual;
+    std::optional<library::CorrectionKind> batchKind;
 
     if (step == Step::Mojibake) {
         jobKind = QStringLiteral("butler.mojibake");
@@ -442,6 +452,10 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
         jobKind = QStringLiteral("butler.artist_credit");
         title = QStringLiteral("Normalize artist credits");
         batchKind = library::CorrectionKind::ArtistCredit;
+    } else if (step == Step::MusicBrainz) {
+        jobKind = QStringLiteral("butler.mb_lookup");
+        title = QStringLiteral("Look up artists on MusicBrainz");
+        batchKind = std::nullopt;
     } else if (step == Step::Merge) {
         jobKind = QStringLiteral("butler.artist_merge");
         title = QStringLiteral("Merge duplicate artists");
@@ -451,22 +465,25 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
         return;
     }
 
-    library::CorrectionStore store(m_db, m_clock);
-    auto batchRes = store.createBatch(batchKind, title);
-    if (!batchRes.ok()) {
-        qCWarning(lcUi, "Failed to create correction batch for step: %s",
-            qPrintable(batchRes.error().toString()));
-        startNextStep();
-        return;
+    QJsonObject params;
+    if (batchKind.has_value()) {
+        library::CorrectionStore store(m_db, m_clock);
+        auto batchRes = store.createBatch(batchKind.value(), title);
+        if (!batchRes.ok()) {
+            qCWarning(lcUi, "Failed to create correction batch for step: %s",
+                qPrintable(batchRes.error().toString()));
+            startNextStep();
+            return;
+        }
+
+        const qint64 batchId = batchRes.value();
+        params.insert(QStringLiteral("batchId"), batchId);
+        const double threshold = autoAcceptThreshold();
+        if (threshold > 0.0) {
+            params.insert(QStringLiteral("autoAccept"), threshold);
+        }
     }
 
-    const qint64 batchId = batchRes.value();
-    QJsonObject params;
-    params.insert(QStringLiteral("batchId"), batchId);
-    const double threshold = autoAcceptThreshold();
-    if (threshold > 0.0) {
-        params.insert(QStringLiteral("autoAccept"), threshold);
-    }
     if (step == Step::Merge) {
         params.insert(QStringLiteral("useMusicBrainz"), m_useMusicBrainzForRun);
     }

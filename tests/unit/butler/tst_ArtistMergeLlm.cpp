@@ -40,21 +40,25 @@ void TstArtistMergeLlm::parsePartitionsGroupIntoSubsets()
         .entry = { .artistId = 1, .name = QStringLiteral("Amamiya Sora"), .trackCount = 10 },
         .albums = { QStringLiteral("Album 1") },
         .aka = { QStringLiteral("Sora Amamiya") },
+        .mb = std::nullopt,
     };
     const ArtistMergeMember m2 {
         .entry = { .artistId = 2, .name = QStringLiteral("Sora Amamiya"), .trackCount = 2 },
         .albums = { QStringLiteral("Album 2") },
         .aka = { },
+        .mb = std::nullopt,
     };
     const ArtistMergeMember m3 {
         .entry = { .artistId = 3, .name = QStringLiteral("Yuki Kajiura"), .trackCount = 8 },
         .albums = { QStringLiteral("Album 3") },
         .aka = { },
+        .mb = std::nullopt,
     };
     const ArtistMergeMember m4 {
         .entry = { .artistId = 4, .name = QStringLiteral("FictionJunction"), .trackCount = 5 },
         .albums = { QStringLiteral("Album 4") },
         .aka = { },
+        .mb = std::nullopt,
     };
 
     const QList<ArtistMergeGroup> groups = {
@@ -116,11 +120,13 @@ void TstArtistMergeLlm::parseSkipsGroupWithInvalidMember()
         .entry = { .artistId = 1, .name = QStringLiteral("Artist A"), .trackCount = 10 },
         .albums = { },
         .aka = { },
+        .mb = std::nullopt,
     };
     const ArtistMergeMember m2 {
         .entry = { .artistId = 2, .name = QStringLiteral("Artist B"), .trackCount = 5 },
         .albums = { },
         .aka = { },
+        .mb = std::nullopt,
     };
 
     const QList<ArtistMergeGroup> groups = {
@@ -186,16 +192,19 @@ void TstArtistMergeLlm::parseIgnoresLowConfidenceAndSingleMember()
         .entry = { .artistId = 1, .name = QStringLiteral("Artist A"), .trackCount = 10 },
         .albums = { },
         .aka = { },
+        .mb = std::nullopt,
     };
     const ArtistMergeMember m2 {
         .entry = { .artistId = 2, .name = QStringLiteral("Artist B"), .trackCount = 5 },
         .albums = { },
         .aka = { },
+        .mb = std::nullopt,
     };
     const ArtistMergeMember m3 {
         .entry = { .artistId = 3, .name = QStringLiteral("Artist C"), .trackCount = 3 },
         .albums = { },
         .aka = { },
+        .mb = std::nullopt,
     };
 
     const QList<ArtistMergeGroup> groups = {
@@ -238,6 +247,7 @@ void TstArtistMergeLlm::promptVarsContainsMemberAka()
         .entry = { .artistId = 1, .name = QStringLiteral("아이유"), .trackCount = 20 },
         .albums = { QStringLiteral("Palette"), QStringLiteral("LILAC") },
         .aka = { QStringLiteral("IU"), QStringLiteral("Lee Ji-eun") },
+        .mb = std::nullopt,
     };
 
     const QList<ArtistMergeGroup> groups = {

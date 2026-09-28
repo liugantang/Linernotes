@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include <QHash>
 #include <QList>
+#include <QSet>
 #include <QString>
 
 #include <butler/ArtistGroup.h>
@@ -12,6 +12,7 @@
 #include <library/ArtistAliasCorrections.h>
 
 #include <cstdint>
+#include <optional>
 
 namespace linernotes::butler {
 
@@ -23,16 +24,15 @@ qint64 pickCanonical(const QList<ArtistEntry> &members);
 /// different spelling"）。
 QList<library::ArtistAliasProposal> groupProposals(const ArtistGroup &group);
 
-/// MusicBrainz 结果 → 提议。只采用 score ≥ 90 且 (name == ours 或某个 alias.name == ours) 的第一条
-/// MB 艺人； 没有这样的条目 → 空列表。对采用的 MB 艺人：
-///  - 其 name 与各 alias.name 中，除 ours 以外、在曲库 nameToId 中存在（精确匹配）的 → 合并提议：
-///    规范艺人 = 这些曲库艺人与 ours 中 trackCount 最多者（用 pickCanonical），其余作为它的别名，
-///    locale 取 MB 中同名 alias 的 locale（若存在且支持），confidence 0.95，source MusicBrainz；
-///  - 带 locale 的 alias（en、ja、zh_Hans、zh_Hant、ko 以及它们的 "xx_YY" 形式）→
-///    语言名提议：挂在上面的规范艺人上，locale 取原值，confidence
-///    0.9（跳过已作为合并提议输出的名字）。 同一 locale 只取 primary 的那条，没有 primary
-///    取第一条。
-QList<library::ArtistAliasProposal> musicBrainzProposals(const ArtistEntry &ours,
-    const QList<MbArtist> &results, const QHash<QString, ArtistEntry> &libraryByName);
+/// 选定与 ours 对应的 MB 艺人：score ≥ 90 且 (name == ours 或某个 alias.name == ours)
+/// 的第一条；没有 → nullopt。
+std::optional<MbArtist> adoptMbArtist(const QString &ours, const QList<MbArtist> &results);
+
+/// mb 的带 locale 的 alias（en、ja、zh_Hans、zh_Hant、ko 及 "xx_YY" 形式）→ 挂在 ours
+/// 上的语言名提议， confidence 0.9，source MusicBrainz；同一 locale 只取 primary 的那条，没有
+/// primary 取第一条； 跳过与 ours 名字相同的、以及 libraryNames
+/// 中存在的名字（曲库里的艺人交给分组合并处理）。
+QList<library::ArtistAliasProposal> musicBrainzAliasProposals(
+    const ArtistEntry &ours, const MbArtist &mb, const QSet<QString> &libraryNames);
 
 } // namespace linernotes::butler

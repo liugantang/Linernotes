@@ -33,6 +33,8 @@ add_library(linernotes_butler STATIC
     EncodingScore.cpp
     EncodingScore.h
     Errors.h
+    MbLookupJobHandler.cpp
+    MbLookupJobHandler.h
     Mojibake.cpp
     Mojibake.h
     MojibakeAnalysis.cpp

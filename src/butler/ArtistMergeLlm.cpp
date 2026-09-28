@@ -17,6 +17,37 @@
 
 namespace linernotes::butler {
 
+namespace {
+
+QString orNone(const QString &value)
+{
+    return value.isEmpty() ? QStringLiteral("(none)") : value;
+}
+
+QString formatMbEvidence(const MbArtist &mb)
+{
+    constexpr qsizetype kMaxAliases = 10;
+    QStringList aliasNames;
+    const qsizetype maxAliases = std::min<qsizetype>(kMaxAliases, mb.aliases.size());
+    aliasNames.reserve(maxAliases);
+    for (qsizetype i = 0; i < maxAliases; ++i) {
+        const QString &an = mb.aliases.at(i).name;
+        if (!an.isEmpty() && !aliasNames.contains(an)) {
+            aliasNames.append(an);
+        }
+    }
+    return QStringLiteral(", mb: [mbid: %1, name: \"%2\", type: %3, country: %4, "
+                          "disambiguation: %5, aliases: [%6]]")
+        .arg(orNone(mb.mbid))
+        .arg(orNone(mb.name))
+        .arg(orNone(mb.type))
+        .arg(orNone(mb.country))
+        .arg(orNone(mb.disambiguation))
+        .arg(orNone(aliasNames.join(QStringLiteral(", "))));
+}
+
+} // namespace
+
 QHash<QString, QString> artistMergePromptVars(const QList<ArtistMergeGroup> &groups)
 {
     QHash<QString, QString> vars;
@@ -29,13 +60,17 @@ QHash<QString, QString> artistMergePromptVars(const QList<ArtistMergeGroup> &gro
                                                          : m.albums.join(QStringLiteral(", "));
             const QString akaStr
                 = m.aka.isEmpty() ? QStringLiteral("(none)") : m.aka.join(QStringLiteral(", "));
+
+            const QString mbStr = m.mb.has_value() ? formatMbEvidence(m.mb.value()) : QString();
+
             memberLines.append(
-                QStringLiteral("  - Artist ID %1: \"%2\" (tracks: %3, albums: [%4], aka: [%5])")
+                QStringLiteral("  - Artist ID %1: \"%2\" (tracks: %3, albums: [%4], aka: [%5]%6)")
                     .arg(QString::number(m.entry.artistId))
                     .arg(m.entry.name)
                     .arg(QString::number(m.entry.trackCount))
                     .arg(albumsStr)
-                    .arg(akaStr));
+                    .arg(akaStr)
+                    .arg(mbStr));
         }
 
         groupBlocks.append(QStringLiteral("Group ID %1:\n%2")

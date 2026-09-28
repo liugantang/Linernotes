@@ -7,6 +7,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QSqlDatabase>
+#include <QSqlQuery>
 #include <QUrlQuery>
 
 #include <butler/Errors.h>
@@ -147,6 +149,28 @@ QUrl artistSearchUrl(const QString &name, int limit)
     query.addQueryItem(QStringLiteral("limit"), QString::number(limit));
     url.setQuery(query);
     return url;
+}
+
+std::optional<QList<MbArtist>> cachedArtistSearch(
+    const QSqlDatabase &db, const QString &name, qint64 nowMs)
+{
+    const QUrl url = artistSearchUrl(name);
+    const QString urlString = url.toString();
+
+    QSqlQuery q(db);
+    q.prepare(QStringLiteral("SELECT body, fetched_at FROM mb_cache WHERE url = ?;"));
+    q.addBindValue(urlString);
+    if (q.exec() && q.next()) {
+        const QString body = q.value(0).toString();
+        const qint64 fetchedAt = q.value(1).toLongLong();
+        if (nowMs >= fetchedAt && (nowMs - fetchedAt) < kMaxCacheAgeMs) {
+            auto parseRes = parseArtistSearch(body.toUtf8());
+            if (parseRes.ok()) {
+                return parseRes.value();
+            }
+        }
+    }
+    return std::nullopt;
 }
 
 } // namespace linernotes::butler

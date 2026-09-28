@@ -47,9 +47,9 @@ private:
         qint64 batchId, std::optional<double> autoAcceptThreshold,
         std::function<void(const core::Result<void> &)> done);
 
-    std::unique_ptr<QObject> processMb(const QJsonObject &keyObj, qint64 batchId,
+    std::unique_ptr<QObject> processMbAlias(const QJsonObject &keyObj, qint64 batchId,
         std::optional<double> autoAcceptThreshold,
-        std::function<void(const core::Result<void> &)> done);
+        const std::function<void(const core::Result<void> &)> &done);
 
     std::unique_ptr<QObject> startLlm(const QList<ArtistMergeGroup> &groups, qint64 batchId,
         std::optional<double> autoAcceptThreshold,

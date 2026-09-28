@@ -72,7 +72,7 @@
 <context>
     <name>CleanupHealthPanel</name>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="160"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="161"/>
         <source>%n folder(s) with garbled tags</source>
         <translation>
             <numerusform>%n folder with garbled tags</numerusform>
@@ -87,7 +87,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="178"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="179"/>
         <source>%n artist credit(s) to check</source>
         <translation>
             <numerusform>%n artist credit to check</numerusform>
@@ -95,7 +95,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="200"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="201"/>
         <source>%n possible duplicate artist(s)</source>
         <translation>
             <numerusform>%n possible duplicate artist</numerusform>
@@ -103,7 +103,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="226"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="227"/>
         <source>Missing album metadata: %n track(s) (online lookup comes later)</source>
         <translation>
             <numerusform>Missing album metadata: %n track (online lookup comes later)</numerusform>

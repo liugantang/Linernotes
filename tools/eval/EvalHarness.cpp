@@ -12,6 +12,7 @@
 
 #include <butler/ArtistCreditJobHandler.h>
 #include <butler/ArtistMergeJobHandler.h>
+#include <butler/MbLookupJobHandler.h>
 #include <library/Migrator.h>
 
 #include <iostream>
@@ -176,6 +177,7 @@ void EvalHarness::initAiStack()
         *m_db, *m_llm, *m_prompts, *m_mbClient, m_clock));
     m_jobs->registerHandler(
         std::make_unique<butler::ArtistCreditJobHandler>(*m_db, *m_llm, *m_prompts, m_clock));
+    m_jobs->registerHandler(std::make_unique<butler::MbLookupJobHandler>(*m_mbClient));
 
     ai::ServiceProfile profile;
     profile.name = QStringLiteral("Eval Service");

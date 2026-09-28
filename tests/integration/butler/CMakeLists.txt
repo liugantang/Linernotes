@@ -43,7 +43,9 @@ linernotes_add_test(
         Linernotes::butler
         Linernotes::library
         Linernotes::core
+        Linernotes::ai
         Linernotes::TestSupport
+        Qt6::Network
         Qt6::Sql
     LABELS
         integration

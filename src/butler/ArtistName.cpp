@@ -8,9 +8,7 @@
 
 #include <butler/ArtistName.h>
 #include <unicode/translit.h>
-#include <unicode/uchar.h>
 #include <unicode/unistr.h>
-#include <unicode/uscript.h>
 #include <unicode/utypes.h>
 
 #include <algorithm>
@@ -47,41 +45,6 @@ QString transliterateWith(icu::Transliterator *trans, const QString &text)
     return QString::fromUtf16(ustr.getBuffer(), static_cast<qsizetype>(ustr.length()));
 }
 
-bool isHan(uint cp)
-{
-    UErrorCode status = U_ZERO_ERROR;
-    const UScriptCode sc = uscript_getScript(static_cast<UChar32>(cp), &status);
-    if (status <= U_ZERO_ERROR && sc == USCRIPT_HAN) {
-        return true;
-    }
-    if ((cp >= 0x4E00 && cp <= 0x9FFF) || (cp >= 0x3400 && cp <= 0x4DBF)
-        || (cp >= 0x20000 && cp <= 0x2FA1F) || (cp >= 0xF900 && cp <= 0xFAFF)
-        || (cp >= 0x2E80 && cp <= 0x2EFF) || (cp >= 0x2F00 && cp <= 0x2FDF)
-        || (cp >= 0x2FF0 && cp <= 0x2FFF) || cp == 0x3005 || cp == 0x3006 || cp == 0x3007) {
-        return true;
-    }
-    return false;
-}
-
-bool isKanaOrHangul(uint cp)
-{
-    UErrorCode status = U_ZERO_ERROR;
-    const UScriptCode sc = uscript_getScript(static_cast<UChar32>(cp), &status);
-    if (status <= U_ZERO_ERROR) {
-        if (sc == USCRIPT_HIRAGANA || sc == USCRIPT_KATAKANA || sc == USCRIPT_HANGUL
-            || sc == USCRIPT_KATAKANA_OR_HIRAGANA || sc == USCRIPT_BOPOMOFO) {
-            return true;
-        }
-    }
-    if ((cp >= 0x3040 && cp <= 0x30FF) || (cp >= 0xAC00 && cp <= 0xD7AF)
-        || (cp >= 0x1100 && cp <= 0x11FF) || (cp >= 0x3130 && cp <= 0x318F)
-        || (cp >= 0x31F0 && cp <= 0x31FF) || (cp >= 0xFF65 && cp <= 0xFF9F)
-        || (cp >= 0x3100 && cp <= 0x312F) || (cp >= 0x31A0 && cp <= 0x31BF) || cp == 0x30FC) {
-        return true;
-    }
-    return false;
-}
-
 bool isPunctuationSymbolOrSeparator(uint cp)
 {
     if (QChar::isSpace(cp)) {
@@ -112,12 +75,6 @@ bool isPunctuationSymbolOrSeparator(uint cp)
 }
 
 } // namespace
-
-bool containsCjk(QStringView text)
-{
-    const auto ucs4 = text.toUcs4();
-    return std::ranges::any_of(ucs4, [](uint cp) { return isHan(cp) || isKanaOrHangul(cp); });
-}
 
 QString exactKey(QStringView name)
 {

@@ -40,6 +40,7 @@ Rectangle {
         if (hasCleanup && AppContext.cleanup.paused) return qsTr("Paused")
         if (step === CleanupController.Mojibake) return qsTr("Fixing garbled tags...")
         if (step === CleanupController.Credit) return qsTr("Normalizing artist credits...")
+        if (step === CleanupController.MusicBrainz) return qsTr("Looking up artists on MusicBrainz...")
         if (step === CleanupController.Merge) return qsTr("Merging duplicate artists...")
         return qsTr("Cleaning up library...")
     }

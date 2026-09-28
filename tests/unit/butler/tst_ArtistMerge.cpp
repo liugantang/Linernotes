@@ -17,10 +17,11 @@
 
 namespace {
 
+using linernotes::butler::adoptMbArtist;
 using linernotes::butler::ArtistEntry;
 using linernotes::butler::ArtistGroup;
 using linernotes::butler::groupProposals;
-using linernotes::butler::musicBrainzProposals;
+using linernotes::butler::musicBrainzAliasProposals;
 using linernotes::butler::parseArtistSearch;
 using linernotes::butler::pickCanonical;
 using linernotes::library::CorrectionSource;
@@ -31,8 +32,8 @@ class TstArtistMerge : public QObject {
 private slots:
     void pickCanonicalPrefersMoreTracks();
     void groupProposalsCreatesRuleProposals();
-    void musicBrainzMergesAndLocales();
-    void musicBrainzIgnoresLowScoreOrNameMismatch();
+    void adoptMbArtistMatches();
+    void musicBrainzAliasProposalsGeneratesAliases();
 };
 
 void TstArtistMerge::pickCanonicalPrefersMoreTracks()
@@ -76,7 +77,7 @@ void TstArtistMerge::groupProposalsCreatesRuleProposals()
     QCOMPARE(p.reason, QStringLiteral("Same name with different spelling"));
 }
 
-void TstArtistMerge::musicBrainzMergesAndLocales()
+void TstArtistMerge::adoptMbArtistMatches()
 {
     const QString mimoriPath
         = linernotes::test::fixturePath(QStringLiteral("musicbrainz/artist_search_mimori.json"));
@@ -86,37 +87,53 @@ void TstArtistMerge::musicBrainzMergesAndLocales()
     QVERIFY(parseRes.ok());
     const auto &mbResults = parseRes.value();
 
+    // 1. Direct name match
+    const auto adoptedByName = adoptMbArtist(QStringLiteral("三森すずこ"), mbResults);
+    QVERIFY(adoptedByName.has_value());
+    if (adoptedByName.has_value()) {
+        QCOMPARE(adoptedByName->name, QStringLiteral("三森すずこ"));
+    }
+
+    // 2. Alias match
+    const auto adoptedByAlias = adoptMbArtist(QStringLiteral("Suzuko Mimori"), mbResults);
+    QVERIFY(adoptedByAlias.has_value());
+    if (adoptedByAlias.has_value()) {
+        QCOMPARE(adoptedByAlias->name, QStringLiteral("三森すずこ"));
+    }
+
+    // 3. Score too low (< 90) -> nullopt (fixture has 中森明菜 with score 80)
+    const auto adoptedLowScore = adoptMbArtist(QStringLiteral("中森明菜"), mbResults);
+    QVERIFY(!adoptedLowScore.has_value());
+
+    // 4. Unknown name -> nullopt
+    const auto adoptedUnknown = adoptMbArtist(QStringLiteral("Unknown Artist"), mbResults);
+    QVERIFY(!adoptedUnknown.has_value());
+}
+
+void TstArtistMerge::musicBrainzAliasProposalsGeneratesAliases()
+{
+    const QString mimoriPath
+        = linernotes::test::fixturePath(QStringLiteral("musicbrainz/artist_search_mimori.json"));
+    QFile file(mimoriPath);
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    const auto parseRes = parseArtistSearch(file.readAll());
+    QVERIFY(parseRes.ok());
+    const auto &mbResults = parseRes.value();
+
+    const auto adopted = adoptMbArtist(QStringLiteral("三森すずこ"), mbResults);
+    QVERIFY(adopted.has_value());
+    if (!adopted.has_value()) {
+        return;
+    }
+
     const ArtistEntry mimori {
         .artistId = 1, .name = QStringLiteral("三森すずこ"), .trackCount = 20
     };
-    const ArtistEntry suzuko {
-        .artistId = 2, .name = QStringLiteral("Suzuko Mimori"), .trackCount = 3
-    };
 
-    // Case A: Library has both "三森すずこ" and "Suzuko Mimori"
+    // Case A: Library doesn't have "Suzuko Mimori" -> proposal emitted
     {
-        QHash<QString, ArtistEntry> libraryByName;
-        libraryByName.insert(mimori.name, mimori);
-        libraryByName.insert(suzuko.name, suzuko);
-
-        const auto proposals = musicBrainzProposals(mimori, mbResults, libraryByName);
-        QCOMPARE(proposals.size(), 1);
-
-        const auto &p = proposals.first();
-        QCOMPARE(p.canonicalArtistId, 1);
-        QCOMPARE(p.alias, QStringLiteral("Suzuko Mimori"));
-        QCOMPARE(p.locale, std::optional<QString>(QStringLiteral("en")));
-        QCOMPARE(p.source, CorrectionSource::MusicBrainz);
-        QCOMPARE(p.confidence, 0.95);
-        QCOMPARE(p.reason, QStringLiteral("Matched via MusicBrainz"));
-    }
-
-    // Case B: Library only has "三森すずこ"
-    {
-        QHash<QString, ArtistEntry> libraryByName;
-        libraryByName.insert(mimori.name, mimori);
-
-        const auto proposals = musicBrainzProposals(mimori, mbResults, libraryByName);
+        const QSet<QString> libraryNames = { QStringLiteral("三森すずこ") };
+        const auto proposals = musicBrainzAliasProposals(mimori, adopted.value(), libraryNames);
         QCOMPARE(proposals.size(), 1);
 
         const auto &p = proposals.first();
@@ -127,35 +144,14 @@ void TstArtistMerge::musicBrainzMergesAndLocales()
         QCOMPARE(p.confidence, 0.9);
         QCOMPARE(p.reason, QStringLiteral("MusicBrainz localized alias"));
     }
-}
 
-void TstArtistMerge::musicBrainzIgnoresLowScoreOrNameMismatch()
-{
-    const QString mimoriPath
-        = linernotes::test::fixturePath(QStringLiteral("musicbrainz/artist_search_mimori.json"));
-    QFile file(mimoriPath);
-    QVERIFY(file.open(QIODevice::ReadOnly));
-    const auto parseRes = parseArtistSearch(file.readAll());
-    QVERIFY(parseRes.ok());
-    const auto &mbResults = parseRes.value();
-
-    // In mimori fixture: "中森明菜" has score 80 (< 90), so it should be ignored
-    const ArtistEntry nakamori {
-        .artistId = 3, .name = QStringLiteral("中森明菜"), .trackCount = 10
-    };
-    QHash<QString, ArtistEntry> libraryByName;
-    libraryByName.insert(nakamori.name, nakamori);
-
-    const auto proposals = musicBrainzProposals(nakamori, mbResults, libraryByName);
-    QVERIFY(proposals.isEmpty());
-
-    // Non-existent artist in fixture
-    const ArtistEntry unknown {
-        .artistId = 99, .name = QStringLiteral("Unknown Artist"), .trackCount = 1
-    };
-    libraryByName.insert(unknown.name, unknown);
-    const auto unknownProposals = musicBrainzProposals(unknown, mbResults, libraryByName);
-    QVERIFY(unknownProposals.isEmpty());
+    // Case B: Library already has "Suzuko Mimori" -> skipped
+    {
+        const QSet<QString> libraryNames
+            = { QStringLiteral("三森すずこ"), QStringLiteral("Suzuko Mimori") };
+        const auto proposals = musicBrainzAliasProposals(mimori, adopted.value(), libraryNames);
+        QCOMPARE(proposals.size(), 0);
+    }
 }
 
 } // namespace
