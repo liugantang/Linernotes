@@ -168,55 +168,63 @@ core::Result<QList<ArtistAliasRow>> CorrectionStore::artistAliasCorrections(qint
     return detail::fetchArtistAliasCorrections(m_db, batchId);
 }
 
-core::Result<void> CorrectionStore::accept(const QList<qint64> &correctionIds)
+core::Result<AcceptOutcome> CorrectionStore::accept(const QList<qint64> &correctionIds)
 {
     if (correctionIds.isEmpty()) {
-        return { };
+        return AcceptOutcome { };
     }
 
     const qint64 now = m_clock.nowMs();
 
-    return detail::inTransaction(m_db, [&](const QSqlDatabase &conn) -> core::Result<void> {
-        auto splitRes = detail::splitPendingByEntity(conn, correctionIds);
-        if (!splitRes.ok()) {
-            return splitRes.error();
-        }
-
-        const auto &[trackCorrectionIds, artistCorrectionIds] = splitRes.value();
-
-        if (trackCorrectionIds.isEmpty() && artistCorrectionIds.isEmpty()) {
-            return { };
-        }
-
-        QSet<qint64> affectedTrackIds;
-
-        if (!trackCorrectionIds.isEmpty()) {
-            if (auto res
-                = detail::acceptTrackCorrections(conn, trackCorrectionIds, now, affectedTrackIds);
-                !res.ok()) {
-                return res;
+    return detail::inTransaction(
+        m_db, [&](const QSqlDatabase &conn) -> core::Result<AcceptOutcome> {
+            auto splitRes = detail::splitPendingByEntity(conn, correctionIds);
+            if (!splitRes.ok()) {
+                return splitRes.error();
             }
-        }
 
-        if (!artistCorrectionIds.isEmpty()) {
-            if (auto res = detail::acceptArtistAliasCorrections(
+            const auto &[trackCorrectionIds, artistCorrectionIds] = splitRes.value();
+
+            if (trackCorrectionIds.isEmpty() && artistCorrectionIds.isEmpty()) {
+                return AcceptOutcome { };
+            }
+
+            QSet<qint64> affectedTrackIds;
+            AcceptOutcome outcome;
+
+            if (!trackCorrectionIds.isEmpty()) {
+                auto res = detail::acceptTrackCorrections(
+                    conn, trackCorrectionIds, now, affectedTrackIds);
+                if (!res.ok()) {
+                    return res.error();
+                }
+                outcome.accepted += res.value().accepted;
+                outcome.skippedStale += res.value().skippedStale;
+            }
+
+            if (!artistCorrectionIds.isEmpty()) {
+                auto res = detail::acceptArtistAliasCorrections(
                     conn, artistCorrectionIds, now, affectedTrackIds);
-                !res.ok()) {
-                return res;
+                if (!res.ok()) {
+                    return res.error();
+                }
+                outcome.accepted += res.value().accepted;
+                outcome.skippedStale += res.value().skippedStale;
             }
-        }
 
-        if (!affectedTrackIds.isEmpty()) {
-            return detail::relinkTracks(conn, affectedTrackIds.values());
-        }
+            if (!affectedTrackIds.isEmpty()) {
+                if (auto res = detail::relinkTracks(conn, affectedTrackIds.values()); !res.ok()) {
+                    return res.error();
+                }
+            }
 
-        SearchIndex searchIndex(conn);
-        if (auto res = searchIndex.flushDirty(); !res.ok()) {
-            return res.error();
-        }
+            SearchIndex searchIndex(conn);
+            if (auto res = searchIndex.flushDirty(); !res.ok()) {
+                return res.error();
+            }
 
-        return { };
-    });
+            return outcome;
+        });
 }
 
 core::Result<void> CorrectionStore::reject(const QList<qint64> &correctionIds)

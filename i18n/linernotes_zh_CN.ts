@@ -545,6 +545,11 @@
 <context>
     <name>CleanupPage</name>
     <message>
+        <location filename="../qml/pages/CleanupPage.qml" line="96"/>
+        <source>Show stale</source>
+        <translation>查看已失效</translation>
+    </message>
+    <message>
         <location filename="../qml/pages/CleanupPage.qml" line="103"/>
         <source>No Cleanup Batches</source>
         <translation>暂无整理批次</translation>
@@ -672,6 +677,18 @@
         <translation>已撤销</translation>
     </message>
     <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="41"/>
+        <source>Stale</source>
+        <translation>已失效</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CorrectionFilterBar.qml" line="51"/>
+        <source>%n stale</source>
+        <translation>
+            <numerusform>%n 条已失效</numerusform>
+        </translation>
+    </message>
+    <message>
         <location filename="../qml/CorrectionFilterBar.qml" line="58"/>
         <source>Min: %1%</source>
         <translation>最低：%1%</translation>
@@ -741,21 +758,26 @@
     </message>
     <message>
         <location filename="../qml/CorrectionRowItem.qml" line="28"/>
+        <source>Stale</source>
+        <translation>已失效</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="29"/>
         <source>Pending</source>
         <translation>待审</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionRowItem.qml" line="29"/>
+        <location filename="../qml/CorrectionRowItem.qml" line="30"/>
         <source>Accepted</source>
         <translation>已接受</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionRowItem.qml" line="30"/>
+        <location filename="../qml/CorrectionRowItem.qml" line="31"/>
         <source>Rejected</source>
         <translation>已拒绝</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionRowItem.qml" line="31"/>
+        <location filename="../qml/CorrectionRowItem.qml" line="32"/>
         <source>Reverted</source>
         <translation>已撤销</translation>
     </message>
@@ -2835,6 +2857,14 @@
 <context>
     <name>linernotes::ui::CorrectionListModel</name>
     <message>
+        <source>(Artist no longer exists)</source>
+        <translation>（艺人已不存在）</translation>
+    </message>
+    <message>
+        <source>(Track no longer exists)</source>
+        <translation>（曲目已不存在）</translation>
+    </message>
+    <message>
         <location filename="../src/ui/CorrectionListModel.cpp" line="187"/>
         <source>Alias (%1)</source>
         <translation>别名（%1）</translation>
@@ -2843,6 +2873,25 @@
         <location filename="../src/ui/CorrectionListModel.cpp" line="188"/>
         <source>Alias</source>
         <translation>别名</translation>
+    </message>
+</context>
+<context>
+    <name>linernotes::ui::CorrectionReviewController</name>
+    <message numerus="yes">
+        <location filename="../src/ui/CorrectionReviewController.cpp" line="95"/>
+        <location filename="../src/ui/CorrectionReviewController.cpp" line="135"/>
+        <source>Accepted %n correction(s).</source>
+        <translation>
+            <numerusform>已接受 %n 条修正。</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/ui/CorrectionReviewController.cpp" line="97"/>
+        <location filename="../src/ui/CorrectionReviewController.cpp" line="137"/>
+        <source>%n skipped because the artist or track no longer exists.</source>
+        <translation>
+            <numerusform>%n 条因艺人或曲目已不存在而跳过。</numerusform>
+        </translation>
     </message>
 </context>
 <context>

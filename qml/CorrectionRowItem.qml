@@ -25,17 +25,20 @@ Rectangle {
         return src === Library.CorrectionSource.User ? qsTr("User") : ""
     }
     function statusText(st) {
+        if (model.stale) return qsTr("Stale")
         if (st === Library.CorrectionStatus.Pending) return qsTr("Pending")
         if (st === Library.CorrectionStatus.Accepted) return qsTr("Accepted")
         if (st === Library.CorrectionStatus.Rejected) return qsTr("Rejected")
         return st === Library.CorrectionStatus.Reverted ? qsTr("Reverted") : ""
     }
     function statusColor(st) {
+        if (model.stale) return Theme.errorText
         if (st === Library.CorrectionStatus.Pending) return Theme.isDark ? "#f9e2af" : "#b45309"
         if (st === Library.CorrectionStatus.Accepted) return Theme.isDark ? "#a6e3a1" : "#16a34a"
         return st === Library.CorrectionStatus.Rejected ? Theme.errorText : Theme.textSecondary
     }
     function statusBgColor(st) {
+        if (model.stale) return Theme.errorBackground
         if (st === Library.CorrectionStatus.Pending) return Theme.isDark ? "#3e3220" : "#fef3c7"
         if (st === Library.CorrectionStatus.Accepted) return Theme.isDark ? "#1e3a29" : "#dcfce7"
         return st === Library.CorrectionStatus.Rejected ? Theme.errorBackground : Theme.surfaceVariant
@@ -59,7 +62,7 @@ Rectangle {
         acceptedButtons: Qt.LeftButton
         onClicked: (mouse) => root.selectRow(mouse.modifiers)
         onDoubleClicked: {
-            if (model.status === Library.CorrectionStatus.Pending) {
+            if (model.status === Library.CorrectionStatus.Pending && !model.stale) {
                 root.isEditing = true
                 editField.forceActiveFocus()
                 editField.selectAll()
@@ -166,6 +169,10 @@ Rectangle {
                         font.bold: true
                         font.pixelSize: Theme.fontSizeNormal
                         color: Theme.text
+                        elide: Text.ElideRight
+                        Layout.fillWidth: true
+                        Layout.minimumWidth: 30
+                        Layout.maximumWidth: implicitWidth
                     }
                     Item { Layout.fillWidth: true }
                 }
@@ -264,7 +271,7 @@ Rectangle {
             Rectangle {
                 color: root.statusBgColor(model.status)
                 radius: Theme.radiusSmall
-                border.color: root.statusColor(model.status)
+                border.color: model.stale ? Theme.errorBorder : root.statusColor(model.status)
                 border.width: 1
                 Layout.preferredHeight: 24
                 Layout.preferredWidth: root.isCompact ? 68 : 76

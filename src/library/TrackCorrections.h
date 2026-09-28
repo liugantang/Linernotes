@@ -36,7 +36,7 @@ core::Result<void> addTrackProposals(Database &db, const core::Clock &clock, qin
 core::Result<QList<CorrectionRow>> fetchTrackCorrections(
     Database &db, qint64 batchId, const CorrectionFilter &filter);
 
-core::Result<void> acceptTrackCorrections(const QSqlDatabase &conn,
+core::Result<AcceptOutcome> acceptTrackCorrections(const QSqlDatabase &conn,
     const QList<qint64> &correctionIds, qint64 now, QSet<qint64> &affectedTrackIds);
 
 core::Result<void> acceptEditedTrackCorrection(

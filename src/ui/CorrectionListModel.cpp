@@ -56,6 +56,8 @@ QVariant CorrectionListModel::data(const QModelIndex &index, int role) const
         return QVariant::fromValue(item.source);
     case StatusRole:
         return QVariant::fromValue(item.status);
+    case StaleRole:
+        return item.stale;
     default:
         return { };
     }
@@ -75,6 +77,7 @@ QHash<int, QByteArray> CorrectionListModel::roleNames() const
         { ReasonRole, "reason" },
         { SourceRole, "source" },
         { StatusRole, "status" },
+        { StaleRole, "stale" },
     };
 }
 
@@ -134,6 +137,17 @@ int CorrectionListModel::pendingCount() const
     return pending;
 }
 
+int CorrectionListModel::staleCount() const
+{
+    int count = 0;
+    for (const auto &item : m_allRows) {
+        if (item.stale) {
+            ++count;
+        }
+    }
+    return count;
+}
+
 qint64 CorrectionListModel::batchId() const
 {
     return m_batchId;
@@ -181,7 +195,8 @@ void CorrectionListModel::setBatch(qint64 batchId, library::CorrectionKind kind)
             UnifiedCorrectionItem item;
             item.correctionId = row.id;
             item.entity = CorrectionEntity::Artist;
-            item.subject = row.artistName;
+            item.subject = (row.stale && row.artistName.isEmpty()) ? tr("(Artist no longer exists)")
+                                                                   : row.artistName;
             item.detail = QString();
             item.field = (row.locale.has_value() && !row.locale->isEmpty())
                 ? tr("Alias (%1)").arg(*row.locale)
@@ -192,6 +207,7 @@ void CorrectionListModel::setBatch(qint64 batchId, library::CorrectionKind kind)
             item.reason = row.reason;
             item.source = row.source;
             item.status = row.status;
+            item.stale = row.stale;
             m_allRows.append(item);
         }
     } else {
@@ -209,7 +225,8 @@ void CorrectionListModel::setBatch(qint64 batchId, library::CorrectionKind kind)
             UnifiedCorrectionItem item;
             item.correctionId = row.id;
             item.entity = CorrectionEntity::Track;
-            item.subject = row.trackTitle;
+            item.subject = (row.stale && row.trackTitle.isEmpty()) ? tr("(Track no longer exists)")
+                                                                   : row.trackTitle;
             item.detail = row.filePath;
             item.field = formatTagField(row.field);
             item.oldValue = row.oldValue;
@@ -218,6 +235,7 @@ void CorrectionListModel::setBatch(qint64 batchId, library::CorrectionKind kind)
             item.reason = row.reason;
             item.source = row.source;
             item.status = row.status;
+            item.stale = row.stale;
             m_allRows.append(item);
         }
     }
@@ -241,7 +259,7 @@ void CorrectionListModel::applyFilter()
             bool matches = false;
             switch (m_statusFilter) {
             case StatusFilter::Pending:
-                matches = (item.status == library::CorrectionStatus::Pending);
+                matches = (item.status == library::CorrectionStatus::Pending && !item.stale);
                 break;
             case StatusFilter::Accepted:
                 matches = (item.status == library::CorrectionStatus::Accepted);
@@ -251,6 +269,9 @@ void CorrectionListModel::applyFilter()
                 break;
             case StatusFilter::Reverted:
                 matches = (item.status == library::CorrectionStatus::Reverted);
+                break;
+            case StatusFilter::Stale:
+                matches = item.stale;
                 break;
             case StatusFilter::All:
                 matches = true;
@@ -304,7 +325,8 @@ QList<qint64> CorrectionListModel::allPendingCorrectionIds(double minConfidence)
 {
     QList<qint64> ids;
     for (const auto &item : m_allRows) {
-        if (item.status == library::CorrectionStatus::Pending && item.confidence >= minConfidence) {
+        if (item.status == library::CorrectionStatus::Pending && !item.stale
+            && item.confidence >= minConfidence) {
             ids.append(item.correctionId);
         }
     }

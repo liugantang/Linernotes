@@ -194,7 +194,8 @@ core::Result<QList<CorrectionRow>> fetchTrackCorrections(
                                  "  c.reason, "
                                  "  c.status, "
                                  "  em.title AS track_title, "
-                                 "  f.path AS file_path "
+                                 "  f.path AS file_path, "
+                                 "  t.id AS target_track_id "
                                  "FROM corrections c "
                                  "LEFT JOIN effective_metadata em ON em.track_id = c.entity_id "
                                  "LEFT JOIN tracks t ON t.id = c.entity_id "
@@ -249,22 +250,27 @@ core::Result<QList<CorrectionRow>> fetchTrackCorrections(
             = correctionStatusFromString(q.value(9).toString()).value_or(CorrectionStatus::Pending);
         row.trackTitle = q.value(10).toString();
         row.filePath = q.value(11).toString();
+        const bool trackExists = !q.value(12).isNull();
+        row.stale = (row.status == CorrectionStatus::Pending) && !trackExists;
         rows.append(row);
     }
     return rows;
 }
 
-core::Result<void> acceptTrackCorrections(const QSqlDatabase &conn,
+core::Result<AcceptOutcome> acceptTrackCorrections(const QSqlDatabase &conn,
     const QList<qint64> &correctionIds, qint64 now, QSet<qint64> &affectedTrackIds)
 {
     QSqlQuery selectStmt(conn);
     selectStmt.prepare(
-        QStringLiteral("SELECT entity_id FROM corrections "
-                       "WHERE id = ? AND status = 'pending' AND entity_type = 'track'"));
+        QStringLiteral("SELECT c.entity_id, t.id FROM corrections c "
+                       "LEFT JOIN tracks t ON t.id = c.entity_id "
+                       "WHERE c.id = ? AND c.status = 'pending' AND c.entity_type = 'track'"));
 
     QSqlQuery updateStmt(conn);
     updateStmt.prepare(QStringLiteral("UPDATE corrections SET status = 'accepted', decided_at = ? "
                                       "WHERE id = ? AND status = 'pending'"));
+
+    AcceptOutcome outcome;
 
     for (const qint64 id : correctionIds) {
         selectStmt.bindValue(0, id);
@@ -275,17 +281,27 @@ core::Result<void> acceptTrackCorrections(const QSqlDatabase &conn,
                 .detail = QString::number(id),
             };
         }
-        if (selectStmt.next()) {
-            affectedTrackIds.insert(selectStmt.value(0).toLongLong());
-            updateStmt.bindValue(0, now);
-            updateStmt.bindValue(1, id);
-            if (auto res = execWrite(updateStmt, QString::number(id)); !res.ok()) {
-                return res;
-            }
+        if (!selectStmt.next()) {
+            continue;
         }
+
+        const bool trackExists = !selectStmt.value(1).isNull();
+        if (!trackExists) {
+            ++outcome.skippedStale;
+            continue;
+        }
+
+        const qint64 trackId = selectStmt.value(0).toLongLong();
+        affectedTrackIds.insert(trackId);
+        updateStmt.bindValue(0, now);
+        updateStmt.bindValue(1, id);
+        if (auto res = execWrite(updateStmt, QString::number(id)); !res.ok()) {
+            return res.error();
+        }
+        ++outcome.accepted;
     }
 
-    return { };
+    return outcome;
 }
 
 core::Result<void> acceptEditedTrackCorrection(
@@ -295,8 +311,9 @@ core::Result<void> acceptEditedTrackCorrection(
 
     return inTransaction(db, [&](const QSqlDatabase &conn) -> core::Result<void> {
         QSqlQuery selectStmt(conn);
-        selectStmt.prepare(QStringLiteral("SELECT entity_id, status FROM corrections "
-                                          "WHERE id = ? AND entity_type = 'track'"));
+        selectStmt.prepare(QStringLiteral("SELECT c.entity_id, c.status, t.id FROM corrections c "
+                                          "LEFT JOIN tracks t ON t.id = c.entity_id "
+                                          "WHERE c.id = ? AND c.entity_type = 'track'"));
         selectStmt.bindValue(0, correctionId);
         if (!selectStmt.exec()) {
             return core::Error {
@@ -320,6 +337,13 @@ core::Result<void> acceptEditedTrackCorrection(
                 .code = QString(errc::kCorrectionInvalid),
                 .message = QStringLiteral("Only pending corrections can be accepted"),
                 .detail = currentStatus,
+            };
+        }
+        if (selectStmt.value(2).isNull()) {
+            return core::Error {
+                .code = QString(errc::kCorrectionNotFound),
+                .message = QStringLiteral("Track not found"),
+                .detail = QString::number(trackId),
             };
         }
 

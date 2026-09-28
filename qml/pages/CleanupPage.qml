@@ -6,6 +6,7 @@ import QtQuick.Controls.Basic
 import QtQuick.Controls.impl
 import QtQuick.Layouts
 import Linernotes
+import "../controls" as Controls
 
 Item {
     id: root
@@ -63,8 +64,63 @@ Item {
         }
     }
 
-    ColumnLayout {
+    Rectangle {
+        id: noticeBanner
         anchors.top: errorBanner.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        visible: AppContext.review && AppContext.review.noticeText.length > 0
+        height: visible ? (Math.max(noticeContentRow.implicitHeight, 28) + Theme.spacingSmall * 2) : 0
+        color: Theme.surfaceVariant
+        border.color: Theme.divider
+        border.width: 1
+        z: 10
+
+        RowLayout {
+            id: noticeContentRow
+            anchors.fill: parent
+            anchors.margins: Theme.spacingSmall
+            anchors.leftMargin: Theme.spacingMedium
+            anchors.rightMargin: Theme.spacingMedium
+            spacing: Theme.spacingSmall
+
+            Label {
+                id: noticeTextLabel
+                text: AppContext.review ? AppContext.review.noticeText : ""
+                color: Theme.text
+                font.pixelSize: Theme.fontSizeNormal
+                wrapMode: Text.Wrap
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignVCenter
+            }
+
+            Controls.AppButton {
+                text: qsTr("Show stale")
+                Layout.preferredHeight: 28
+                Layout.alignment: Qt.AlignVCenter
+                onClicked: {
+                    if (AppContext.review) {
+                        AppContext.review.showStale()
+                    }
+                }
+            }
+
+            Controls.AppButton {
+                text: "✕"
+                Layout.preferredHeight: 28
+                Layout.preferredWidth: 28
+                Layout.alignment: Qt.AlignVCenter
+                onClicked: {
+                    if (AppContext.review) {
+                        AppContext.review.clearNotice()
+                    }
+                }
+            }
+        }
+    }
+
+    ColumnLayout {
+        anchors.top: noticeBanner.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom

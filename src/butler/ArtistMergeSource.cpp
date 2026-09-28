@@ -77,6 +77,13 @@ core::Result<QList<ArtistEntry>> ArtistMergeSource::loadArtists() const
         = QStringLiteral("SELECT a.id, a.name, COUNT(DISTINCT ta.track_id) AS track_count "
                          "FROM artists a "
                          "LEFT JOIN track_artists ta ON ta.artist_id = a.id "
+                         "WHERE a.name NOT IN ("
+                         "  SELECT old_value FROM corrections "
+                         "  WHERE status = 'pending' "
+                         "    AND entity_type = 'track' "
+                         "    AND field IN ('artist', 'album_artist') "
+                         "    AND old_value IS NOT NULL"
+                         ") "
                          "GROUP BY a.id, a.name "
                          "ORDER BY a.id ASC");
 

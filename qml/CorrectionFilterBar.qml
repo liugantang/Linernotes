@@ -37,12 +37,28 @@ Rectangle {
                     qsTr("Pending"),
                     qsTr("Accepted"),
                     qsTr("Rejected"),
-                    qsTr("Reverted")
+                    qsTr("Reverted"),
+                    qsTr("Stale")
                 ]
                 currentIndex: AppContext.review && AppContext.review.listModel ? AppContext.review.listModel.statusFilter : 0
                 onActivated: (index) => {
                     if (AppContext.review && AppContext.review.listModel) {
                         AppContext.review.listModel.statusFilter = index
+                    }
+                }
+            }
+
+            Controls.AppButton {
+                visible: AppContext.review && AppContext.review.listModel && AppContext.review.listModel.staleCount > 0
+                text: AppContext.review && AppContext.review.listModel
+                    ? qsTr("%n stale", "", AppContext.review.listModel.staleCount)
+                    : ""
+                palette.buttonText: Theme.errorText
+                palette.brightText: Theme.errorText
+                Layout.preferredHeight: 28
+                onClicked: {
+                    if (AppContext.review) {
+                        AppContext.review.showStale()
                     }
                 }
             }

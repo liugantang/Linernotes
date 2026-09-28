@@ -60,6 +60,7 @@ struct CorrectionRow {
     CorrectionStatus status = CorrectionStatus::Pending;
     QString trackTitle { }; // 当前 effective 标题（界面显示“哪首歌”）
     QString filePath { };
+    bool stale = false;
 
     bool operator==(const CorrectionRow &other) const = default;
 };
@@ -92,7 +93,7 @@ public:
         qint64 batchId, const CorrectionFilter &filter = { }) const; // 按 id 升序
     core::Result<QList<ArtistAliasRow>> artistAliasCorrections(qint64 batchId) const; // 按 id 升序
 
-    core::Result<void> accept(const QList<qint64> &correctionIds); // 只影响 pending 的
+    core::Result<AcceptOutcome> accept(const QList<qint64> &correctionIds); // 只影响 pending 的
     core::Result<void> reject(const QList<qint64> &correctionIds); // 只影响 pending 的
     /// 用户编辑后接受：new_value 改为 value，source 改为 user，状态 accepted。只允许 pending。
     core::Result<void> acceptEdited(qint64 correctionId, const QString &value);

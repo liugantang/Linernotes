@@ -30,10 +30,12 @@ using linernotes::butler::ArtistLinkKind;
 using linernotes::butler::ArtistMergeSource;
 using linernotes::butler::clusterProposals;
 using linernotes::library::CorrectionKind;
+using linernotes::library::CorrectionProposal;
 using linernotes::library::CorrectionStore;
 using linernotes::library::Database;
 using linernotes::library::EntityLinker;
 using linernotes::library::Migrator;
+using linernotes::library::TagField;
 using linernotes::test::ManualClock;
 
 struct TestDbHelper {
@@ -121,6 +123,7 @@ class TstArtistMergeJob : public QObject {
 
 private slots:
     void clusterMergeAndAutoAccept();
+    void loadArtistsExcludesPendingTrackArtistOldValues();
 };
 
 void TstArtistMergeJob::clusterMergeAndAutoAccept()
@@ -252,6 +255,53 @@ void TstArtistMergeJob::clusterMergeAndAutoAccept()
     // Sora Amamiya entity is merged and no longer exists
     QCOMPARE(TestDbHelper::getArtistId(conn, QStringLiteral("Sora Amamiya")), -1);
     QCOMPARE(TestDbHelper::getArtistId(conn, QStringLiteral("Amamiya Sora")), amamiyaSoraId);
+}
+
+void TstArtistMergeJob::loadArtistsExcludesPendingTrackArtistOldValues()
+{
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+    Database db(dbDir.filePath(QStringLiteral("test_exclude_pending.db")));
+    QVERIFY(db.open(Migrator()).ok());
+    const auto conn = db.connection().value();
+
+    const qint64 rootId = TestDbHelper::insertRoot(conn);
+    const qint64 f1 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/1.mp3"));
+    const qint64 t1 = TestDbHelper::insertTrack(conn, f1);
+
+    TestDbHelper::insertRawTag(
+        conn, t1, QStringLiteral("ARTIST"), QStringLiteral("40mP feat. 初音ミク"));
+    TestDbHelper::updateTagsReadAt(conn, t1);
+
+    EntityLinker linker(conn);
+    QVERIFY(linker.linkTrack(t1).ok());
+
+    const ArtistMergeSource source(db);
+    auto initialArtists = source.loadArtists().value();
+    QCOMPARE(initialArtists.size(), 1);
+    QCOMPARE(initialArtists.first().name, QStringLiteral("40mP feat. 初音ミク"));
+
+    // Add a pending track artist correction with old_value = "40mP feat. 初音ミク"
+    ManualClock clock(1000);
+    CorrectionStore store(db, clock);
+    const auto batchIdRes
+        = store.createBatch(CorrectionKind::ArtistSplit, QStringLiteral("Split batch"));
+    QVERIFY(batchIdRes.ok());
+    const qint64 batchId = batchIdRes.value();
+
+    CorrectionProposal proposal;
+    proposal.trackId = t1;
+    proposal.field = TagField::Artist;
+    proposal.oldValue = QStringLiteral("40mP feat. 初音ミク");
+    proposal.newValue = QStringLiteral("40mP / 初音ミク");
+    proposal.confidence = 0.9;
+    proposal.reason = QStringLiteral("Split credit");
+
+    QVERIFY(store.addProposals(batchId, { proposal }).ok());
+
+    // Now loadArtists() must exclude this artist
+    auto filteredArtists = source.loadArtists().value();
+    QCOMPARE(filteredArtists.size(), 0);
 }
 
 } // namespace

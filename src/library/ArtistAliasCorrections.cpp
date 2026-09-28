@@ -359,7 +359,7 @@ core::Result<QList<ArtistAliasRow>> fetchArtistAliasCorrections(Database &db, qi
 
     QSqlQuery q(conn);
     q.prepare(QStringLiteral("SELECT c.id, c.batch_id, c.entity_id, a.name, c.new_value, c.locale, "
-                             "c.source, c.confidence, c.reason, c.status FROM corrections c "
+                             "c.source, c.confidence, c.reason, c.status, a.id FROM corrections c "
                              "LEFT JOIN artists a ON a.id = c.entity_id "
                              "WHERE c.batch_id = ? AND c.entity_type = 'artist' AND c.field = "
                              "'alias' ORDER BY c.id ASC"));
@@ -375,6 +375,9 @@ core::Result<QList<ArtistAliasRow>> fetchArtistAliasCorrections(Database &db, qi
 
     QList<ArtistAliasRow> rows;
     while (q.next()) {
+        const auto status
+            = correctionStatusFromString(q.value(9).toString()).value_or(CorrectionStatus::Pending);
+        const bool artistExists = !q.value(10).isNull();
         rows.append(ArtistAliasRow {
             .id = q.value(0).toLongLong(),
             .batchId = q.value(1).toLongLong(),
@@ -387,24 +390,28 @@ core::Result<QList<ArtistAliasRow>> fetchArtistAliasCorrections(Database &db, qi
             = correctionSourceFromString(q.value(6).toString()).value_or(CorrectionSource::Rule),
             .confidence = q.value(7).toDouble(),
             .reason = q.value(8).toString(),
-            .status
-            = correctionStatusFromString(q.value(9).toString()).value_or(CorrectionStatus::Pending),
+            .status = status,
+            .stale = (status == CorrectionStatus::Pending) && !artistExists,
         });
     }
     return rows;
 }
 
-core::Result<void> acceptArtistAliasCorrections(const QSqlDatabase &conn,
+core::Result<AcceptOutcome> acceptArtistAliasCorrections(const QSqlDatabase &conn,
     const QList<qint64> &correctionIds, qint64 now, QSet<qint64> &affectedTrackIds)
 {
     QSqlQuery selectStmt(conn);
     selectStmt.prepare(QStringLiteral(
-        "SELECT entity_id, new_value, locale, source FROM corrections "
-        "WHERE id = ? AND status = 'pending' AND entity_type = 'artist' AND field = 'alias'"));
+        "SELECT c.entity_id, c.new_value, c.locale, c.source, a.id FROM corrections c "
+        "LEFT JOIN artists a ON a.id = c.entity_id "
+        "WHERE c.id = ? AND c.status = 'pending' AND c.entity_type = 'artist' AND field = "
+        "'alias'"));
 
     QSqlQuery updateStmt(conn);
     updateStmt.prepare(QStringLiteral("UPDATE corrections SET status = 'accepted', decided_at = ? "
                                       "WHERE id = ? AND status = 'pending'"));
+
+    AcceptOutcome outcome;
 
     for (const qint64 id : correctionIds) {
         selectStmt.bindValue(0, id);
@@ -419,6 +426,12 @@ core::Result<void> acceptArtistAliasCorrections(const QSqlDatabase &conn,
             continue;
         }
 
+        const bool artistExists = !selectStmt.value(4).isNull();
+        if (!artistExists) {
+            ++outcome.skippedStale;
+            continue;
+        }
+
         const qint64 canonicalArtistId = selectStmt.value(0).toLongLong();
         const QString alias = selectStmt.value(1).toString();
         const auto locale = selectStmt.value(2).isNull()
@@ -430,17 +443,18 @@ core::Result<void> acceptArtistAliasCorrections(const QSqlDatabase &conn,
         if (auto res = executeAcceptArtistAlias(
                 conn, canonicalArtistId, alias, locale, source, now, affectedTrackIds);
             !res.ok()) {
-            return res;
+            return res.error();
         }
 
         updateStmt.bindValue(0, now);
         updateStmt.bindValue(1, id);
         if (auto res = execWrite(updateStmt, QString::number(id)); !res.ok()) {
-            return res;
+            return res.error();
         }
+        ++outcome.accepted;
     }
 
-    return { };
+    return outcome;
 }
 
 core::Result<void> revertArtistAliasCorrections(

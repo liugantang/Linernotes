@@ -31,13 +31,14 @@ class CorrectionListModel : public QAbstractListModel {
     Q_PROPERTY(linernotes::ui::RowSelection *selection READ selection CONSTANT)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(int pendingCount READ pendingCount NOTIFY countChanged)
+    Q_PROPERTY(int staleCount READ staleCount NOTIFY countChanged)
     Q_PROPERTY(qint64 batchId READ batchId NOTIFY batchChanged)
 
 public:
     enum class CorrectionEntity : std::uint8_t { Track, Artist };
     Q_ENUM(CorrectionEntity)
 
-    enum class StatusFilter : std::uint8_t { All, Pending, Accepted, Rejected, Reverted };
+    enum class StatusFilter : std::uint8_t { All, Pending, Accepted, Rejected, Reverted, Stale };
     Q_ENUM(StatusFilter)
 
     enum Role : std::uint16_t { // NOLINT(cppcoreguidelines-use-enum-class) - Qt 模型角色需与 int
@@ -52,7 +53,8 @@ public:
         ConfidenceRole,
         ReasonRole,
         SourceRole,
-        StatusRole
+        StatusRole,
+        StaleRole
     };
     Q_ENUM(Role)
 
@@ -68,6 +70,7 @@ public:
         QString reason { };
         library::CorrectionSource source = library::CorrectionSource::Rule;
         library::CorrectionStatus status = library::CorrectionStatus::Pending;
+        bool stale = false;
     };
 
     explicit CorrectionListModel(
@@ -90,6 +93,7 @@ public:
 
     [[nodiscard]] int count() const;
     [[nodiscard]] int pendingCount() const;
+    [[nodiscard]] int staleCount() const;
     [[nodiscard]] qint64 batchId() const;
     [[nodiscard]] library::CorrectionKind batchKind() const;
 

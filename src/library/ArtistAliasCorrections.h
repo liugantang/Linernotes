@@ -22,6 +22,13 @@ namespace linernotes::library {
 
 class Database;
 
+/// CorrectionStore::accept 的结果。
+struct AcceptOutcome {
+    int accepted = 0;
+    int skippedStale = 0; // 目标已不存在而跳过的条数，这些条目保持 pending
+    bool operator==(const AcceptOutcome &other) const = default;
+};
+
 struct ArtistAliasProposal {
     qint64 canonicalArtistId = 0;
     QString alias { }; // 变体写法或其他语言名
@@ -44,6 +51,7 @@ struct ArtistAliasRow {
     double confidence = 0.0;
     QString reason { };
     CorrectionStatus status = CorrectionStatus::Pending;
+    bool stale = false;
 
     bool operator==(const ArtistAliasRow &other) const = default;
 };
@@ -55,7 +63,7 @@ core::Result<void> addArtistAliasProposals(Database &db, const core::Clock &cloc
 
 core::Result<QList<ArtistAliasRow>> fetchArtistAliasCorrections(Database &db, qint64 batchId);
 
-core::Result<void> acceptArtistAliasCorrections(const QSqlDatabase &conn,
+core::Result<AcceptOutcome> acceptArtistAliasCorrections(const QSqlDatabase &conn,
     const QList<qint64> &correctionIds, qint64 now, QSet<qint64> &affectedTrackIds);
 
 core::Result<void> revertArtistAliasCorrections(

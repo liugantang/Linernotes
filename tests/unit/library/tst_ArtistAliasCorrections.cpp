@@ -177,6 +177,7 @@ private slots:
     void localeAliasIsSearchable();
     void invalidProposalsRejectedAsWhole();
     void batchCountsIncludeAliasCorrections();
+    void acceptSkipsStaleCorrections();
 };
 
 void TstArtistAliasCorrections::acceptMergesVariantEntity()
@@ -602,6 +603,82 @@ void TstArtistAliasCorrections::batchCountsIncludeAliasCorrections()
     QCOMPARE(batches.size(), 1);
     QCOMPARE(batches.first().pending, 1);
     QCOMPARE(batches.first().accepted, 1);
+}
+
+void TstArtistAliasCorrections::acceptSkipsStaleCorrections()
+{
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+    Database db(dbDir.filePath(QStringLiteral("test_stale.db")));
+    QVERIFY(db.open(Migrator()).ok());
+    const auto conn = db.connection().value();
+
+    const auto setup = setupStandardTracks(conn);
+    QVERIFY(setup.jayId > 0);
+    QVERIFY(setup.feiId > 0);
+
+    ManualClock clock(1000);
+    CorrectionStore store(db, clock);
+
+    const auto batchIdRes
+        = store.createBatch(CorrectionKind::ArtistMerge, QStringLiteral("Merge test with stale"));
+    QVERIFY(batchIdRes.ok());
+    const qint64 batchId = batchIdRes.value();
+
+    ArtistAliasProposal p1;
+    p1.canonicalArtistId = setup.jayId;
+    p1.alias = QStringLiteral("Jay Chou");
+    p1.confidence = 0.9;
+    p1.reason = QStringLiteral("Variant 1");
+
+    ArtistAliasProposal p2;
+    p2.canonicalArtistId = setup.feiId;
+    p2.alias = QStringLiteral("Fei Yu-ching");
+    p2.confidence = 0.85;
+    p2.reason = QStringLiteral("Variant 2");
+
+    QVERIFY(store.addArtistAliasProposals(batchId, { p1, p2 }).ok());
+
+    auto rows = store.artistAliasCorrections(batchId).value();
+    QCOMPARE(rows.size(), 2);
+    QCOMPARE(rows.at(0).stale, false);
+    QCOMPARE(rows.at(1).stale, false);
+
+    // Delete artist feiId (first delete track_artists then artists row)
+    QSqlQuery q(conn);
+    q.prepare(QStringLiteral("DELETE FROM track_artists WHERE artist_id = ?;"));
+    q.addBindValue(setup.feiId);
+    QVERIFY(q.exec());
+
+    q.prepare(QStringLiteral("DELETE FROM artists WHERE id = ?;"));
+    q.addBindValue(setup.feiId);
+    QVERIFY(q.exec());
+
+    // Check stale computation on fetch
+    rows = store.artistAliasCorrections(batchId).value();
+    QCOMPARE(rows.size(), 2);
+    const auto &jayRow = (rows.at(0).artistId == setup.jayId) ? rows.at(0) : rows.at(1);
+    const auto &feiRow = (rows.at(0).artistId == setup.feiId) ? rows.at(0) : rows.at(1);
+    QCOMPARE(jayRow.stale, false);
+    QCOMPARE(feiRow.stale, true);
+
+    // Accept both
+    const auto acceptRes = store.accept({ rows.at(0).id, rows.at(1).id });
+    QVERIFY(acceptRes.ok());
+    QCOMPARE(acceptRes.value().accepted, 1);
+    QCOMPARE(acceptRes.value().skippedStale, 1);
+
+    // feiRow remains pending; jayRow is accepted.
+    // (relinking track 4 may recreate 费玉清 from its tags, so stale is not rechecked here)
+    rows = store.artistAliasCorrections(batchId).value();
+    for (const auto &r : rows) {
+        if (r.id == jayRow.id) {
+            QCOMPARE(r.status, CorrectionStatus::Accepted);
+            QCOMPARE(r.stale, false);
+        } else if (r.id == feiRow.id) {
+            QCOMPARE(r.status, CorrectionStatus::Pending);
+        }
+    }
 }
 
 } // namespace

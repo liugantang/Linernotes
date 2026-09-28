@@ -112,6 +112,7 @@ private slots:
     void listModelShowsBothEntityKinds();
     void acceptSelectedUpdatesStatusAndEmits();
     void revertBatchMarksReverted();
+    void staleCorrectionsHandling();
 
 private:
     std::unique_ptr<QTemporaryDir> m_tempDir;
@@ -324,6 +325,97 @@ void TstCorrectionReview::revertBatchMarksReverted()
     const auto status1 = listModel->data(listModel->index(1, 0), CorrectionListModel::StatusRole)
                              .value<CorrectionStatus>();
     QCOMPARE(status1, CorrectionStatus::Rejected);
+}
+
+void TstCorrectionReview::staleCorrectionsHandling()
+{
+    CorrectionStore store(*m_db, *m_clock);
+    const auto batchIdRes
+        = store.createBatch(CorrectionKind::Mojibake, QStringLiteral("Stale test batch"));
+    QVERIFY(batchIdRes.ok());
+    const qint64 batchId = batchIdRes.value();
+
+    const auto conn = m_db->connection().value();
+    const qint64 rootId = TestDbHelper::insertRoot(conn, QStringLiteral("/music/stale_test"));
+    const qint64 f1
+        = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/stale_test/1.mp3"));
+    const qint64 f2
+        = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/stale_test/2.mp3"));
+    const qint64 t1 = TestDbHelper::insertTrack(conn, f1);
+    const qint64 t2 = TestDbHelper::insertTrack(conn, f2);
+
+    QVERIFY(
+        TestDbHelper::insertRawTag(conn, t1, QStringLiteral("TITLE"), QStringLiteral("Song 1")));
+    QVERIFY(TestDbHelper::updateTagsReadAt(conn, t1));
+    QVERIFY(
+        TestDbHelper::insertRawTag(conn, t2, QStringLiteral("TITLE"), QStringLiteral("Song 2")));
+    QVERIFY(TestDbHelper::updateTagsReadAt(conn, t2));
+
+    EntityLinker linker(conn);
+    QVERIFY(linker.linkTrack(t1).ok());
+    QVERIFY(linker.linkTrack(t2).ok());
+
+    CorrectionProposal p1;
+    p1.trackId = t1;
+    p1.field = TagField::Title;
+    p1.newValue = QStringLiteral("Song 1 Fixed");
+    p1.confidence = 0.9;
+    p1.reason = QStringLiteral("Fix 1");
+
+    CorrectionProposal p2;
+    p2.trackId = t2;
+    p2.field = TagField::Title;
+    p2.newValue = QStringLiteral("Song 2 Fixed");
+    p2.confidence = 0.9;
+    p2.reason = QStringLiteral("Fix 2");
+
+    QVERIFY(store.addProposals(batchId, { p1, p2 }).ok());
+
+    m_controller->selectBatch(batchId);
+    auto *listModel = m_controller->listModel();
+    QCOMPARE(listModel->rowCount(), 2);
+    QCOMPARE(listModel->staleCount(), 0);
+
+    // Delete track t2 directly from database (mimicking orphan cleanup)
+    QSqlQuery q(conn);
+    q.prepare(QStringLiteral("DELETE FROM effective_metadata WHERE track_id = ?;"));
+    q.addBindValue(t2);
+    QVERIFY(q.exec());
+
+    q.prepare(QStringLiteral("DELETE FROM tracks WHERE id = ?;"));
+    q.addBindValue(t2);
+    QVERIFY(q.exec());
+
+    // Before listModel is refreshed, allPendingCorrectionIds still has both IDs.
+    // Calling acceptAllPending now will process both IDs: t1 accepted, t2 skipped as stale.
+    m_controller->acceptAllPending(0.0);
+
+    // After acceptAllPending: noticeText should be non-empty (skippedStale == 1)
+    QVERIFY(!m_controller->noticeText().isEmpty());
+
+    // listModel was refreshed by acceptAllPending.
+    // staleCount == 1
+    QCOMPARE(listModel->staleCount(), 1);
+
+    // Stale filter -> count == 1
+    m_controller->showStale();
+    QCOMPARE(listModel->statusFilter(), CorrectionListModel::StatusFilter::Stale);
+    QCOMPARE(listModel->count(), 1);
+
+    // Pending filter -> does not contain stale item (count == 0 because t1 is accepted, t2 is
+    // stale)
+    listModel->setStatusFilter(CorrectionListModel::StatusFilter::Pending);
+    QCOMPARE(listModel->count(), 0);
+
+    // allPendingCorrectionIds does not contain stale item
+    const auto pendingIds = listModel->allPendingCorrectionIds(0.0);
+    QCOMPARE(pendingIds.size(), 0);
+
+    // Stale items can be selected and rejected in bulk
+    m_controller->showStale();
+    listModel->selectAll();
+    m_controller->rejectSelected();
+    QCOMPARE(listModel->staleCount(), 0);
 }
 
 } // namespace
