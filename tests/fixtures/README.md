@@ -43,3 +43,9 @@
 | `library/cover_1600_embed.flac` | FLAC / Picture 1600×1600 JPEG | ~63 KB / 1.0 s | `generate.py` 自行合成，CC0 | 内嵌 1600×1600 大封面 JPEG 样本 (FLAC，与 MP3 封面完全一致) |
 | `library/dir_folder_cover/` | 目录样本 / Cover.JPG + FLAC | ~26 KB | `generate.py` 自行合成，CC0 | 带 `Cover.JPG` (800×800) 的目录样本，音频文件无内嵌封面 |
 | `library/dir_embed_and_folder/` | 目录样本 / folder.png + 内嵌封面 FLAC | ~20 KB | `generate.py` 自行合成，CC0 | 同时包含内嵌封面音频与 `folder.png` 的目录样本，用于验证内嵌优先 |
+| `mojibake/zh_hans.txt` | 文本 / 简体中文歌名与专辑名 | 320 行 | 自行编写，CC0 | 乱码规则修复测试语料（简体中文/GBK） |
+| `mojibake/zh_hant.txt` | 文本 / 繁体中文歌名与专辑名 | 320 行 | 自行编写，CC0 | 乱码规则修复测试语料（繁体中文/Big5） |
+| `mojibake/ja.txt` | 文本 / 日文歌名与专辑名 | 320 行 | 自行编写，CC0 | 乱码规则修复测试语料（日文/Shift-JIS） |
+| `mojibake/ko.txt` | 文本 / 韩文歌名与专辑名 | 220 行 | 自行编写，CC0 | 乱码规则修复测试语料（韩文/EUC-KR） |
+| `mojibake/latin_legit.txt` | 文本 / 合法带重音拉丁字母名字 | 300+ 行 | 自行编写，CC0 | 乱码检测防误报测试语料（合法拉丁字符） |
+
