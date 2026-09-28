@@ -22,4 +22,8 @@ inline constexpr QLatin1StringView kArtistSplitPromptRenderFailed {
     "artist_split.prompt_render_failed"
 };
 
+inline constexpr QLatin1StringView kMbInvalidResponse { "mb.invalid_response" };
+inline constexpr QLatin1StringView kMbRateLimited { "mb.rate_limited" };
+inline constexpr QLatin1StringView kMbNetwork { "mb.network" };
+
 } // namespace linernotes::butler::errc

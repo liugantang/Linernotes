@@ -33,6 +33,10 @@ add_library(linernotes_butler STATIC
     MojibakeLlm.h
     MojibakeSource.cpp
     MojibakeSource.h
+    MusicBrainz.cpp
+    MusicBrainz.h
+    MusicBrainzClient.cpp
+    MusicBrainzClient.h
 )
 add_library(Linernotes::butler ALIAS linernotes_butler)
 
@@ -58,6 +62,7 @@ target_link_libraries(linernotes_butler
         Linernotes::ai
         Qt6::Core
         Qt6::Sql
+        Qt6::Network
     PRIVATE
         Linernotes::Deps::ICU
         Linernotes::Deps::Uchardet
