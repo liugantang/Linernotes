@@ -12,6 +12,10 @@
 
 #include <cstdint>
 
+namespace linernotes::core {
+class Settings;
+} // namespace linernotes::core
+
 namespace linernotes::library {
 class Database;
 } // namespace linernotes::library
@@ -27,7 +31,8 @@ class LibraryActions : public QObject {
     Q_DISABLE_COPY_MOVE(LibraryActions)
 
 public:
-    LibraryActions(library::Database &db, player::Player &player, QObject *parent = nullptr);
+    LibraryActions(library::Database &db, player::Player &player, core::Settings &settings,
+        QObject *parent = nullptr);
     ~LibraryActions() override = default;
 
     /// 用这些曲目替换播放队列，从 startIndex 开始播放
@@ -42,7 +47,7 @@ public:
 
     /// 专辑/艺人详情页头部信息；不存在返回空 map。
     /// 键：albumId,title,albumArtist,year,trackCount,durationText,coverHash /
-    /// artistId,name,trackCount,albumCount,coverHash
+    /// artistId,name,originalName,trackCount,albumCount,coverHash
     [[nodiscard]] Q_INVOKABLE QVariantMap albumInfo(qint64 albumId) const;
     [[nodiscard]] Q_INVOKABLE QVariantMap artistInfo(qint64 artistId) const;
 
@@ -52,6 +57,7 @@ public:
 private:
     library::Database &m_db;
     player::Player &m_player;
+    core::Settings &m_settings;
 };
 
 } // namespace linernotes::ui

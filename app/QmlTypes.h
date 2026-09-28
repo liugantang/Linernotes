@@ -9,6 +9,7 @@
 
 #include <ai/AiEnums.h>
 #include <core/PlaySource.h>
+#include <library/ArtistNamePreference.h>
 #include <library/LibraryEnums.h>
 #include <library/SmartRule.h>
 #include <player/PlayMode.h>
@@ -173,6 +174,12 @@ struct LibraryForeign {
     Q_GADGET
     QML_FOREIGN_NAMESPACE(linernotes::library)
     QML_NAMED_ELEMENT(Library)
+};
+
+struct ArtistNamesForeign {
+    Q_GADGET
+    QML_FOREIGN_NAMESPACE(linernotes::library::artist_names)
+    QML_NAMED_ELEMENT(ArtistNames)
 };
 
 struct SmartConditionForeign {

@@ -204,6 +204,15 @@ linernotes_add_test(
         Linernotes::library
 )
 
+linernotes_add_test(
+    NAME library_ArtistDisplayName
+    SOURCES
+        tst_ArtistDisplayName.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+)
+
 
 
 

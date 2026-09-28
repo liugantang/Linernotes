@@ -46,7 +46,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_queueModel(m_db, m_player)
     , m_search(m_db)
     , m_playlists(m_db, m_player)
-    , m_actions(m_db, m_player)
+    , m_actions(m_db, m_player, m_settings)
 {
     connect(this, &AppContext::libraryChanged, &m_nowPlaying, &NowPlaying::refresh);
     connect(&m_marks, &MarksController::marksChanged, &m_nowPlaying, &NowPlaying::refresh);

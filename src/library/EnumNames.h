@@ -7,6 +7,7 @@
 #include <QString>
 #include <QStringView>
 
+#include <library/ArtistNamePreference.h>
 #include <library/LibraryEnums.h>
 
 #include <optional>
@@ -137,6 +138,24 @@ inline QString trackIssueKindToString(TrackIssueKind kind)
 inline std::optional<TrackIssueKind> trackIssueKindFromString(QStringView name)
 {
     return detail::enumFromName<TrackIssueKind>(name, trackIssueKindToString);
+}
+
+inline QString artistNamePreferenceToString(ArtistNamePreference pref)
+{
+    switch (pref) {
+    case ArtistNamePreference::Original:
+        return QStringLiteral("original");
+    case ArtistNamePreference::SimplifiedChinese:
+        return QStringLiteral("simplified_chinese");
+    case ArtistNamePreference::English:
+        return QStringLiteral("english");
+    }
+    return { };
+}
+
+inline std::optional<ArtistNamePreference> artistNamePreferenceFromString(QStringView name)
+{
+    return detail::enumFromName<ArtistNamePreference>(name, artistNamePreferenceToString);
 }
 
 } // namespace linernotes::library

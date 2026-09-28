@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #include <ui/ArtistListModel.h>
+#include <ui/SettingsController.h>
 #include <ui/UiLogging.h>
 
 namespace linernotes::ui {
@@ -9,6 +10,27 @@ namespace linernotes::ui {
 ArtistListModel::ArtistListModel(QObject *parent)
     : PagedListModel(parent)
 {
+}
+
+void ArtistListModel::setContext(AppContext *context)
+{
+    if (this->context() != nullptr && this->context()->settings() != nullptr) {
+        disconnect(this->context()->settings(), &SettingsController::artistNamePreferenceChanged,
+            this, &ArtistListModel::onSettingsPreferenceChanged);
+    }
+
+    PagedListModel::setContext(context);
+
+    if (this->context() != nullptr && this->context()->settings() != nullptr) {
+        connect(this->context()->settings(), &SettingsController::artistNamePreferenceChanged, this,
+            &ArtistListModel::onSettingsPreferenceChanged);
+    }
+}
+
+void ArtistListModel::onSettingsPreferenceChanged()
+{
+    clearCache();
+    reload();
 }
 
 QVariant ArtistListModel::data(const QModelIndex &index, int role) const
@@ -45,6 +67,8 @@ QVariant ArtistListModel::data(const QModelIndex &index, int role) const
     case Qt::DisplayRole:
     case NameRole:
         return row->name;
+    case OriginalNameRole:
+        return row->originalName;
     case ArtistIdRole:
         return row->artistId;
     case TrackCountRole:
@@ -65,6 +89,7 @@ QHash<int, QByteArray> ArtistListModel::roleNames() const
     return {
         { ArtistIdRole, "artistId" },
         { NameRole, "name" },
+        { OriginalNameRole, "originalName" },
         { TrackCountRole, "trackCount" },
         { AlbumCountRole, "albumCount" },
         { CoverHashRole, "coverHash" },
@@ -102,6 +127,11 @@ library::ArtistFilter ArtistListModel::currentFilter() const
 {
     library::ArtistFilter filter;
     filter.favoritesOnly = favoritesOnly();
+    if (context() != nullptr && context()->settings() != nullptr) {
+        filter.namePreference = context()->settings()->artistNamePreference();
+    } else {
+        filter.namePreference = library::ArtistNamePreference::Original;
+    }
     return filter;
 }
 

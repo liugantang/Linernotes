@@ -63,8 +63,13 @@ QString buildArtistFilterWhereSql(const ArtistFilter &filter);
 QString trackSelectSql(const QString &fromSource = QStringLiteral("tracks t"));
 QString albumSelectSql(const QString &fromSource = QStringLiteral("albums a"),
     const QString &alias = QStringLiteral("a"));
+QString artistDisplayNameSql(
+    const QString &alias, ArtistNamePreference pref = ArtistNamePreference::Original);
 QString artistSelectSql(const QString &fromSource = QStringLiteral("artists ar"),
-    const QString &alias = QStringLiteral("ar"));
+    const QString &alias = QStringLiteral("ar"),
+    ArtistNamePreference pref = ArtistNamePreference::Original);
+QString artistPageSelectSql(const QString &fromSource = QStringLiteral("page p"),
+    const QString &alias = QStringLiteral("p"));
 QString artistVisibilityWhereSql(const QString &artistIdExpr = QStringLiteral("ar.id"));
 
 template <typename RowT, typename ParseFn>

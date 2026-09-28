@@ -26,7 +26,7 @@
 <context>
     <name>ArtistDetail</name>
     <message numerus="yes">
-        <location filename="../qml/ArtistDetail.qml" line="112"/>
+        <location filename="../qml/ArtistDetail.qml" line="128"/>
         <source>%n album(s)</source>
         <translation>
             <numerusform>%n album</numerusform>
@@ -34,7 +34,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/ArtistDetail.qml" line="112"/>
+        <location filename="../qml/ArtistDetail.qml" line="128"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n track</numerusform>

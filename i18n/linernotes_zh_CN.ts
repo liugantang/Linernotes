@@ -288,41 +288,41 @@
 <context>
     <name>ArtistDetail</name>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="101"/>
+        <location filename="../qml/ArtistDetail.qml" line="108"/>
         <source>Unknown Artist</source>
         <translation>未知艺人</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/ArtistDetail.qml" line="112"/>
+        <location filename="../qml/ArtistDetail.qml" line="128"/>
         <source>%n album(s)</source>
         <translation>
             <numerusform>%n 张专辑</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/ArtistDetail.qml" line="112"/>
+        <location filename="../qml/ArtistDetail.qml" line="128"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n 首</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="122"/>
+        <location filename="../qml/ArtistDetail.qml" line="138"/>
         <source>Play All</source>
         <translation>播放全部</translation>
     </message>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="145"/>
+        <location filename="../qml/ArtistDetail.qml" line="161"/>
         <source>Albums (%1)</source>
         <translation>专辑 (%1)</translation>
     </message>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="149"/>
+        <location filename="../qml/ArtistDetail.qml" line="165"/>
         <source>All Tracks (%1)</source>
         <translation>全部歌曲 (%1)</translation>
     </message>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="245"/>
+        <location filename="../qml/ArtistDetail.qml" line="261"/>
         <source>Unknown Title</source>
         <translation>未知标题</translation>
     </message>
@@ -1491,64 +1491,89 @@
 <context>
     <name>SettingsLibrarySection</name>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="21"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="41"/>
         <source>Select Music Folder</source>
         <translation>选择音乐文件夹</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="27"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="47"/>
         <source>Failed to add folder. The folder may not exist or is already in the library.</source>
         <translation>添加文件夹失败。该文件夹可能不存在或已存在于曲库中。</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="60"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="80"/>
         <source>Remove Music Folder</source>
         <translation>移除音乐文件夹</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="68"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="88"/>
         <source>Remove this folder from the library? Tracks in it will be removed from the library (files on disk are not touched).</source>
         <translation>要从曲库中移除此文件夹吗？其中的歌曲将从曲库中移除（磁盘上的文件不会受影响）。</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="85"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="105"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="91"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="111"/>
         <source>Remove</source>
         <translation>移除</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="105"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="125"/>
         <source>Library</source>
         <translation>曲库</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="160"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="180"/>
         <source>Remove folder from library</source>
         <translation>从曲库中移除文件夹</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="173"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="193"/>
         <source>No music folders yet. Add a folder to build your library.</source>
         <translation>暂无音乐文件夹。添加文件夹以构建曲库。</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="197"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="217"/>
         <source>Add Folder…</source>
         <translation>添加文件夹…</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="206"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="226"/>
         <source>Scanning…</source>
         <translation>正在扫描…</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="206"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="226"/>
         <source>Rescan Now</source>
         <translation>立即重新扫描</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="247"/>
+        <source>Artist name display</source>
+        <translation>艺人名显示</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="259"/>
+        <source>Original</source>
+        <translation>原名</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="260"/>
+        <source>Simplified Chinese</source>
+        <translation>简体中文</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="261"/>
+        <source>English</source>
+        <translation>英文</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="276"/>
+        <source>Uses names found by the library butler; falls back to the original name.</source>
+        <translation>使用曲库管家找到的对应名称；没有时显示原名。</translation>
     </message>
 </context>
 <context>

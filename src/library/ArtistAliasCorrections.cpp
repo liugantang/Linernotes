@@ -15,6 +15,7 @@
 #include <library/EnumNames.h>
 #include <library/Errors.h>
 #include <library/MetadataRefresh.h>
+#include <library/SearchIndex.h>
 #include <library/TrackCorrections.h>
 
 #include <cmath>
@@ -337,6 +338,11 @@ core::Result<void> addArtistAliasProposals(Database &db, const core::Clock &cloc
 
         if (!affectedTrackIds.isEmpty()) {
             return relinkTracks(conn, affectedTrackIds.values());
+        }
+
+        SearchIndex searchIndex(conn);
+        if (auto res = searchIndex.flushDirty(); !res.ok()) {
+            return res.error();
         }
 
         return { };

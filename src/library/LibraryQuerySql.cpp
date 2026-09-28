@@ -70,10 +70,11 @@ ArtistRow parseArtistRow(const QSqlQuery &q)
     ArtistRow row;
     row.artistId = q.value(0).toLongLong();
     row.name = q.value(1).toString();
-    row.trackCount = q.value(2).toInt();
-    row.albumCount = q.value(3).toInt();
-    row.coverHash = q.value(4).toString();
-    row.favorite = q.value(5).toInt() != 0;
+    row.originalName = q.value(2).toString();
+    row.trackCount = q.value(3).toInt();
+    row.albumCount = q.value(4).toInt();
+    row.coverHash = q.value(5).toString();
+    row.favorite = q.value(6).toInt() != 0;
     return row;
 }
 
@@ -408,10 +409,13 @@ QString artistVisibilityWhereSql(const QString &artistIdExpr)
         .arg(artistIdExpr);
 }
 
-QString artistSelectSql(const QString &fromSource, const QString &alias)
+namespace {
+
+QString buildArtistSelectSql(const QString &fromSource, const QString &alias,
+    const QString &nameExpr, const QString &origNameExpr)
 {
     return QStringLiteral(
-        "SELECT %1.id, %1.name, "
+        "SELECT %1.id, %2 AS name, %3 AS original_name, "
         "(SELECT COUNT(DISTINCT ta.track_id) FROM track_artists ta JOIN track_sort ts ON "
         "ta.track_id = ts.track_id WHERE ta.artist_id = %1.id AND ta.role = 'artist' AND "
         "ts.visible = 1) AS track_count, "
@@ -423,9 +427,44 @@ QString artistSelectSql(const QString &fromSource, const QString &alias)
         "(SELECT 1 FROM track_sort ts WHERE ts.album_id = a.id AND ts.visible = 1) ORDER BY a.year "
         "ASC NULLS LAST, a.id ASC LIMIT 1) AS cover_hash, "
         "(fav.entity_id IS NOT NULL) AS is_fav "
-        "FROM %2 "
+        "FROM %4 "
         "LEFT JOIN favorites fav ON fav.entity_type = 'artist' AND fav.entity_id = %1.id")
-        .arg(alias, fromSource);
+        .arg(alias, nameExpr, origNameExpr, fromSource);
+}
+
+} // namespace
+
+QString artistDisplayNameSql(const QString &alias, ArtistNamePreference pref)
+{
+    switch (pref) {
+    case ArtistNamePreference::Original:
+        return QStringLiteral("%1.name").arg(alias);
+    case ArtistNamePreference::SimplifiedChinese:
+        return QStringLiteral(
+            "COALESCE((SELECT a.alias FROM artist_aliases a WHERE a.artist_id = %1.id AND a.locale "
+            "IN ('zh_Hans','zh') ORDER BY a.locale = 'zh_Hans' DESC, a.id LIMIT 1), %1.name)")
+            .arg(alias);
+    case ArtistNamePreference::English:
+        return QStringLiteral(
+            "COALESCE((SELECT a.alias FROM artist_aliases a WHERE a.artist_id = %1.id AND a.locale "
+            "IN ('en','en_US','en_GB') ORDER BY a.locale = 'en' DESC, a.id LIMIT 1), %1.name)")
+            .arg(alias);
+    }
+    return QStringLiteral("%1.name").arg(alias);
+}
+
+QString artistSelectSql(const QString &fromSource, const QString &alias, ArtistNamePreference pref)
+{
+    const QString nameExpr = artistDisplayNameSql(alias, pref);
+    const QString origNameExpr = QStringLiteral("%1.name").arg(alias);
+    return buildArtistSelectSql(fromSource, alias, nameExpr, origNameExpr);
+}
+
+QString artistPageSelectSql(const QString &fromSource, const QString &alias)
+{
+    const QString nameExpr = QStringLiteral("%1.name").arg(alias);
+    const QString origNameExpr = QStringLiteral("%1.original_name").arg(alias);
+    return buildArtistSelectSql(fromSource, alias, nameExpr, origNameExpr);
 }
 
 } // namespace linernotes::library::detail

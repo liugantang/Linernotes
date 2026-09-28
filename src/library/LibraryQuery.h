@@ -11,6 +11,7 @@
 #include <Qt>
 
 #include <core/Result.h>
+#include <library/ArtistNamePreference.h>
 #include <library/LibraryEnums.h>
 #include <library/SmartRule.h>
 
@@ -51,6 +52,7 @@ struct AlbumFilter {
 /// 艺人筛选条件。
 struct ArtistFilter {
     bool favoritesOnly = false; ///< favorites 中 entity_type = 'artist'
+    ArtistNamePreference namePreference = ArtistNamePreference::Original;
 };
 
 /// 单条曲目浏览行数据。
@@ -101,6 +103,7 @@ struct AlbumRow {
 struct ArtistRow {
     qint64 artistId = 0;
     QString name;
+    QString originalName;
     int trackCount = 0;
     int albumCount = 0;
     QString coverHash; ///< 该艺人任一专辑的封面（取 year 最早、再按 album id 的第一个有封面的专辑）
@@ -158,10 +161,12 @@ public:
         Qt::SortOrder order, int offset, int limit) const;
 
     /// 按给定顺序返回存在的艺人（不存在或无可见曲目的 id 跳过），供搜索结果等使用。
-    core::Result<QList<ArtistRow>> artistsByIds(const QList<qint64> &ids) const;
+    core::Result<QList<ArtistRow>> artistsByIds(
+        const QList<qint64> &ids, ArtistNamePreference pref = ArtistNamePreference::Original) const;
 
     /// 查询单个艺人详情；若不存在或无可见曲目返回 std::nullopt。
-    core::Result<std::optional<ArtistRow>> artist(qint64 artistId) const;
+    core::Result<std::optional<ArtistRow>> artist(
+        qint64 artistId, ArtistNamePreference pref = ArtistNamePreference::Original) const;
 
 private:
     QSqlDatabase m_db;

@@ -14,6 +14,7 @@
 #include <library/EnumNames.h>
 #include <library/Errors.h>
 #include <library/MetadataRefresh.h>
+#include <library/SearchIndex.h>
 #include <library/TrackCorrections.h>
 
 #include <utility>
@@ -209,6 +210,11 @@ core::Result<void> CorrectionStore::accept(const QList<qint64> &correctionIds)
             return detail::relinkTracks(conn, affectedTrackIds.values());
         }
 
+        SearchIndex searchIndex(conn);
+        if (auto res = searchIndex.flushDirty(); !res.ok()) {
+            return res.error();
+        }
+
         return { };
     });
 }
@@ -312,6 +318,11 @@ core::Result<void> CorrectionStore::revertBatch(qint64 batchId)
 
         if (!affectedTrackIds.isEmpty()) {
             return detail::relinkTracks(conn, affectedTrackIds.values());
+        }
+
+        SearchIndex searchIndex(conn);
+        if (auto res = searchIndex.flushDirty(); !res.ok()) {
+            return res.error();
         }
 
         return { };

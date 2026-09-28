@@ -6,6 +6,7 @@ file(GLOB MIGRATION_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/mig
 add_library(linernotes_library STATIC
     ArtistAliasCorrections.cpp
     ArtistAliasCorrections.h
+    ArtistNamePreference.h
     CoverStore.cpp
     CoverStore.h
     CorrectionStore.cpp

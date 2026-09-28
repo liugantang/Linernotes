@@ -16,6 +16,26 @@ ColumnLayout {
     property string deleteTargetPath: ""
     property string errorMessage: ""
 
+    function syncArtistNamePreferenceIndex() {
+        if (AppContext.settings) {
+            const idx = artistNamePrefCombo.indexOfValue(AppContext.settings.artistNamePreference)
+            if (idx >= 0 && idx !== artistNamePrefCombo.currentIndex) {
+                artistNamePrefCombo.currentIndex = idx
+            }
+        }
+    }
+
+    Component.onCompleted: {
+        syncArtistNamePreferenceIndex()
+    }
+
+    Connections {
+        target: AppContext.settings
+        function onArtistNamePreferenceChanged() {
+            root.syncArtistNamePreferenceIndex()
+        }
+    }
+
     FolderDialog {
         id: folderDialog
         title: qsTr("Select Music Folder")
@@ -209,6 +229,54 @@ ColumnLayout {
         }
 
         Item {
+            Layout.fillWidth: true
+        }
+    }
+
+    // Artist name display preference
+    ColumnLayout {
+        Layout.fillWidth: true
+        Layout.topMargin: Theme.spacingMedium
+        spacing: Theme.spacingTiny
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: Theme.spacingMedium
+
+            Label {
+                text: qsTr("Artist name display")
+                font.pixelSize: Theme.fontSizeNormal
+                color: Theme.text
+                Layout.preferredWidth: 140
+            }
+
+            Controls.AppComboBox {
+                id: artistNamePrefCombo
+                Layout.preferredWidth: 200
+                textRole: "text"
+                valueRole: "value"
+                model: [
+                    { text: qsTr("Original"), value: ArtistNames.Preference.Original },
+                    { text: qsTr("Simplified Chinese"), value: ArtistNames.Preference.SimplifiedChinese },
+                    { text: qsTr("English"), value: ArtistNames.Preference.English }
+                ]
+                onActivated: {
+                    if (AppContext.settings) {
+                        AppContext.settings.artistNamePreference = currentValue
+                    }
+                }
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+        }
+
+        Label {
+            text: qsTr("Uses names found by the library butler; falls back to the original name.")
+            font.pixelSize: Theme.fontSizeSmall
+            color: Theme.textSecondary
+            wrapMode: Text.Wrap
             Layout.fillWidth: true
         }
     }

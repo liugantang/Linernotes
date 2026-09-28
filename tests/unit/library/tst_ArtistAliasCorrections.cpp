@@ -12,6 +12,7 @@
 #include <library/Database.h>
 #include <library/EntityLinker.h>
 #include <library/Errors.h>
+#include <library/LibrarySearch.h>
 #include <library/Migrator.h>
 
 namespace {
@@ -23,6 +24,7 @@ using linernotes::library::CorrectionStatus;
 using linernotes::library::CorrectionStore;
 using linernotes::library::Database;
 using linernotes::library::EntityLinker;
+using linernotes::library::LibrarySearch;
 using linernotes::library::Migrator;
 using linernotes::test::ManualClock;
 namespace errc = linernotes::library::errc;
@@ -172,6 +174,7 @@ private slots:
     void acceptMovesFavoritesAndAliases();
     void revertRestoresVariantEntity();
     void localeAliasDoesNotNeedVariantEntity();
+    void localeAliasIsSearchable();
     void invalidProposalsRejectedAsWhole();
     void batchCountsIncludeAliasCorrections();
 };
@@ -442,6 +445,64 @@ void TstArtistAliasCorrections::localeAliasDoesNotNeedVariantEntity()
 
     // No Jay Chou artist entity was created
     QCOMPARE(TestDbHelper::getArtistId(conn, QStringLiteral("Jay Chou")), -1);
+}
+
+void TstArtistAliasCorrections::localeAliasIsSearchable()
+{
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+    Database db(dbDir.filePath(QStringLiteral("test_searchable.db")));
+    QVERIFY(db.open(Migrator()).ok());
+    const auto conn = db.connection().value();
+
+    const qint64 rootId = TestDbHelper::insertRoot(conn);
+    const qint64 f1 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/1.mp3"));
+    const qint64 t1 = TestDbHelper::insertTrack(conn, f1);
+    TestDbHelper::insertRawTag(conn, t1, QStringLiteral("TITLE"), QStringLiteral("晴天"));
+    TestDbHelper::insertRawTag(conn, t1, QStringLiteral("ARTIST"), QStringLiteral("周杰倫"));
+    TestDbHelper::updateTagsReadAt(conn, t1);
+
+    EntityLinker linker(conn);
+    QVERIFY(linker.linkTrack(t1).ok());
+    const qint64 zhouId = TestDbHelper::getArtistId(conn, QStringLiteral("周杰倫"));
+    QVERIFY(zhouId > 0);
+
+    LibrarySearch searcher(conn);
+    const auto initialRes = searcher.search(QStringLiteral("Jay"));
+    QVERIFY(initialRes.ok());
+    QVERIFY(initialRes.value().tracks.isEmpty());
+
+    ManualClock clock(1000);
+    CorrectionStore store(db, clock);
+
+    const auto batchIdRes
+        = store.createBatch(CorrectionKind::Manual, QStringLiteral("Add English alias Jay Chou"));
+    QVERIFY(batchIdRes.ok());
+    const qint64 batchId = batchIdRes.value();
+
+    ArtistAliasProposal p;
+    p.canonicalArtistId = zhouId;
+    p.alias = QStringLiteral("Jay Chou");
+    p.locale = QStringLiteral("en");
+    p.source = CorrectionSource::MusicBrainz;
+    p.confidence = 1.0;
+    p.reason = QStringLiteral("MB alias");
+
+    QVERIFY(store.addArtistAliasProposals(batchId, { p }).ok());
+
+    const auto rowsRes = store.artistAliasCorrections(batchId);
+    QVERIFY(rowsRes.ok());
+    QCOMPARE(rowsRes.value().size(), 1);
+    const auto &row = rowsRes.value().first();
+
+    QVERIFY(store.accept({ row.id }).ok());
+
+    const auto searchRes = searcher.search(QStringLiteral("Jay"));
+    QVERIFY(searchRes.ok());
+    const auto &results = searchRes.value();
+    QCOMPARE(results.tracks.size(), 1);
+    QCOMPARE(results.tracks.first().trackId, t1);
+    QCOMPARE(results.tracks.first().title, QStringLiteral("晴天"));
 }
 
 void TstArtistAliasCorrections::invalidProposalsRejectedAsWhole()
