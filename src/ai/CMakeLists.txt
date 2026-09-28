@@ -16,6 +16,8 @@ add_library(linernotes_ai STATIC
     ChatTypes.cpp
     ChatTypes.h
     Errors.h
+    HttpError.cpp
+    HttpError.h
     JobHandler.cpp
     JobHandler.h
     JobQueue.cpp
@@ -34,6 +36,8 @@ add_library(linernotes_ai STATIC
     LlmReply.h
     LlmService.cpp
     LlmService.h
+    ModelList.cpp
+    ModelList.h
     PrivacyGuard.cpp
     PrivacyGuard.h
     PromptLibrary.cpp

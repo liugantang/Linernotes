@@ -3,14 +3,21 @@
 
 #pragma once
 
+#include <QStringList>
+
 #include <ai/ChatTypes.h>
 #include <ai/LlmReply.h>
+#include <core/Result.h>
 
+#include <functional>
 #include <memory>
 
 class QNetworkAccessManager;
+class QObject;
 
 namespace linernotes::ai {
+
+using ModelListCallback = std::function<void(const core::Result<QStringList> &)>;
 
 class LlmClient {
 public:
@@ -18,6 +25,8 @@ public:
 
     std::unique_ptr<LlmReply> complete(const ServiceConfig &service, const ChatRequest &request);
     std::unique_ptr<LlmReply> stream(const ServiceConfig &service, const ChatRequest &request);
+
+    void listModels(const ServiceConfig &service, QObject *context, ModelListCallback callback);
 
 private:
     std::unique_ptr<LlmReply> sendRequest(

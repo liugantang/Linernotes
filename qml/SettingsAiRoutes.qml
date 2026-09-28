@@ -72,6 +72,25 @@ ColumnLayout {
                 required property var modelData
                 required property int index
 
+                function effectiveServiceId() {
+                    const val = serviceCombo.currentValue
+                    if (val && val.length > 0) {
+                        return val
+                    }
+                    return AppContext.aiSettings ? AppContext.aiSettings.defaultServiceId() : ""
+                }
+
+                function syncModels() {
+                    if (!AppContext.aiSettings) return
+                    const effId = routeRow.effectiveServiceId()
+                    if (effId && effId.length > 0) {
+                        modelField.models = AppContext.aiSettings.serviceModels(effId)
+                        AppContext.aiSettings.fetchServiceModels(effId)
+                    } else {
+                        modelField.models = []
+                    }
+                }
+
                 Label {
                     text: routeRow.modelData.name
                     font.pixelSize: Theme.fontSizeNormal
@@ -107,6 +126,7 @@ ColumnLayout {
                         }
                         serviceCombo.model = list
                         syncSelection()
+                        routeRow.syncModels()
                     }
 
                     function syncSelection() {
@@ -121,10 +141,11 @@ ColumnLayout {
                             AppContext.aiSettings.setRoute(
                                 routeRow.modelData.purpose, currentValue, modelField.text.trim())
                         }
+                        routeRow.syncModels()
                     }
                 }
 
-                Controls.AppTextField {
+                Controls.ModelComboField {
                     id: modelField
                     Layout.fillWidth: true
                     enabled: root.hasServices
@@ -150,11 +171,19 @@ ColumnLayout {
                                 routeRow.modelData.purpose, serviceCombo.currentValue, text.trim())
                         }
                     }
+
+                    onPicked: function(pickedModel) {
+                        if (AppContext.aiSettings) {
+                            AppContext.aiSettings.setRoute(
+                                routeRow.modelData.purpose, serviceCombo.currentValue, pickedModel.trim())
+                        }
+                    }
                 }
 
                 Component.onCompleted: {
                     serviceCombo.rebuildModel()
                     modelField.syncText()
+                    routeRow.syncModels()
                 }
 
                 Connections {
@@ -162,6 +191,12 @@ ColumnLayout {
                     function onRoutesChanged() {
                         serviceCombo.syncSelection()
                         modelField.syncText()
+                        routeRow.syncModels()
+                    }
+                    function onServiceModelsFetched(fetchedServiceId, ok, models, message) {
+                        if (fetchedServiceId === routeRow.effectiveServiceId()) {
+                            modelField.models = ok ? models : []
+                        }
                     }
                 }
 

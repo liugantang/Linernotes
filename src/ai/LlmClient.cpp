@@ -3,9 +3,13 @@
 
 #include "LlmClient.h"
 
+#include "HttpError.h"
+#include "ModelList.h"
+
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QNetworkRequest>
 
 namespace linernotes::ai {
@@ -25,6 +29,51 @@ std::unique_ptr<LlmReply> LlmClient::stream(
     const ServiceConfig &service, const ChatRequest &request)
 {
     return sendRequest(service, request, true);
+}
+
+void LlmClient::listModels(
+    const ServiceConfig &service, QObject *context, ModelListCallback callback)
+{
+    QString urlStr = service.baseUrl.toString();
+    if (urlStr.endsWith(u'/')) {
+        urlStr.chop(1);
+    }
+    const QUrl requestUrl(urlStr + QStringLiteral("/models"));
+
+    QNetworkRequest netRequest(requestUrl);
+    netRequest.setHeader(QNetworkRequest::ContentTypeHeader, QStringLiteral("application/json"));
+    if (!service.apiKey.isEmpty()) {
+        netRequest.setRawHeader("Authorization", "Bearer " + service.apiKey.toUtf8());
+    }
+    if (service.timeoutMs > 0) {
+        netRequest.setTransferTimeout(service.timeoutMs);
+    }
+
+    QNetworkReply *reply = m_network.get(netRequest);
+    if (reply == nullptr) {
+        return;
+    }
+
+    QObject::connect(reply, &QNetworkReply::finished, reply, &QObject::deleteLater);
+
+    if (context != nullptr) {
+        QObject::connect(context, &QObject::destroyed, reply, &QNetworkReply::abort);
+        QObject::connect(
+            reply, &QNetworkReply::finished, context, [reply, callback = std::move(callback)]() {
+                const int status
+                    = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+                const QNetworkReply::NetworkError netErr = reply->error();
+                const QByteArray body = reply->readAll();
+
+                if (status >= 400 || (status == 0 && netErr != QNetworkReply::NoError)) {
+                    callback(detail::makeNetworkOrHttpError(
+                        status, netErr, body, reply->errorString(), false));
+                    return;
+                }
+
+                callback(parseModelList(body));
+            });
+    }
 }
 
 std::unique_ptr<LlmReply> LlmClient::sendRequest(

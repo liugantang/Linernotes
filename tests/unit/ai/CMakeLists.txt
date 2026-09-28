@@ -26,6 +26,16 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME ai_ModelList
+    SOURCES
+        tst_ModelList.cpp
+    LIBS
+        Linernotes::ai
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
     NAME ai_AiConfig
     SOURCES
         tst_AiConfig.cpp

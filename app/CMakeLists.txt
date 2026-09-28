@@ -178,6 +178,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS controls/AppTextField.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/controls/ModelComboField.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS controls/ModelComboField.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/controls/AppSpinBox.qml
     PROPERTIES
         QT_RESOURCE_ALIAS controls/AppSpinBox.qml
@@ -558,6 +563,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/controls/AppMenuItem.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/AppMenuSeparator.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/AppTextField.qml
+        ${CMAKE_SOURCE_DIR}/qml/controls/ModelComboField.qml
         ${CMAKE_SOURCE_DIR}/qml/controls/AppSpinBox.qml
         ${CMAKE_SOURCE_DIR}/qml/Main.qml
         ${CMAKE_SOURCE_DIR}/qml/Theme.qml

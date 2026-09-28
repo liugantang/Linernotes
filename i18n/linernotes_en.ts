@@ -182,6 +182,17 @@
     </message>
 </context>
 <context>
+    <name>SettingsAiServiceDialog</name>
+    <message numerus="yes">
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="188"/>
+        <source>%n model(s) available</source>
+        <translation>
+            <numerusform>%n model available</numerusform>
+            <numerusform>%n models available</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>TagEditorDialog</name>
     <message numerus="yes">
         <location filename="../qml/TagEditorDialog.qml" line="67"/>

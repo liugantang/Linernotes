@@ -15,11 +15,20 @@ Popup {
     property bool keyPresent: false
     property string errorMessage: ""
 
+    property var draftModels: []
+    property bool loadingModels: false
+    property string modelStatusMessage: ""
+    property bool modelStatusIsError: false
+
+    property string testResultText: ""
+    property bool testResultSuccess: false
+
     readonly property var presetsModel: [
         { text: qsTr("Custom"), name: "", baseUrl: "" },
         { text: "OpenAI", name: "OpenAI", baseUrl: "https://api.openai.com/v1" },
         { text: "DeepSeek", name: "DeepSeek", baseUrl: "https://api.deepseek.com/v1" },
         { text: "Ollama (local)", name: "Ollama", baseUrl: "http://127.0.0.1:11434/v1" },
+        { text: "Ollama Cloud", name: "Ollama Cloud", baseUrl: "https://ollama.com/v1" },
         { text: "llama.cpp (local)", name: "llama.cpp", baseUrl: "http://127.0.0.1:8080/v1" }
     ]
 
@@ -43,11 +52,47 @@ Popup {
         radius: Theme.cardBorderRadius
     }
 
+    Timer {
+        id: fetchTimer
+        interval: 400
+        repeat: false
+        onTriggered: {
+            const baseUrl = baseUrlField.text.trim()
+            if (baseUrl.length === 0) {
+                root.loadingModels = false
+                root.draftModels = []
+                root.modelStatusMessage = ""
+                root.modelStatusIsError = false
+                return
+            }
+            if (!AppContext.aiSettings) {
+                return
+            }
+            root.loadingModels = true
+            root.modelStatusMessage = qsTr("Loading models…")
+            root.modelStatusIsError = false
+            const sid = (root.isEdit && !clearKeyCheck.checked) ? root.serviceId : ""
+            const key = clearKeyCheck.checked ? "" : keyField.text.trim()
+            AppContext.aiSettings.fetchDraftModels(sid, baseUrl, key)
+        }
+    }
+
+    function scheduleFetchModels() {
+        fetchTimer.restart()
+    }
+
     function openNew() {
         isEdit = false
         serviceId = ""
         keyPresent = false
         errorMessage = ""
+        draftModels = []
+        loadingModels = false
+        modelStatusMessage = ""
+        modelStatusIsError = false
+        testResultText = ""
+        testResultSuccess = false
+        fetchTimer.stop()
         presetCombo.currentIndex = 0
         nameField.text = ""
         baseUrlField.text = ""
@@ -66,6 +111,13 @@ Popup {
         serviceId = id
         keyPresent = false
         errorMessage = ""
+        draftModels = []
+        loadingModels = false
+        modelStatusMessage = ""
+        modelStatusIsError = false
+        testResultText = ""
+        testResultSuccess = false
+        fetchTimer.stop()
         presetCombo.currentIndex = 0
         nameField.text = name || ""
         baseUrlField.text = baseUrl || ""
@@ -79,6 +131,7 @@ Popup {
         if (AppContext.aiSettings) {
             AppContext.aiSettings.checkApiKey(id)
         }
+        scheduleFetchModels()
         nameField.forceActiveFocus()
     }
 
@@ -124,6 +177,32 @@ Popup {
                 root.errorMessage = message
             }
         }
+        function onDraftModelsFetched(ok, models, message) {
+            if (!root.visible) {
+                return
+            }
+            root.loadingModels = false
+            if (ok) {
+                root.draftModels = models
+                root.modelStatusIsError = false
+                root.modelStatusMessage = qsTr("%n model(s) available", "", models.length)
+            } else {
+                root.draftModels = []
+                root.modelStatusIsError = true
+                root.modelStatusMessage = message
+            }
+        }
+        function onDraftTested(ok, message, latencyMs) {
+            if (!root.visible) {
+                return
+            }
+            root.testResultSuccess = ok
+            if (ok) {
+                root.testResultText = message + (latencyMs > 0 ? (" (" + latencyMs + " ms)") : "")
+            } else {
+                root.testResultText = message
+            }
+        }
     }
 
     contentItem: ColumnLayout {
@@ -163,6 +242,7 @@ Popup {
                         const item = root.presetsModel[currentIndex]
                         nameField.text = item.name
                         baseUrlField.text = item.baseUrl
+                        root.scheduleFetchModels()
                     }
                 }
             }
@@ -193,6 +273,7 @@ Popup {
                 id: baseUrlField
                 Layout.fillWidth: true
                 placeholderText: "https://api.openai.com/v1"
+                onEditingFinished: root.scheduleFetchModels()
             }
 
             // Default Model
@@ -201,12 +282,40 @@ Popup {
                 font.pixelSize: Theme.fontSizeNormal
                 color: Theme.text
                 Layout.preferredWidth: 120
+                Layout.alignment: Qt.AlignTop
             }
 
-            Controls.AppTextField {
-                id: modelField
+            ColumnLayout {
                 Layout.fillWidth: true
-                placeholderText: qsTr("e.g. gpt-4o, llama3")
+                spacing: Theme.spacingTiny
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Theme.spacingSmall
+
+                    Controls.ModelComboField {
+                        id: modelField
+                        Layout.fillWidth: true
+                        placeholderText: qsTr("e.g. gpt-4o, llama3")
+                        models: root.draftModels
+                        busy: root.loadingModels
+                    }
+
+                    Controls.IconButton {
+                        icon.source: "icons/rotate-ccw.svg"
+                        toolTip: qsTr("Refresh models")
+                        onClicked: root.scheduleFetchModels()
+                    }
+                }
+
+                Label {
+                    visible: root.modelStatusMessage.length > 0
+                    text: root.modelStatusMessage
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: root.modelStatusIsError ? Theme.errorText : Theme.textSecondary
+                    wrapMode: Text.Wrap
+                    Layout.fillWidth: true
+                }
             }
 
             // API Key
@@ -232,12 +341,14 @@ Popup {
                         }
                         return qsTr("Not set")
                     }
+                    onEditingFinished: root.scheduleFetchModels()
                 }
 
                 Controls.AppCheckBox {
                     id: clearKeyCheck
                     text: qsTr("Clear key")
                     visible: root.isEdit && root.keyPresent
+                    onToggled: root.scheduleFetchModels()
                 }
             }
 
@@ -301,6 +412,16 @@ Popup {
             }
         }
 
+        // Test result message
+        Label {
+            visible: root.testResultText.length > 0
+            text: root.testResultText
+            font.pixelSize: Theme.fontSizeSmall
+            color: root.testResultSuccess ? Theme.accent : Theme.errorText
+            wrapMode: Text.Wrap
+            Layout.fillWidth: true
+        }
+
         // Error message
         Label {
             visible: root.errorMessage.length > 0
@@ -314,8 +435,22 @@ Popup {
         // Buttons
         RowLayout {
             Layout.fillWidth: true
-            Layout.alignment: Qt.AlignRight
             spacing: Theme.spacingSmall
+
+            Controls.AppButton {
+                text: (AppContext.aiSettings && AppContext.aiSettings.draftTesting)
+                    ? qsTr("Testing…") : qsTr("Test connection")
+                enabled: !!AppContext.aiSettings && !AppContext.aiSettings.draftTesting
+                onClicked: {
+                    root.testResultText = ""
+                    const sid = (root.isEdit && !clearKeyCheck.checked) ? root.serviceId : ""
+                    const baseUrl = baseUrlField.text.trim()
+                    const model = modelField.text.trim()
+                    const key = clearKeyCheck.checked ? "" : keyField.text.trim()
+                    const timeoutMs = timeoutSpin.value * 1000
+                    AppContext.aiSettings.testDraft(sid, baseUrl, model, key, timeoutMs)
+                }
+            }
 
             Item {
                 Layout.fillWidth: true

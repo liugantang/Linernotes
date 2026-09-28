@@ -1512,12 +1512,12 @@
         <translation>在上方添加服务以配置功能路由。</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiRoutes.qml" line="91"/>
+        <location filename="../qml/SettingsAiRoutes.qml" line="110"/>
         <source>Default service</source>
         <translation>默认服务</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiRoutes.qml" line="139"/>
+        <location filename="../qml/SettingsAiRoutes.qml" line="160"/>
         <source>Default model</source>
         <translation>默认模型</translation>
     </message>
@@ -1538,98 +1538,125 @@
 <context>
     <name>SettingsAiServiceDialog</name>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="19"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="27"/>
         <source>Custom</source>
         <translation>自定义</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="134"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="72"/>
+        <source>Loading models…</source>
+        <translation>正在加载模型…</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="188"/>
+        <source>%n model(s) available</source>
+        <translation>
+            <numerusform>%n 个可用模型</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="213"/>
         <source>Edit Service</source>
         <translation>编辑服务</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="134"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="213"/>
         <source>Add Service</source>
         <translation>添加服务</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="149"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="228"/>
         <source>Preset</source>
         <translation>预设</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="172"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="252"/>
         <source>Name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="181"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="261"/>
         <source>e.g. OpenAI</source>
         <translation>例如 OpenAI</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="186"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="266"/>
         <source>Base URL</source>
         <translation>Base URL</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="200"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="281"/>
         <source>Default Model</source>
         <translation>默认模型</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="209"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="299"/>
         <source>e.g. gpt-4o, llama3</source>
         <translation>例如 gpt-4o, llama3</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="214"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="306"/>
+        <source>Refresh models</source>
+        <translation>刷新模型列表</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="323"/>
         <source>API Key</source>
         <translation>API Key</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="231"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="340"/>
         <source>Saved — leave empty to keep</source>
         <translation>已保存 — 留空以保持不变</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="231"/>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="233"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="340"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="342"/>
         <source>Not set</source>
         <translation>未设置</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="239"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="349"/>
         <source>Clear key</source>
         <translation>清除 Key</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="246"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="357"/>
         <source>Timeout (seconds)</source>
         <translation>超时（秒）</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="262"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="373"/>
         <source>Max concurrent</source>
         <translation>最大并发数</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="278"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="389"/>
         <source>Requests / min</source>
         <translation>每分钟请求数</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="297"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="408"/>
         <source>0 = unlimited</source>
         <translation>0 = 无限制</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="325"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="442"/>
+        <source>Testing…</source>
+        <translation>测试中…</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="442"/>
+        <source>Test connection</source>
+        <translation>测试连接</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="460"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsAiServiceDialog.qml" line="331"/>
+        <location filename="../qml/SettingsAiServiceDialog.qml" line="466"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
@@ -2707,76 +2734,100 @@
     </message>
     <message>
         <location filename="../src/ui/AiSettingsController.cpp" line="65"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="248"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="294"/>
         <source>Base URL must start with http:// or https://</source>
         <translation>Base URL 必须以 http:// 或 https:// 开头</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="109"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="120"/>
         <source>API key removed</source>
         <translation>API Key 已移除</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="112"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="123"/>
         <source>Failed to remove API key: %1</source>
         <translation>移除 API Key 失败：%1</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="119"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="130"/>
         <source>API key saved</source>
         <translation>API Key 已保存</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="122"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="133"/>
         <source>Failed to save API key: %1</source>
         <translation>保存 API Key 失败：%1</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="160"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="215"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="260"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="353"/>
         <source>Failed to read API key</source>
         <translation>读取 API Key 失败</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="166"/>
-        <source>Failed to load ping prompt template</source>
-        <translation>加载 ping 提示词模板失败</translation>
+        <location filename="../src/ui/AiSettingsController.cpp" line="442"/>
+        <source>Connected successfully</source>
+        <translation>连接成功</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="212"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="455"/>
+        <source>This service does not provide a model list; type the model name manually</source>
+        <translation>该服务不提供模型列表，请手动输入模型名</translation>
+    </message>
+    <message>
+        <source>Failed to load ping prompt template</source>
+        <translation type="vanished">加载 ping 提示词模板失败</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="447"/>
         <source>Connected successfully, model replied: %1</source>
         <translation>连接成功，模型回复：%1</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="222"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="401"/>
         <source> (Failed to probe capabilities)</source>
         <translation>（探测能力失败）</translation>
     </message>
     <message>
         <location filename="../src/ui/AiSettingsController.cpp" line="241"/>
+        <source>Choose a model first</source>
+        <translation>请先选择模型</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="328"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="339"/>
+        <source>Service not found</source>
+        <translation>未找到服务</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/AiSettingsController.cpp" line="420"/>
         <source>API key is invalid or unauthorized</source>
         <translation>API Key 无效或未授权</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="244"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="423"/>
         <source>Unable to connect to service</source>
         <translation>无法连接到服务</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="247"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="426"/>
         <source>Connection timed out</source>
         <translation>连接超时</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="250"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="429"/>
         <source>Request limit exceeded</source>
         <translation>超出请求限制</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="253"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="432"/>
         <source>Connection failed: %1</source>
         <translation>连接失败：%1</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="255"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="434"/>
         <source>Connection failed</source>
         <translation>连接失败</translation>
     </message>

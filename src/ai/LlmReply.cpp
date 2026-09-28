@@ -5,6 +5,7 @@
 
 #include "AiLogging.h"
 #include "Errors.h"
+#include "HttpError.h"
 
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -21,64 +22,6 @@ void DeleteLater::operator()(QObject *obj) const
 }
 
 namespace {
-
-struct ErrorMapping {
-    QString code;
-    QString message;
-};
-
-ErrorMapping mapNetworkOrHttpError(int status, QNetworkReply::NetworkError netErr, bool aborted)
-{
-    if (status == 401 || status == 403) {
-        return { .code = QString(errc::kAuth), .message = QStringLiteral("Authentication failed") };
-    }
-    if (status == 429) {
-        return { .code = QString(errc::kRateLimited), .message = QStringLiteral("Rate limited") };
-    }
-    if (status >= 400 && status < 600) {
-        return { .code = QString(errc::kHttp),
-            .message = QStringLiteral("HTTP error %1").arg(status) };
-    }
-    if (netErr == QNetworkReply::TimeoutError) {
-        return { .code = QString(errc::kTimeout), .message = QStringLiteral("Request timed out") };
-    }
-    if (netErr == QNetworkReply::OperationCanceledError && aborted) {
-        return { .code = QString(errc::kAborted), .message = QStringLiteral("Request aborted") };
-    }
-    return { .code = QString(errc::kNetwork), .message = QStringLiteral("Network error") };
-}
-
-QString extractErrorMessage(const QByteArray &body)
-{
-    if (body.isEmpty()) {
-        return { };
-    }
-
-    QJsonParseError parseErr;
-    const QJsonDocument doc = QJsonDocument::fromJson(body, &parseErr);
-    if (parseErr.error == QJsonParseError::NoError && doc.isObject()) {
-        const QJsonObject obj = doc.object();
-        if (obj.contains(QStringLiteral("error"))) {
-            const QJsonValue errVal = obj.value(QStringLiteral("error"));
-            if (errVal.isObject()) {
-                const QString msg = errVal.toObject().value(QStringLiteral("message")).toString();
-                if (!msg.isEmpty()) {
-                    return msg;
-                }
-            } else if (errVal.isString()) {
-                return errVal.toString();
-            }
-        }
-        if (obj.contains(QStringLiteral("message"))) {
-            const QString msg = obj.value(QStringLiteral("message")).toString();
-            if (!msg.isEmpty()) {
-                return msg;
-            }
-        }
-    }
-
-    return QString::fromUtf8(body.left(200));
-}
 
 void accumulateToolCalls(const QJsonArray &tcArr, QList<ToolCall> &toolCalls)
 {
@@ -372,26 +315,10 @@ void LlmReply::finishWithNetworkOrHttpError()
     const QNetworkReply::NetworkError netErr
         = (m_networkReply != nullptr) ? m_networkReply->error() : QNetworkReply::NoError;
     const int status = m_httpStatus;
+    const QString errStr = (m_networkReply != nullptr) ? m_networkReply->errorString() : QString();
 
-    const auto [code, message] = mapNetworkOrHttpError(status, netErr, m_aborted);
-
-    QString errorDetail = extractErrorMessage(m_responseBody);
-    if (errorDetail.isEmpty() && m_networkReply != nullptr) {
-        errorDetail = m_networkReply->errorString();
-    }
-
-    QString detail;
-    if (status > 0) {
-        detail = QStringLiteral("HTTP %1: %2").arg(QString::number(status), errorDetail);
-    } else {
-        detail = errorDetail;
-    }
-
-    finishWithError(core::Error {
-        .code = code,
-        .message = message,
-        .detail = detail,
-    });
+    finishWithError(
+        detail::makeNetworkOrHttpError(status, netErr, m_responseBody, errStr, m_aborted));
 }
 
 void LlmReply::finishWithError(core::Error error)

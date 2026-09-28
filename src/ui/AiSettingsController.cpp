@@ -82,15 +82,21 @@ QString AiSettingsController::saveService(const QString &id, const QString &name
         } else {
             profile.capabilities = std::nullopt;
         }
+        m_modelCache.remove(profile.id);
     } else {
         profile.capabilities = std::nullopt;
     }
 
-    return m_config.saveService(profile);
+    const QString savedId = m_config.saveService(profile);
+    if (!savedId.isEmpty()) {
+        m_modelCache.remove(savedId);
+    }
+    return savedId;
 }
 
 void AiSettingsController::removeService(const QString &id)
 {
+    m_modelCache.remove(id);
     m_config.removeService(id);
     m_secrets.remove(id, this, [](const core::Result<void> &) { });
 }
@@ -98,6 +104,11 @@ void AiSettingsController::removeService(const QString &id)
 void AiSettingsController::setDefaultService(const QString &id)
 {
     m_config.setDefaultServiceId(id);
+}
+
+QString AiSettingsController::defaultServiceId() const
+{
+    return m_config.defaultServiceId();
 }
 
 void AiSettingsController::setApiKey(const QString &serviceId, const QString &key)
@@ -138,6 +149,52 @@ QString AiSettingsController::testingServiceId() const
     return m_testingServiceId;
 }
 
+bool AiSettingsController::draftTesting() const
+{
+    return m_draftTesting;
+}
+
+void AiSettingsController::resolveApiKey(const QString &serviceId, const QString &explicitKey,
+    std::function<void(const core::Result<QString> &)> callback)
+{
+    const QString trimmed = explicitKey.trimmed();
+    if (!trimmed.isEmpty() || serviceId.trimmed().isEmpty()) {
+        callback(trimmed);
+        return;
+    }
+    m_secrets.read(serviceId.trimmed(), this, std::move(callback));
+}
+
+void AiSettingsController::executePing(const ai::ServiceConfig &svcConfig,
+    std::function<void(const core::Result<ai::ChatResponse> &res, int latencyMs)> callback)
+{
+    const auto renderRes = m_prompts.render(QStringLiteral("common/ping"), { });
+    if (!renderRes.ok()) {
+        callback(renderRes.error(), 0);
+        return;
+    }
+
+    ai::ChatRequest req;
+    req.messages = ai::toMessages(renderRes.value());
+    req.temperature = 0.0;
+    req.maxTokens = 50;
+
+    auto timer = std::make_shared<QElapsedTimer>();
+    timer->start();
+
+    auto reply = m_client.complete(svcConfig, req);
+    auto *rawReply = reply.release();
+    if (rawReply != nullptr) {
+        rawReply->setParent(this);
+        connect(rawReply, &ai::LlmReply::finished, this,
+            [this, rawReply, timer, callback = std::move(callback)]() {
+                const int latencyMs = static_cast<int>(timer->elapsed());
+                callback(rawReply->result(), latencyMs);
+                rawReply->deleteLater();
+            });
+    }
+}
+
 void AiSettingsController::testService(const QString &serviceId)
 {
     if (!m_testingServiceId.isEmpty()) {
@@ -153,24 +210,11 @@ void AiSettingsController::testService(const QString &serviceId)
     m_testingServiceId = serviceId;
     emit testingServiceIdChanged();
 
-    // Testing connection is a configuration operation; directly uses LlmClient without
-    // going through LlmService (bypasses cache and usage tracking).
-    m_secrets.read(serviceId, this, [this, profile](const core::Result<QString> &keyRes) {
+    resolveApiKey(profile.id, QString(), [this, profile](const core::Result<QString> &keyRes) {
         if (!keyRes.ok()) {
             finishTest(profile.id, false, tr("Failed to read API key"), 0);
             return;
         }
-
-        const auto renderRes = m_prompts.render(QStringLiteral("common/ping"), { });
-        if (!renderRes.ok()) {
-            finishTest(profile.id, false, tr("Failed to load ping prompt template"), 0);
-            return;
-        }
-
-        ai::ChatRequest req;
-        req.messages = ai::toMessages(renderRes.value());
-        req.temperature = 0.0;
-        req.maxTokens = 50;
 
         const ai::ServiceConfig svcConfig {
             .baseUrl = profile.baseUrl,
@@ -179,37 +223,172 @@ void AiSettingsController::testService(const QString &serviceId)
             .timeoutMs = profile.timeoutMs,
         };
 
-        auto timer = std::make_shared<QElapsedTimer>();
-        timer->start();
-
-        auto reply = m_client.complete(svcConfig, req);
-        auto *rawReply = reply.release();
-        if (rawReply != nullptr) {
-            rawReply->setParent(this);
-            connect(rawReply, &ai::LlmReply::finished, this,
-                [this, serviceId = profile.id, svcConfig, rawReply, timer]() {
-                    const int latencyMs = static_cast<int>(timer->elapsed());
-                    handleTestPingReply(serviceId, svcConfig, *rawReply, latencyMs);
-                    rawReply->deleteLater();
-                });
-        }
+        executePing(svcConfig,
+            [this, serviceId = profile.id, svcConfig](const core::Result<ai::ChatResponse> &res,
+                int latencyMs) { handleTestPingReply(serviceId, svcConfig, res, latencyMs); });
     });
 }
 
-void AiSettingsController::handleTestPingReply(const QString &serviceId,
-    const ai::ServiceConfig &svcConfig, const ai::LlmReply &reply, int latencyMs)
+void AiSettingsController::testDraft(const QString &serviceId, const QString &baseUrl,
+    const QString &model, const QString &apiKey, int timeoutMs)
 {
-    const auto &res = reply.result();
+    if (m_draftTesting) {
+        return;
+    }
+
+    const QString trimmedModel = model.trimmed();
+    if (trimmedModel.isEmpty()) {
+        emit draftTested(false, tr("Choose a model first"), 0);
+        return;
+    }
+
+    const QUrl url(baseUrl.trimmed());
+    const QString scheme = url.scheme().toLower();
+    if (!url.isValid() || (scheme != QStringLiteral("http") && scheme != QStringLiteral("https"))) {
+        emit draftTested(false, tr("Base URL must start with http:// or https://"), 0);
+        return;
+    }
+
+    m_draftTesting = true;
+    emit draftTestingChanged();
+
+    resolveApiKey(serviceId, apiKey,
+        [this, url, trimmedModel, timeoutMs](const core::Result<QString> &keyRes) {
+            if (!keyRes.ok()) {
+                m_draftTesting = false;
+                emit draftTestingChanged();
+                emit draftTested(false, tr("Failed to read API key"), 0);
+                return;
+            }
+
+            const ai::ServiceConfig svcConfig {
+                .baseUrl = url,
+                .apiKey = keyRes.value(),
+                .model = trimmedModel,
+                .timeoutMs = timeoutMs > 0 ? timeoutMs : 60000,
+            };
+
+            executePing(
+                svcConfig, [this](const core::Result<ai::ChatResponse> &res, int latencyMs) {
+                    m_draftTesting = false;
+                    emit draftTestingChanged();
+
+                    if (!res.ok()) {
+                        emit draftTested(false, friendlyErrorMessage(res.error()), latencyMs);
+                        return;
+                    }
+
+                    emit draftTested(true, pingSuccessMessage(res.value()), latencyMs);
+                });
+        });
+}
+
+void AiSettingsController::fetchDraftModels(
+    const QString &serviceId, const QString &baseUrl, const QString &apiKey)
+{
+    const quint64 gen = ++m_draftModelsGeneration;
+
+    const QUrl url(baseUrl.trimmed());
+    const QString scheme = url.scheme().toLower();
+    if (!url.isValid() || (scheme != QStringLiteral("http") && scheme != QStringLiteral("https"))) {
+        emit draftModelsFetched(false, { }, tr("Base URL must start with http:// or https://"));
+        return;
+    }
+
+    resolveApiKey(serviceId, apiKey, [this, gen, url](const core::Result<QString> &keyRes) {
+        if (gen != m_draftModelsGeneration) {
+            return;
+        }
+
+        const ai::ServiceConfig svcConfig {
+            .baseUrl = url,
+            .apiKey = keyRes.ok() ? keyRes.value() : QString(),
+            .model = { },
+            .timeoutMs = 60000,
+        };
+
+        m_client.listModels(svcConfig, this, [this, gen](const core::Result<QStringList> &res) {
+            if (gen != m_draftModelsGeneration) {
+                return;
+            }
+
+            if (res.ok()) {
+                emit draftModelsFetched(true, res.value(), QString());
+            } else {
+                emit draftModelsFetched(false, { }, friendlyModelListErrorMessage(res.error()));
+            }
+        });
+    });
+}
+
+void AiSettingsController::fetchServiceModels(const QString &serviceId, bool force)
+{
+    const QString trimmedId = serviceId.trimmed();
+    if (trimmedId.isEmpty()) {
+        emit serviceModelsFetched(serviceId, false, { }, tr("Service not found"));
+        return;
+    }
+
+    if (!force && m_modelCache.contains(trimmedId)) {
+        emit serviceModelsFetched(serviceId, true, m_modelCache.value(trimmedId), QString());
+        return;
+    }
+
+    const auto profileOpt = m_config.service(trimmedId);
+    if (!profileOpt.has_value()) {
+        emit serviceModelsFetched(serviceId, false, { }, tr("Service not found"));
+        return;
+    }
+    const ai::ServiceProfile &profile = *profileOpt;
+
+    // 路由页每一行都会请求同一服务的列表，进行中的请求只发一次
+    if (m_modelFetchesInFlight.contains(profile.id)) {
+        return;
+    }
+    m_modelFetchesInFlight.insert(profile.id);
+
+    m_secrets.read(profile.id, this, [this, profile](const core::Result<QString> &keyRes) {
+        if (!keyRes.ok()) {
+            m_modelFetchesInFlight.remove(profile.id);
+            emit serviceModelsFetched(profile.id, false, { }, tr("Failed to read API key"));
+            return;
+        }
+
+        const ai::ServiceConfig svcConfig {
+            .baseUrl = profile.baseUrl,
+            .apiKey = keyRes.value(),
+            .model = profile.defaultModel,
+            .timeoutMs = profile.timeoutMs,
+        };
+
+        m_client.listModels(
+            svcConfig, this, [this, serviceId = profile.id](const core::Result<QStringList> &res) {
+                m_modelFetchesInFlight.remove(serviceId);
+                if (res.ok()) {
+                    m_modelCache.insert(serviceId, res.value());
+                    emit serviceModelsFetched(serviceId, true, res.value(), QString());
+                } else {
+                    emit serviceModelsFetched(
+                        serviceId, false, { }, friendlyModelListErrorMessage(res.error()));
+                }
+            });
+    });
+}
+
+QStringList AiSettingsController::serviceModels(const QString &serviceId) const
+{
+    return m_modelCache.value(serviceId);
+}
+
+void AiSettingsController::handleTestPingReply(const QString &serviceId,
+    const ai::ServiceConfig &svcConfig, const core::Result<ai::ChatResponse> &res, int latencyMs)
+{
     if (!res.ok()) {
         finishTest(serviceId, false, friendlyErrorMessage(res.error()), latencyMs);
         return;
     }
 
-    QString replyText = res.value().content.trimmed();
-    if (replyText.length() > 40) {
-        replyText = replyText.left(40) + QStringLiteral("...");
-    }
-    const QString baseMsg = tr("Connected successfully, model replied: %1").arg(replyText);
+    const QString baseMsg = pingSuccessMessage(res.value());
 
     auto *probe = new ai::CapabilityProbe(m_client, svcConfig, this);
     connect(probe, &ai::CapabilityProbe::finished, this,
@@ -253,6 +432,29 @@ QString AiSettingsController::friendlyErrorMessage(const core::Error &error)
         return tr("Connection failed: %1").arg(error.message);
     }
     return tr("Connection failed");
+}
+
+QString AiSettingsController::pingSuccessMessage(const ai::ChatResponse &response)
+{
+    // 推理模型在 maxTokens 内可能只产出 reasoning，content 为空
+    QString replyText = response.content.trimmed();
+    if (replyText.isEmpty()) {
+        return tr("Connected successfully");
+    }
+    if (replyText.length() > 40) {
+        replyText = replyText.left(40) + QStringLiteral("...");
+    }
+    return tr("Connected successfully, model replied: %1").arg(replyText);
+}
+
+QString AiSettingsController::friendlyModelListErrorMessage(const core::Error &error)
+{
+    if (error.code == ai::errc::kHttp
+        && (error.message.contains(QLatin1StringView("404"))
+            || error.detail.contains(QLatin1StringView("404")))) {
+        return tr("This service does not provide a model list; type the model name manually");
+    }
+    return friendlyErrorMessage(error);
 }
 
 QString AiSettingsController::routeServiceId(linernotes::ai::Purpose purpose) const
