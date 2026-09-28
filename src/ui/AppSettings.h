@@ -50,5 +50,9 @@ inline const core::SettingKey<int> kLibraryBackupKeep { u"library/backupKeep", 7
 inline const core::SettingKey<QString> kLibraryArtistNamePreference {
     u"library/artistNamePreference", u"original"_s
 };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<double> kButlerAutoAccept { u"butler/autoAccept", 0.0 };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<bool> kButlerUseMusicBrainz { u"butler/useMusicBrainz", true };
 
 } // namespace linernotes::ui

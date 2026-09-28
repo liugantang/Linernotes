@@ -19,6 +19,7 @@
 #include <ui/AlbumGridModel.h>
 #include <ui/AppContext.h>
 #include <ui/ArtistListModel.h>
+#include <ui/CleanupController.h>
 #include <ui/CorrectionBatchModel.h>
 #include <ui/CorrectionListModel.h>
 #include <ui/CorrectionReviewController.h>
@@ -259,4 +260,11 @@ struct CorrectionListModelForeign {
     QML_FOREIGN(linernotes::ui::CorrectionListModel)
     QML_NAMED_ELEMENT(CorrectionListModel)
     QML_UNCREATABLE("CorrectionListModel is managed by CorrectionReviewController")
+};
+
+struct CleanupControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::CleanupController)
+    QML_NAMED_ELEMENT(CleanupController)
+    QML_UNCREATABLE("CleanupController is managed by AppContext")
 };

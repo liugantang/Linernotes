@@ -72,6 +72,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS pages/CleanupPage.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/CleanupHealthPanel.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS CleanupHealthPanel.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/CorrectionBatchList.qml
     PROPERTIES
         QT_RESOURCE_ALIAS CorrectionBatchList.qml
@@ -604,6 +609,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/CorrectionList.qml
         ${CMAKE_SOURCE_DIR}/qml/CorrectionRowItem.qml
         ${CMAKE_SOURCE_DIR}/qml/CorrectionActionBar.qml
+        ${CMAKE_SOURCE_DIR}/qml/CleanupHealthPanel.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/TracksPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/AlbumsPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/ArtistsPage.qml

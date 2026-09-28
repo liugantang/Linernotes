@@ -19,6 +19,7 @@
 #include <player/Player.h>
 #include <ui/AiContext.h>
 #include <ui/AiSettingsController.h>
+#include <ui/CleanupController.h>
 #include <ui/CorrectionReviewController.h>
 #include <ui/LibraryActions.h>
 #include <ui/LibraryRootsModel.h>
@@ -68,6 +69,7 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::LibraryRootsModel *libraryRoots READ libraryRoots CONSTANT)
     Q_PROPERTY(linernotes::ui::TagEditorModel *tagEditor READ tagEditor CONSTANT)
     Q_PROPERTY(linernotes::ui::CorrectionReviewController *review READ review CONSTANT)
+    Q_PROPERTY(linernotes::ui::CleanupController *cleanup READ cleanup CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
     Q_PROPERTY(QString startupError READ startupError NOTIFY startupErrorChanged)
     Q_PROPERTY(bool scanning READ isScanning NOTIFY scanningChanged)
@@ -111,6 +113,7 @@ public:
     [[nodiscard]] LibraryRootsModel *libraryRoots();
     [[nodiscard]] TagEditorModel *tagEditor();
     [[nodiscard]] CorrectionReviewController *review();
+    [[nodiscard]] CleanupController *cleanup();
     [[nodiscard]] library::Database &database();
     [[nodiscard]] const library::Database &database() const;
     [[nodiscard]] library::CoverStore *coverStore();
@@ -136,6 +139,7 @@ private:
     core::SystemClock m_clock;
     library::Database m_db;
     AiContext m_ai;
+    CleanupController m_cleanup;
     library::PlayStats m_playStats;
     TagEditorModel m_tagEditor;
     CorrectionReviewController m_review;

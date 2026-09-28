@@ -19,6 +19,12 @@ Item {
                 AppContext.review.selectBatch(AppContext.review.batchModel.batchIdAt(0))
             }
         }
+        if (AppContext.cleanup) {
+            AppContext.cleanup.refreshLlmConfigured()
+            if (!AppContext.cleanup.healthReady && !AppContext.cleanup.checking) {
+                AppContext.cleanup.checkHealth()
+            }
+        }
     }
 
     Connections {
@@ -58,94 +64,108 @@ Item {
         }
     }
 
-    Item {
-        anchors.top: errorBanner.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        visible: !root.hasBatches
-
-        ColumnLayout {
-            anchors.centerIn: parent
-            spacing: Theme.spacingMedium
-            width: Math.min(parent.width - Theme.spacingLarge * 2, 400)
-
-            IconImage {
-                source: "../icons/sparkles.svg"
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
-                sourceSize: Qt.size(48, 48)
-                color: Theme.textSecondary
-                Layout.alignment: Qt.AlignHCenter
-            }
-
-            Label {
-                text: qsTr("No Cleanup Batches")
-                font.pixelSize: Theme.fontSizeLarge
-                font.bold: true
-                color: Theme.text
-                Layout.alignment: Qt.AlignHCenter
-            }
-
-            Label {
-                text: qsTr("No cleanup batches yet. Run a library cleanup to see proposed fixes here.")
-                font.pixelSize: Theme.fontSizeNormal
-                color: Theme.textSecondary
-                wrapMode: Text.Wrap
-                horizontalAlignment: Text.AlignHCenter
-                Layout.fillWidth: true
-            }
-        }
-    }
-
-    RowLayout {
+    ColumnLayout {
         anchors.top: errorBanner.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         spacing: 0
-        visible: root.hasBatches
 
-        CorrectionBatchList {
-            Layout.preferredWidth: root.width < 900 ? 220 : 280
-            Layout.fillHeight: true
+        CleanupHealthPanel {
+            Layout.fillWidth: true
+            Layout.margins: Theme.spacingMedium
         }
 
-        Rectangle {
-            Layout.preferredWidth: 1
-            Layout.fillHeight: true
-            color: Theme.divider
-        }
-
-        ColumnLayout {
+        Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            spacing: 0
 
-            CorrectionFilterBar {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 52
+            // Empty state when no batches
+            Item {
+                anchors.fill: parent
+                visible: !root.hasBatches
+
+                ColumnLayout {
+                    anchors.centerIn: parent
+                    spacing: Theme.spacingMedium
+                    width: Math.min(parent.width - Theme.spacingLarge * 2, 400)
+
+                    IconImage {
+                        source: "../icons/sparkles.svg"
+                        Layout.preferredWidth: 48
+                        Layout.preferredHeight: 48
+                        sourceSize: Qt.size(48, 48)
+                        color: Theme.textSecondary
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+
+                    Label {
+                        text: qsTr("No Cleanup Batches")
+                        font.pixelSize: Theme.fontSizeLarge
+                        font.bold: true
+                        color: Theme.text
+                        Layout.alignment: Qt.AlignHCenter
+                    }
+
+                    Label {
+                        text: qsTr("No cleanup batches yet. Run a library cleanup to see proposed fixes here.")
+                        font.pixelSize: Theme.fontSizeNormal
+                        color: Theme.textSecondary
+                        wrapMode: Text.Wrap
+                        horizontalAlignment: Text.AlignHCenter
+                        Layout.fillWidth: true
+                    }
+                }
             }
 
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 1
-                color: Theme.divider
-            }
+            // Review area when batches exist
+            RowLayout {
+                anchors.fill: parent
+                spacing: 0
+                visible: root.hasBatches
 
-            CorrectionList {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-            }
+                CorrectionBatchList {
+                    Layout.preferredWidth: root.width < 900 ? 220 : 280
+                    Layout.fillHeight: true
+                }
 
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 1
-                color: Theme.divider
-            }
+                Rectangle {
+                    Layout.preferredWidth: 1
+                    Layout.fillHeight: true
+                    color: Theme.divider
+                }
 
-            CorrectionActionBar {
-                Layout.fillWidth: true
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    spacing: 0
+
+                    CorrectionFilterBar {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 52
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 1
+                        color: Theme.divider
+                    }
+
+                    CorrectionList {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                    }
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 1
+                        color: Theme.divider
+                    }
+
+                    CorrectionActionBar {
+                        Layout.fillWidth: true
+                    }
+                }
             }
         }
     }
