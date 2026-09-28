@@ -20,6 +20,7 @@ namespace {
 
 using linernotes::butler::AmbiguousItem;
 using linernotes::butler::DecodeCandidate;
+using linernotes::butler::fallbackProposals;
 using linernotes::butler::MojibakeGroup;
 using linernotes::butler::mojibakePromptVars;
 using linernotes::butler::MojibakeTrack;
@@ -35,6 +36,7 @@ private slots:
     void promptVarsContainCandidates();
     void parseValidResult();
     void parseRejectsUnknownId();
+    void fallbackProposalsHasReason();
 };
 
 void TstMojibakeLlm::promptVarsContainCandidates()
@@ -99,13 +101,13 @@ void TstMojibakeLlm::parseValidResult()
     obj0.insert(QStringLiteral("id"), 0);
     obj0.insert(QStringLiteral("text"), QStringLiteral("天空"));
     obj0.insert(QStringLiteral("confidence"), 0.95);
-    obj0.insert(QStringLiteral("reason"), QStringLiteral("UTF-8 解码符合语境"));
+    obj0.insert(QStringLiteral("reason"), QStringLiteral("Decoded as UTF-8 matches context"));
 
     QJsonObject obj1;
     obj1.insert(QStringLiteral("id"), 1);
     obj1.insert(QStringLiteral("text"), QJsonValue(QJsonValue::Null));
     obj1.insert(QStringLiteral("confidence"), 0.0);
-    obj1.insert(QStringLiteral("reason"), QStringLiteral("无法判断"));
+    obj1.insert(QStringLiteral("reason"), QStringLiteral("Cannot determine"));
 
     QJsonArray itemsArr;
     itemsArr.append(obj0);
@@ -126,7 +128,7 @@ void TstMojibakeLlm::parseValidResult()
     QCOMPARE(p.newValue, QStringLiteral("天空"));
     QCOMPARE(p.source, CorrectionSource::Llm);
     QCOMPARE(p.confidence, 0.95);
-    QCOMPARE(p.reason, QStringLiteral("UTF-8 解码符合语境"));
+    QCOMPARE(p.reason, QStringLiteral("Decoded as UTF-8 matches context"));
 }
 
 void TstMojibakeLlm::parseRejectsUnknownId()
@@ -141,7 +143,7 @@ void TstMojibakeLlm::parseRejectsUnknownId()
     obj.insert(QStringLiteral("id"), 999);
     obj.insert(QStringLiteral("text"), QStringLiteral("天空"));
     obj.insert(QStringLiteral("confidence"), 0.9);
-    obj.insert(QStringLiteral("reason"), QStringLiteral("测试未知 ID"));
+    obj.insert(QStringLiteral("reason"), QStringLiteral("Test unknown ID"));
 
     QJsonArray itemsArr;
     itemsArr.append(obj);
@@ -151,6 +153,26 @@ void TstMojibakeLlm::parseRejectsUnknownId()
 
     const auto res = parseMojibakeResult(root, { item0 });
     QVERIFY(!res.ok());
+}
+
+void TstMojibakeLlm::fallbackProposalsHasReason()
+{
+    AmbiguousItem item;
+    item.id = 0;
+    item.trackId = 10;
+    item.field = TagField::Title;
+    item.original = QStringLiteral("å¤©ç©º");
+    item.candidates = {
+        DecodeCandidate {
+            .encoding = SourceEncoding::Utf8,
+            .text = QStringLiteral("天空"),
+            .score = 0.85,
+        },
+    };
+
+    const auto proposals = fallbackProposals({ item });
+    QCOMPARE(proposals.size(), 1);
+    QCOMPARE(proposals.at(0).reason, QStringLiteral("Not confirmed by AI"));
 }
 
 } // namespace

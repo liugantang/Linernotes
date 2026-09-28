@@ -184,7 +184,7 @@ QList<CorrectionProposal> fallbackProposals(const QList<AmbiguousItem> &items)
             .newValue = best.text,
             .source = CorrectionSource::Rule,
             .confidence = conf,
-            .reason = QCoreApplication::translate("butler", "未经 AI 确认"),
+            .reason = QString::fromUtf8(QT_TRANSLATE_NOOP("butler", "Not confirmed by AI")),
         });
     }
     return proposals;

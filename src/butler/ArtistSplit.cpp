@@ -6,6 +6,7 @@
 #include <QCoreApplication>
 #include <QRegularExpression>
 #include <QStringView>
+#include <QtGlobal>
 
 #include <algorithm>
 #include <array>
@@ -240,7 +241,8 @@ SplitDecision classifySeparators(
             .verdict = SplitVerdict::Split,
             .parts = parts,
             .confidence = 0.9,
-            .reason = QCoreApplication::translate("butler", "拆分项均在曲库已知艺人中"),
+            .reason = QString::fromUtf8(
+                QT_TRANSLATE_NOOP("butler", "All parts are known artists in the library")),
         };
     }
 
@@ -254,7 +256,8 @@ SplitDecision classifySeparators(
             .verdict = SplitVerdict::Split,
             .parts = parts,
             .confidence = 0.85,
-            .reason = QCoreApplication::translate("butler", "包含强分隔符"),
+            .reason
+            = QString::fromUtf8(QT_TRANSLATE_NOOP("butler", "Explicit separator (feat., ×, 、)")),
         };
     }
 
@@ -262,7 +265,8 @@ SplitDecision classifySeparators(
         .verdict = SplitVerdict::Ambiguous,
         .parts = parts,
         .confidence = 0.0,
-        .reason = QCoreApplication::translate("butler", "含弱分隔符，需由 AI 确认拆分"),
+        .reason
+        = QString::fromUtf8(QT_TRANSLATE_NOOP("butler", "Ambiguous separator; needs AI review")),
     };
 }
 
@@ -274,7 +278,7 @@ SplitDecision decideSegment(const QString &seg, const QSet<QString> &knownArtist
             .verdict = SplitVerdict::Keep,
             .parts = { seg.trimmed() },
             .confidence = 0.0,
-            .reason = QCoreApplication::translate("butler", "无需拆分"),
+            .reason = QString::fromUtf8(QT_TRANSLATE_NOOP("butler", "No split needed")),
         };
     }
 
@@ -284,7 +288,7 @@ SplitDecision decideSegment(const QString &seg, const QSet<QString> &knownArtist
             .verdict = SplitVerdict::Keep,
             .parts = { seg.trimmed() },
             .confidence = 0.0,
-            .reason = QCoreApplication::translate("butler", "无需拆分"),
+            .reason = QString::fromUtf8(QT_TRANSLATE_NOOP("butler", "No split needed")),
         };
     }
 
@@ -293,7 +297,8 @@ SplitDecision decideSegment(const QString &seg, const QSet<QString> &knownArtist
             .verdict = SplitVerdict::Keep,
             .parts = { seg.trimmed() },
             .confidence = 0.0,
-            .reason = QCoreApplication::translate("butler", "包含纯数字部分，不拆分"),
+            .reason
+            = QString::fromUtf8(QT_TRANSLATE_NOOP("butler", "Contains a numeric part; not split")),
         };
     }
 
@@ -302,7 +307,8 @@ SplitDecision decideSegment(const QString &seg, const QSet<QString> &knownArtist
             .verdict = SplitVerdict::Ambiguous,
             .parts = parts,
             .confidence = 0.0,
-            .reason = QCoreApplication::translate("butler", "包含 CV 标识，需由 AI 确认拆分"),
+            .reason = QString::fromUtf8(
+                QT_TRANSLATE_NOOP("butler", "Contains a CV credit; needs AI review")),
         };
     }
 
@@ -365,7 +371,7 @@ SplitDecision combineSegmentDecisions(
             .verdict = SplitVerdict::Keep,
             .parts = { original },
             .confidence = 0.0,
-            .reason = QCoreApplication::translate("butler", "无需拆分"),
+            .reason = QString::fromUtf8(QT_TRANSLATE_NOOP("butler", "No split needed")),
         };
     }
 
@@ -374,9 +380,9 @@ SplitDecision combineSegmentDecisions(
             .verdict = SplitVerdict::Ambiguous,
             .parts = combinedParts,
             .confidence = 0.0,
-            .reason = mainReason.isEmpty()
-                ? QCoreApplication::translate("butler", "含弱分隔符，需由 AI 确认拆分")
-                : mainReason,
+            .reason = mainReason.isEmpty() ? QString::fromUtf8(QT_TRANSLATE_NOOP(
+                                                 "butler", "Ambiguous separator; needs AI review"))
+                                           : mainReason,
         };
     }
 
@@ -385,7 +391,8 @@ SplitDecision combineSegmentDecisions(
             .verdict = SplitVerdict::Split,
             .parts = combinedParts,
             .confidence = maxConfidence > 0.0 ? maxConfidence : 0.85,
-            .reason = mainReason.isEmpty() ? QCoreApplication::translate("butler", "包含强分隔符")
+            .reason = mainReason.isEmpty() ? QString::fromUtf8(QT_TRANSLATE_NOOP(
+                                                 "butler", "Explicit separator (feat., ×, 、)"))
                                            : mainReason,
         };
     }
@@ -394,7 +401,7 @@ SplitDecision combineSegmentDecisions(
         .verdict = SplitVerdict::Keep,
         .parts = combinedParts,
         .confidence = 0.0,
-        .reason = QCoreApplication::translate("butler", "无需拆分"),
+        .reason = QString::fromUtf8(QT_TRANSLATE_NOOP("butler", "No split needed")),
     };
 }
 
@@ -421,7 +428,7 @@ SplitDecision decideSplit(const QString &value, const QSet<QString> &knownArtist
             .verdict = SplitVerdict::Keep,
             .parts = { },
             .confidence = 0.0,
-            .reason = QCoreApplication::translate("butler", "无需拆分"),
+            .reason = QString::fromUtf8(QT_TRANSLATE_NOOP("butler", "No split needed")),
         };
     }
 

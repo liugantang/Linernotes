@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QRegularExpression>
+#include <QtGlobal>
 
 #include <algorithm>
 
@@ -25,6 +26,23 @@ struct RecoverableItem {
     QByteArray bytes { };
     QString filePath { };
 };
+
+const char *decodedReason(SourceEncoding encoding)
+{
+    switch (encoding) {
+    case SourceEncoding::Gbk:
+        return QT_TRANSLATE_NOOP("butler", "Re-decoded as GBK (decided across the album)");
+    case SourceEncoding::Big5:
+        return QT_TRANSLATE_NOOP("butler", "Re-decoded as Big5 (decided across the album)");
+    case SourceEncoding::ShiftJis:
+        return QT_TRANSLATE_NOOP("butler", "Re-decoded as Shift-JIS (decided across the album)");
+    case SourceEncoding::EucKr:
+        return QT_TRANSLATE_NOOP("butler", "Re-decoded as EUC-KR (decided across the album)");
+    case SourceEncoding::Utf8:
+        return QT_TRANSLATE_NOOP("butler", "Re-decoded as UTF-8 (decided across the album)");
+    }
+    return QT_TRANSLATE_NOOP("butler", "Re-decoded as GBK (decided across the album)");
+}
 
 void handleIrreparableField(const MojibakeTrack &track, const MojibakeField &field,
     const QString &groupDir, GroupAnalysis &result)
@@ -45,7 +63,7 @@ void handleIrreparableField(const MojibakeTrack &track, const MojibakeField &fie
                 .newValue = guess.title,
                 .source = CorrectionSource::Rule,
                 .confidence = 0.5,
-                .reason = QCoreApplication::translate("butler", "从文件名推断"),
+                .reason = QString::fromUtf8(QT_TRANSLATE_NOOP("butler", "Guessed from file name")),
             });
         }
     } else if (field.field == TagField::Artist && isFilenameClean) {
@@ -58,7 +76,7 @@ void handleIrreparableField(const MojibakeTrack &track, const MojibakeField &fie
                 .newValue = guess.artist,
                 .source = CorrectionSource::Rule,
                 .confidence = 0.5,
-                .reason = QCoreApplication::translate("butler", "从文件名推断"),
+                .reason = QString::fromUtf8(QT_TRANSLATE_NOOP("butler", "Guessed from file name")),
             });
         }
     } else if (field.field == TagField::Album) {
@@ -72,7 +90,8 @@ void handleIrreparableField(const MojibakeTrack &track, const MojibakeField &fie
                 .newValue = albumGuess,
                 .source = CorrectionSource::Rule,
                 .confidence = 0.4,
-                .reason = QCoreApplication::translate("butler", "从目录名推断"),
+                .reason
+                = QString::fromUtf8(QT_TRANSLATE_NOOP("butler", "Guessed from folder name")),
             });
         }
     }
@@ -81,11 +100,8 @@ void handleIrreparableField(const MojibakeTrack &track, const MojibakeField &fie
 void processDecidedGroup(const GroupDecision &decision,
     const QList<RecoverableItem> &recoverableItems, GroupAnalysis &result)
 {
-    const QString encName = encodingName(decision.encoding.value_or(SourceEncoding::Gbk)).toUpper();
     const QString reason
-        = QCoreApplication::translate("butler", "按 %1 重新解码（同专辑 %2 项共同判断）")
-              .arg(encName)
-              .arg(recoverableItems.size());
+        = QString::fromUtf8(decodedReason(decision.encoding.value_or(SourceEncoding::Gbk)));
 
     for (qsizetype i = 0; i < recoverableItems.size(); ++i) {
         const auto &item = recoverableItems.at(i);

@@ -2171,6 +2171,87 @@
     </message>
 </context>
 <context>
+    <name>butler</name>
+    <message>
+        <location filename="../src/butler/ArtistSplit.cpp" line="245"/>
+        <source>All parts are known artists in the library</source>
+        <translation>拆分出的各部分都是曲库中已有的艺人</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistSplit.cpp" line="260"/>
+        <location filename="../src/butler/ArtistSplit.cpp" line="394"/>
+        <source>Explicit separator (feat., ×, 、)</source>
+        <translation>含明确的分隔符（feat.、×、、）</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistSplit.cpp" line="269"/>
+        <location filename="../src/butler/ArtistSplit.cpp" line="383"/>
+        <source>Ambiguous separator; needs AI review</source>
+        <translation>分隔符有歧义，需由 AI 确认</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistSplit.cpp" line="281"/>
+        <location filename="../src/butler/ArtistSplit.cpp" line="291"/>
+        <location filename="../src/butler/ArtistSplit.cpp" line="374"/>
+        <location filename="../src/butler/ArtistSplit.cpp" line="404"/>
+        <location filename="../src/butler/ArtistSplit.cpp" line="431"/>
+        <source>No split needed</source>
+        <translation>无需拆分</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistSplit.cpp" line="301"/>
+        <source>Contains a numeric part; not split</source>
+        <translation>含纯数字部分，不拆分</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistSplit.cpp" line="311"/>
+        <source>Contains a CV credit; needs AI review</source>
+        <translation>含 CV 署名，需由 AI 确认</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="34"/>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="44"/>
+        <source>Re-decoded as GBK (decided across the album)</source>
+        <translation>按 GBK 重新解码（同专辑共同判断）</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="36"/>
+        <source>Re-decoded as Big5 (decided across the album)</source>
+        <translation>按 Big5 重新解码（同专辑共同判断）</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="38"/>
+        <source>Re-decoded as Shift-JIS (decided across the album)</source>
+        <translation>按 Shift-JIS 重新解码（同专辑共同判断）</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="40"/>
+        <source>Re-decoded as EUC-KR (decided across the album)</source>
+        <translation>按 EUC-KR 重新解码（同专辑共同判断）</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="42"/>
+        <source>Re-decoded as UTF-8 (decided across the album)</source>
+        <translation>按 UTF-8 重新解码（同专辑共同判断）</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="66"/>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="79"/>
+        <source>Guessed from file name</source>
+        <translation>从文件名推断</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="94"/>
+        <source>Guessed from folder name</source>
+        <translation>从文件夹名推断</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/MojibakeLlm.cpp" line="187"/>
+        <source>Not confirmed by AI</source>
+        <translation>未经 AI 确认</translation>
+    </message>
+</context>
+<context>
     <name>linernotes::ui::AiSettingsController</name>
     <message>
         <location filename="../src/ui/AiSettingsController.cpp" line="50"/>

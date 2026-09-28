@@ -218,15 +218,21 @@ void TstMojibakeAnalysis::analyzeProducesRuleProposals()
     QCOMPARE(analysis.proposals.at(0).field, TagField::Title);
     QCOMPARE(analysis.proposals.at(0).newValue, origTitle);
     QCOMPARE(analysis.proposals.at(0).source, CorrectionSource::Rule);
+    QCOMPARE(analysis.proposals.at(0).reason,
+        QStringLiteral("Re-decoded as GBK (decided across the album)"));
     QVERIFY(analysis.proposals.at(0).confidence >= 0.6);
 
     QCOMPARE(analysis.proposals.at(1).field, TagField::Artist);
     QCOMPARE(analysis.proposals.at(1).newValue, origArtist);
     QCOMPARE(analysis.proposals.at(1).source, CorrectionSource::Rule);
+    QCOMPARE(analysis.proposals.at(1).reason,
+        QStringLiteral("Re-decoded as GBK (decided across the album)"));
 
     QCOMPARE(analysis.proposals.at(2).field, TagField::Album);
     QCOMPARE(analysis.proposals.at(2).newValue, origAlbum);
     QCOMPARE(analysis.proposals.at(2).source, CorrectionSource::Rule);
+    QCOMPARE(analysis.proposals.at(2).reason,
+        QStringLiteral("Re-decoded as GBK (decided across the album)"));
 }
 
 void TstMojibakeAnalysis::irreparableUsesFilename()
@@ -258,6 +264,7 @@ void TstMojibakeAnalysis::irreparableUsesFilename()
     QCOMPARE(analysis.proposals.at(0).newValue, QStringLiteral("某标题"));
     QCOMPARE(analysis.proposals.at(0).confidence, 0.5);
     QCOMPARE(analysis.proposals.at(0).source, CorrectionSource::Rule);
+    QCOMPARE(analysis.proposals.at(0).reason, QStringLiteral("Guessed from file name"));
 }
 
 } // namespace

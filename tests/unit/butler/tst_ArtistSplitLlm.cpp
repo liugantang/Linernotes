@@ -69,7 +69,7 @@ void TstArtistSplitLlm::parseValidResult()
     parts0.append(QStringLiteral("Saori Hayami"));
     obj0.insert(QStringLiteral("parts"), parts0);
     obj0.insert(QStringLiteral("confidence"), 0.95);
-    obj0.insert(QStringLiteral("reason"), QStringLiteral("两名合作艺人"));
+    obj0.insert(QStringLiteral("reason"), QStringLiteral("Two collaborating artists"));
 
     QJsonObject obj1;
     obj1.insert(QStringLiteral("id"), 1);
@@ -77,7 +77,7 @@ void TstArtistSplitLlm::parseValidResult()
     parts1.append(QStringLiteral("Simon & Garfunkel"));
     obj1.insert(QStringLiteral("parts"), parts1);
     obj1.insert(QStringLiteral("confidence"), 0.99);
-    obj1.insert(QStringLiteral("reason"), QStringLiteral("知名组合不拆分"));
+    obj1.insert(QStringLiteral("reason"), QStringLiteral("Known band; do not split"));
 
     QJsonArray itemsArr;
     itemsArr.append(obj0);
@@ -98,7 +98,7 @@ void TstArtistSplitLlm::parseValidResult()
     QCOMPARE(p.newValue, QStringLiteral("Starving Trancer / Saori Hayami"));
     QCOMPARE(p.source, CorrectionSource::Llm);
     QCOMPARE(p.confidence, 0.95);
-    QCOMPARE(p.reason, QStringLiteral("两名合作艺人"));
+    QCOMPARE(p.reason, QStringLiteral("Two collaborating artists"));
 }
 
 void TstArtistSplitLlm::parseRejectsInventedPart()
@@ -120,7 +120,7 @@ void TstArtistSplitLlm::parseRejectsInventedPart()
     parts.append(QStringLiteral("Saori Hayami"));
     obj.insert(QStringLiteral("parts"), parts);
     obj.insert(QStringLiteral("confidence"), 0.9);
-    obj.insert(QStringLiteral("reason"), QStringLiteral("篡改了名字"));
+    obj.insert(QStringLiteral("reason"), QStringLiteral("Tampered name"));
 
     QJsonArray itemsArr;
     itemsArr.append(obj);
