@@ -69,6 +69,7 @@ private:
     QHash<QString, QStringList> m_entityToNames;
 
     qint64 m_batchId = 0;
+    qint64 m_creditBatchId = 0;
 };
 
 } // namespace linernotes::eval

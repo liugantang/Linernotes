@@ -8,6 +8,8 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QPair>
+#include <QSet>
 #include <QSqlQuery>
 
 #include <butler/ArtistCreditSource.h>
@@ -66,6 +68,119 @@ public:
 private:
     QHash<QString, QString> m_parent;
 };
+
+void processAliasCorrections(const QList<library::ArtistAliasRow> &rows,
+    const QHash<QString, QString> &nameToEntity, DisjointSet &dsu, QList<MisMergeItem> &mismerges,
+    QMap<QString, SourceReport> &sourceStats, int &totalProposals, int &extraAliases)
+{
+    for (const auto &row : rows) {
+        const QString alias = row.alias.trimmed();
+        const QString canonical = row.artistName.trimmed();
+        const QString sourceStr = library::correctionSourceToString(row.source);
+
+        // 别名不是曲库里的艺人（如 MusicBrainz 的外语别名）：只是新增别名，不合并任何艺人
+        if (!nameToEntity.contains(alias)) {
+            ++extraAliases;
+            continue;
+        }
+        ++totalProposals;
+
+        auto statIt = sourceStats.find(sourceStr);
+        if (statIt == sourceStats.end()) {
+            statIt = sourceStats.insert(sourceStr, { });
+        }
+        statIt.value().proposals++;
+        dsu.unite(alias, canonical);
+
+        const QString aliasEntity = nameToEntity.value(alias);
+        const QString canonicalEntity = nameToEntity.value(canonical);
+
+        if (canonicalEntity.isEmpty() || aliasEntity != canonicalEntity) {
+            statIt.value().mismerges++;
+            mismerges.append(MisMergeItem {
+                .alias = alias,
+                .canonical = canonical,
+                .source = sourceStr,
+                .confidence = row.confidence,
+                .reason = row.reason,
+                .aliasEntity = aliasEntity,
+                .canonicalEntity = canonicalEntity,
+            });
+        }
+    }
+}
+
+void processCreditCorrections(const QList<library::CorrectionRow> &rows,
+    const QHash<QString, QString> &nameToEntity, DisjointSet &dsu, QList<MisMergeItem> &mismerges,
+    QMap<QString, SourceReport> &sourceStats, int &totalProposals, int &creditNotScored)
+{
+    QSet<QPair<QString, QString>> seenPairs;
+    const QString sourceStr = QStringLiteral("credit");
+
+    for (const auto &row : rows) {
+        const QString oldValue = row.oldValue.trimmed();
+        const QString newValue = row.newValue.trimmed();
+        const auto pair = qMakePair(oldValue, newValue);
+
+        if (seenPairs.contains(pair)) {
+            continue;
+        }
+        seenPairs.insert(pair);
+
+        if (!nameToEntity.contains(oldValue) || !nameToEntity.contains(newValue)) {
+            ++creditNotScored;
+            continue;
+        }
+        ++totalProposals;
+
+        auto statIt = sourceStats.find(sourceStr);
+        if (statIt == sourceStats.end()) {
+            statIt = sourceStats.insert(sourceStr, { });
+        }
+        statIt.value().proposals++;
+        dsu.unite(oldValue, newValue);
+
+        const QString oldEntity = nameToEntity.value(oldValue);
+        const QString newEntity = nameToEntity.value(newValue);
+
+        if (newEntity.isEmpty() || oldEntity != newEntity) {
+            statIt.value().mismerges++;
+            mismerges.append(MisMergeItem {
+                .alias = oldValue,
+                .canonical = newValue,
+                .source = sourceStr,
+                .confidence = row.confidence,
+                .reason = row.reason,
+                .aliasEntity = oldEntity,
+                .canonicalEntity = newEntity,
+            });
+        }
+    }
+}
+
+void evaluateGroundTruth(const QHash<QString, QStringList> &entityToNames, DisjointSet &dsu,
+    int &totalGtPairs, int &mergedGtPairs, QList<MissedPairItem> &missedPairs)
+{
+    for (auto it = entityToNames.cbegin(); it != entityToNames.cend(); ++it) {
+        const auto &names = it.value();
+        for (int i = 0; i < names.size(); ++i) {
+            for (int j = i + 1; j < names.size(); ++j) {
+                totalGtPairs++;
+                const QString &nA = names.at(i);
+                const QString &nB = names.at(j);
+                if (dsu.find(nA) == dsu.find(nB)) {
+                    mergedGtPairs++;
+                } else {
+                    missedPairs.append(MissedPairItem {
+                        .nameA = nA,
+                        .nameB = nB,
+                        .entity = it.key(),
+                    });
+                }
+            }
+        }
+    }
+}
 
 // 传递性误合并：不同 entity 的曲库艺人被并进同一集合，但没有一条直接提议连着它们
 void appendTransitiveMismerges(
@@ -151,6 +266,7 @@ void printSourceBreakdownSection(const QMap<QString, SourceReport> &sourceStats)
         QStringLiteral("rule"),
         QStringLiteral("musicbrainz"),
         QStringLiteral("llm"),
+        QStringLiteral("credit"),
     };
     for (const auto &src : knownSources) {
         const auto stat = sourceStats.value(src);
@@ -346,7 +462,7 @@ void ArtistMergeEval::start()
         QCoreApplication::exit(2);
         return;
     }
-    const qint64 creditBatchId = creditBatchRes.value();
+    m_creditBatchId = creditBatchRes.value();
 
     const butler::ArtistCreditSource creditSource(m_harness.db());
     const auto creditItemsRes = creditSource.findItems(promptVersion);
@@ -359,7 +475,7 @@ void ArtistMergeEval::start()
     const QStringList &creditItems = creditItemsRes.value();
 
     QJsonObject creditParams;
-    creditParams.insert(QStringLiteral("batchId"), creditBatchId);
+    creditParams.insert(QStringLiteral("batchId"), m_creditBatchId);
 
     const bool creditStarted = m_harness.runJob(QStringLiteral("butler.artist_credit"),
         QStringLiteral("Artist credit eval"), creditItems, creditParams, [this]() {
@@ -448,7 +564,13 @@ void ArtistMergeEval::evaluateAndFinish()
         return;
     }
 
-    const auto &rows = correctionsRes.value();
+    const auto creditCorrectionsRes = store.corrections(m_creditBatchId);
+    if (!creditCorrectionsRes.ok()) {
+        std::cerr << "Failed to fetch credit corrections: "
+                  << qPrintable(creditCorrectionsRes.error().toString()) << "\n";
+        QCoreApplication::exit(2);
+        return;
+    }
 
     DisjointSet dsu;
     for (const auto &artist : m_corpus) {
@@ -459,45 +581,18 @@ void ArtistMergeEval::evaluateAndFinish()
     QMap<QString, SourceReport> sourceStats;
     int totalProposals = 0;
     int extraAliases = 0;
+    int creditNotScored = 0;
 
-    for (const auto &row : rows) {
-        const QString alias = row.alias.trimmed();
-        const QString canonical = row.artistName.trimmed();
-        const QString sourceStr = library::correctionSourceToString(row.source);
+    processAliasCorrections(correctionsRes.value(), m_nameToEntity, dsu, mismerges, sourceStats,
+        totalProposals, extraAliases);
 
-        // 别名不是曲库里的艺人（如 MusicBrainz 的外语别名）：只是新增别名，不合并任何艺人
-        if (!m_nameToEntity.contains(alias)) {
-            ++extraAliases;
-            continue;
-        }
-        ++totalProposals;
-
-        auto statIt = sourceStats.find(sourceStr);
-        if (statIt == sourceStats.end()) {
-            statIt = sourceStats.insert(sourceStr, { });
-        }
-        statIt.value().proposals++;
-        dsu.unite(alias, canonical);
-
-        const QString aliasEntity = m_nameToEntity.value(alias);
-        const QString canonicalEntity = m_nameToEntity.value(canonical);
-
-        if (canonicalEntity.isEmpty() || aliasEntity != canonicalEntity) {
-            statIt.value().mismerges++;
-            mismerges.append(MisMergeItem {
-                .alias = alias,
-                .canonical = canonical,
-                .source = sourceStr,
-                .confidence = row.confidence,
-                .reason = row.reason,
-                .aliasEntity = aliasEntity,
-                .canonicalEntity = canonicalEntity,
-            });
-        }
-    }
+    processCreditCorrections(creditCorrectionsRes.value(), m_nameToEntity, dsu, mismerges,
+        sourceStats, totalProposals, creditNotScored);
 
     appendTransitiveMismerges(m_corpus, dsu, mismerges);
     std::cout << "Extra aliases (not library artists, no merge): " << extraAliases << "\n";
+    std::cout << "Credit corrections not scored (target not a corpus name): " << creditNotScored
+              << "\n";
 
     const int totalMismerges = static_cast<int>(mismerges.size());
     const double mismergeRate
@@ -507,25 +602,7 @@ void ArtistMergeEval::evaluateAndFinish()
     int mergedGtPairs = 0;
     QList<MissedPairItem> missedPairs;
 
-    for (auto it = m_entityToNames.cbegin(); it != m_entityToNames.cend(); ++it) {
-        const auto &names = it.value();
-        for (int i = 0; i < names.size(); ++i) {
-            for (int j = i + 1; j < names.size(); ++j) {
-                totalGtPairs++;
-                const QString &nA = names.at(i);
-                const QString &nB = names.at(j);
-                if (dsu.find(nA) == dsu.find(nB)) {
-                    mergedGtPairs++;
-                } else {
-                    missedPairs.append(MissedPairItem {
-                        .nameA = nA,
-                        .nameB = nB,
-                        .entity = it.key(),
-                    });
-                }
-            }
-        }
-    }
+    evaluateGroundTruth(m_entityToNames, dsu, totalGtPairs, mergedGtPairs, missedPairs);
 
     const double recall
         = totalGtPairs > 0 ? (static_cast<double>(mergedGtPairs) / totalGtPairs) : 1.0;
