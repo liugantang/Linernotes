@@ -1,0 +1,56 @@
+# 同一艺人的不同写法（规则层应归为同一簇），取自开发者真实曲库的艺人名（公开的艺名）。每行一簇，用 ' | ' 分隔。
+(K)NoW_NAME:Ayaka Tachibana | (K)NoW_NAME:Tachibana Ayaka
+ASIAN KUNG-FU GENERATION | Asian Kung-Fu Generation
+Amamiya Sora | Sora Amamiya
+Aoi Eir | Eir Aoi
+Aoi Tada | Tada Aoi
+Arai Ken | Ken Arai
+Ayano Mashiro | Mashiro Ayano
+Azusa Tadokoro | Tadokoro Azusa
+Chiaki Ishikawa | Ishikawa Chiaki
+Chihara Minori | Minori Chihara
+Cö Shu Nie | Cö shu Nie
+GALNERYUS | Galneryus
+Gou Sakabe | Sakabe Gou
+Hashimoto Miyuki | Hashimoto miyuki | Miyuki Hashimoto
+Hayami Saori | Saori Hayami
+Hiroyuki Sawano | Sawano Hiroyuki
+Horie Yui | Yui Horie
+Inori Minase | Minase Inori
+Itou Kanako | Kanako Ito | Kanako Itou
+Iwasaki Taku | Taku Iwasaki
+Kajiura Yuki | Yuki Kajiura
+Kanon Wakeshima | Wakeshima Kanon
+Katou Tatsuya | Tatsuya Kato | Tatsuya Katou
+Kitade Nana | Nana Kitade
+Konomi Suzuki | Suzuki Konomi
+Kosaki Satoru | Kousaki Satoru
+Kuribayashi Minami | Minami Kuribayashi
+MYTH & ROID | MYTH&ROID
+Mafumafu | mafumafu
+May'n | May'n | May’n
+Megumi Nakajima | Nakajima Megumi
+Mimori Suzuko | Suzuko Mimori
+Mitsuru Wakabayashi | Wakabayashi Mitsuru
+Mizuki Nana | Nana Mizuki
+Motoi Okuda | Okuda Motoi
+Nakagawa Shouko | Shoko Nakagawa
+Nami Tamaki | Tamaki Nami
+Nishizawa Shiena | Shiena Nishizawa
+Orito Shinji | Shinji Orito
+Pastel*Palettes | Pastel＊Palettes
+REI YASUDA | Rei Yasuda | Yasuda Rei
+RYTHEM | Rythem
+Sagisu Shirou | Shiro SAGISU
+Sasaki Sayaka | Sayaka Sasaki
+Sho Watanabe | Watanabe Shou
+Stereopony | stereopony
+Sugimoto Yuuji | Yuji Sugimoto
+Suzuki Yasuyoshi | Yasuyoshi Suzuki
+Takahashi Yoko | Yoko Takahashi
+Takanashi Yasuharu | Yasuharu Takanashi
+Tommy Heavenly6 | Tommy heavenly6
+VARIOUS ARTISTS | Various Artists
+VICKEBLANKA | Vickeblanka
+sweet ARMS (Iori Nomizu, Misuzu Togashi, Kaori Sadohara, Misato) | sweet ARMS(Nomizu Iori, Togashi Misuzu, Sadohara Kaori, Misato)
+佐々木 淳 | 佐々木淳

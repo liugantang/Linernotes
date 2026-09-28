@@ -13,6 +13,14 @@ add_library(linernotes_ui STATIC
     AppSettings.h
     ArtistListModel.cpp
     ArtistListModel.h
+    CleanupController.cpp
+    CleanupController.h
+    CorrectionBatchModel.cpp
+    CorrectionBatchModel.h
+    CorrectionListModel.cpp
+    CorrectionListModel.h
+    CorrectionReviewController.cpp
+    CorrectionReviewController.h
     CoverAccent.cpp
     CoverAccent.h
     CoverImageProvider.cpp
@@ -92,6 +100,7 @@ target_include_directories(linernotes_ui
 target_link_libraries(linernotes_ui
     PUBLIC
         Linernotes::ai
+        Linernotes::butler
         Linernotes::core
         Linernotes::library
         Linernotes::player

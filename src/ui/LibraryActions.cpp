@@ -10,9 +10,11 @@
 #include <QUrl>
 
 #include <library/Database.h>
+#include <library/EnumNames.h>
 #include <library/LibraryQuery.h>
 #include <player/PlayQueue.h>
 #include <player/Player.h>
+#include <ui/AppSettings.h>
 #include <ui/Format.h>
 #include <ui/LibraryActions.h>
 #include <ui/UiLogging.h>
@@ -21,10 +23,12 @@
 
 namespace linernotes::ui {
 
-LibraryActions::LibraryActions(library::Database &db, player::Player &player, QObject *parent)
+LibraryActions::LibraryActions(
+    library::Database &db, player::Player &player, core::Settings &settings, QObject *parent)
     : QObject(parent)
     , m_db(db)
     , m_player(player)
+    , m_settings(settings)
 {
 }
 
@@ -262,8 +266,12 @@ QVariantMap LibraryActions::artistInfo(qint64 artistId) const
         return { };
     }
 
+    const auto pref
+        = library::artistNamePreferenceFromString(m_settings.value(kLibraryArtistNamePreference))
+              .value_or(library::ArtistNamePreference::Original);
+
     const library::LibraryQuery query(connOpt.value());
-    const auto res = query.artist(artistId);
+    const auto res = query.artist(artistId, pref);
     if (!res.ok() || !res.value().has_value()) {
         return { };
     }
@@ -272,6 +280,7 @@ QVariantMap LibraryActions::artistInfo(qint64 artistId) const
     QVariantMap map;
     map.insert(QStringLiteral("artistId"), row.artistId);
     map.insert(QStringLiteral("name"), row.name);
+    map.insert(QStringLiteral("originalName"), row.originalName);
     map.insert(QStringLiteral("trackCount"), row.trackCount);
     map.insert(QStringLiteral("albumCount"), row.albumCount);
     map.insert(QStringLiteral("coverHash"), row.coverHash);

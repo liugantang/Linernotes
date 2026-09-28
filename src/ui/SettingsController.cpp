@@ -7,6 +7,7 @@
 #include "UiLogging.h"
 
 #include <core/Settings.h>
+#include <library/EnumNames.h>
 #include <player/Player.h>
 
 namespace linernotes::ui {
@@ -106,6 +107,9 @@ SettingsController::SettingsController(
               .minSeconds)
     , m_language(languageFromString(m_settings.value(kAppearanceLanguage)))
     , m_themeMode(themeModeFromString(m_settings.value(kAppearanceTheme)))
+    , m_artistNamePreference(
+          library::artistNamePreferenceFromString(m_settings.value(kLibraryArtistNamePreference))
+              .value_or(library::ArtistNamePreference::Original))
     , m_accentFromCover(m_settings.value(kAppearanceAccentFromCover))
     , m_trayIcon(m_settings.value(kAppearanceTrayIcon))
     , m_closeToTray(m_settings.value(kAppearanceCloseToTray))
@@ -264,6 +268,21 @@ void SettingsController::setThemeMode(ThemeMode mode)
     m_themeMode = mode;
     m_settings.setValue(kAppearanceTheme, themeModeToString(mode));
     emit themeModeChanged();
+}
+
+library::ArtistNamePreference SettingsController::artistNamePreference() const
+{
+    return m_artistNamePreference;
+}
+
+void SettingsController::setArtistNamePreference(library::ArtistNamePreference pref)
+{
+    if (pref == m_artistNamePreference) {
+        return;
+    }
+    m_artistNamePreference = pref;
+    m_settings.setValue(kLibraryArtistNamePreference, library::artistNamePreferenceToString(pref));
+    emit artistNamePreferenceChanged();
 }
 
 bool SettingsController::accentFromCover() const

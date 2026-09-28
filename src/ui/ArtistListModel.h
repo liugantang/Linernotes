@@ -6,6 +6,7 @@
 #include <QList>
 #include <QString>
 
+#include <library/LibraryEnums.h>
 #include <library/LibraryQuery.h>
 #include <ui/PageCache.h>
 #include <ui/PagedListModel.h>
@@ -30,6 +31,7 @@ public:
                                 // 互转
         ArtistIdRole = Qt::UserRole + 1,
         NameRole,
+        OriginalNameRole,
         TrackCountRole,
         AlbumCountRole,
         CoverHashRole,
@@ -39,6 +41,8 @@ public:
 
     explicit ArtistListModel(QObject *parent = nullptr);
     ~ArtistListModel() override = default;
+
+    void setContext(AppContext *context) override;
 
     // QAbstractListModel interface
     [[nodiscard]] QVariant data(
@@ -56,6 +60,7 @@ protected:
     void clearCache() override;
 
 private:
+    void onSettingsPreferenceChanged();
     [[nodiscard]] library::ArtistFilter currentFilter() const;
 
     SortKey m_sortKey { SortKey::Name };

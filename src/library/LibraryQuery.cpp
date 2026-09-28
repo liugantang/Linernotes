@@ -508,28 +508,30 @@ core::Result<QList<ArtistRow>> LibraryQuery::artists(
     }
 
     const bool isAsc = (order == Qt::AscendingOrder);
+    const QString nameExpr
+        = detail::artistDisplayNameSql(QStringLiteral("ar"), filter.namePreference);
     const QString pageOrderClause = isAsc
-        ? QStringLiteral("ar.name IS NULL, ar.name ASC, ar.id ASC")
-        : QStringLiteral("ar.name DESC, ar.id DESC");
+        ? QStringLiteral("%1 IS NULL, %1 ASC, ar.id ASC").arg(nameExpr)
+        : QStringLiteral("%1 DESC, ar.id DESC").arg(nameExpr);
     const QString outerOrderClause = isAsc ? QStringLiteral("p.name IS NULL, p.name ASC, p.id ASC")
                                            : QStringLiteral("p.name DESC, p.id DESC");
 
     const QString filterSql = detail::buildArtistFilterWhereSql(filter);
 
-    // Reuse outer SELECT projection and subqueries from detail::artistSelectSql ("page p", "p")
+    // Reuse outer SELECT projection and subqueries from detail::artistPageSelectSql
     const QString sql
         = QStringLiteral("WITH page AS ("
-                         "  SELECT ar.id, ar.name "
+                         "  SELECT ar.id, %1 AS name, ar.name AS original_name "
                          "  FROM artists ar "
-                         "  WHERE %1%2 "
-                         "  ORDER BY %3 "
+                         "  WHERE %2%3 "
+                         "  ORDER BY %4 "
                          "  LIMIT ? OFFSET ?"
                          ") "
-                         "%4 "
-                         "ORDER BY %5;")
-              .arg(detail::artistVisibilityWhereSql(QStringLiteral("ar.id")), filterSql,
+                         "%5 "
+                         "ORDER BY %6;")
+              .arg(nameExpr, detail::artistVisibilityWhereSql(QStringLiteral("ar.id")), filterSql,
                   pageOrderClause,
-                  detail::artistSelectSql(QStringLiteral("page p"), QStringLiteral("p")),
+                  detail::artistPageSelectSql(QStringLiteral("page p"), QStringLiteral("p")),
                   outerOrderClause);
 
     QSqlQuery q(m_db);
@@ -554,18 +556,21 @@ core::Result<QList<ArtistRow>> LibraryQuery::artists(
     return rows;
 }
 
-core::Result<QList<ArtistRow>> LibraryQuery::artistsByIds(const QList<qint64> &ids) const
+core::Result<QList<ArtistRow>> LibraryQuery::artistsByIds(
+    const QList<qint64> &ids, ArtistNamePreference pref) const
 {
     return detail::fetchRowsByIds<ArtistRow>(m_db, ids,
         QStringLiteral("%1 WHERE ar.id IN (%2) AND %3")
             .arg(QStringLiteral("%1"), QStringLiteral("%2"),
                 detail::artistVisibilityWhereSql(QStringLiteral("ar.id"))),
-        detail::artistSelectSql(), detail::parseArtistRow, QStringLiteral("artistsByIds"));
+        detail::artistSelectSql(QStringLiteral("artists ar"), QStringLiteral("ar"), pref),
+        detail::parseArtistRow, QStringLiteral("artistsByIds"));
 }
 
-core::Result<std::optional<ArtistRow>> LibraryQuery::artist(qint64 artistId) const
+core::Result<std::optional<ArtistRow>> LibraryQuery::artist(
+    qint64 artistId, ArtistNamePreference pref) const
 {
-    const auto rowsRes = artistsByIds({ artistId });
+    const auto rowsRes = artistsByIds({ artistId }, pref);
     if (!rowsRes.ok()) {
         return rowsRes.error();
     }

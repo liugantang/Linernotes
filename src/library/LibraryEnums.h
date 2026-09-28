@@ -84,4 +84,16 @@ Q_ENUM_NS(SmartMatch)
 enum class SmartFieldKind : std::uint8_t { Text, Number, Bool, Date };
 Q_ENUM_NS(SmartFieldKind)
 
+enum class CorrectionKind : std::uint8_t { Manual, Mojibake, ArtistSplit, ArtistMerge };
+Q_ENUM_NS(CorrectionKind)
+
+enum class CorrectionSource : std::uint8_t { Rule, Llm, MusicBrainz, User };
+Q_ENUM_NS(CorrectionSource)
+
+enum class CorrectionStatus : std::uint8_t { Pending, Accepted, Rejected, Reverted };
+Q_ENUM_NS(CorrectionStatus)
+
+enum class TrackIssueKind : std::uint8_t { NeedsOnlineLookup };
+Q_ENUM_NS(TrackIssueKind)
+
 } // namespace linernotes::library

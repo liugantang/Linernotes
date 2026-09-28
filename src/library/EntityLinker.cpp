@@ -21,6 +21,7 @@ EntityLinker::EntityLinker(const QSqlDatabase &db, std::function<qint64()> nowMs
     , m_nowMs(std::move(nowMs))
     , m_findTrackMetadataStmt(m_db)
     , m_findTrackFilePathStmt(m_db)
+    , m_findArtistByAliasStmt(m_db)
     , m_findArtistByNameStmt(m_db)
     , m_insertArtistStmt(m_db)
     , m_deleteTrackArtistsStmt(m_db)
@@ -43,6 +44,8 @@ EntityLinker::EntityLinker(const QSqlDatabase &db, std::function<qint64()> nowMs
         "SELECT artist, album, album_artist, composer FROM effective_metadata WHERE track_id = ?"));
     m_findTrackFilePathStmt.prepare(QStringLiteral(
         "SELECT f.path FROM files f JOIN tracks t ON f.id = t.file_id WHERE t.id = ?"));
+    m_findArtistByAliasStmt.prepare(
+        QStringLiteral("SELECT artist_id FROM artist_aliases WHERE alias = ? ORDER BY id LIMIT 1"));
     m_findArtistByNameStmt.prepare(QStringLiteral("SELECT id FROM artists WHERE name = ? LIMIT 1"));
     m_insertArtistStmt.prepare(
         QStringLiteral("INSERT INTO artists (name, created_at) VALUES (?, ?)"));
@@ -117,6 +120,21 @@ core::Result<qint64> EntityLinker::getOrCreateArtist(const QString &name, qint64
     const auto it = m_artistCache.constFind(name);
     if (it != m_artistCache.constEnd()) {
         return it.value();
+    }
+
+    m_findArtistByAliasStmt.bindValue(0, name);
+    if (!m_findArtistByAliasStmt.exec()) {
+        return core::Error {
+            .code = QString(errc::kDbQuery),
+            .message = m_findArtistByAliasStmt.lastError().text(),
+            .detail = QStringLiteral("findArtistByAlias"),
+        };
+    }
+
+    if (m_findArtistByAliasStmt.next()) {
+        const qint64 id = m_findArtistByAliasStmt.value(0).toLongLong();
+        m_artistCache.insert(name, id);
+        return id;
     }
 
     m_findArtistByNameStmt.bindValue(0, name);

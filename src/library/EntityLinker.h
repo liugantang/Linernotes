@@ -59,6 +59,7 @@ private:
 
     QSqlQuery m_findTrackMetadataStmt;
     QSqlQuery m_findTrackFilePathStmt;
+    QSqlQuery m_findArtistByAliasStmt;
     QSqlQuery m_findArtistByNameStmt;
     QSqlQuery m_insertArtistStmt;
     QSqlQuery m_deleteTrackArtistsStmt;

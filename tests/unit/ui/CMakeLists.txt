@@ -169,6 +169,32 @@ linernotes_add_test(
         Qt6::Sql
 )
 
+linernotes_add_test(
+    NAME ui_CorrectionReview
+    SOURCES
+        tst_CorrectionReview.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Sql
+)
+
+linernotes_add_test(
+    NAME ui_CleanupController
+    SOURCES
+        tst_CleanupController.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::ai
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Network
+        Qt6::Sql
+        Qt6::Concurrent
+)
+
 if(UNIX AND NOT APPLE)
     linernotes_add_test(
         NAME ui_Mpris

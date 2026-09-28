@@ -27,6 +27,13 @@ Item {
         }
     }
 
+    Connections {
+        target: AppContext.settings
+        function onArtistNamePreferenceChanged() {
+            root.infoRevision++
+        }
+    }
+
     TrackListModel {
         id: artistTracksModel
         context: AppContext
@@ -102,6 +109,15 @@ Item {
                     font.pixelSize: Theme.fontSizeTitle
                     font.bold: true
                     color: Theme.text
+                    elide: Text.ElideRight
+                    Layout.fillWidth: true
+                }
+
+                Label {
+                    visible: !!(root.info && root.info.originalName && root.info.name && root.info.originalName !== root.info.name)
+                    text: (root.info && root.info.originalName) ? root.info.originalName : ""
+                    font.pixelSize: Theme.fontSizeNormal
+                    color: Theme.textSecondary
                     elide: Text.ElideRight
                     Layout.fillWidth: true
                 }

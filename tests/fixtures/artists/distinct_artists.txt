@@ -1,0 +1,31 @@
+# 不同艺人（规则层绝不能产出合并提议；作为模糊候选交给 LLM 可以）。每行一组，用 ' | ' 分隔。
+Nana Mizuki | Nana Kitade
+Yui Horie | Yui Ogura
+Kana Hanazawa | Kana Ueda
+Saori Hayami | Saori Oonishi
+Aoi Eir | Aoi Tada
+Minori Chihara | Minori Suzuki
+Miyuki Hashimoto | Miyuki Sawashiro
+Yuki Kajiura | Yuki Kaji
+Sayaka Sasaki | Sayaka Kanda
+Ai Kayano | Ai Kakuma
+Rie Takahashi | Rie Kugimiya
+Yoko Takahashi | Yoko Kanno
+Rie Takahashi | Takahashi Yoko
+Kanon | Kanon Wakeshima
+Mai Kuraki | Mai Fuchigami
+Maaya Sakamoto | Maaya Uchida
+Aya Hirano | Aya Uchida
+Ayaka | Ayaka Tachibana
+Rina Hidaka | Rina Satou
+Ayane Sakura | Ayana Taketatsu
+Megumi Hayashibara | Megumi Nakajima
+Kaori Oda | Kaori Sadohara
+Nao Toyama | Nao Tamura
+Yuka Iguchi | Yuka Aisaka
+Sora Amamiya | Sora Tokui
+Haruka Tomatsu | Haruka Chisuga
+Shiina Ringo | Shiina Hekiru
+Aimer | Aimee
+LiSA | Lisa Ono
+fripSide | fripSide NAO project!

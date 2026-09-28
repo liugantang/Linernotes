@@ -6,6 +6,8 @@
 #include <QObject>
 #include <QString>
 
+#include <library/ArtistNamePreference.h>
+#include <library/LibraryEnums.h>
 #include <library/PlayCountRule.h>
 #include <player/Player.h>
 
@@ -40,6 +42,8 @@ public:
             countMinSecondsChanged)
     Q_PROPERTY(Language language READ language WRITE setLanguage NOTIFY languageChanged)
     Q_PROPERTY(ThemeMode themeMode READ themeMode WRITE setThemeMode NOTIFY themeModeChanged)
+    Q_PROPERTY(linernotes::library::artist_names::Preference artistNamePreference READ
+            artistNamePreference WRITE setArtistNamePreference NOTIFY artistNamePreferenceChanged)
     Q_PROPERTY(bool accentFromCover READ accentFromCover WRITE setAccentFromCover NOTIFY
             accentFromCoverChanged)
     Q_PROPERTY(bool trayIcon READ trayIcon WRITE setTrayIcon NOTIFY trayIconChanged)
@@ -79,6 +83,9 @@ public:
     [[nodiscard]] ThemeMode themeMode() const;
     void setThemeMode(ThemeMode mode);
 
+    [[nodiscard]] library::ArtistNamePreference artistNamePreference() const;
+    void setArtistNamePreference(library::ArtistNamePreference pref);
+
     [[nodiscard]] bool accentFromCover() const;
     void setAccentFromCover(bool enabled);
 
@@ -104,6 +111,7 @@ signals:
     void playCountRuleChanged();
     void languageChanged();
     void themeModeChanged();
+    void artistNamePreferenceChanged();
     void accentFromCoverChanged();
     void trayIconChanged();
     void closeToTrayChanged();
@@ -122,6 +130,9 @@ private:
     int m_countMinSeconds { 240 };
     Language m_language { Language::System };
     ThemeMode m_themeMode { ThemeMode::System };
+    library::ArtistNamePreference m_artistNamePreference {
+        library::ArtistNamePreference::Original
+    };
     bool m_accentFromCover { false };
     bool m_trayIcon { true };
     bool m_closeToTray { false };

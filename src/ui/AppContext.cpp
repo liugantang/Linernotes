@@ -34,8 +34,10 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_options(std::move(options))
     , m_db(m_options.databasePath)
     , m_ai(m_settings, m_db, m_clock, m_options.promptsDir)
+    , m_cleanup(m_db, m_clock, m_ai.jobs(), m_ai.config(), m_settings)
     , m_playStats(m_db)
     , m_tagEditor(m_db)
+    , m_review(m_db, m_clock)
     , m_roots(m_db)
     , m_marks(m_db)
     , m_player(m_options.playerOptions)
@@ -46,11 +48,16 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_queueModel(m_db, m_player)
     , m_search(m_db)
     , m_playlists(m_db, m_player)
-    , m_actions(m_db, m_player)
+    , m_actions(m_db, m_player, m_settings)
 {
     connect(this, &AppContext::libraryChanged, &m_nowPlaying, &NowPlaying::refresh);
     connect(&m_marks, &MarksController::marksChanged, &m_nowPlaying, &NowPlaying::refresh);
     connect(&m_tagEditor, &TagEditorModel::saved, this, &AppContext::libraryChanged);
+    connect(
+        &m_review, &CorrectionReviewController::libraryModified, this, &AppContext::libraryChanged);
+    connect(&m_cleanup, &CleanupController::batchesChanged, &m_review,
+        &CorrectionReviewController::refresh);
+    connect(&m_cleanup, &CleanupController::batchesChanged, this, &AppContext::libraryChanged);
     connect(this, &AppContext::libraryChanged, &m_queueModel, &QueueModel::refresh);
     connect(this, &AppContext::libraryChanged, &m_search, &SearchController::refresh);
     connect(this, &AppContext::libraryChanged, &m_playlists, &PlaylistController::refresh);
@@ -287,6 +294,16 @@ LibraryRootsModel *AppContext::libraryRoots()
 TagEditorModel *AppContext::tagEditor()
 {
     return &m_tagEditor;
+}
+
+CorrectionReviewController *AppContext::review()
+{
+    return &m_review;
+}
+
+CleanupController *AppContext::cleanup()
+{
+    return &m_cleanup;
 }
 
 library::Database &AppContext::database()

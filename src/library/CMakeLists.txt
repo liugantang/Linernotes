@@ -4,8 +4,13 @@
 file(GLOB MIGRATION_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/migrations/*.sql")
 
 add_library(linernotes_library STATIC
+    ArtistAliasCorrections.cpp
+    ArtistAliasCorrections.h
+    ArtistNamePreference.h
     CoverStore.cpp
     CoverStore.h
+    CorrectionStore.cpp
+    CorrectionStore.h
     Database.cpp
     Database.h
     DatabaseBackup.cpp
@@ -34,6 +39,8 @@ add_library(linernotes_library STATIC
     LibraryWatcher.h
     MarkStore.cpp
     MarkStore.h
+    MetadataRefresh.cpp
+    MetadataRefresh.h
     Migrator.cpp
     Migrator.h
     OverrideStore.cpp
@@ -65,8 +72,13 @@ add_library(linernotes_library STATIC
     SmartRuleSql.h
     TagReader.cpp
     TagReader.h
+    TrackCorrections.cpp
+    TrackCorrections.h
+    TrackIssueStore.cpp
+    TrackIssueStore.h
 )
 add_library(Linernotes::library ALIAS linernotes_library)
+
 qt6_extract_metatypes(linernotes_library)
 
 if(MIGRATION_FILES)

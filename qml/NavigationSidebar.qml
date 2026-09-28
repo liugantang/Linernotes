@@ -15,7 +15,7 @@ Rectangle {
         Albums,
         Artists,
         Playlists,
-        Ai,
+        Cleanup,
         Settings
     }
 
@@ -30,7 +30,7 @@ Rectangle {
         { pageId: NavigationSidebar.Albums, title: qsTr("Albums"), iconSource: "disc-3", subtitle: "" },
         { pageId: NavigationSidebar.Artists, title: qsTr("Artists"), iconSource: "mic-vocal", subtitle: "" },
         { pageId: NavigationSidebar.Playlists, title: qsTr("Playlists"), iconSource: "list-music", subtitle: "" },
-        { pageId: NavigationSidebar.Ai, title: qsTr("AI"), iconSource: "sparkles", subtitle: qsTr("Coming soon") }
+        { pageId: NavigationSidebar.Cleanup, title: qsTr("Library Cleanup"), iconSource: "sparkles", subtitle: "" }
     ]
 
     ColumnLayout {

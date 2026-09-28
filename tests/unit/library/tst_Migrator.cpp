@@ -44,6 +44,8 @@ private slots:
     void upgradesTo0007AddsTrackPlayStats();
     void upgradesTo0009AddsLlmUsage();
     void upgradesTo0010AddsJobs();
+    void upgradesTo0011AddsButlerTables();
+    void upgradesTo0012AddsCorrectionLocale();
 };
 
 void TstMigrator::appliesMigrationsInOrder()
@@ -454,6 +456,151 @@ void TstMigrator::upgradesTo0010AddsJobs()
     QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM job_items;")));
     QVERIFY(q.next());
     QCOMPARE(q.value(0).toInt(), 1);
+}
+
+void TstMigrator::upgradesTo0011AddsButlerTables()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 11);
+
+    // Write migrations 1..10
+    for (int i = 0; i < 10; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 10);
+
+    // Insert correction_batches row in v10 schema
+    {
+        QSqlQuery q(conn);
+        QVERIFY(q.exec(
+            QStringLiteral("INSERT INTO correction_batches (id, source, description, created_at) "
+                           "VALUES (1, 'rule', 'Old Batch', 1000);")));
+    }
+
+    // Add migration 11
+    const auto &m11 = allMigrations.at(10);
+    const QString fileName11
+        = QStringLiteral("%1_%2.sql").arg(m11.version, 4, 10, QLatin1Char('0')).arg(m11.name);
+    writeSqlFile(migDir.path(), fileName11, m11.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 11);
+
+    // Verify existing correction_batches row has default kind 'manual'
+    QSqlQuery q(conn);
+    QVERIFY(q.exec(QStringLiteral("SELECT kind FROM correction_batches WHERE id = 1;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toString(), QStringLiteral("manual"));
+
+    // Verify track_issues and mb_cache tables exist and can be inserted/queried
+    QVERIFY(q.exec(QStringLiteral("INSERT INTO library_roots (id, path, enabled, added_at) "
+                                  "VALUES (1, '/music', 1, 100);")));
+    QVERIFY(q.exec(QStringLiteral("INSERT INTO files (id, root_id, path, duration_ms, size, "
+                                  "mtime, first_seen_at, scanned_at) VALUES "
+                                  "(1, 1, '/music/1.mp3', 60000, 1, 1, 1, 1);")));
+    QVERIFY(q.exec(QStringLiteral("INSERT INTO tracks (id, file_id, tags_read_at, created_at) "
+                                  "VALUES (1, 1, 1, 1);")));
+    QVERIFY(q.exec(
+        QStringLiteral("INSERT INTO track_issues (track_id, kind, field, detail, created_at) "
+                       "VALUES (1, 'needs_online', 'title', 'damaged', 1000);")));
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM track_issues;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 1);
+
+    QVERIFY(q.exec(QStringLiteral(
+        "INSERT INTO mb_cache (url, body, fetched_at) "
+        "VALUES ('https://musicbrainz.org/ws/2/recording/123', '{\"test\": 1}', 1000);")));
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM mb_cache;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 1);
+}
+
+void TstMigrator::upgradesTo0012AddsCorrectionLocale()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 12);
+
+    // Write migrations 1..11
+    for (int i = 0; i < 11; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 11);
+
+    // Insert correction row in v11 schema
+    {
+        QSqlQuery q(conn);
+        QVERIFY(q.exec(QStringLiteral(
+            "INSERT INTO corrections (id, entity_type, entity_id, field, old_value, new_value, "
+            "source, confidence, status, created_at) "
+            "VALUES (1, 'artist', 10, 'alias', NULL, 'Jay', 'rule', 0.9, 'pending', 1000);")));
+    }
+
+    // Add migration 12
+    const auto &m12 = allMigrations.at(11);
+    const QString fileName12
+        = QStringLiteral("%1_%2.sql").arg(m12.version, 4, 10, QLatin1Char('0')).arg(m12.name);
+    writeSqlFile(migDir.path(), fileName12, m12.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 12);
+
+    // Verify existing corrections row has NULL locale
+    QSqlQuery q(conn);
+    QVERIFY(q.exec(QStringLiteral("SELECT locale FROM corrections WHERE id = 1;")));
+    QVERIFY(q.next());
+    QVERIFY(q.value(0).isNull());
+
+    // Verify inserting new correction row with locale works
+    QVERIFY(q.exec(QStringLiteral(
+        "INSERT INTO corrections (id, entity_type, entity_id, field, old_value, new_value, "
+        "locale, source, confidence, status, created_at) "
+        "VALUES (2, 'artist', 10, 'alias', NULL, 'Jay Chou', 'en', 'musicbrainz', 1.0, 'pending', "
+        "2000);")));
+    QVERIFY(q.exec(QStringLiteral("SELECT locale FROM corrections WHERE id = 2;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toString(), QStringLiteral("en"));
 }
 
 } // namespace

@@ -7,6 +7,7 @@
 #include <QTest>
 
 #include <core/Settings.h>
+#include <library/ArtistNamePreference.h>
 #include <library/PlayCountRule.h>
 #include <player/Player.h>
 #include <ui/AppSettings.h>
@@ -15,6 +16,7 @@
 namespace {
 
 using linernotes::core::Settings;
+using linernotes::library::ArtistNamePreference;
 using linernotes::library::PlayCountRule;
 using linernotes::player::Player;
 using linernotes::ui::SettingsController;
@@ -29,6 +31,7 @@ private slots:
     void testLanguageSettings();
     void testPlayCountRuleSettings();
     void testTrayAndNotificationSettings();
+    void testArtistNamePreferenceSettings();
 };
 
 void TstSettingsController::testThemeAndReplayGainSettings()
@@ -276,6 +279,30 @@ void TstSettingsController::testTrayAndNotificationSettings()
     QCOMPARE(ctrl2.trayIcon(), false);
     QCOMPARE(ctrl2.closeToTray(), true);
     QCOMPARE(ctrl2.trackChangeNotifications(), false);
+}
+
+void TstSettingsController::testArtistNamePreferenceSettings()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString iniPath = tempDir.filePath(QStringLiteral("settings.ini"));
+
+    Settings settings(iniPath);
+    Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
+
+    SettingsController ctrl1(settings, player);
+    QCOMPARE(ctrl1.artistNamePreference(), ArtistNamePreference::Original);
+
+    QSignalSpy prefSpy(&ctrl1, &SettingsController::artistNamePreferenceChanged);
+
+    ctrl1.setArtistNamePreference(ArtistNamePreference::SimplifiedChinese);
+    QCOMPARE(prefSpy.count(), 1);
+    QCOMPARE(ctrl1.artistNamePreference(), ArtistNamePreference::SimplifiedChinese);
+
+    Player player2({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    SettingsController ctrl2(settings, player2);
+
+    QCOMPARE(ctrl2.artistNamePreference(), ArtistNamePreference::SimplifiedChinese);
 }
 
 } // namespace

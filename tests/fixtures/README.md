@@ -43,3 +43,14 @@
 | `library/cover_1600_embed.flac` | FLAC / Picture 1600×1600 JPEG | ~63 KB / 1.0 s | `generate.py` 自行合成，CC0 | 内嵌 1600×1600 大封面 JPEG 样本 (FLAC，与 MP3 封面完全一致) |
 | `library/dir_folder_cover/` | 目录样本 / Cover.JPG + FLAC | ~26 KB | `generate.py` 自行合成，CC0 | 带 `Cover.JPG` (800×800) 的目录样本，音频文件无内嵌封面 |
 | `library/dir_embed_and_folder/` | 目录样本 / folder.png + 内嵌封面 FLAC | ~20 KB | `generate.py` 自行合成，CC0 | 同时包含内嵌封面音频与 `folder.png` 的目录样本，用于验证内嵌优先 |
+| `mojibake/zh_hans.txt` | 文本 / 简体中文歌名与专辑名 | 320 行 | 自行编写，CC0 | 乱码规则修复测试语料（简体中文/GBK） |
+| `mojibake/zh_hant.txt` | 文本 / 繁体中文歌名与专辑名 | 320 行 | 自行编写，CC0 | 乱码规则修复测试语料（繁体中文/Big5） |
+| `mojibake/ja.txt` | 文本 / 日文歌名与专辑名 | 320 行 | 自行编写，CC0 | 乱码规则修复测试语料（日文/Shift-JIS） |
+| `mojibake/ko.txt` | 文本 / 韩文歌名与专辑名 | 220 行 | 自行编写，CC0 | 乱码规则修复测试语料（韩文/EUC-KR） |
+| `mojibake/latin_legit.txt` | 文本 / 合法带重音拉丁字母名字 | 300+ 行 | 自行编写，CC0 | 乱码检测防误报测试语料（合法拉丁字符） |
+| `artists/same_artist_rule.txt` | 文本 / 55 簇同一艺人的不同写法 | 57 行 | 开发者真实曲库中的公开艺名 / 审查者编写 | 艺人名规则层归一测试素材（日文姓名顺序颠倒、长音罗马字、全半角、标点等） |
+| `artists/distinct_artists.txt` | 文本 / 30 组不同艺人 | 32 行 | 开发者真实曲库中的公开艺名 / 审查者编写 | 艺人名防误合并测试素材（共享词、相似拼写等不同艺人） |
+| `musicbrainz/artist_search_mimori.json` | JSON / MusicBrainz 响应 | ~5 KB | MusicBrainz Web Service 2026-09-28 录制，数据 CC0 | MusicBrainz 艺人搜索录制响应（三森すずこ，含 en/ja 别名） |
+| `musicbrainz/artist_search_jaychou.json` | JSON / MusicBrainz 响应 | ~8 KB | MusicBrainz Web Service 2026-09-28 录制，数据 CC0 | MusicBrainz 艺人搜索录制响应（周杰倫，含 zh_Hans/zh_Hant/en/ja/ko 别名） |
+
+

@@ -1,0 +1,194 @@
+{
+  "artists": [
+    { "name": "周杰伦", "entity": "jay-chou", "albums": ["范特西", "叶惠美", "七里香"] },
+    { "name": "周杰倫", "entity": "jay-chou", "albums": ["范特西", "叶惠美", "魔杰座"] },
+    { "name": "Jay Chou", "entity": "jay-chou", "albums": ["范特西", "Jay"] },
+
+    { "name": "陈奕迅", "entity": "eason-chan", "albums": ["U87", "认了吧", "Special Thanks To..."] },
+    { "name": "陳奕迅", "entity": "eason-chan", "albums": ["U87", "What's Going On...?"] },
+    { "name": "Eason Chan", "entity": "eason-chan", "albums": ["U87", "认了吧"] },
+
+    { "name": "王菲", "entity": "faye-wong", "albums": ["天空", "唱游", "寓言"] },
+    { "name": "Faye Wong", "entity": "faye-wong", "albums": ["天空", "唱游"] },
+    { "name": "王靖雯", "entity": "faye-wong", "albums": ["执迷不悔", "天空"] },
+
+    { "name": "张学友", "entity": "jacky-cheung", "albums": ["吻别", "真爱", "偷心"] },
+    { "name": "張學友", "entity": "jacky-cheung", "albums": ["吻别", "真爱"] },
+    { "name": "Jacky Cheung", "entity": "jacky-cheung", "albums": ["吻别", "偷心"] },
+
+    { "name": "刘德华", "entity": "andy-lau", "albums": ["忘情水", "天意", "爱在刻骨铭心时"] },
+    { "name": "劉德華", "entity": "andy-lau", "albums": ["忘情水", "天意"] },
+    { "name": "Andy Lau", "entity": "andy-lau", "albums": ["忘情水", "爱在刻骨铭心时"] },
+
+    { "name": "孙燕姿", "entity": "stefanie-sun", "albums": ["风筝", "我要的幸福", "The Moment"] },
+    { "name": "孫燕姿", "entity": "stefanie-sun", "albums": ["风筝", "我要的幸福"] },
+    { "name": "Stefanie Sun", "entity": "stefanie-sun", "albums": ["风筝", "The Moment"] },
+
+    { "name": "林俊杰", "entity": "jj-lin", "albums": ["江南", "曹操", "西界"] },
+    { "name": "林俊傑", "entity": "jj-lin", "albums": ["江南", "曹操"] },
+    { "name": "JJ Lin", "entity": "jj-lin", "albums": ["江南", "西界"] },
+
+    { "name": "梁静茹", "entity": "fish-leong", "albums": ["勇气", "燕尾蝶", "恋爱的力量"] },
+    { "name": "梁靜茹", "entity": "fish-leong", "albums": ["勇气", "燕尾蝶"] },
+    { "name": "Fish Leong", "entity": "fish-leong", "albums": ["勇气", "恋爱的力量"] },
+
+    { "name": "陶喆", "entity": "david-tao", "albums": ["David Tao", "I'm OK", "黑色柳丁"] },
+    { "name": "David Tao", "entity": "david-tao", "albums": ["David Tao", "黑色柳丁"] },
+
+    { "name": "蔡依林", "entity": "jolin-tsai", "albums": ["看我72变", "舞娘", "J-Game"] },
+    { "name": "Jolin Tsai", "entity": "jolin-tsai", "albums": ["看我72变", "舞娘"] },
+
+    { "name": "邓紫棋", "entity": "gem", "albums": ["18...", "My Secret", "X.X.X. Live"] },
+    { "name": "鄧紫棋", "entity": "gem", "albums": ["18...", "My Secret"] },
+    { "name": "G.E.M.", "entity": "gem", "albums": ["18...", "X.X.X. Live"] },
+    { "name": "G.E.M. 邓紫棋", "entity": "gem", "albums": ["My Secret", "18..."] },
+
+    { "name": "S.H.E", "entity": "she", "albums": ["女生宿舍", "青春株式会社", "Super Star"] },
+    { "name": "SHE", "entity": "she", "albums": ["女生宿舍", "Super Star"] },
+    { "name": "S.H.E.", "entity": "she", "albums": ["青春株式会社", "Super Star"] },
+
+    { "name": "苏打绿", "entity": "sodagreen", "albums": ["小宇宙", "无与伦比的美丽", "春·日光"] },
+    { "name": "蘇打綠", "entity": "sodagreen", "albums": ["小宇宙", "无与伦比的美丽"] },
+    { "name": "Sodagreen", "entity": "sodagreen", "albums": ["小宇宙", "春·日光"] },
+
+    { "name": "五月天", "entity": "mayday", "albums": ["第一张创作专辑", "自传", "神的孩子都在跳舞"] },
+    { "name": "Mayday", "entity": "mayday", "albums": ["第一张创作专辑", "自传"] },
+
+    { "name": "莫文蔚", "entity": "karen-mok", "albums": ["做自己", "十二楼的莫文蔚", "回蔚"] },
+    { "name": "Karen Mok", "entity": "karen-mok", "albums": ["做自己", "十二楼的莫文蔚"] },
+
+    { "name": "宇多田ヒカル", "entity": "utada-hikaru", "albums": ["First Love", "Distance", "Deep River"] },
+    { "name": "宇多田光", "entity": "utada-hikaru", "albums": ["First Love", "Distance"] },
+    { "name": "Utada Hikaru", "entity": "utada-hikaru", "albums": ["First Love", "Deep River"] },
+    { "name": "Hikaru Utada", "entity": "utada-hikaru", "albums": ["Distance", "Deep River"] },
+
+    { "name": "坂本龍一", "entity": "ryuichi-sakamoto", "albums": ["Thousand Knives", "B-2 Unit", "Async"] },
+    { "name": "坂本龙一", "entity": "ryuichi-sakamoto", "albums": ["Thousand Knives", "Async"] },
+    { "name": "Ryuichi Sakamoto", "entity": "ryuichi-sakamoto", "albums": ["Thousand Knives", "B-2 Unit"] },
+
+    { "name": "久石譲", "entity": "joe-hisaishi", "albums": ["Minima_Rhythm", "Piano Stories", "Spirited Away"] },
+    { "name": "久石让", "entity": "joe-hisaishi", "albums": ["Minima_Rhythm", "Piano Stories"] },
+    { "name": "Joe Hisaishi", "entity": "joe-hisaishi", "albums": ["Minima_Rhythm", "Spirited Away"] },
+
+    { "name": "米津玄師", "entity": "kenshi-yonezu", "albums": ["BOOTLEG", "STRAY SHEEP", "YANKEE"] },
+    { "name": "Kenshi Yonezu", "entity": "kenshi-yonezu", "albums": ["BOOTLEG", "STRAY SHEEP"] },
+    { "name": "米津玄师", "entity": "kenshi-yonezu", "albums": ["BOOTLEG", "YANKEE"] },
+
+    { "name": "椎名林檎", "entity": "sheena-ringo", "albums": ["無罪モラトリアム", "勝訴ストリップ", "加爾基 精液 栗ノ花"] },
+    { "name": "Sheena Ringo", "entity": "sheena-ringo", "albums": ["無罪モラトリアム", "勝訴ストリップ"] },
+
+    { "name": "中島みゆき", "entity": "miyuki-nakajima", "albums": ["私の声が聞こえますか", "寒水魚", "時代"] },
+    { "name": "中岛美雪", "entity": "miyuki-nakajima", "albums": ["私の声が聞こえますか", "寒水魚"] },
+    { "name": "Miyuki Nakajima", "entity": "miyuki-nakajima", "albums": ["私の声が聞こえますか", "時代"] },
+
+    { "name": "RADWIMPS", "entity": "radwimps", "albums": ["RADWIMPS 4", "君の名は。", "Human Bloom"] },
+    { "name": "ラッドウィンプス", "entity": "radwimps", "albums": ["RADWIMPS 4", "君の名は。"] },
+
+    { "name": "아이유", "entity": "iu", "albums": ["Real", "Palette", "Modern Times"] },
+    { "name": "IU", "entity": "iu", "albums": ["Real", "Palette"] },
+    { "name": "李知恩", "entity": "iu", "albums": ["Palette", "Modern Times"] },
+
+    { "name": "태연", "entity": "taeyeon", "albums": ["My Voice", "Purpose", "INVU"] },
+    { "name": "Taeyeon", "entity": "taeyeon", "albums": ["My Voice", "Purpose"] },
+    { "name": "金泰妍", "entity": "taeyeon", "albums": ["My Voice", "INVU"] },
+
+    { "name": "방탄소년단", "entity": "bts", "albums": ["Wings", "Love Yourself: Tear", "Map of the Soul: 7"] },
+    { "name": "BTS", "entity": "bts", "albums": ["Wings", "Love Yourself: Tear"] },
+    { "name": "防弹少年团", "entity": "bts", "albums": ["Love Yourself: Tear", "Map of the Soul: 7"] },
+
+    { "name": "블랙핑크", "entity": "blackpink", "albums": ["The Album", "Born Pink"] },
+    { "name": "BLACKPINK", "entity": "blackpink", "albums": ["The Album", "Born Pink"] },
+    { "name": "Blackpink", "entity": "blackpink", "albums": ["The Album"] },
+
+    { "name": "싸이", "entity": "psy", "albums": ["Psy 6甲 Part 1", "Chiljip Psy-da"] },
+    { "name": "PSY", "entity": "psy", "albums": ["Psy 6甲 Part 1", "Chiljip Psy-da"] },
+
+    { "name": "AC/DC", "entity": "ac-dc", "albums": ["Back in Black", "Highway to Hell"] },
+    { "name": "ACDC", "entity": "ac-dc", "albums": ["Back in Black", "Highway to Hell"] },
+
+    { "name": "Guns N' Roses", "entity": "guns-n-roses", "albums": ["Appetite for Destruction", "Use Your Illusion I"] },
+    { "name": "Guns N Roses", "entity": "guns-n-roses", "albums": ["Appetite for Destruction", "Use Your Illusion I"] },
+    { "name": "Guns and Roses", "entity": "guns-n-roses", "albums": ["Appetite for Destruction"] },
+
+    { "name": "Linkin Park", "entity": "linkin-park", "albums": ["Hybrid Theory", "Meteora", "Minutes to Midnight"] },
+    { "name": "LINKIN PARK", "entity": "linkin-park", "albums": ["Hybrid Theory", "Meteora"] },
+
+    { "name": "陈慧琳", "entity": "kelly-chen", "albums": ["风花雪", "爱我不爱"] },
+    { "name": "陈慧娴", "entity": "priscilla-chan", "albums": ["千千阕歌", "永远是你的朋友"] },
+    { "name": "王霏霏", "entity": "fei-wang", "albums": ["Fantasy", "Hello"] },
+    { "name": "张韶涵", "entity": "angela-zhang", "albums": ["欧若拉", "隐形的翅膀", "潘朵拉"] },
+    { "name": "张靓颖", "entity": "jane-zhang", "albums": ["The One", "改变", "我相信"] },
+    { "name": "林忆莲", "entity": "sandy-lam", "albums": ["爱上一个不回家的人", "呼吸", "伤痕"] },
+    { "name": "林志炫", "entity": "terry-lin", "albums": ["散了吧", "蒙娜丽莎的眼泪", "单身情歌"] },
+    { "name": "李宗盛", "entity": "jonathan-lee", "albums": ["生命中的精灵", "理性与感性音乐会"] },
+    { "name": "李克勤", "entity": "hacken-lee", "albums": ["红日", "月半小夜曲", "演奏厅"] },
+    { "name": "杨千嬅", "entity": "miriam-yeung", "albums": ["Miriam", "电光幻影", "Single"] },
+    { "name": "杨丞琳", "entity": "rainie-yang", "albums": ["暧昧", "遇上爱", "仰望"] },
+    { "name": "梁咏琪", "entity": "gigi-leung", "albums": ["短发", "新鲜", "胆小鬼"] },
+    { "name": "容祖儿", "entity": "joey-yung", "albums": ["我的骄傲", "全身暑假", "隆重登场"] },
+    { "name": "容中尔甲", "entity": "rongzhong-erjia", "albums": ["高原红", "九寨沟之歌"] },
+    { "name": "谢霆锋", "entity": "nicholas-tse", "albums": ["谢谢你的爱1999", "玉蝴蝶", "活着VIVA"] },
+    { "name": "谢安琪", "entity": "kay-tse", "albums": ["Kay One", "Binary", "Slowness"] },
+    { "name": "陶晶莹", "entity": "matilda-tao", "albums": ["漂亮", "青春", "走路去纽约"] },
+    { "name": "许嵩", "entity": "vae-xu", "albums": ["自定义", "寻雾启示", "苏格拉没有底"] },
+    { "name": "许巍", "entity": "xu-wei", "albums": ["在别处", "时光·漫步", "每一刻都是崭新的"] },
+    { "name": "汪峰", "entity": "wang-feng", "albums": ["勇敢的心", "信仰在空中飘扬", "生来傍徨"] },
+    { "name": "汪苏泷", "entity": "silence-wang", "albums": ["万有引力", "传世乐章", "莱芙"] },
+    { "name": "周传雄", "entity": "steve-chou", "albums": ["Transfer", "Dubbing", "男人海洋"] },
+    { "name": "周华健", "entity": "emil-chau", "albums": ["花心", "朋友", "让我欢喜让我忧"] },
+    { "name": "周深", "entity": "charlie-zhou", "albums": ["深的深", "反深代词"] },
+    { "name": "黄贯中", "entity": "paul-wong", "albums": ["Yellow Paul Wong", "Play It Loud"] },
+    { "name": "黄家驹", "entity": "koma-wong", "albums": ["遥望黄家驹不死音乐精神"] },
+    { "name": "张国荣", "entity": "leslie-cheung", "albums": ["风继续吹", "Leslie", "红"] },
+    { "name": "孙楠", "entity": "nan-sun", "albums": ["南极光", "缘份的天空", "燃烧"] },
+    { "name": "蔡健雅", "entity": "tanya-chua", "albums": ["陌生人", "Goodbye & Hello", "若你碰到他"] },
+    { "name": "田馥甄", "entity": "hebe-tien", "albums": ["To Hebe", "My Love", "渺小"] },
+    { "name": "田震", "entity": "zhen-tian", "albums": ["野花", "震撼", "干杯朋友"] },
+    { "name": "刘若英", "entity": "rene-liu", "albums": ["很爱很爱你", "年华", "我等你"] },
+    { "name": "胡彦斌", "entity": "tiger-hu", "albums": ["文武双全", "音乐混合体", "Music 混合体"] },
+    { "name": "胡夏", "entity": "fox-hu", "albums": ["胡 爱夏", "燃点", "傻瓜探戈"] },
+    { "name": "陈小春", "entity": "jordan-chan", "albums": ["大件事", "算你狠", "抱一抱"] },
+    { "name": "薛之谦", "entity": "joker-xue", "albums": ["几个你", "意外", "绅士"] },
+    { "name": "薛凯琪", "entity": "fiona-sit", "albums": ["'F' Debut", "Electric Angel", "August Girl"] },
+    { "name": "萧敬腾", "entity": "jam-hsiao", "albums": ["萧敬腾同名专辑", "王妃", "狂想曲"] },
+    { "name": "萧亚轩", "entity": "elva-hsiao", "albums": ["爱的主打歌·吻", "红蔷薇", "1087"] },
+    { "name": "韩红", "entity": "han-hong", "albums": ["雪域光芒", "醒了", "红歌"] },
+    { "name": "韩磊", "entity": "han-lei", "albums": ["帝王之声", "珍藏韩磊"] },
+    { "name": "李健", "entity": "li-jian", "albums": ["似水流年", "音乐傲骨", "依然"] },
+    { "name": "李荣浩", "entity": "li-ronghao", "albums": ["模特", "李荣浩", "有理想"] },
+    { "name": "张信哲", "entity": "jeff-chang", "albums": ["爱如潮水", "宽容", "挚爱"] },
+    { "name": "张宇", "entity": "phil-chang", "albums": ["用心良苦", "一言难尽", "月亮·太阳"] },
+
+    { "name": "Beyond", "entity": "beyond", "albums": ["秘密警察", "真的见证", "犹豫"] },
+    { "name": "Beyoncé", "entity": "beyonce", "albums": ["Dangerously in Love", "B'Day", "Lemonade"] },
+    { "name": "Madonna", "entity": "madonna", "albums": ["Like a Virgin", "True Blue", "Ray of Light"] },
+    { "name": "Maroon 5", "entity": "maroon-5", "albums": ["Songs About Jane", "It Won't Be Soon Before Long", "Overexposed"] },
+    { "name": "Queen", "entity": "queen", "albums": ["A Night at the Opera", "News of the World", "The Game"] },
+    { "name": "Queens of the Stone Age", "entity": "queens-of-the-stone-age", "albums": ["Songs for the Deaf", "Rated R", "...Like Clockwork"] },
+    { "name": "Nirvana", "entity": "nirvana", "albums": ["Nevermind", "In Utero", "Bleach"] },
+    { "name": "Nightwish", "entity": "nightwish", "albums": ["Oceanborn", "Wishmaster", "Once"] },
+    { "name": "Oasis", "entity": "oasis", "albums": ["Definitely Maybe", "(What's the Story) Morning Glory?"] },
+    { "name": "OneRepublic", "entity": "onerepublic", "albums": ["Dreaming Out Loud", "Waking Up", "Native"] },
+
+    { "name": "阿信", "entity": "ashin", "albums": ["Happy.BIRTH.day 故事·诗·首部·音乐书"] },
+    { "name": "吴青峰", "entity": "wu-qingfeng", "albums": ["太空人", "马拉美的星期二"] },
+    { "name": "Coldplay", "entity": "coldplay", "albums": ["Parachutes", "A Rush of Blood to the Head", "X&Y"] },
+    { "name": "Chris Martin", "entity": "chris-martin", "albums": ["Live 8"] },
+    { "name": "Chester Bennington", "entity": "chester-bennington", "albums": ["Out of Ashes"] },
+    { "name": "Freddie Mercury", "entity": "freddie-mercury", "albums": ["Mr. Bad Guy", "Barcelona"] },
+    { "name": "The Beatles", "entity": "the-beatles", "albums": ["Abbey Road", "Revolver", "Sgt. Pepper's Lonely Hearts Club Band"] },
+    { "name": "John Lennon", "entity": "john-lennon", "albums": ["Imagine", "Plastic Ono Band", "Mind Games"] },
+    { "name": "Paul McCartney", "entity": "paul-mccartney", "albums": ["Band on the Run", "Ram", "McCartney"] },
+
+    { "name": "Taylor Swift", "entity": "taylor-swift", "albums": ["1989", "Fearless", "Red"] },
+    { "name": "Ed Sheeran", "entity": "ed-sheeran", "albums": ["+", "x", "÷"] },
+    { "name": "Michael Jackson", "entity": "michael-jackson", "albums": ["Thriller", "Bad", "Off the Wall"] },
+    { "name": "Ludwig van Beethoven", "entity": "beethoven", "albums": ["Symphony No. 5", "Symphony No. 9"] },
+    { "name": "Wolfgang Amadeus Mozart", "entity": "mozart", "albums": ["Requiem", "The Magic Flute"] },
+    { "name": "Johann Sebastian Bach", "entity": "bach", "albums": ["Goldberg Variations", "Brandenburg Concertos"] },
+    { "name": "Hans Zimmer", "entity": "hans-zimmer", "albums": ["Inception", "Interstellar", "Gladiator"] },
+    { "name": "Ennio Morricone", "entity": "ennio-morricone", "albums": ["The Mission", "Cinema Paradiso"] },
+    { "name": "Billie Eilish", "entity": "billie-eilish", "albums": ["When We All Fall Asleep, Where Do We Go?", "Happier Than Ever"] },
+    { "name": "Daft Punk", "entity": "daft-punk", "albums": ["Discovery", "Random Access Memories", "Homework"] }
+  ]
+}

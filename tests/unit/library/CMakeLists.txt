@@ -146,6 +146,24 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME library_CorrectionStore
+    SOURCES
+        tst_CorrectionStore.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
+    NAME library_ArtistAliasCorrections
+    SOURCES
+        tst_ArtistAliasCorrections.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
     NAME library_OverrideStore
     SOURCES
         tst_OverrideStore.cpp
@@ -184,6 +202,15 @@ linernotes_add_test(
         tst_DatabaseBackup.cpp
     LIBS
         Linernotes::library
+)
+
+linernotes_add_test(
+    NAME library_ArtistDisplayName
+    SOURCES
+        tst_ArtistDisplayName.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
 )
 
 

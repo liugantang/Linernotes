@@ -3,5 +3,6 @@
 
 add_subdirectory(aicli)
 add_subdirectory(depcheck)
+add_subdirectory(eval)
 add_subdirectory(playcli)
 add_subdirectory(scan)

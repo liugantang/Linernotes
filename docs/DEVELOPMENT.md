@@ -163,7 +163,7 @@ app / qml  →  features/*（butler, nlq, dj, guide, archive）  →  ai  →  a
 - QML 只负责展示与交互，业务逻辑放在 C++；QML 中的 JavaScript 仅限简单的展示逻辑。
 - 组件拆分：单个 QML 文件不超过约 300 行，超过就拆组件。
 - 颜色、字号、间距统一来自主题单例（`Theme.qml`），不写死数值。
-- 所有用户可见文字使用 `qsTr()`。
+- 所有用户可见文字使用 `qsTr()`（C++ 中用 `tr()` 或 `QCoreApplication::translate()`）。**源字符串一律写英文**，中文翻译写在 `i18n/linernotes_zh_CN.ts`（由 `update_translations` 目标提取，见 `i18n/README.md`）；含可翻译字符串的 C++ 库目标要加入 `app/CMakeLists.txt` 中 `qt_add_translations` 的 `SOURCE_TARGETS`。
 
 ---
 

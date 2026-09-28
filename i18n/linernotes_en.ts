@@ -26,7 +26,7 @@
 <context>
     <name>ArtistDetail</name>
     <message numerus="yes">
-        <location filename="../qml/ArtistDetail.qml" line="112"/>
+        <location filename="../qml/ArtistDetail.qml" line="128"/>
         <source>%n album(s)</source>
         <translation>
             <numerusform>%n album</numerusform>
@@ -34,7 +34,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/ArtistDetail.qml" line="112"/>
+        <location filename="../qml/ArtistDetail.qml" line="128"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n track</numerusform>
@@ -66,6 +66,63 @@
         <translation>
             <numerusform>%n track</numerusform>
             <numerusform>%n tracks</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>CleanupHealthPanel</name>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="160"/>
+        <source>%n folder(s) with garbled tags</source>
+        <translation>
+            <numerusform>%n folder with garbled tags</numerusform>
+            <numerusform>%n folders with garbled tags</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="178"/>
+        <source>%n multi-artist value(s)</source>
+        <translation>
+            <numerusform>%n multi-artist value</numerusform>
+            <numerusform>%n multi-artist values</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="200"/>
+        <source>%n possible duplicate artist(s)</source>
+        <translation>
+            <numerusform>%n possible duplicate artist</numerusform>
+            <numerusform>%n possible duplicate artists</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="226"/>
+        <source>Missing album metadata: %n track(s) (online lookup comes later)</source>
+        <translation>
+            <numerusform>Missing album metadata: %n track (online lookup comes later)</numerusform>
+            <numerusform>Missing album metadata: %n tracks (online lookup comes later)</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>CorrectionBatchList</name>
+    <message numerus="yes">
+        <location filename="../qml/CorrectionBatchList.qml" line="54"/>
+        <source>%n batch(es)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>CorrectionFilterBar</name>
+    <message numerus="yes">
+        <location filename="../qml/CorrectionFilterBar.qml" line="126"/>
+        <source>%n item(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
 </context>

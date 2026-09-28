@@ -11,86 +11,15 @@
 #include <QVariant>
 
 #include <library/Database.h>
-#include <library/EntityLinker.h>
 #include <library/EnumNames.h>
 #include <library/Errors.h>
-#include <library/SearchIndex.h>
+#include <library/MetadataRefresh.h>
 
 #include <utility>
 
 namespace linernotes::library {
 
 namespace {
-
-core::Result<void> execWrite(QSqlQuery &q, const QString &detail = QString())
-{
-    if (!q.exec()) {
-        return core::Error {
-            .code = QString(errc::kDbQuery),
-            .message = q.lastError().text(),
-            .detail = detail,
-        };
-    }
-    return { };
-}
-
-template <typename F>
-auto inTransaction(Database &db, F &&body) -> decltype(body(std::declval<const QSqlDatabase &>()))
-{
-    auto connRes = db.connection();
-    if (!connRes.ok()) {
-        return connRes.error();
-    }
-    const auto &conn = connRes.value();
-    Transaction tx(conn);
-    if (!tx.isActive()) {
-        return core::Error {
-            .code = QString(errc::kDbTransaction),
-            .message = QStringLiteral("Failed to begin transaction"),
-            .detail = QString(),
-        };
-    }
-
-    auto res = std::forward<F>(body)(conn);
-    if (!res.ok()) {
-        return res;
-    }
-
-    if (auto commitRes = tx.commit(); !commitRes.ok()) {
-        return commitRes.error();
-    }
-
-    return res;
-}
-
-QString fieldToColumn(TagField field)
-{
-    switch (field) {
-    case TagField::Title:
-        return QStringLiteral("title");
-    case TagField::Artist:
-        return QStringLiteral("artist");
-    case TagField::Album:
-        return QStringLiteral("album");
-    case TagField::AlbumArtist:
-        return QStringLiteral("album_artist");
-    case TagField::Genre:
-        return QStringLiteral("genre");
-    case TagField::Composer:
-        return QStringLiteral("composer");
-    case TagField::Year:
-        return QStringLiteral("year");
-    case TagField::TrackNumber:
-        return QStringLiteral("track_number");
-    case TagField::TrackTotal:
-        return QStringLiteral("track_total");
-    case TagField::DiscNumber:
-        return QStringLiteral("disc_number");
-    case TagField::DiscTotal:
-        return QStringLiteral("disc_total");
-    }
-    return { };
-}
 
 core::Result<void> validateEdits(const QList<TagEdit> &edits)
 {
@@ -147,14 +76,14 @@ core::Result<void> writeOverrides(
 
     for (const qint64 trackId : trackIds) {
         for (const auto &edit : edits) {
-            const QString col = fieldToColumn(edit.field);
+            const QString col = tagFieldToColumn(edit.field);
             if (col.isEmpty()) {
                 continue;
             }
             if (!edit.value.has_value()) {
                 deleteStmt.bindValue(0, trackId);
                 deleteStmt.bindValue(1, col);
-                if (auto res = execWrite(deleteStmt, QString::number(trackId)); !res.ok()) {
+                if (auto res = detail::execWrite(deleteStmt, QString::number(trackId)); !res.ok()) {
                     return res;
                 }
             } else {
@@ -164,33 +93,12 @@ core::Result<void> writeOverrides(
                 upsertStmt.bindValue(2, trimmed);
                 upsertStmt.bindValue(3, now);
                 upsertStmt.bindValue(4, now);
-                if (auto res = execWrite(upsertStmt, QString::number(trackId)); !res.ok()) {
+                if (auto res = detail::execWrite(upsertStmt, QString::number(trackId)); !res.ok()) {
                     return res;
                 }
             }
         }
     }
-    return { };
-}
-
-core::Result<void> relinkTracks(const QSqlDatabase &conn, const QList<qint64> &trackIds)
-{
-    EntityLinker linker(conn);
-    for (const qint64 trackId : trackIds) {
-        if (auto res = linker.linkTrack(trackId); !res.ok()) {
-            return res;
-        }
-    }
-
-    if (auto res = linker.removeOrphans(); !res.ok()) {
-        return res.error();
-    }
-
-    SearchIndex searchIndex(conn);
-    if (auto res = searchIndex.flushDirty(); !res.ok()) {
-        return res.error();
-    }
-
     return { };
 }
 
@@ -216,7 +124,7 @@ core::Result<QHash<TagField, QString>> OverrideStore::effectiveValues(qint64 tra
     for (int i = 0; i < meta.keyCount(); ++i) {
         const auto field = static_cast<TagField>(meta.value(i));
         fields.append(field);
-        columns.append(fieldToColumn(field));
+        columns.append(tagFieldToColumn(field));
     }
 
     QSqlQuery q(conn);
@@ -262,8 +170,7 @@ core::Result<QSet<TagField>> OverrideStore::overriddenFields(qint64 trackId) con
     QSet<TagField> fields;
     while (q.next()) {
         const QString fieldStr = q.value(0).toString();
-        if (const auto field = detail::enumFromName<TagField>(fieldStr, fieldToColumn);
-            field.has_value()) {
+        if (const auto field = tagFieldFromColumn(fieldStr); field.has_value()) {
             fields.insert(*field);
         }
     }
@@ -280,11 +187,11 @@ core::Result<void> OverrideStore::apply(const QList<qint64> &trackIds, const QLi
         return valRes;
     }
 
-    return inTransaction(m_db, [&](const QSqlDatabase &conn) -> core::Result<void> {
+    return detail::inTransaction(m_db, [&](const QSqlDatabase &conn) -> core::Result<void> {
         if (auto res = writeOverrides(conn, trackIds, edits); !res.ok()) {
             return res;
         }
-        return relinkTracks(conn, trackIds);
+        return detail::relinkTracks(conn, trackIds);
     });
 }
 

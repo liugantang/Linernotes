@@ -45,5 +45,14 @@ inline const core::SettingKey<bool> kNotificationsTrackChange { u"notifications/
 inline const core::SettingKey<bool> kAppFirstRunCompleted { u"app/firstRunCompleted", false };
 // NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 inline const core::SettingKey<int> kLibraryBackupKeep { u"library/backupKeep", 7 };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization) - QString constructor is non-noexcept in
+// Qt6
+inline const core::SettingKey<QString> kLibraryArtistNamePreference {
+    u"library/artistNamePreference", u"original"_s
+};
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<double> kButlerAutoAccept { u"butler/autoAccept", 0.0 };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<bool> kButlerUseMusicBrainz { u"butler/useMusicBrainz", true };
 
 } // namespace linernotes::ui

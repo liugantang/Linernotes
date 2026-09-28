@@ -9,6 +9,7 @@
 
 #include <ai/AiEnums.h>
 #include <core/PlaySource.h>
+#include <library/ArtistNamePreference.h>
 #include <library/LibraryEnums.h>
 #include <library/SmartRule.h>
 #include <player/PlayMode.h>
@@ -18,6 +19,10 @@
 #include <ui/AlbumGridModel.h>
 #include <ui/AppContext.h>
 #include <ui/ArtistListModel.h>
+#include <ui/CleanupController.h>
+#include <ui/CorrectionBatchModel.h>
+#include <ui/CorrectionListModel.h>
+#include <ui/CorrectionReviewController.h>
 #include <ui/LibraryActions.h>
 #include <ui/LibraryRootsModel.h>
 #include <ui/LlmDebugController.h>
@@ -175,6 +180,12 @@ struct LibraryForeign {
     QML_NAMED_ELEMENT(Library)
 };
 
+struct ArtistNamesForeign {
+    Q_GADGET
+    QML_FOREIGN_NAMESPACE(linernotes::library::artist_names)
+    QML_NAMED_ELEMENT(ArtistNames)
+};
+
 struct SmartConditionForeign {
     Q_GADGET
     QML_FOREIGN(linernotes::library::SmartCondition)
@@ -228,4 +239,32 @@ struct LlmDebugModelForeign {
     QML_FOREIGN(linernotes::ui::LlmDebugModel)
     QML_NAMED_ELEMENT(LlmDebugModel)
     QML_UNCREATABLE("LlmDebugModel is managed by LlmDebugController")
+};
+
+struct CorrectionReviewControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::CorrectionReviewController)
+    QML_NAMED_ELEMENT(CorrectionReviewController)
+    QML_UNCREATABLE("CorrectionReviewController is managed by AppContext")
+};
+
+struct CorrectionBatchModelForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::CorrectionBatchModel)
+    QML_NAMED_ELEMENT(CorrectionBatchModel)
+    QML_UNCREATABLE("CorrectionBatchModel is managed by CorrectionReviewController")
+};
+
+struct CorrectionListModelForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::CorrectionListModel)
+    QML_NAMED_ELEMENT(CorrectionListModel)
+    QML_UNCREATABLE("CorrectionListModel is managed by CorrectionReviewController")
+};
+
+struct CleanupControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::CleanupController)
+    QML_NAMED_ELEMENT(CleanupController)
+    QML_UNCREATABLE("CleanupController is managed by AppContext")
 };

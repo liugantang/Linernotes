@@ -4,14 +4,12 @@
 <context>
     <name>AiPage</name>
     <message>
-        <location filename="../qml/pages/AiPage.qml" line="17"/>
         <source>AI</source>
-        <translation>AI</translation>
+        <translation type="vanished">AI</translation>
     </message>
     <message>
-        <location filename="../qml/pages/AiPage.qml" line="25"/>
         <source>Smart assistant and music generation (Coming soon).</source>
-        <translation>智能助手与音乐生成（敬请期待）。</translation>
+        <translation type="vanished">智能助手与音乐生成（敬请期待）。</translation>
     </message>
 </context>
 <context>
@@ -288,41 +286,41 @@
 <context>
     <name>ArtistDetail</name>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="101"/>
+        <location filename="../qml/ArtistDetail.qml" line="108"/>
         <source>Unknown Artist</source>
         <translation>未知艺人</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/ArtistDetail.qml" line="112"/>
+        <location filename="../qml/ArtistDetail.qml" line="128"/>
         <source>%n album(s)</source>
         <translation>
             <numerusform>%n 张专辑</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/ArtistDetail.qml" line="112"/>
+        <location filename="../qml/ArtistDetail.qml" line="128"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n 首</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="122"/>
+        <location filename="../qml/ArtistDetail.qml" line="138"/>
         <source>Play All</source>
         <translation>播放全部</translation>
     </message>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="145"/>
+        <location filename="../qml/ArtistDetail.qml" line="161"/>
         <source>Albums (%1)</source>
         <translation>专辑 (%1)</translation>
     </message>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="149"/>
+        <location filename="../qml/ArtistDetail.qml" line="165"/>
         <source>All Tracks (%1)</source>
         <translation>全部歌曲 (%1)</translation>
     </message>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="245"/>
+        <location filename="../qml/ArtistDetail.qml" line="261"/>
         <source>Unknown Title</source>
         <translation>未知标题</translation>
     </message>
@@ -379,6 +377,397 @@
         <location filename="../qml/pages/ArtistsPage.qml" line="246"/>
         <source>Select an artist to view details</source>
         <translation>选择艺人以查看详情</translation>
+    </message>
+</context>
+<context>
+    <name>CleanupHealthPanel</name>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="40"/>
+        <source>Paused</source>
+        <translation>已暂停</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="41"/>
+        <source>Fixing garbled tags...</source>
+        <translation>正在修复乱码标签…</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="42"/>
+        <source>Splitting multi-artist credits...</source>
+        <translation>正在拆分多艺人署名…</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="43"/>
+        <source>Merging duplicate artists...</source>
+        <translation>正在合并重复艺人…</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="44"/>
+        <source>Cleaning up library...</source>
+        <translation>正在整理曲库…</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="92"/>
+        <source>Library Health &amp; Cleanup</source>
+        <translation>曲库健康与整理</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="99"/>
+        <source>Checking...</source>
+        <translation>正在检查…</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="108"/>
+        <source>Check again</source>
+        <translation>重新检查</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="115"/>
+        <source>Show</source>
+        <translation>展开</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="115"/>
+        <source>Hide</source>
+        <translation>收起</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="141"/>
+        <source>No AI service is set up for cleanup. Configure one in Settings to run these tasks.</source>
+        <translation>尚未为曲库整理配置 AI 服务。请先在设置中配置，才能运行这些任务。</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="156"/>
+        <source>Fix garbled tags</source>
+        <translation>修复乱码标签</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="160"/>
+        <source>%n folder(s) with garbled tags</source>
+        <translation>
+            <numerusform>%n 个文件夹存在乱码标签</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="161"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="179"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="201"/>
+        <source> · ≈ %1 tokens</source>
+        <translation> · 约 %1 token</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="174"/>
+        <source>Split multi-artist credits</source>
+        <translation>拆分多艺人署名</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="178"/>
+        <source>%n multi-artist value(s)</source>
+        <translation>
+            <numerusform>%n 个多艺人字段</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="196"/>
+        <source>Merge duplicate artists</source>
+        <translation>合并重复艺人</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="200"/>
+        <source>%n possible duplicate artist(s)</source>
+        <translation>
+            <numerusform>%n 组疑似重复艺人</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="213"/>
+        <source>Look up MusicBrainz for CJK names</source>
+        <translation>为中日韩艺人名查询 MusicBrainz</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="226"/>
+        <source>Missing album metadata: %n track(s) (online lookup comes later)</source>
+        <translation>
+            <numerusform>缺少专辑信息：%n 首（在线补全将在后续版本提供）</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="248"/>
+        <source>Auto-accept:</source>
+        <translation>自动接受：</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="255"/>
+        <source>Off</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="255"/>
+        <source>≥ 0.95</source>
+        <translation>≥ 0.95</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="255"/>
+        <source>≥ 0.90</source>
+        <translation>≥ 0.90</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="270"/>
+        <source>Run</source>
+        <translation>运行</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="305"/>
+        <source>%1 / %2</source>
+        <translation>%1 / %2</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="311"/>
+        <source>(%1 failed)</source>
+        <translation>（%1 项失败）</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="318"/>
+        <source>Resume</source>
+        <translation>继续</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="318"/>
+        <source>Pause</source>
+        <translation>暂停</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="323"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+</context>
+<context>
+    <name>CleanupPage</name>
+    <message>
+        <location filename="../qml/pages/CleanupPage.qml" line="103"/>
+        <source>No Cleanup Batches</source>
+        <translation>暂无整理批次</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/CleanupPage.qml" line="111"/>
+        <source>No cleanup batches yet. Run a library cleanup to see proposed fixes here.</source>
+        <translation>还没有整理批次。运行一次曲库整理后，建议的修正会显示在这里。</translation>
+    </message>
+</context>
+<context>
+    <name>CorrectionActionBar</name>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="58"/>
+        <source>Accept Selected</source>
+        <translation>接受所选</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="69"/>
+        <source>Reject Selected</source>
+        <translation>拒绝所选</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="79"/>
+        <source>Accept All Pending (≥ %1%)</source>
+        <translation>接受全部待审（≥ %1%）</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="89"/>
+        <location filename="../qml/CorrectionActionBar.qml" line="123"/>
+        <source>Revert Batch</source>
+        <translation>撤销批次</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="131"/>
+        <source>Are you sure you want to revert this batch? All accepted changes will be reverted, and pending proposals will be rejected.</source>
+        <translation>确定要撤销此批次吗？已接受的修改将被还原，待审的建议将被拒绝。</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="148"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="153"/>
+        <source>Revert</source>
+        <translation>撤销</translation>
+    </message>
+</context>
+<context>
+    <name>CorrectionBatchList</name>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="23"/>
+        <source>Mojibake Fix</source>
+        <translation>乱码修复</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="24"/>
+        <source>Split Artists</source>
+        <translation>拆分艺人</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="25"/>
+        <source>Merge Artists</source>
+        <translation>合并艺人</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="26"/>
+        <source>Manual Fix</source>
+        <translation>手动修正</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="46"/>
+        <source>Batches</source>
+        <translation>批次</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CorrectionBatchList.qml" line="54"/>
+        <source>%n batch(es)</source>
+        <translation>
+            <numerusform>%n 个批次</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="174"/>
+        <source>Reverted</source>
+        <translation>已撤销</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="182"/>
+        <source>%1 pending · %2 accepted</source>
+        <translation>%1 待审 · %2 已接受</translation>
+    </message>
+</context>
+<context>
+    <name>CorrectionFilterBar</name>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="27"/>
+        <source>Status:</source>
+        <translation>状态：</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="36"/>
+        <source>All</source>
+        <translation>所有</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="37"/>
+        <source>Pending</source>
+        <translation>待审</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="38"/>
+        <source>Accepted</source>
+        <translation>已接受</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="39"/>
+        <source>Rejected</source>
+        <translation>已拒绝</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="40"/>
+        <source>Reverted</source>
+        <translation>已撤销</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="58"/>
+        <source>Min: %1%</source>
+        <translation>最低：%1%</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="59"/>
+        <source>Min Confidence: %1%</source>
+        <translation>最低置信度：%1%</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionFilterBar.qml" line="112"/>
+        <source>Reset</source>
+        <translation>重置</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CorrectionFilterBar.qml" line="126"/>
+        <source>%n item(s)</source>
+        <translation>
+            <numerusform>%n 项</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>CorrectionList</name>
+    <message>
+        <location filename="../qml/CorrectionList.qml" line="54"/>
+        <source>Correction / Field / Change</source>
+        <translation>修正 / 字段 / 变更</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionList.qml" line="67"/>
+        <source>Confidence</source>
+        <translation>置信度</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionList.qml" line="77"/>
+        <source>Source</source>
+        <translation>来源</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionList.qml" line="88"/>
+        <source>Status</source>
+        <translation>状态</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionList.qml" line="117"/>
+        <source>No corrections match the current filter.</source>
+        <translation>没有符合当前筛选条件的修正。</translation>
+    </message>
+</context>
+<context>
+    <name>CorrectionRowItem</name>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="22"/>
+        <source>Rule</source>
+        <translation>规则</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="23"/>
+        <source>LLM</source>
+        <translation>LLM</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="25"/>
+        <source>User</source>
+        <translation>用户</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="28"/>
+        <source>Pending</source>
+        <translation>待审</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="29"/>
+        <source>Accepted</source>
+        <translation>已接受</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="30"/>
+        <source>Rejected</source>
+        <translation>已拒绝</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="31"/>
+        <source>Reverted</source>
+        <translation>已撤销</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="188"/>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionRowItem.qml" line="194"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
     </message>
 </context>
 <context>
@@ -637,13 +1026,16 @@
     </message>
     <message>
         <location filename="../qml/NavigationSidebar.qml" line="33"/>
-        <source>AI</source>
-        <translation>AI</translation>
+        <source>Library Cleanup</source>
+        <translation>曲库整理</translation>
     </message>
     <message>
-        <location filename="../qml/NavigationSidebar.qml" line="33"/>
+        <source>AI</source>
+        <translation type="vanished">AI</translation>
+    </message>
+    <message>
         <source>Coming soon</source>
-        <translation>敬请期待</translation>
+        <translation type="vanished">敬请期待</translation>
     </message>
     <message>
         <location filename="../qml/NavigationSidebar.qml" line="198"/>
@@ -1491,64 +1883,89 @@
 <context>
     <name>SettingsLibrarySection</name>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="21"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="41"/>
         <source>Select Music Folder</source>
         <translation>选择音乐文件夹</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="27"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="47"/>
         <source>Failed to add folder. The folder may not exist or is already in the library.</source>
         <translation>添加文件夹失败。该文件夹可能不存在或已存在于曲库中。</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="60"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="80"/>
         <source>Remove Music Folder</source>
         <translation>移除音乐文件夹</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="68"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="88"/>
         <source>Remove this folder from the library? Tracks in it will be removed from the library (files on disk are not touched).</source>
         <translation>要从曲库中移除此文件夹吗？其中的歌曲将从曲库中移除（磁盘上的文件不会受影响）。</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="85"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="105"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="91"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="111"/>
         <source>Remove</source>
         <translation>移除</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="105"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="125"/>
         <source>Library</source>
         <translation>曲库</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="160"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="180"/>
         <source>Remove folder from library</source>
         <translation>从曲库中移除文件夹</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="173"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="193"/>
         <source>No music folders yet. Add a folder to build your library.</source>
         <translation>暂无音乐文件夹。添加文件夹以构建曲库。</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="197"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="217"/>
         <source>Add Folder…</source>
         <translation>添加文件夹…</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="206"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="226"/>
         <source>Scanning…</source>
         <translation>正在扫描…</translation>
     </message>
     <message>
-        <location filename="../qml/SettingsLibrarySection.qml" line="206"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="226"/>
         <source>Rescan Now</source>
         <translation>立即重新扫描</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="247"/>
+        <source>Artist name display</source>
+        <translation>艺人名显示</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="259"/>
+        <source>Original</source>
+        <translation>原名</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="260"/>
+        <source>Simplified Chinese</source>
+        <translation>简体中文</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="261"/>
+        <source>English</source>
+        <translation>英文</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="276"/>
+        <source>Uses names found by the library butler; falls back to the original name.</source>
+        <translation>使用曲库管家找到的对应名称；没有时显示原名。</translation>
     </message>
 </context>
 <context>
@@ -2171,6 +2588,107 @@
     </message>
 </context>
 <context>
+    <name>butler</name>
+    <message>
+        <location filename="../src/butler/ArtistSplit.cpp" line="245"/>
+        <source>All parts are known artists in the library</source>
+        <translation>拆分出的各部分都是曲库中已有的艺人</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistSplit.cpp" line="260"/>
+        <location filename="../src/butler/ArtistSplit.cpp" line="394"/>
+        <source>Explicit separator (feat., ×, 、)</source>
+        <translation>含明确的分隔符（feat.、×、、）</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistSplit.cpp" line="269"/>
+        <location filename="../src/butler/ArtistSplit.cpp" line="383"/>
+        <source>Ambiguous separator; needs AI review</source>
+        <translation>分隔符有歧义，需由 AI 确认</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistSplit.cpp" line="281"/>
+        <location filename="../src/butler/ArtistSplit.cpp" line="291"/>
+        <location filename="../src/butler/ArtistSplit.cpp" line="374"/>
+        <location filename="../src/butler/ArtistSplit.cpp" line="404"/>
+        <location filename="../src/butler/ArtistSplit.cpp" line="431"/>
+        <source>No split needed</source>
+        <translation>无需拆分</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistSplit.cpp" line="301"/>
+        <source>Contains a numeric part; not split</source>
+        <translation>含纯数字部分，不拆分</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistSplit.cpp" line="311"/>
+        <source>Contains a CV credit; needs AI review</source>
+        <translation>含 CV 署名，需由 AI 确认</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="34"/>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="44"/>
+        <source>Re-decoded as GBK (decided across the album)</source>
+        <translation>按 GBK 重新解码（同专辑共同判断）</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="36"/>
+        <source>Re-decoded as Big5 (decided across the album)</source>
+        <translation>按 Big5 重新解码（同专辑共同判断）</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="38"/>
+        <source>Re-decoded as Shift-JIS (decided across the album)</source>
+        <translation>按 Shift-JIS 重新解码（同专辑共同判断）</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="40"/>
+        <source>Re-decoded as EUC-KR (decided across the album)</source>
+        <translation>按 EUC-KR 重新解码（同专辑共同判断）</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="42"/>
+        <source>Re-decoded as UTF-8 (decided across the album)</source>
+        <translation>按 UTF-8 重新解码（同专辑共同判断）</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="66"/>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="79"/>
+        <source>Guessed from file name</source>
+        <translation>从文件名推断</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/MojibakeAnalysis.cpp" line="94"/>
+        <source>Guessed from folder name</source>
+        <translation>从文件夹名推断</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/MojibakeLlm.cpp" line="187"/>
+        <source>Not confirmed by AI</source>
+        <translation>未经 AI 确认</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistMerge.cpp" line="118"/>
+        <source>Matched via MusicBrainz</source>
+        <translation>经 MusicBrainz 确认为同一艺人</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistMerge.cpp" line="161"/>
+        <source>MusicBrainz localized alias</source>
+        <translation>MusicBrainz 提供的其他语言名</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistMerge.cpp" line="217"/>
+        <source>Same romanized name (word order or long vowels differ)</source>
+        <translation>罗马字相同（姓名顺序或长音写法不同）</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistMerge.cpp" line="218"/>
+        <source>Same name with different spelling</source>
+        <translation>同名，仅写法不同</translation>
+    </message>
+</context>
+<context>
     <name>linernotes::ui::AiSettingsController</name>
     <message>
         <location filename="../src/ui/AiSettingsController.cpp" line="50"/>
@@ -2261,6 +2779,19 @@
         <location filename="../src/ui/AiSettingsController.cpp" line="255"/>
         <source>Connection failed</source>
         <translation>连接失败</translation>
+    </message>
+</context>
+<context>
+    <name>linernotes::ui::CorrectionListModel</name>
+    <message>
+        <location filename="../src/ui/CorrectionListModel.cpp" line="187"/>
+        <source>Alias (%1)</source>
+        <translation>别名（%1）</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/CorrectionListModel.cpp" line="188"/>
+        <source>Alias</source>
+        <translation>别名</translation>
     </message>
 </context>
 <context>
@@ -2435,67 +2966,67 @@ Sort by track duration</extracomment>
 <context>
     <name>linernotes::ui::TagEditorModel</name>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="26"/>
+        <location filename="../src/ui/Format.h" line="46"/>
         <source>Title</source>
         <extracomment>Tag field name for track title</extracomment>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="29"/>
+        <location filename="../src/ui/Format.h" line="49"/>
         <source>Artist</source>
         <extracomment>Tag field name for track artist</extracomment>
         <translation>艺人</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="32"/>
+        <location filename="../src/ui/Format.h" line="52"/>
         <source>Album</source>
         <extracomment>Tag field name for album name</extracomment>
         <translation>专辑</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="35"/>
+        <location filename="../src/ui/Format.h" line="55"/>
         <source>Album Artist</source>
         <extracomment>Tag field name for album artist</extracomment>
         <translation>专辑艺人</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="38"/>
+        <location filename="../src/ui/Format.h" line="58"/>
         <source>Genre</source>
         <extracomment>Tag field name for music genre</extracomment>
         <translation>流派</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="41"/>
+        <location filename="../src/ui/Format.h" line="61"/>
         <source>Composer</source>
         <extracomment>Tag field name for music composer</extracomment>
         <translation>作曲</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="44"/>
+        <location filename="../src/ui/Format.h" line="64"/>
         <source>Year</source>
         <extracomment>Tag field name for release year</extracomment>
         <translation>年份</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="47"/>
+        <location filename="../src/ui/Format.h" line="67"/>
         <source>Track Number</source>
         <extracomment>Tag field name for track number</extracomment>
         <translation>音轨编号</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="50"/>
+        <location filename="../src/ui/Format.h" line="70"/>
         <source>Track Total</source>
         <extracomment>Tag field name for total track count in album</extracomment>
         <translation>音轨总数</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="53"/>
+        <location filename="../src/ui/Format.h" line="73"/>
         <source>Disc Number</source>
         <extracomment>Tag field name for disc number</extracomment>
         <translation>光盘编号</translation>
     </message>
     <message>
-        <location filename="../src/ui/TagEditorModel.cpp" line="56"/>
+        <location filename="../src/ui/Format.h" line="76"/>
         <source>Disc Total</source>
         <extracomment>Tag field name for total disc count in album</extracomment>
         <translation>光盘总数</translation>
