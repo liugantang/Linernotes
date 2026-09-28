@@ -100,7 +100,7 @@ void TstSchema::migratesFreshDatabaseToLatest()
     QVERIFY(db.open(Migrator()).ok());
     const auto conn = db.connection().value();
 
-    QCOMPARE(Migrator::currentVersion(conn).value(), 11);
+    QCOMPARE(Migrator::currentVersion(conn).value(), 12);
 
     // Verify core tables exist
     QSqlQuery q(conn);

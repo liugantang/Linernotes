@@ -7,6 +7,7 @@
 #include <QString>
 
 #include <core/Result.h>
+#include <library/ArtistAliasCorrections.h>
 #include <library/LibraryEnums.h>
 
 #include <cstdint>
@@ -82,9 +83,14 @@ public:
     core::Result<void> addProposals(qint64 batchId, const QList<CorrectionProposal> &proposals,
         std::optional<double> autoAcceptThreshold = std::nullopt);
 
+    core::Result<void> addArtistAliasProposals(qint64 batchId,
+        const QList<ArtistAliasProposal> &proposals,
+        std::optional<double> autoAcceptThreshold = std::nullopt);
+
     core::Result<QList<CorrectionBatchInfo>> batches() const; // created_at 倒序
     core::Result<QList<CorrectionRow>> corrections(
         qint64 batchId, const CorrectionFilter &filter = { }) const; // 按 id 升序
+    core::Result<QList<ArtistAliasRow>> artistAliasCorrections(qint64 batchId) const; // 按 id 升序
 
     core::Result<void> accept(const QList<qint64> &correctionIds); // 只影响 pending 的
     core::Result<void> reject(const QList<qint64> &correctionIds); // 只影响 pending 的

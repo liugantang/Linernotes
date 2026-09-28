@@ -4,6 +4,8 @@
 file(GLOB MIGRATION_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/migrations/*.sql")
 
 add_library(linernotes_library STATIC
+    ArtistAliasCorrections.cpp
+    ArtistAliasCorrections.h
     CoverStore.cpp
     CoverStore.h
     CorrectionStore.cpp
@@ -69,6 +71,8 @@ add_library(linernotes_library STATIC
     SmartRuleSql.h
     TagReader.cpp
     TagReader.h
+    TrackCorrections.cpp
+    TrackCorrections.h
     TrackIssueStore.cpp
     TrackIssueStore.h
 )

@@ -155,6 +155,15 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME library_ArtistAliasCorrections
+    SOURCES
+        tst_ArtistAliasCorrections.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
     NAME library_OverrideStore
     SOURCES
         tst_OverrideStore.cpp
