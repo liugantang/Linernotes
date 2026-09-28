@@ -38,6 +38,16 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME ui_ErrorText
+    SOURCES
+        tst_ErrorText.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::library
+        Linernotes::core
+)
+
+linernotes_add_test(
     NAME ui_PageCache
     SOURCES
         tst_PageCache.cpp

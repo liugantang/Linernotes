@@ -3083,4 +3083,95 @@ Sort by track duration</extracomment>
         <translation>光盘总数</translation>
     </message>
 </context>
+<context>
+    <name>linernotes::ui::ErrorText</name>
+    <message>
+        <source>The music library was created by a newer version of Linernotes.</source>
+        <translation>曲库由更新版本的 Linernotes 创建。</translation>
+    </message>
+    <message>
+        <source>A database error occurred.</source>
+        <translation>数据库发生错误。</translation>
+    </message>
+    <message>
+        <source>The correction is invalid.</source>
+        <translation>修正无效。</translation>
+    </message>
+    <message>
+        <source>The specified correction was not found.</source>
+        <translation>未找到指定的修正。</translation>
+    </message>
+    <message>
+        <source>Invalid tag modification.</source>
+        <translation>标签修改无效。</translation>
+    </message>
+    <message>
+        <source>Failed to read audio file tags.</source>
+        <translation>读取音频标签失败。</translation>
+    </message>
+    <message>
+        <source>The audio file format or tag format is not supported.</source>
+        <translation>不支持该音频文件或标签格式。</translation>
+    </message>
+    <message>
+        <source>Failed to read file.</source>
+        <translation>读取文件失败。</translation>
+    </message>
+    <message>
+        <source>Invalid music folder.</source>
+        <translation>无效的音乐文件夹。</translation>
+    </message>
+    <message>
+        <source>Music folder overlaps with an existing library root.</source>
+        <translation>音乐文件夹与现有曲库目录重叠。</translation>
+    </message>
+    <message>
+        <source>Failed to decode cover image.</source>
+        <translation>解析封面图片失败。</translation>
+    </message>
+    <message>
+        <source>Invalid playlist.</source>
+        <translation>歌单无效。</translation>
+    </message>
+    <message>
+        <source>Invalid smart playlist rule.</source>
+        <translation>智能歌单规则无效。</translation>
+    </message>
+    <message>
+        <source>Invalid rating value.</source>
+        <translation>评分值无效。</translation>
+    </message>
+    <message>
+        <source>Could not access the system keyring.</source>
+        <translation>无法访问系统密钥环。</translation>
+    </message>
+    <message>
+        <source>Unable to connect to AI service.</source>
+        <translation>无法连接到 AI 服务。</translation>
+    </message>
+    <message>
+        <source>AI service request timed out.</source>
+        <translation>AI 服务请求超时。</translation>
+    </message>
+    <message>
+        <source>AI service authentication failed.</source>
+        <translation>AI 服务认证失败。</translation>
+    </message>
+    <message>
+        <source>AI service rate limit exceeded.</source>
+        <translation>超出 AI 服务请求限制。</translation>
+    </message>
+    <message>
+        <source>Request blocked by privacy settings.</source>
+        <translation>请求已被隐私设置拦截。</translation>
+    </message>
+    <message>
+        <source>Operation failed.</source>
+        <translation>操作失败。</translation>
+    </message>
+    <message>
+        <source>Operation failed (error code: %1)</source>
+        <translation>操作失败（错误码：%1）</translation>
+    </message>
+</context>
 </TS>

@@ -3,6 +3,7 @@
 
 #include "TagEditorModel.h"
 
+#include "ErrorText.h"
 #include "Format.h"
 #include "UiLogging.h"
 
@@ -140,7 +141,7 @@ bool TagEditorModel::load(const QList<qint64> &trackIds)
         if (!valRes.ok()) {
             qCWarning(lcUi, "Failed to fetch effective values for track %lld: %s", trackId,
                 qPrintable(valRes.error().toString()));
-            m_errorText = valRes.error().message;
+            m_errorText = userErrorText(valRes.error());
             emit errorTextChanged();
             return false;
         }
@@ -150,7 +151,7 @@ bool TagEditorModel::load(const QList<qint64> &trackIds)
         if (!ovrRes.ok()) {
             qCWarning(lcUi, "Failed to fetch overridden fields for track %lld: %s", trackId,
                 qPrintable(ovrRes.error().toString()));
-            m_errorText = ovrRes.error().message;
+            m_errorText = userErrorText(ovrRes.error());
             emit errorTextChanged();
             return false;
         }
@@ -280,10 +281,7 @@ bool TagEditorModel::save()
 
     auto res = m_store.apply(m_trackIds, edits);
     if (!res.ok()) {
-        m_errorText = res.error().message;
-        if (m_errorText.isEmpty()) {
-            m_errorText = res.error().toString();
-        }
+        m_errorText = userErrorText(res.error());
         qCWarning(lcUi, "Failed to save tag overrides: %s", qPrintable(res.error().toString()));
         emit errorTextChanged();
         return false;

@@ -20,6 +20,7 @@
 #include <player/PlaybackSnapshot.h>
 #include <player/Player.h>
 #include <ui/AppSettings.h>
+#include <ui/ErrorText.h>
 #include <ui/LibraryActions.h>
 
 #include <algorithm>
@@ -147,7 +148,7 @@ core::Result<void> AppContext::start()
     const library::Migrator migrator;
     const auto openRes = m_db.open(migrator);
     if (!openRes.ok()) {
-        m_startupError = openRes.error().toString();
+        m_startupError = userErrorText(openRes.error());
         m_libraryReady = false;
         qCCritical(lcUi, "Failed to open and migrate database: %s",
             qPrintable(openRes.error().toString()));

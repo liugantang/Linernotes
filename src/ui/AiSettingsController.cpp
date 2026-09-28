@@ -3,6 +3,8 @@
 
 #include "AiSettingsController.h"
 
+#include "ErrorText.h"
+
 #include <QElapsedTimer>
 #include <QUrl>
 
@@ -119,8 +121,8 @@ void AiSettingsController::setApiKey(const QString &serviceId, const QString &ke
             if (res.ok()) {
                 emit apiKeySaved(serviceId, true, tr("API key removed"));
             } else {
-                emit apiKeySaved(
-                    serviceId, false, tr("Failed to remove API key: %1").arg(res.error().message));
+                emit apiKeySaved(serviceId, false,
+                    tr("Failed to remove API key: %1").arg(userErrorText(res.error())));
             }
         });
     } else {
@@ -130,7 +132,7 @@ void AiSettingsController::setApiKey(const QString &serviceId, const QString &ke
                     emit apiKeySaved(serviceId, true, tr("API key saved"));
                 } else {
                     emit apiKeySaved(serviceId, false,
-                        tr("Failed to save API key: %1").arg(res.error().message));
+                        tr("Failed to save API key: %1").arg(userErrorText(res.error())));
                 }
             });
     }

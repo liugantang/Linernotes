@@ -3,6 +3,7 @@
 
 #include "CorrectionReviewController.h"
 
+#include "ErrorText.h"
 #include "UiLogging.h"
 
 #include <QSqlQuery>
@@ -83,7 +84,7 @@ void CorrectionReviewController::acceptSelected()
 
     auto res = m_store.accept(ids);
     if (!res.ok()) {
-        m_errorText = res.error().message.isEmpty() ? res.error().toString() : res.error().message;
+        m_errorText = userErrorText(res.error());
         qCWarning(
             lcUi, "Failed to accept selected corrections: %s", qPrintable(res.error().toString()));
         emit errorTextChanged();
@@ -105,7 +106,7 @@ void CorrectionReviewController::rejectSelected()
 
     auto res = m_store.reject(ids);
     if (!res.ok()) {
-        m_errorText = res.error().message.isEmpty() ? res.error().toString() : res.error().message;
+        m_errorText = userErrorText(res.error());
         qCWarning(
             lcUi, "Failed to reject selected corrections: %s", qPrintable(res.error().toString()));
         emit errorTextChanged();
@@ -127,7 +128,7 @@ void CorrectionReviewController::acceptAllPending(double minConfidence)
 
     auto res = m_store.accept(ids);
     if (!res.ok()) {
-        m_errorText = res.error().message.isEmpty() ? res.error().toString() : res.error().message;
+        m_errorText = userErrorText(res.error());
         qCWarning(lcUi, "Failed to accept all pending corrections: %s",
             qPrintable(res.error().toString()));
         emit errorTextChanged();
@@ -144,7 +145,7 @@ void CorrectionReviewController::acceptEdited(qint64 correctionId, const QString
 {
     auto res = m_store.acceptEdited(correctionId, value);
     if (!res.ok()) {
-        m_errorText = res.error().message.isEmpty() ? res.error().toString() : res.error().message;
+        m_errorText = userErrorText(res.error());
         qCWarning(lcUi, "Failed to accept edited correction %lld: %s", correctionId,
             qPrintable(res.error().toString()));
         emit errorTextChanged();
@@ -161,7 +162,7 @@ void CorrectionReviewController::revertBatch(qint64 batchId)
 {
     auto res = m_store.revertBatch(batchId);
     if (!res.ok()) {
-        m_errorText = res.error().message.isEmpty() ? res.error().toString() : res.error().message;
+        m_errorText = userErrorText(res.error());
         qCWarning(
             lcUi, "Failed to revert batch %lld: %s", batchId, qPrintable(res.error().toString()));
         emit errorTextChanged();

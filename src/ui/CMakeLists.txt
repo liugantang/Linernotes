@@ -25,6 +25,8 @@ add_library(linernotes_ui STATIC
     CoverAccent.h
     CoverImageProvider.cpp
     CoverImageProvider.h
+    ErrorText.cpp
+    ErrorText.h
     Format.h
     LibraryActions.cpp
     LibraryActions.h
