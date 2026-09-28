@@ -48,6 +48,17 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME butler_ArtistCreditLlm
+    SOURCES
+        tst_ArtistCreditLlm.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
     NAME butler_ArtistSplitLlm
     SOURCES
         tst_ArtistSplitLlm.cpp

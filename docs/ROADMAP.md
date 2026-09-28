@@ -292,7 +292,7 @@
 | ✅ 6.10 | 变更日志与撤销：每批次可整体撤销 |
 | ✅ 6.11 | “整理曲库”入口：一键体检报告（乱码 N 条、疑似重复艺人 N 组、缺专辑信息 N 首…）→ 选择要跑的任务 → token 用量预估 → 执行 |
 | ✅ 6.12 | 测试：构造乱码语料集（GBK/Big5/SJIS 各数百条）与艺人别名语料集，度量准确率 |
-| 6.13 | **署名解析**（返工，见 [decisions/0003](decisions/0003-artist-credit-by-llm.md)）：`artist_credits` 表（迁移 0013）；`butler.artist_credit` 任务按批把 `artist` / `album_artist` 字段值交给 LLM，解析出演唱者（含 `aka`）与角色；结果按值缓存；与原值不同时产出 `ArtistCredit` 字段修正（角色署名归到演唱者） |
+| ✅ 6.13 | **署名解析**（返工，见 [decisions/0003](decisions/0003-artist-credit-by-llm.md)）：`artist_credits` 表（迁移 0013）；`butler.artist_credit` 任务按批把 `artist` / `album_artist` 字段值交给 LLM，解析出演唱者（含 `aka`）与角色；结果按值缓存；与原值不同时产出 `ArtistCredit` 字段修正（角色署名归到演唱者） |
 | 6.14 | 曲库整理接入署名解析：步骤改为乱码 → 署名解析 → 合并；体检报告改为“待解析署名 N 个”；删除旧的拆分规则、`ArtistSplitLlm` 与 `artist_split` 提示词/schema |
 | 6.15 | **艺人合并改为按身份键分组 + 按组确认**：身份键来自实体名、解析得到的 `aka`、MB 别名，并查集分组；LLM 把组分成同一实体子集；删除罗马字、Fuzzy 与单独的 MB 匹配路径 |
 | 6.16 | 评测与验收：`tools/eval` 新增署名解析语料，重跑艺人合并语料（误合并 < 1%，不查 MB 的召回明显高于 24%）；真实曲库全量跑一遍，记录 token 用量 |

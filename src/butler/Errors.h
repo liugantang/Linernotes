@@ -22,6 +22,14 @@ inline constexpr QLatin1StringView kArtistSplitPromptRenderFailed {
     "artist_split.prompt_render_failed"
 };
 
+inline constexpr QLatin1StringView kArtistCreditInvalidKey { "artist_credit.invalid_key" };
+inline constexpr QLatin1StringView kArtistCreditInvalidResult { "artist_credit.invalid_result" };
+inline constexpr QLatin1StringView kArtistCreditItemNotFound { "artist_credit.item_not_found" };
+inline constexpr QLatin1StringView kArtistCreditSchemaNotFound { "artist_credit.schema_not_found" };
+inline constexpr QLatin1StringView kArtistCreditPromptRenderFailed {
+    "artist_credit.prompt_render_failed"
+};
+
 inline constexpr QLatin1StringView kArtistMergeInvalidKey { "artist_merge.invalid_key" };
 inline constexpr QLatin1StringView kArtistMergeInvalidResult { "artist_merge.invalid_result" };
 inline constexpr QLatin1StringView kArtistMergeItemNotFound { "artist_merge.item_not_found" };

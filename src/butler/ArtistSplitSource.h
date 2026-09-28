@@ -8,6 +8,7 @@
 #include <QStringList>
 
 #include <butler/ArtistSplit.h>
+#include <butler/TrackFieldTarget.h>
 #include <core/Result.h>
 #include <library/LibraryEnums.h>
 
@@ -18,13 +19,6 @@ class Database;
 }
 
 namespace linernotes::butler {
-
-struct TrackFieldTarget {
-    qint64 trackId = 0;
-    library::TagField field = library::TagField::Artist;
-
-    bool operator==(const TrackFieldTarget &) const = default;
-};
 
 struct ArtistSplitCandidate {
     int id = 0;
