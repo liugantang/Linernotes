@@ -20,7 +20,6 @@
 #include <ai/PromptLibrary.h>
 #include <ai/SecretStore.h>
 #include <ai/UsageStore.h>
-#include <butler/MusicBrainzClient.h>
 #include <core/Clock.h>
 #include <core/Settings.h>
 #include <library/Database.h>
@@ -39,7 +38,6 @@ struct EvalConfig {
     QString corpusPath { };
     QString libraryPath { };
     QString keepDbPath { };
-    bool useMusicBrainz = false;
     int timeoutMs = 60000;
     int requestsPerMinute = 0;
     bool verbose = false;
@@ -100,7 +98,6 @@ private:
     std::unique_ptr<ai::PromptLibrary> m_prompts;
     std::unique_ptr<ai::LlmDebugLog> m_debugLog;
     std::unique_ptr<ai::LlmService> m_llm;
-    std::unique_ptr<butler::MusicBrainzClient> m_mbClient;
     std::unique_ptr<ai::JobQueue> m_jobs;
 
     qint64 m_jobId = 0;

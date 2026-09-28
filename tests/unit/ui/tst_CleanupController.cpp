@@ -23,7 +23,6 @@
 #include <butler/ArtistCreditStore.h>
 #include <butler/ArtistMergeJobHandler.h>
 #include <butler/MojibakeJobHandler.h>
-#include <butler/MusicBrainzClient.h>
 #include <common/ManualClock.h>
 #include <core/Settings.h>
 #include <library/ArtistAliasCorrections.h>
@@ -52,7 +51,6 @@ using linernotes::butler::ArtistCreditStore;
 using linernotes::butler::ArtistMergeJobHandler;
 using linernotes::butler::CreditPerformer;
 using linernotes::butler::MojibakeJobHandler;
-using linernotes::butler::MusicBrainzClient;
 using linernotes::core::Settings;
 using linernotes::library::CorrectionKind;
 using linernotes::library::CorrectionStatus;
@@ -223,13 +221,11 @@ void TstCleanupController::healthCountsMatchLibrary()
     PromptLibrary prompts({ QStringLiteral(":/prompts") });
     LlmDebugLog debugLog(settings);
     LlmService llm(aiConfig, secrets, client, cache, usage, privacy, debugLog, clock);
-    MusicBrainzClient mbClient(network, db, clock);
 
     JobQueue jobs(db, clock);
     jobs.registerHandler(std::make_unique<MojibakeJobHandler>(db, llm, prompts, clock));
     jobs.registerHandler(std::make_unique<ArtistCreditJobHandler>(db, llm, prompts, clock));
-    jobs.registerHandler(
-        std::make_unique<ArtistMergeJobHandler>(db, llm, prompts, mbClient, clock));
+    jobs.registerHandler(std::make_unique<ArtistMergeJobHandler>(db, llm, prompts, clock));
 
     CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
     QCOMPARE(cleanup.isLlmConfigured(), false);
@@ -273,13 +269,11 @@ void TstCleanupController::runExecutesStepsInOrder()
     PromptLibrary prompts({ QStringLiteral(":/prompts") });
     LlmDebugLog debugLog(settings);
     LlmService llm(aiConfig, secrets, client, cache, usage, privacy, debugLog, clock);
-    MusicBrainzClient mbClient(network, db, clock);
 
     JobQueue jobs(db, clock);
     jobs.registerHandler(std::make_unique<MojibakeJobHandler>(db, llm, prompts, clock));
     jobs.registerHandler(std::make_unique<ArtistCreditJobHandler>(db, llm, prompts, clock));
-    jobs.registerHandler(
-        std::make_unique<ArtistMergeJobHandler>(db, llm, prompts, mbClient, clock));
+    jobs.registerHandler(std::make_unique<ArtistMergeJobHandler>(db, llm, prompts, clock));
 
     const auto promptRes = prompts.load(QStringLiteral("cleanup/artist_credit"));
     QVERIFY(promptRes.ok());
@@ -316,7 +310,7 @@ void TstCleanupController::runExecutesStepsInOrder()
 
     CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
 
-    cleanup.run(true, true, true, false);
+    cleanup.run(true, true, true);
     QCOMPARE(cleanup.isRunning(), true);
 
     QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
@@ -417,18 +411,16 @@ void TstCleanupController::autoAcceptAppliesThreshold()
     PromptLibrary prompts({ QStringLiteral(":/prompts") });
     LlmDebugLog debugLog(settings);
     LlmService llm(aiConfig, secrets, client, cache, usage, privacy, debugLog, clock);
-    MusicBrainzClient mbClient(network, db, clock);
 
     JobQueue jobs(db, clock);
     jobs.registerHandler(std::make_unique<MojibakeJobHandler>(db, llm, prompts, clock));
     jobs.registerHandler(std::make_unique<ArtistCreditJobHandler>(db, llm, prompts, clock));
-    jobs.registerHandler(
-        std::make_unique<ArtistMergeJobHandler>(db, llm, prompts, mbClient, clock));
+    jobs.registerHandler(std::make_unique<ArtistMergeJobHandler>(db, llm, prompts, clock));
 
     CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
     cleanup.setAutoAcceptThreshold(0.9);
 
-    cleanup.run(false, false, true, false);
+    cleanup.run(false, false, true);
     QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
 
     CorrectionStore store(db, clock);

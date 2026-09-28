@@ -12,7 +12,6 @@
 
 #include <butler/ArtistCreditJobHandler.h>
 #include <butler/ArtistMergeJobHandler.h>
-#include <butler/MbLookupJobHandler.h>
 #include <library/Migrator.h>
 
 #include <iostream>
@@ -170,14 +169,12 @@ void EvalHarness::initAiStack()
     m_debugLog = std::make_unique<ai::LlmDebugLog>(*m_settings);
     m_llm = std::make_unique<ai::LlmService>(
         *m_aiConfig, *m_secrets, *m_client, *m_cache, *m_usage, *m_privacy, *m_debugLog, m_clock);
-    m_mbClient = std::make_unique<butler::MusicBrainzClient>(*m_network, *m_db, m_clock);
     m_jobs = std::make_unique<ai::JobQueue>(*m_db, m_clock);
 
-    m_jobs->registerHandler(std::make_unique<butler::ArtistMergeJobHandler>(
-        *m_db, *m_llm, *m_prompts, *m_mbClient, m_clock));
+    m_jobs->registerHandler(
+        std::make_unique<butler::ArtistMergeJobHandler>(*m_db, *m_llm, *m_prompts, m_clock));
     m_jobs->registerHandler(
         std::make_unique<butler::ArtistCreditJobHandler>(*m_db, *m_llm, *m_prompts, m_clock));
-    m_jobs->registerHandler(std::make_unique<butler::MbLookupJobHandler>(*m_mbClient));
 
     ai::ServiceProfile profile;
     profile.name = QStringLiteral("Eval Service");

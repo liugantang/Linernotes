@@ -19,7 +19,6 @@
 #include <butler/ArtistName.h>
 #include <butler/ButlerLogging.h>
 #include <butler/Errors.h>
-#include <butler/MusicBrainz.h>
 #include <core/Clock.h>
 #include <core/Logging.h>
 #include <library/Database.h>
@@ -146,66 +145,6 @@ QStringList buildConfirmItems(const QList<ArtistGroup> &groups)
     return items;
 }
 
-QHash<qint64, MbArtist> addMbAltNames(const QSqlDatabase &conn, const QList<ArtistEntry> &entries,
-    qint64 nowMs, QHash<QString, QStringList> &altNames)
-{
-    QHash<qint64, MbArtist> adoptedMbByArtistId;
-    for (const auto &entry : entries) {
-        const auto cached = cachedArtistSearch(conn, entry.name, nowMs);
-        if (!cached.has_value()) {
-            continue;
-        }
-        const auto adopted = adoptMbArtist(entry.name, cached.value());
-        if (!adopted.has_value()) {
-            continue;
-        }
-        adoptedMbByArtistId.insert(entry.artistId, adopted.value());
-
-        const QString key = exactKey(entry.name);
-        if (!key.isEmpty()) {
-            auto it = altNames.find(key);
-            if (it == altNames.end()) {
-                it = altNames.insert(key, { });
-            }
-
-            const QString &mbName = adopted->name.trimmed();
-            if (!mbName.isEmpty() && !it.value().contains(mbName)) {
-                it.value().append(mbName);
-            }
-            for (const auto &alias : adopted->aliases) {
-                const QString trimmed = alias.name.trimmed();
-                if (!trimmed.isEmpty() && !it.value().contains(trimmed)) {
-                    it.value().append(trimmed);
-                }
-            }
-        }
-    }
-    return adoptedMbByArtistId;
-}
-
-QStringList buildMbAliasItems(const QList<ArtistEntry> &entries, const QList<ArtistGroup> &groups,
-    const QHash<qint64, MbArtist> &adoptedMbByArtistId)
-{
-    QSet<qint64> groupedArtistIds;
-    for (const auto &group : groups) {
-        for (const auto &member : group.members) {
-            groupedArtistIds.insert(member.artistId);
-        }
-    }
-
-    QStringList items;
-    for (const auto &entry : entries) {
-        if (adoptedMbByArtistId.contains(entry.artistId)
-            && !groupedArtistIds.contains(entry.artistId)) {
-            QJsonObject obj;
-            obj.insert(QStringLiteral("type"), QStringLiteral("mb_alias"));
-            obj.insert(QStringLiteral("id"), entry.artistId);
-            items.append(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
-        }
-    }
-    return items;
-}
-
 } // namespace
 
 ArtistMergeSource::ArtistMergeSource(library::Database &db, const core::Clock &clock)
@@ -309,48 +248,7 @@ core::Result<QHash<QString, QStringList>> ArtistMergeSource::loadAltNames() cons
     return altNames;
 }
 
-core::Result<QStringList> ArtistMergeSource::findLookupItems() const
-{
-    auto connRes = m_db.connection();
-    if (!connRes.ok()) {
-        return connRes.error();
-    }
-    const auto &conn = connRes.value();
-
-    auto artistsRes = loadArtists();
-    if (!artistsRes.ok()) {
-        return artistsRes.error();
-    }
-    const auto &allEntries = artistsRes.value();
-
-    auto skippedRes = fetchSkippedArtists(conn);
-    if (!skippedRes.ok()) {
-        return skippedRes.error();
-    }
-    const auto &skipped = skippedRes.value();
-
-    const qint64 nowMs = m_clock.nowMs();
-
-    QStringList items;
-    for (const auto &entry : allEntries) {
-        if (skipped.ids.contains(entry.artistId) || skipped.names.contains(entry.name)) {
-            continue;
-        }
-
-        const auto cached = cachedArtistSearch(conn, entry.name, nowMs);
-        if (cached.has_value()) {
-            continue;
-        }
-
-        QJsonObject obj;
-        obj.insert(QStringLiteral("name"), entry.name);
-        items.append(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
-    }
-
-    return items;
-}
-
-core::Result<QStringList> ArtistMergeSource::findItems(bool useMusicBrainz) const
+core::Result<QStringList> ArtistMergeSource::findItems() const
 {
     auto connRes = m_db.connection();
     if (!connRes.ok()) {
@@ -383,14 +281,7 @@ core::Result<QStringList> ArtistMergeSource::findItems(bool useMusicBrainz) cons
     if (!altNamesRes.ok()) {
         return altNamesRes.error();
     }
-    auto altNames = altNamesRes.value();
-
-    const qint64 nowMs = m_clock.nowMs();
-
-    QHash<qint64, MbArtist> adoptedMbByArtistId;
-    if (useMusicBrainz) {
-        adoptedMbByArtistId = addMbAltNames(conn, activeEntries, nowMs, altNames);
-    }
+    const auto &altNames = altNamesRes.value();
 
     constexpr int kMaxGroupSize = 12;
     const auto grouping = groupArtists(activeEntries, altNames, kMaxGroupSize);
@@ -400,10 +291,6 @@ core::Result<QStringList> ArtistMergeSource::findItems(bool useMusicBrainz) cons
     QStringList items;
     items.append(buildGroupItems(grouping.groups));
     items.append(buildConfirmItems(grouping.groups));
-
-    if (useMusicBrainz) {
-        items.append(buildMbAliasItems(activeEntries, grouping.groups, adoptedMbByArtistId));
-    }
 
     return items;
 }

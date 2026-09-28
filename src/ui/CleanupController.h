@@ -37,7 +37,6 @@ public:
         None,
         Mojibake,
         Credit,
-        MusicBrainz,
         Merge,
     };
     Q_ENUM(Step)
@@ -65,8 +64,6 @@ public:
     // Settings
     Q_PROPERTY(double autoAcceptThreshold READ autoAcceptThreshold WRITE setAutoAcceptThreshold
             NOTIFY autoAcceptThresholdChanged)
-    Q_PROPERTY(bool useMusicBrainz READ useMusicBrainz WRITE setUseMusicBrainz NOTIFY
-            useMusicBrainzChanged)
     Q_PROPERTY(bool llmConfigured READ isLlmConfigured NOTIFY llmConfiguredChanged)
 
     CleanupController(library::Database &db, const core::Clock &clock, ai::JobQueue &jobs,
@@ -94,12 +91,10 @@ public:
 
     [[nodiscard]] double autoAcceptThreshold() const;
     void setAutoAcceptThreshold(double threshold);
-    [[nodiscard]] bool useMusicBrainz() const;
-    void setUseMusicBrainz(bool use);
     [[nodiscard]] bool isLlmConfigured() const;
 
     Q_INVOKABLE void checkHealth();
-    Q_INVOKABLE void run(bool mojibake, bool credit, bool merge, bool useMusicBrainz);
+    Q_INVOKABLE void run(bool mojibake, bool credit, bool merge);
     Q_INVOKABLE void pause();
     Q_INVOKABLE void resume();
     Q_INVOKABLE void cancel();
@@ -113,7 +108,6 @@ signals:
     void currentJobIdChanged();
     void pausedChanged();
     void autoAcceptThresholdChanged();
-    void useMusicBrainzChanged();
     void llmConfiguredChanged();
     void batchesChanged();
 
@@ -164,7 +158,6 @@ private:
     int m_stepDone = 0;
     int m_stepTotal = 0;
     int m_stepFailed = 0;
-    bool m_useMusicBrainzForRun = true;
     QList<Step> m_pendingSteps;
     QFutureWatcher<StepItemData> m_stepWatcher;
 

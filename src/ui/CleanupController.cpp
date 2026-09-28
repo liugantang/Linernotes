@@ -209,20 +209,6 @@ void CleanupController::setAutoAcceptThreshold(double threshold)
     emit autoAcceptThresholdChanged();
 }
 
-bool CleanupController::useMusicBrainz() const
-{
-    return m_settings.value(kButlerUseMusicBrainz);
-}
-
-void CleanupController::setUseMusicBrainz(bool use)
-{
-    if (useMusicBrainz() == use) {
-        return;
-    }
-    m_settings.setValue(kButlerUseMusicBrainz, use);
-    emit useMusicBrainzChanged();
-}
-
 bool CleanupController::isLlmConfigured() const
 {
     return m_llmConfigured;
@@ -271,7 +257,7 @@ void CleanupController::checkHealth()
               }
 
               const butler::ArtistMergeSource mergeSource(db, clock);
-              if (auto res = mergeSource.findItems(false); res.ok()) {
+              if (auto res = mergeSource.findItems(); res.ok()) {
                   report.mergeItems = res.value();
                   report.mergeClusters = countMergeClusters(report.mergeItems);
               }
@@ -318,7 +304,7 @@ void CleanupController::onHealthCheckFinished()
     emit healthChanged();
 }
 
-void CleanupController::run(bool mojibake, bool credit, bool merge, bool useMusicBrainz)
+void CleanupController::run(bool mojibake, bool credit, bool merge)
 {
     if (m_running) {
         return;
@@ -331,13 +317,9 @@ void CleanupController::run(bool mojibake, bool credit, bool merge, bool useMusi
     if (credit) {
         m_pendingSteps.append(Step::Credit);
     }
-    if (merge && useMusicBrainz) {
-        m_pendingSteps.append(Step::MusicBrainz);
-    }
     if (merge) {
         m_pendingSteps.append(Step::Merge);
     }
-    m_useMusicBrainzForRun = useMusicBrainz;
 
     if (m_pendingSteps.isEmpty()) {
         return;
@@ -376,7 +358,6 @@ void CleanupController::startNextStep()
     emit pausedChanged();
 
     const Step step = m_currentStep;
-    const bool useMb = m_useMusicBrainzForRun;
 
     int promptVersion = 0;
     if (step == Step::Credit) {
@@ -389,33 +370,28 @@ void CleanupController::startNextStep()
         }
     }
 
-    auto future = QtConcurrent::run(
-        [&db = m_db, &clock = m_clock, step, useMb, promptVersion]() -> StepItemData {
-            StepItemData res;
-            res.step = step;
-            if (step == Step::Mojibake) {
-                const butler::MojibakeSource src(db);
-                if (auto r = src.findGroups(); r.ok()) {
-                    res.items = r.value();
-                }
-            } else if (step == Step::Credit) {
-                const butler::ArtistCreditSource src(db);
-                if (auto r = src.findItems(promptVersion); r.ok()) {
-                    res.items = r.value();
-                }
-            } else if (step == Step::MusicBrainz) {
-                const butler::ArtistMergeSource src(db, clock);
-                if (auto r = src.findLookupItems(); r.ok()) {
-                    res.items = r.value();
-                }
-            } else if (step == Step::Merge) {
-                const butler::ArtistMergeSource src(db, clock);
-                if (auto r = src.findItems(useMb); r.ok()) {
-                    res.items = r.value();
-                }
-            }
-            return res;
-        });
+    auto future
+        = QtConcurrent::run([&db = m_db, &clock = m_clock, step, promptVersion]() -> StepItemData {
+              StepItemData res;
+              res.step = step;
+              if (step == Step::Mojibake) {
+                  const butler::MojibakeSource src(db);
+                  if (auto r = src.findGroups(); r.ok()) {
+                      res.items = r.value();
+                  }
+              } else if (step == Step::Credit) {
+                  const butler::ArtistCreditSource src(db);
+                  if (auto r = src.findItems(promptVersion); r.ok()) {
+                      res.items = r.value();
+                  }
+              } else if (step == Step::Merge) {
+                  const butler::ArtistMergeSource src(db, clock);
+                  if (auto r = src.findItems(); r.ok()) {
+                      res.items = r.value();
+                  }
+              }
+              return res;
+          });
 
     m_stepWatcher.setFuture(future);
 }
@@ -452,10 +428,6 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
         jobKind = QStringLiteral("butler.artist_credit");
         title = QStringLiteral("Normalize artist credits");
         batchKind = library::CorrectionKind::ArtistCredit;
-    } else if (step == Step::MusicBrainz) {
-        jobKind = QStringLiteral("butler.mb_lookup");
-        title = QStringLiteral("Look up artists on MusicBrainz");
-        batchKind = std::nullopt;
     } else if (step == Step::Merge) {
         jobKind = QStringLiteral("butler.artist_merge");
         title = QStringLiteral("Merge duplicate artists");
@@ -482,10 +454,6 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
         if (threshold > 0.0) {
             params.insert(QStringLiteral("autoAccept"), threshold);
         }
-    }
-
-    if (step == Step::Merge) {
-        params.insert(QStringLiteral("useMusicBrainz"), m_useMusicBrainzForRun);
     }
 
     auto enqueueRes = m_jobs.enqueue(jobKind, title, items, params);

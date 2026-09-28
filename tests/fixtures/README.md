@@ -50,7 +50,3 @@
 | `mojibake/latin_legit.txt` | 文本 / 合法带重音拉丁字母名字 | 300+ 行 | 自行编写，CC0 | 乱码检测防误报测试语料（合法拉丁字符） |
 | `artists/same_artist_rule.txt` | 文本 / 55 簇同一艺人的不同写法 | 57 行 | 开发者真实曲库中的公开艺名 / 审查者编写 | 艺人名规则层归一测试素材（日文姓名顺序颠倒、长音罗马字、全半角、标点等） |
 | `artists/distinct_artists.txt` | 文本 / 30 组不同艺人 | 32 行 | 开发者真实曲库中的公开艺名 / 审查者编写 | 艺人名防误合并测试素材（共享词、相似拼写等不同艺人） |
-| `musicbrainz/artist_search_mimori.json` | JSON / MusicBrainz 响应 | ~5 KB | MusicBrainz Web Service 2026-09-28 录制，数据 CC0 | MusicBrainz 艺人搜索录制响应（三森すずこ，含 en/ja 别名） |
-| `musicbrainz/artist_search_jaychou.json` | JSON / MusicBrainz 响应 | ~8 KB | MusicBrainz Web Service 2026-09-28 录制，数据 CC0 | MusicBrainz 艺人搜索录制响应（周杰倫，含 zh_Hans/zh_Hant/en/ja/ko 别名） |
-
-

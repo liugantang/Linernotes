@@ -37,8 +37,6 @@ struct CliOptions {
         QStringLiteral(
             "Path to a library.db file for real library evaluation (artist-credit only)."),
         QStringLiteral("path") };
-    QCommandLineOption mbOption { QStringLiteral("mb"),
-        QStringLiteral("Enable MusicBrainz lookup (artist-merge only, default: false).") };
     QCommandLineOption keepDbOption { QStringLiteral("keep-db"),
         QStringLiteral(
             "Path to persist SQLite database file for inspection (default: temporary db)."),
@@ -70,7 +68,6 @@ void setupParser(QCommandLineParser &parser, const CliOptions &opts)
     parser.addOption(opts.modelOption);
     parser.addOption(opts.corpusOption);
     parser.addOption(opts.libraryOption);
-    parser.addOption(opts.mbOption);
     parser.addOption(opts.keepDbOption);
     parser.addOption(opts.timeoutMsOption);
     parser.addOption(opts.rpmOption);
@@ -282,7 +279,6 @@ std::optional<ParsedArgs> parseAndValidateArgs(
             .corpusPath = corpusPath,
             .libraryPath = libraryPath,
             .keepDbPath = keepDbPath,
-            .useMusicBrainz = parser.isSet(opts.mbOption),
             .timeoutMs = *timeoutVal,
             .requestsPerMinute = *rpmOpt,
             .verbose = parser.isSet(opts.verboseOption),

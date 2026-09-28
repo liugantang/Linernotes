@@ -24,22 +24,11 @@
 
 namespace linernotes::butler {
 
-namespace {
-
-std::optional<MbArtist> cachedMbArtist(const MusicBrainzClient &client, const QString &name)
-{
-    const auto cached = client.cachedSearch(name);
-    return cached.has_value() ? adoptMbArtist(name, cached.value()) : std::nullopt;
-}
-
-} // namespace
-
 ArtistMergeJobHandler::ArtistMergeJobHandler(library::Database &db, ai::LlmService &llm,
-    const ai::PromptLibrary &prompts, MusicBrainzClient &mbClient, const core::Clock &clock)
+    const ai::PromptLibrary &prompts, const core::Clock &clock)
     : m_db(db)
     , m_llm(llm)
     , m_prompts(prompts)
-    , m_mbClient(mbClient)
     , m_clock(clock)
 {
 }
@@ -133,9 +122,6 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::process(const QString &itemKey,
     }
     if (type == QLatin1StringView("confirm")) {
         return processConfirm(keyObj, params, batchId, autoAcceptThreshold, std::move(done));
-    }
-    if (type == QLatin1StringView("mb_alias")) {
-        return processMbAlias(keyObj, batchId, autoAcceptThreshold, done);
     }
 
     done(core::Error {
@@ -231,7 +217,6 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::processConfirm(const QJsonObject
 
     const auto altNamesRes = source.loadAltNames();
     const auto altNames = altNamesRes.ok() ? altNamesRes.value() : QHash<QString, QStringList> { };
-    const bool useMb = params.value(QStringLiteral("useMusicBrainz")).toBool(false);
 
     QList<ArtistMergeGroup> mergeGroups;
     int nextGroupId = 0;
@@ -253,14 +238,10 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::processConfirm(const QJsonObject
             const QString key = exactKey(entry.name);
             const QStringList aka = altNames.value(key);
 
-            std::optional<MbArtist> mbOpt
-                = useMb ? cachedMbArtist(m_mbClient, entry.name) : std::nullopt;
-
             members.append(ArtistMergeMember {
                 .entry = entry,
                 .albums = albums,
                 .aka = aka,
-                .mb = std::move(mbOpt),
             });
         }
 
@@ -351,65 +332,6 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::startLlm(const QList<ArtistMerge
         });
 
     return task;
-}
-
-std::unique_ptr<QObject> ArtistMergeJobHandler::processMbAlias(const QJsonObject &keyObj,
-    qint64 batchId, std::optional<double> autoAcceptThreshold,
-    const std::function<void(const core::Result<void> &)> &done)
-{
-    const qint64 id = keyObj.value(QStringLiteral("id")).toInteger(0);
-    if (id <= 0) {
-        done({ });
-        return nullptr;
-    }
-
-    const ArtistMergeSource source(m_db, m_clock);
-    const auto artistsRes = source.loadArtists();
-    if (!artistsRes.ok()) {
-        done(artistsRes.error());
-        return nullptr;
-    }
-
-    ArtistEntry ours;
-    bool found = false;
-    QSet<QString> libraryNames;
-    for (const auto &entry : artistsRes.value()) {
-        libraryNames.insert(entry.name);
-        if (entry.artistId == id) {
-            ours = entry;
-            found = true;
-        }
-    }
-
-    if (!found) {
-        done({ });
-        return nullptr;
-    }
-
-    const auto cached = m_mbClient.cachedSearch(ours.name);
-    if (!cached.has_value()) {
-        done({ });
-        return nullptr;
-    }
-
-    const auto mbOpt = adoptMbArtist(ours.name, cached.value());
-    if (!mbOpt.has_value()) {
-        done({ });
-        return nullptr;
-    }
-
-    const auto proposals = musicBrainzAliasProposals(ours, mbOpt.value(), libraryNames);
-    if (!proposals.isEmpty()) {
-        library::CorrectionStore store(m_db, m_clock);
-        auto addRes = store.addArtistAliasProposals(batchId, proposals, autoAcceptThreshold);
-        if (!addRes.ok()) {
-            done(addRes);
-            return nullptr;
-        }
-    }
-
-    done({ });
-    return nullptr;
 }
 
 } // namespace linernotes::butler

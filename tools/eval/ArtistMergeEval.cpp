@@ -78,7 +78,7 @@ void processAliasCorrections(const QList<library::ArtistAliasRow> &rows,
         const QString canonical = row.artistName.trimmed();
         const QString sourceStr = library::correctionSourceToString(row.source);
 
-        // 别名不是曲库里的艺人（如 MusicBrainz 的外语别名）：只是新增别名，不合并任何艺人
+        // 别名不是曲库里的艺人：只是新增别名，不合并任何艺人
         if (!nameToEntity.contains(alias)) {
             ++extraAliases;
             continue;
@@ -264,7 +264,6 @@ void printSourceBreakdownSection(const QMap<QString, SourceReport> &sourceStats)
     std::cout << "\n--- Breakdown by Source ---\n";
     const QStringList knownSources = {
         QStringLiteral("rule"),
-        QStringLiteral("musicbrainz"),
         QStringLiteral("llm"),
         QStringLiteral("credit"),
     };
@@ -478,39 +477,9 @@ void ArtistMergeEval::start()
     creditParams.insert(QStringLiteral("batchId"), m_creditBatchId);
 
     const bool creditStarted = m_harness.runJob(QStringLiteral("butler.artist_credit"),
-        QStringLiteral("Artist credit eval"), creditItems, creditParams, [this]() {
-            if (m_harness.config().useMusicBrainz) {
-                startMbLookupJob();
-            } else {
-                startMergeJob();
-            }
-        });
-    if (!creditStarted) {
-        QCoreApplication::exit(2);
-    }
-}
-
-void ArtistMergeEval::startMbLookupJob()
-{
-    const butler::ArtistMergeSource source(m_harness.db(), m_harness.clock());
-    const auto itemsRes = source.findLookupItems();
-    if (!itemsRes.ok()) {
-        std::cerr << "Failed to find MB lookup items: " << qPrintable(itemsRes.error().toString())
-                  << "\n";
-        QCoreApplication::exit(2);
-        return;
-    }
-    const QStringList &items = itemsRes.value();
-
-    if (items.isEmpty()) {
-        startMergeJob();
-        return;
-    }
-
-    const bool started = m_harness.runJob(QStringLiteral("butler.mb_lookup"),
-        QStringLiteral("MusicBrainz lookup eval"), items, QJsonObject { },
+        QStringLiteral("Artist credit eval"), creditItems, creditParams,
         [this]() { startMergeJob(); });
-    if (!started) {
+    if (!creditStarted) {
         QCoreApplication::exit(2);
     }
 }
@@ -529,7 +498,7 @@ void ArtistMergeEval::startMergeJob()
     m_batchId = batchRes.value();
 
     const butler::ArtistMergeSource source(m_harness.db(), m_harness.clock());
-    const auto itemsRes = source.findItems(m_harness.config().useMusicBrainz);
+    const auto itemsRes = source.findItems();
     if (!itemsRes.ok()) {
         std::cerr << "Failed to find merge items: " << qPrintable(itemsRes.error().toString())
                   << "\n";
@@ -540,9 +509,6 @@ void ArtistMergeEval::startMergeJob()
 
     QJsonObject params;
     params.insert(QStringLiteral("batchId"), m_batchId);
-    if (m_harness.config().useMusicBrainz) {
-        params.insert(QStringLiteral("useMusicBrainz"), true);
-    }
 
     const bool started = m_harness.runJob(QStringLiteral("butler.artist_merge"),
         QStringLiteral("Artist merge eval"), items, params, [this]() { evaluateAndFinish(); });

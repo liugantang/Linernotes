@@ -40,7 +40,6 @@ Rectangle {
         if (hasCleanup && AppContext.cleanup.paused) return qsTr("Paused")
         if (step === CleanupController.Mojibake) return qsTr("Fixing garbled tags...")
         if (step === CleanupController.Credit) return qsTr("Normalizing artist credits...")
-        if (step === CleanupController.MusicBrainz) return qsTr("Looking up artists on MusicBrainz...")
         if (step === CleanupController.Merge) return qsTr("Merging duplicate artists...")
         return qsTr("Cleaning up library...")
     }
@@ -185,38 +184,21 @@ Rectangle {
             }
 
             // Task 3: Merge
-            ColumnLayout {
+            RowLayout {
                 Layout.fillWidth: true
-                spacing: Theme.spacingTiny
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: Theme.spacingSmall
-                    Controls.AppCheckBox {
-                        id: mergeCheck
-                        text: qsTr("Merge duplicate artists")
-                        enabled: hasCleanup && !AppContext.cleanup.running
-                    }
-                    Label {
-                        text: hasCleanup ? (qsTr("%n possible duplicate artist(s)", "", AppContext.cleanup.mergeClusters)
-                            + (AppContext.cleanup.mergeTokens > 0 ? qsTr(" · ≈ %1 tokens").arg(AppContext.cleanup.mergeTokens) : "")) : ""
-                        font.pixelSize: Theme.fontSizeNormal
-                        color: Theme.textSecondary
-                    }
-                    Item { Layout.fillWidth: true }
+                spacing: Theme.spacingSmall
+                Controls.AppCheckBox {
+                    id: mergeCheck
+                    text: qsTr("Merge duplicate artists")
+                    enabled: hasCleanup && !AppContext.cleanup.running
                 }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.leftMargin: 28
-                    Controls.AppCheckBox {
-                        id: mbCheck
-                        text: qsTr("Look up MusicBrainz for CJK names")
-                        checked: hasCleanup ? AppContext.cleanup.useMusicBrainz : true
-                        enabled: mergeCheck.checked && hasCleanup && !AppContext.cleanup.running
-                        onToggled: if (hasCleanup) AppContext.cleanup.useMusicBrainz = checked
-                    }
+                Label {
+                    text: hasCleanup ? (qsTr("%n possible duplicate artist(s)", "", AppContext.cleanup.mergeClusters)
+                        + (AppContext.cleanup.mergeTokens > 0 ? qsTr(" · ≈ %1 tokens").arg(AppContext.cleanup.mergeTokens) : "")) : ""
+                    font.pixelSize: Theme.fontSizeNormal
+                    color: Theme.textSecondary
                 }
+                Item { Layout.fillWidth: true }
             }
 
             // Task 4: Missing album metadata
@@ -271,7 +253,7 @@ Rectangle {
                     text: qsTr("Run")
                     visible: hasCleanup && !AppContext.cleanup.running
                     enabled: root.hasSelectedTasks && hasCleanup && AppContext.cleanup.llmConfigured && !AppContext.cleanup.checking
-                    onClicked: if (hasCleanup) AppContext.cleanup.run(mojibakeCheck.checked, creditCheck.checked, mergeCheck.checked, mbCheck.checked)
+                    onClicked: if (hasCleanup) AppContext.cleanup.run(mojibakeCheck.checked, creditCheck.checked, mergeCheck.checked)
                 }
 
                 // Progress controls

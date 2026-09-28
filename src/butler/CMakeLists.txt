@@ -33,8 +33,6 @@ add_library(linernotes_butler STATIC
     EncodingScore.cpp
     EncodingScore.h
     Errors.h
-    MbLookupJobHandler.cpp
-    MbLookupJobHandler.h
     Mojibake.cpp
     Mojibake.h
     MojibakeAnalysis.cpp
@@ -45,10 +43,6 @@ add_library(linernotes_butler STATIC
     MojibakeLlm.h
     MojibakeSource.cpp
     MojibakeSource.h
-    MusicBrainz.cpp
-    MusicBrainz.h
-    MusicBrainzClient.cpp
-    MusicBrainzClient.h
     TrackFieldTarget.h
 )
 add_library(Linernotes::butler ALIAS linernotes_butler)

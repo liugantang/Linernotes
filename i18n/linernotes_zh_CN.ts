@@ -470,11 +470,6 @@
         <translation>正在规范艺人署名…</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="43"/>
-        <source>Looking up artists on MusicBrainz...</source>
-        <translation>正在查询 MusicBrainz 艺人信息…</translation>
-    </message>
-    <message>
         <location filename="../qml/CleanupHealthPanel.qml" line="175"/>
         <source>Normalize artist credits</source>
         <translation>规范艺人署名</translation>
@@ -497,11 +492,6 @@
         <translation>
             <numerusform>%n 组疑似重复艺人</numerusform>
         </translation>
-    </message>
-    <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="214"/>
-        <source>Look up MusicBrainz for CJK names</source>
-        <translation>为中日韩艺人名查询 MusicBrainz</translation>
     </message>
     <message numerus="yes">
         <location filename="../qml/CleanupHealthPanel.qml" line="227"/>

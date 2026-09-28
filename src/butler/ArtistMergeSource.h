@@ -34,18 +34,12 @@ public:
     /// altNames[exactKey(name)] 追加它的全部 aka（去重）。
     core::Result<QHash<QString, QStringList>> loadAltNames() const;
 
-    /// 需要查询 MB 的艺人名：参与合并的全部艺人（跳过规则同 findItems），去掉 mb_cache
-    /// 中已有有效缓存的。
-    core::Result<QStringList> findLookupItems() const;
-
     /// 生成 item key（紧凑 JSON）：
     /// - {"type":"group","ids":[...]}：exactOnly 的组，每组一个 item；
-    /// - {"type":"confirm","groups":[[...],[...]]}：非 exactOnly 的组，每 10 组一个 item；
-    /// - {"type":"mb_alias","id":N}：useMusicBrainz 时，有选定 MB
-    /// 艺人且不在任何组中的艺人各产出一个。 跳过：已有 pending 的 artist 别名修正涉及的艺人（作为
-    /// entity_id 或者名字等于某条 pending 修正的 new_value），以及艺人名等于某条 pending 的
-    /// artist_credit 修正的 old_value。
-    core::Result<QStringList> findItems(bool useMusicBrainz) const;
+    /// - {"type":"confirm","groups":[[...],[...]]}：非 exactOnly 的组，每 10 组一个 item。
+    /// 跳过：已有 pending 的 artist 别名修正涉及的艺人（作为 entity_id 或者名字等于某条 pending
+    /// 修正的 new_value）， 以及艺人名等于某条 pending 的 artist_credit 修正的 old_value。
+    core::Result<QStringList> findItems() const;
 
     /// 为 LLM 准备上下文：该艺人曲目的不同专辑名，按曲目数降序。
     core::Result<QStringList> sampleAlbums(qint64 artistId, int limit = 3) const;
