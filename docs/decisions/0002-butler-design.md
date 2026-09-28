@@ -16,7 +16,7 @@
 3. **规则优先、LLM 只处理疑难项**：每个 handler 先跑规则，只有规则判不了的才调用 LLM（经 `LlmService`，结构化输出 + JSON Schema）。handler 的 LLM 部分拆成“构造请求”与“把结构化结果转成修正”两个纯函数，后者用 JSON 字面量做单元测试。
 4. **乱码修复**：优先用 `raw_tags.raw_bytes`（阶段 2 保留的 Latin-1 原始字节），没有时把字符串按 Latin-1 / Windows-1252 回编码。候选解码用 ICU 转换器（GB18030、Big5、Shift_JIS、EUC-KR、UTF-8）。内嵌少量高频字表（简体/繁体各 1500 字，由 rime-data 的 essay.txt 词频按字累加得到；韩文约 400 音节），用于区分编码区重叠的情况（EUC-KR 韩文区与 GB2312 一级字区重叠）；结合编码自身分区（GB2312 一级字、Big5 常用字、JIS 第一水准、KS X 1001 常用音节区）、uchardet 的判断与非法/罕见字符惩罚。同专辑（同目录）曲目共享编码判断。
 5. **艺人实体与别名**：艺人归一不改曲目的 `artist` 字段，而是“别名”修正（`entity_type='artist'`，`field='alias'`，`entity_id` 为规范艺人）。接受后写 `artist_aliases`，`EntityLinker` 解析艺人名时先查别名，于是 “Jay Chou” 的曲目挂到“周杰伦”实体上，原实体成为孤儿被清理；撤销则删除别名并重新关联。各语言名作为带 `locale` 的别名保存，界面按“显示名偏好”选取。
-6. **多艺人拆分**是曲目 `artist` 字段的修正，值用现有的多值约定 `" / "` 连接（`EntityLinker` 已按它拆分）。组合名白名单保证不误拆。
+6. **多艺人拆分**是曲目 `artist` 字段的修正，值用现有的多值约定 `" / "` 连接（`EntityLinker` 已按它拆分）。不内置组合名白名单：规则层只在强分隔符（feat.、× 等）或弱分隔符拆出的每部分都在曲库中作为独立艺人出现过时才拆，其余含弱分隔符的值（`Simon & Garfunkel`、`Wake Up, Girls!`）交给 LLM 判断。
 7. **MusicBrainz 客户端放在 butler**（阶段 7 的补全也在 butler），遵守 1 req/s 与 User-Agent 要求，响应缓存在 `library.db`。测试只测响应解析，素材是真实录制的 MB 响应。
 8. **不可逆损坏**（已变成 `???`）：从文件名/目录名解析出候选作为低置信度修正，同时在 `track_issues` 中标记 `needs_online`，留给阶段 7 的指纹补全。
 
