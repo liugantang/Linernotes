@@ -18,8 +18,10 @@
 #include <ai/PromptLibrary.h>
 #include <ai/SecretStore.h>
 #include <ai/UsageStore.h>
+#include <butler/ArtistCredit.h>
+#include <butler/ArtistCreditJobHandler.h>
+#include <butler/ArtistCreditStore.h>
 #include <butler/ArtistMergeJobHandler.h>
-#include <butler/ArtistSplitJobHandler.h>
 #include <butler/MojibakeJobHandler.h>
 #include <butler/MusicBrainzClient.h>
 #include <common/ManualClock.h>
@@ -44,8 +46,11 @@ using linernotes::ai::MemorySecretStore;
 using linernotes::ai::PrivacyGuard;
 using linernotes::ai::PromptLibrary;
 using linernotes::ai::UsageStore;
+using linernotes::butler::ArtistCredit;
+using linernotes::butler::ArtistCreditJobHandler;
+using linernotes::butler::ArtistCreditStore;
 using linernotes::butler::ArtistMergeJobHandler;
-using linernotes::butler::ArtistSplitJobHandler;
+using linernotes::butler::CreditPerformer;
 using linernotes::butler::MojibakeJobHandler;
 using linernotes::butler::MusicBrainzClient;
 using linernotes::core::Settings;
@@ -222,11 +227,11 @@ void TstCleanupController::healthCountsMatchLibrary()
 
     JobQueue jobs(db, clock);
     jobs.registerHandler(std::make_unique<MojibakeJobHandler>(db, llm, prompts, clock));
-    jobs.registerHandler(std::make_unique<ArtistSplitJobHandler>(db, llm, prompts, clock));
+    jobs.registerHandler(std::make_unique<ArtistCreditJobHandler>(db, llm, prompts, clock));
     jobs.registerHandler(
         std::make_unique<ArtistMergeJobHandler>(db, llm, prompts, mbClient, clock));
 
-    CleanupController cleanup(db, clock, jobs, aiConfig, settings);
+    CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
     QCOMPARE(cleanup.isLlmConfigured(), false);
     QCOMPARE(cleanup.isHealthReady(), false);
 
@@ -241,7 +246,7 @@ void TstCleanupController::healthCountsMatchLibrary()
     QTRY_VERIFY_WITH_TIMEOUT(cleanup.isHealthReady(), 5000);
 
     QVERIFY(cleanup.mojibakeGroups() >= 1);
-    QVERIFY(cleanup.splitValues() >= 1);
+    QVERIFY(cleanup.creditValues() >= 1);
     QVERIFY(cleanup.mergeClusters() >= 1);
 }
 
@@ -272,11 +277,44 @@ void TstCleanupController::runExecutesStepsInOrder()
 
     JobQueue jobs(db, clock);
     jobs.registerHandler(std::make_unique<MojibakeJobHandler>(db, llm, prompts, clock));
-    jobs.registerHandler(std::make_unique<ArtistSplitJobHandler>(db, llm, prompts, clock));
+    jobs.registerHandler(std::make_unique<ArtistCreditJobHandler>(db, llm, prompts, clock));
     jobs.registerHandler(
         std::make_unique<ArtistMergeJobHandler>(db, llm, prompts, mbClient, clock));
 
-    CleanupController cleanup(db, clock, jobs, aiConfig, settings);
+    const auto promptRes = prompts.load(QStringLiteral("cleanup/artist_credit"));
+    QVERIFY(promptRes.ok());
+    const int promptVersion = promptRes.value().version;
+
+    // 没有 LLM 服务：库中每个艺人值都预存解析结果，署名解析步骤只走缓存
+    ArtistCreditStore creditStore(db, clock);
+    QHash<QString, ArtistCredit> savedCredits;
+    QSqlQuery valuesQuery(conn);
+    QVERIFY(valuesQuery.exec(QStringLiteral(
+        "SELECT artist FROM effective_metadata WHERE artist != '' "
+        "UNION SELECT album_artist FROM effective_metadata WHERE album_artist != ''")));
+    while (valuesQuery.next()) {
+        const QString value = valuesQuery.value(0).toString().trimmed();
+        savedCredits.insert(value,
+            ArtistCredit {
+                .performers = { CreditPerformer { .name = value, .aka = { } } },
+                .roles = { },
+                .confidence = 0.9,
+                .reason = QStringLiteral("Single artist"),
+            });
+    }
+    savedCredits.insert(QStringLiteral("Artist A feat. Artist B"),
+        ArtistCredit {
+            .performers = {
+                CreditPerformer { .name = QStringLiteral("Artist A"), .aka = { } },
+                CreditPerformer { .name = QStringLiteral("Artist B"), .aka = { } },
+            },
+            .roles = { },
+            .confidence = 0.95,
+            .reason = QStringLiteral("Multi-artist split"),
+        });
+    QVERIFY(creditStore.save(savedCredits, QStringLiteral("test-model"), promptVersion).ok());
+
+    CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
 
     cleanup.run(true, true, true, false);
     QCOMPARE(cleanup.isRunning(), true);
@@ -291,7 +329,7 @@ void TstCleanupController::runExecutesStepsInOrder()
 
     // batches are ordered by created_at DESC
     QCOMPARE(batches.at(2).kind, CorrectionKind::Mojibake);
-    QCOMPARE(batches.at(1).kind, CorrectionKind::ArtistSplit);
+    QCOMPARE(batches.at(1).kind, CorrectionKind::ArtistCredit);
     QCOMPARE(batches.at(0).kind, CorrectionKind::ArtistMerge);
 
     QVERIFY(batches.at(2).pending > 0 || batches.at(2).accepted > 0);
@@ -383,11 +421,11 @@ void TstCleanupController::autoAcceptAppliesThreshold()
 
     JobQueue jobs(db, clock);
     jobs.registerHandler(std::make_unique<MojibakeJobHandler>(db, llm, prompts, clock));
-    jobs.registerHandler(std::make_unique<ArtistSplitJobHandler>(db, llm, prompts, clock));
+    jobs.registerHandler(std::make_unique<ArtistCreditJobHandler>(db, llm, prompts, clock));
     jobs.registerHandler(
         std::make_unique<ArtistMergeJobHandler>(db, llm, prompts, mbClient, clock));
 
-    CleanupController cleanup(db, clock, jobs, aiConfig, settings);
+    CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
     cleanup.setAutoAcceptThreshold(0.9);
 
     cleanup.run(false, false, true, false);

@@ -392,9 +392,8 @@
         <translation>正在修复乱码标签…</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="42"/>
         <source>Splitting multi-artist credits...</source>
-        <translation>正在拆分多艺人署名…</translation>
+        <translation type="vanished">正在拆分多艺人署名…</translation>
     </message>
     <message>
         <location filename="../qml/CleanupHealthPanel.qml" line="43"/>
@@ -456,15 +455,30 @@
         <translation> · 约 %1 token</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="174"/>
         <source>Split multi-artist credits</source>
-        <translation>拆分多艺人署名</translation>
+        <translation type="vanished">拆分多艺人署名</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n multi-artist value(s)</source>
+        <translation type="vanished">
+            <numerusform>%n 个多艺人字段</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="42"/>
+        <source>Normalizing artist credits...</source>
+        <translation>正在规范艺人署名…</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="174"/>
+        <source>Normalize artist credits</source>
+        <translation>规范艺人署名</translation>
     </message>
     <message numerus="yes">
         <location filename="../qml/CleanupHealthPanel.qml" line="178"/>
-        <source>%n multi-artist value(s)</source>
+        <source>%n artist credit(s) to check</source>
         <translation>
-            <numerusform>%n 个多艺人字段</numerusform>
+            <numerusform>%n 个署名待检查</numerusform>
         </translation>
     </message>
     <message>
@@ -545,17 +559,17 @@
 <context>
     <name>CleanupPage</name>
     <message>
-        <location filename="../qml/pages/CleanupPage.qml" line="96"/>
+        <location filename="../qml/pages/CleanupPage.qml" line="98"/>
         <source>Show stale</source>
         <translation>查看已失效</translation>
     </message>
     <message>
-        <location filename="../qml/pages/CleanupPage.qml" line="103"/>
+        <location filename="../qml/pages/CleanupPage.qml" line="158"/>
         <source>No Cleanup Batches</source>
         <translation>暂无整理批次</translation>
     </message>
     <message>
-        <location filename="../qml/pages/CleanupPage.qml" line="111"/>
+        <location filename="../qml/pages/CleanupPage.qml" line="166"/>
         <source>No cleanup batches yet. Run a library cleanup to see proposed fixes here.</source>
         <translation>还没有整理批次。运行一次曲库整理后，建议的修正会显示在这里。</translation>
     </message>
@@ -608,38 +622,43 @@
     </message>
     <message>
         <location filename="../qml/CorrectionBatchList.qml" line="24"/>
+        <source>Artist Credits</source>
+        <translation>艺人署名</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="25"/>
         <source>Split Artists</source>
         <translation>拆分艺人</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionBatchList.qml" line="25"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="26"/>
         <source>Merge Artists</source>
         <translation>合并艺人</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionBatchList.qml" line="26"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="27"/>
         <source>Manual Fix</source>
         <translation>手动修正</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionBatchList.qml" line="46"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="47"/>
         <source>Batches</source>
         <translation>批次</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CorrectionBatchList.qml" line="54"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="55"/>
         <source>%n batch(es)</source>
         <translation>
             <numerusform>%n 个批次</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionBatchList.qml" line="174"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="175"/>
         <source>Reverted</source>
         <translation>已撤销</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionBatchList.qml" line="182"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="183"/>
         <source>%1 pending · %2 accepted</source>
         <translation>%1 待审 · %2 已接受</translation>
     </message>
@@ -682,29 +701,29 @@
         <translation>已失效</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CorrectionFilterBar.qml" line="51"/>
+        <location filename="../qml/CorrectionFilterBar.qml" line="54"/>
         <source>%n stale</source>
         <translation>
             <numerusform>%n 条已失效</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionFilterBar.qml" line="58"/>
+        <location filename="../qml/CorrectionFilterBar.qml" line="74"/>
         <source>Min: %1%</source>
         <translation>最低：%1%</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionFilterBar.qml" line="59"/>
+        <location filename="../qml/CorrectionFilterBar.qml" line="75"/>
         <source>Min Confidence: %1%</source>
         <translation>最低置信度：%1%</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionFilterBar.qml" line="112"/>
+        <location filename="../qml/CorrectionFilterBar.qml" line="128"/>
         <source>Reset</source>
         <translation>重置</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CorrectionFilterBar.qml" line="126"/>
+        <location filename="../qml/CorrectionFilterBar.qml" line="142"/>
         <source>%n item(s)</source>
         <translation>
             <numerusform>%n 项</numerusform>
@@ -782,12 +801,12 @@
         <translation>已撤销</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionRowItem.qml" line="188"/>
+        <location filename="../qml/CorrectionRowItem.qml" line="195"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionRowItem.qml" line="194"/>
+        <location filename="../qml/CorrectionRowItem.qml" line="201"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -2740,61 +2759,61 @@
 <context>
     <name>linernotes::ui::AiSettingsController</name>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="50"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="52"/>
         <source>Service name cannot be empty</source>
         <translation>服务名称不能为空</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="54"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="56"/>
         <source>Base URL cannot be empty</source>
         <translation>Base URL 不能为空</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="58"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="60"/>
         <source>Default model cannot be empty</source>
         <translation>默认模型不能为空</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="65"/>
-        <location filename="../src/ui/AiSettingsController.cpp" line="248"/>
-        <location filename="../src/ui/AiSettingsController.cpp" line="294"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="67"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="250"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="296"/>
         <source>Base URL must start with http:// or https://</source>
         <translation>Base URL 必须以 http:// 或 https:// 开头</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="120"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="122"/>
         <source>API key removed</source>
         <translation>API Key 已移除</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="123"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="125"/>
         <source>Failed to remove API key: %1</source>
         <translation>移除 API Key 失败：%1</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="130"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="132"/>
         <source>API key saved</source>
         <translation>API Key 已保存</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="133"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="135"/>
         <source>Failed to save API key: %1</source>
         <translation>保存 API Key 失败：%1</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="215"/>
-        <location filename="../src/ui/AiSettingsController.cpp" line="260"/>
-        <location filename="../src/ui/AiSettingsController.cpp" line="353"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="217"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="262"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="355"/>
         <source>Failed to read API key</source>
         <translation>读取 API Key 失败</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="442"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="444"/>
         <source>Connected successfully</source>
         <translation>连接成功</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="455"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="457"/>
         <source>This service does not provide a model list; type the model name manually</source>
         <translation>该服务不提供模型列表，请手动输入模型名</translation>
     </message>
@@ -2803,53 +2822,53 @@
         <translation type="vanished">加载 ping 提示词模板失败</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="447"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="449"/>
         <source>Connected successfully, model replied: %1</source>
         <translation>连接成功，模型回复：%1</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="401"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="403"/>
         <source> (Failed to probe capabilities)</source>
         <translation>（探测能力失败）</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="241"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="243"/>
         <source>Choose a model first</source>
         <translation>请先选择模型</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="328"/>
-        <location filename="../src/ui/AiSettingsController.cpp" line="339"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="330"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="341"/>
         <source>Service not found</source>
         <translation>未找到服务</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="420"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="422"/>
         <source>API key is invalid or unauthorized</source>
         <translation>API Key 无效或未授权</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="423"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="425"/>
         <source>Unable to connect to service</source>
         <translation>无法连接到服务</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="426"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="428"/>
         <source>Connection timed out</source>
         <translation>连接超时</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="429"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="431"/>
         <source>Request limit exceeded</source>
         <translation>超出请求限制</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="432"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="434"/>
         <source>Connection failed: %1</source>
         <translation>连接失败：%1</translation>
     </message>
     <message>
-        <location filename="../src/ui/AiSettingsController.cpp" line="434"/>
+        <location filename="../src/ui/AiSettingsController.cpp" line="436"/>
         <source>Connection failed</source>
         <translation>连接失败</translation>
     </message>
@@ -2857,20 +2876,22 @@
 <context>
     <name>linernotes::ui::CorrectionListModel</name>
     <message>
+        <location filename="../src/ui/CorrectionListModel.cpp" line="198"/>
         <source>(Artist no longer exists)</source>
         <translation>（艺人已不存在）</translation>
     </message>
     <message>
+        <location filename="../src/ui/CorrectionListModel.cpp" line="228"/>
         <source>(Track no longer exists)</source>
         <translation>（曲目已不存在）</translation>
     </message>
     <message>
-        <location filename="../src/ui/CorrectionListModel.cpp" line="187"/>
+        <location filename="../src/ui/CorrectionListModel.cpp" line="202"/>
         <source>Alias (%1)</source>
         <translation>别名（%1）</translation>
     </message>
     <message>
-        <location filename="../src/ui/CorrectionListModel.cpp" line="188"/>
+        <location filename="../src/ui/CorrectionListModel.cpp" line="203"/>
         <source>Alias</source>
         <translation>别名</translation>
     </message>
@@ -2878,20 +2899,133 @@
 <context>
     <name>linernotes::ui::CorrectionReviewController</name>
     <message numerus="yes">
-        <location filename="../src/ui/CorrectionReviewController.cpp" line="95"/>
-        <location filename="../src/ui/CorrectionReviewController.cpp" line="135"/>
+        <location filename="../src/ui/CorrectionReviewController.cpp" line="114"/>
+        <location filename="../src/ui/CorrectionReviewController.cpp" line="180"/>
         <source>Accepted %n correction(s).</source>
         <translation>
             <numerusform>已接受 %n 条修正。</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ui/CorrectionReviewController.cpp" line="97"/>
-        <location filename="../src/ui/CorrectionReviewController.cpp" line="137"/>
+        <location filename="../src/ui/CorrectionReviewController.cpp" line="115"/>
+        <location filename="../src/ui/CorrectionReviewController.cpp" line="181"/>
         <source>%n skipped because the artist or track no longer exists.</source>
         <translation>
             <numerusform>%n 条因艺人或曲目已不存在而跳过。</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>linernotes::ui::ErrorText</name>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="17"/>
+        <source>The music library was created by a newer version of Linernotes.</source>
+        <translation>曲库由更新版本的 Linernotes 创建。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="26"/>
+        <source>A database error occurred.</source>
+        <translation>数据库发生错误。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="30"/>
+        <source>The correction is invalid.</source>
+        <translation>修正无效。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="34"/>
+        <source>The specified correction was not found.</source>
+        <translation>未找到指定的修正。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="38"/>
+        <source>Invalid tag modification.</source>
+        <translation>标签修改无效。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="42"/>
+        <source>Failed to read audio file tags.</source>
+        <translation>读取音频标签失败。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="46"/>
+        <source>The audio file format or tag format is not supported.</source>
+        <translation>不支持该音频文件或标签格式。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="50"/>
+        <source>Failed to read file.</source>
+        <translation>读取文件失败。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="53"/>
+        <source>Invalid music folder.</source>
+        <translation>无效的音乐文件夹。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="56"/>
+        <source>Music folder overlaps with an existing library root.</source>
+        <translation>音乐文件夹与现有曲库目录重叠。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="60"/>
+        <source>Failed to decode cover image.</source>
+        <translation>解析封面图片失败。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="64"/>
+        <source>Invalid playlist.</source>
+        <translation>歌单无效。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="67"/>
+        <source>Invalid smart playlist rule.</source>
+        <translation>智能歌单规则无效。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="71"/>
+        <source>Invalid rating value.</source>
+        <translation>评分值无效。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="74"/>
+        <source>Could not access the system keyring.</source>
+        <translation>无法访问系统密钥环。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="78"/>
+        <source>Unable to connect to AI service.</source>
+        <translation>无法连接到 AI 服务。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="82"/>
+        <source>AI service request timed out.</source>
+        <translation>AI 服务请求超时。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="86"/>
+        <source>AI service authentication failed.</source>
+        <translation>AI 服务认证失败。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="90"/>
+        <source>AI service rate limit exceeded.</source>
+        <translation>超出 AI 服务请求限制。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="94"/>
+        <source>Request blocked by privacy settings.</source>
+        <translation>请求已被隐私设置拦截。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="99"/>
+        <source>Operation failed.</source>
+        <translation>操作失败。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="101"/>
+        <source>Operation failed (error code: %1)</source>
+        <translation>操作失败（错误码：%1）</translation>
     </message>
 </context>
 <context>
@@ -3130,97 +3264,6 @@ Sort by track duration</extracomment>
         <source>Disc Total</source>
         <extracomment>Tag field name for total disc count in album</extracomment>
         <translation>光盘总数</translation>
-    </message>
-</context>
-<context>
-    <name>linernotes::ui::ErrorText</name>
-    <message>
-        <source>The music library was created by a newer version of Linernotes.</source>
-        <translation>曲库由更新版本的 Linernotes 创建。</translation>
-    </message>
-    <message>
-        <source>A database error occurred.</source>
-        <translation>数据库发生错误。</translation>
-    </message>
-    <message>
-        <source>The correction is invalid.</source>
-        <translation>修正无效。</translation>
-    </message>
-    <message>
-        <source>The specified correction was not found.</source>
-        <translation>未找到指定的修正。</translation>
-    </message>
-    <message>
-        <source>Invalid tag modification.</source>
-        <translation>标签修改无效。</translation>
-    </message>
-    <message>
-        <source>Failed to read audio file tags.</source>
-        <translation>读取音频标签失败。</translation>
-    </message>
-    <message>
-        <source>The audio file format or tag format is not supported.</source>
-        <translation>不支持该音频文件或标签格式。</translation>
-    </message>
-    <message>
-        <source>Failed to read file.</source>
-        <translation>读取文件失败。</translation>
-    </message>
-    <message>
-        <source>Invalid music folder.</source>
-        <translation>无效的音乐文件夹。</translation>
-    </message>
-    <message>
-        <source>Music folder overlaps with an existing library root.</source>
-        <translation>音乐文件夹与现有曲库目录重叠。</translation>
-    </message>
-    <message>
-        <source>Failed to decode cover image.</source>
-        <translation>解析封面图片失败。</translation>
-    </message>
-    <message>
-        <source>Invalid playlist.</source>
-        <translation>歌单无效。</translation>
-    </message>
-    <message>
-        <source>Invalid smart playlist rule.</source>
-        <translation>智能歌单规则无效。</translation>
-    </message>
-    <message>
-        <source>Invalid rating value.</source>
-        <translation>评分值无效。</translation>
-    </message>
-    <message>
-        <source>Could not access the system keyring.</source>
-        <translation>无法访问系统密钥环。</translation>
-    </message>
-    <message>
-        <source>Unable to connect to AI service.</source>
-        <translation>无法连接到 AI 服务。</translation>
-    </message>
-    <message>
-        <source>AI service request timed out.</source>
-        <translation>AI 服务请求超时。</translation>
-    </message>
-    <message>
-        <source>AI service authentication failed.</source>
-        <translation>AI 服务认证失败。</translation>
-    </message>
-    <message>
-        <source>AI service rate limit exceeded.</source>
-        <translation>超出 AI 服务请求限制。</translation>
-    </message>
-    <message>
-        <source>Request blocked by privacy settings.</source>
-        <translation>请求已被隐私设置拦截。</translation>
-    </message>
-    <message>
-        <source>Operation failed.</source>
-        <translation>操作失败。</translation>
-    </message>
-    <message>
-        <source>Operation failed (error code: %1)</source>
-        <translation>操作失败（错误码：%1）</translation>
     </message>
 </context>
 </TS>

@@ -13,15 +13,6 @@ inline constexpr QLatin1StringView kMojibakeInvalidResult { "mojibake.invalid_re
 inline constexpr QLatin1StringView kMojibakeSchemaNotFound { "mojibake.schema_not_found" };
 inline constexpr QLatin1StringView kMojibakePromptRenderFailed { "mojibake.prompt_render_failed" };
 
-inline constexpr QLatin1StringView kArtistSplitGroupNotFound { "artist_split.group_not_found" };
-inline constexpr QLatin1StringView kArtistSplitInvalidKey { "artist_split.invalid_key" };
-inline constexpr QLatin1StringView kArtistSplitInvalidResult { "artist_split.invalid_result" };
-inline constexpr QLatin1StringView kArtistSplitItemNotFound { "artist_split.item_not_found" };
-inline constexpr QLatin1StringView kArtistSplitSchemaNotFound { "artist_split.schema_not_found" };
-inline constexpr QLatin1StringView kArtistSplitPromptRenderFailed {
-    "artist_split.prompt_render_failed"
-};
-
 inline constexpr QLatin1StringView kArtistCreditInvalidKey { "artist_credit.invalid_key" };
 inline constexpr QLatin1StringView kArtistCreditInvalidResult { "artist_credit.invalid_result" };
 inline constexpr QLatin1StringView kArtistCreditItemNotFound { "artist_credit.item_not_found" };

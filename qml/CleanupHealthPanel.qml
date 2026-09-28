@@ -14,7 +14,7 @@ Rectangle {
     property bool collapsed: false
 
     readonly property bool hasCleanup: typeof AppContext !== "undefined" && AppContext && AppContext.cleanup
-    readonly property bool hasSelectedTasks: mojibakeCheck.checked || splitCheck.checked || mergeCheck.checked
+    readonly property bool hasSelectedTasks: mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked
 
     color: Theme.surface
     border.color: Theme.divider
@@ -39,7 +39,7 @@ Rectangle {
     function stepTitle(step) {
         if (hasCleanup && AppContext.cleanup.paused) return qsTr("Paused")
         if (step === CleanupController.Mojibake) return qsTr("Fixing garbled tags...")
-        if (step === CleanupController.Split) return qsTr("Splitting multi-artist credits...")
+        if (step === CleanupController.Credit) return qsTr("Normalizing artist credits...")
         if (step === CleanupController.Merge) return qsTr("Merging duplicate artists...")
         return qsTr("Cleaning up library...")
     }
@@ -48,7 +48,7 @@ Rectangle {
         updateAutoAcceptIndex()
         if (hasCleanup && AppContext.cleanup.healthReady) {
             mojibakeCheck.checked = AppContext.cleanup.mojibakeGroups > 0
-            splitCheck.checked = AppContext.cleanup.splitValues > 0
+            creditCheck.checked = AppContext.cleanup.creditValues > 0
             mergeCheck.checked = AppContext.cleanup.mergeClusters > 0
         }
     }
@@ -58,7 +58,7 @@ Rectangle {
         function onHealthChanged() {
             if (hasCleanup && AppContext.cleanup.healthReady) {
                 mojibakeCheck.checked = AppContext.cleanup.mojibakeGroups > 0
-                splitCheck.checked = AppContext.cleanup.splitValues > 0
+                creditCheck.checked = AppContext.cleanup.creditValues > 0
                 mergeCheck.checked = AppContext.cleanup.mergeClusters > 0
             }
         }
@@ -165,18 +165,18 @@ Rectangle {
                 Item { Layout.fillWidth: true }
             }
 
-            // Task 2: Split
+            // Task 2: Credit
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Theme.spacingSmall
                 Controls.AppCheckBox {
-                    id: splitCheck
-                    text: qsTr("Split multi-artist credits")
+                    id: creditCheck
+                    text: qsTr("Normalize artist credits")
                     enabled: hasCleanup && !AppContext.cleanup.running
                 }
                 Label {
-                    text: hasCleanup ? (qsTr("%n multi-artist value(s)", "", AppContext.cleanup.splitValues)
-                        + (AppContext.cleanup.splitTokens > 0 ? qsTr(" · ≈ %1 tokens").arg(AppContext.cleanup.splitTokens) : "")) : ""
+                    text: hasCleanup ? (qsTr("%n artist credit(s) to check", "", AppContext.cleanup.creditValues)
+                        + (AppContext.cleanup.creditTokens > 0 ? qsTr(" · ≈ %1 tokens").arg(AppContext.cleanup.creditTokens) : "")) : ""
                     font.pixelSize: Theme.fontSizeNormal
                     color: Theme.textSecondary
                 }
@@ -270,7 +270,7 @@ Rectangle {
                     text: qsTr("Run")
                     visible: hasCleanup && !AppContext.cleanup.running
                     enabled: root.hasSelectedTasks && hasCleanup && AppContext.cleanup.llmConfigured && !AppContext.cleanup.checking
-                    onClicked: if (hasCleanup) AppContext.cleanup.run(mojibakeCheck.checked, splitCheck.checked, mergeCheck.checked, mbCheck.checked)
+                    onClicked: if (hasCleanup) AppContext.cleanup.run(mojibakeCheck.checked, creditCheck.checked, mergeCheck.checked, mbCheck.checked)
                 }
 
                 // Progress controls

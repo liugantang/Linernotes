@@ -80,11 +80,18 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="178"/>
         <source>%n multi-artist value(s)</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%n multi-artist value</numerusform>
             <numerusform>%n multi-artist values</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="178"/>
+        <source>%n artist credit(s) to check</source>
+        <translation>
+            <numerusform>%n artist credit to check</numerusform>
+            <numerusform>%n artist credits to check</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -107,22 +114,30 @@
 <context>
     <name>CorrectionBatchList</name>
     <message numerus="yes">
-        <location filename="../qml/CorrectionBatchList.qml" line="54"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="55"/>
         <source>%n batch(es)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n batch</numerusform>
+            <numerusform>%n batches</numerusform>
         </translation>
     </message>
 </context>
 <context>
     <name>CorrectionFilterBar</name>
     <message numerus="yes">
-        <location filename="../qml/CorrectionFilterBar.qml" line="126"/>
+        <location filename="../qml/CorrectionFilterBar.qml" line="54"/>
+        <source>%n stale</source>
+        <translation>
+            <numerusform>%n stale</numerusform>
+            <numerusform>%n stale</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CorrectionFilterBar.qml" line="142"/>
         <source>%n item(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n item</numerusform>
+            <numerusform>%n items</numerusform>
         </translation>
     </message>
 </context>
@@ -211,6 +226,27 @@
         <translation>
             <numerusform>%n track</numerusform>
             <numerusform>%n tracks</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>linernotes::ui::CorrectionReviewController</name>
+    <message numerus="yes">
+        <location filename="../src/ui/CorrectionReviewController.cpp" line="114"/>
+        <location filename="../src/ui/CorrectionReviewController.cpp" line="180"/>
+        <source>Accepted %n correction(s).</source>
+        <translation>
+            <numerusform>Accepted %n correction.</numerusform>
+            <numerusform>Accepted %n corrections.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/ui/CorrectionReviewController.cpp" line="115"/>
+        <location filename="../src/ui/CorrectionReviewController.cpp" line="181"/>
+        <source>%n skipped because the artist or track no longer exists.</source>
+        <translation>
+            <numerusform>%n skipped because the artist or track no longer exists.</numerusform>
+            <numerusform>%n skipped because the artist or track no longer exists.</numerusform>
         </translation>
     </message>
 </context>

@@ -23,6 +23,7 @@ class Database;
 namespace linernotes::ai {
 class AiConfig;
 class JobQueue;
+class PromptLibrary;
 } // namespace linernotes::ai
 
 namespace linernotes::ui {
@@ -35,7 +36,7 @@ public:
     enum class Step : std::uint8_t {
         None,
         Mojibake,
-        Split,
+        Credit,
         Merge,
     };
     Q_ENUM(Step)
@@ -44,11 +45,11 @@ public:
     Q_PROPERTY(bool checking READ isChecking NOTIFY checkingChanged)
     Q_PROPERTY(bool healthReady READ isHealthReady NOTIFY healthChanged)
     Q_PROPERTY(int mojibakeGroups READ mojibakeGroups NOTIFY healthChanged)
-    Q_PROPERTY(int splitValues READ splitValues NOTIFY healthChanged)
+    Q_PROPERTY(int creditValues READ creditValues NOTIFY healthChanged)
     Q_PROPERTY(int mergeClusters READ mergeClusters NOTIFY healthChanged)
     Q_PROPERTY(int missingAlbumTracks READ missingAlbumTracks NOTIFY healthChanged)
     Q_PROPERTY(int mojibakeTokens READ mojibakeTokens NOTIFY healthChanged)
-    Q_PROPERTY(int splitTokens READ splitTokens NOTIFY healthChanged)
+    Q_PROPERTY(int creditTokens READ creditTokens NOTIFY healthChanged)
     Q_PROPERTY(int mergeTokens READ mergeTokens NOTIFY healthChanged)
 
     // Run / Progress
@@ -68,17 +69,18 @@ public:
     Q_PROPERTY(bool llmConfigured READ isLlmConfigured NOTIFY llmConfiguredChanged)
 
     CleanupController(library::Database &db, const core::Clock &clock, ai::JobQueue &jobs,
-        const ai::AiConfig &aiConfig, core::Settings &settings, QObject *parent = nullptr);
+        const ai::PromptLibrary &prompts, const ai::AiConfig &aiConfig, core::Settings &settings,
+        QObject *parent = nullptr);
     ~CleanupController() override;
 
     [[nodiscard]] bool isChecking() const;
     [[nodiscard]] bool isHealthReady() const;
     [[nodiscard]] int mojibakeGroups() const;
-    [[nodiscard]] int splitValues() const;
+    [[nodiscard]] int creditValues() const;
     [[nodiscard]] int mergeClusters() const;
     [[nodiscard]] int missingAlbumTracks() const;
     [[nodiscard]] int mojibakeTokens() const;
-    [[nodiscard]] int splitTokens() const;
+    [[nodiscard]] int creditTokens() const;
     [[nodiscard]] int mergeTokens() const;
 
     [[nodiscard]] bool isRunning() const;
@@ -96,7 +98,7 @@ public:
     [[nodiscard]] bool isLlmConfigured() const;
 
     Q_INVOKABLE void checkHealth();
-    Q_INVOKABLE void run(bool mojibake, bool split, bool merge, bool useMusicBrainz);
+    Q_INVOKABLE void run(bool mojibake, bool credit, bool merge, bool useMusicBrainz);
     Q_INVOKABLE void pause();
     Q_INVOKABLE void resume();
     Q_INVOKABLE void cancel();
@@ -118,8 +120,8 @@ private:
     struct HealthReportData {
         int mojibakeGroups = 0;
         QStringList mojibakeItems;
-        int splitValues = 0;
-        QStringList splitItems;
+        int creditValues = 0;
+        QStringList creditItems;
         int mergeClusters = 0;
         QStringList mergeItems;
         int missingAlbumTracks = 0;
@@ -140,17 +142,18 @@ private:
     library::Database &m_db;
     const core::Clock &m_clock;
     ai::JobQueue &m_jobs;
+    const ai::PromptLibrary &m_prompts;
     const ai::AiConfig &m_aiConfig;
     core::Settings &m_settings;
 
     bool m_checking = false;
     bool m_healthReady = false;
     int m_mojibakeGroups = 0;
-    int m_splitValues = 0;
+    int m_creditValues = 0;
     int m_mergeClusters = 0;
     int m_missingAlbumTracks = 0;
     int m_mojibakeTokens = 0;
-    int m_splitTokens = 0;
+    int m_creditTokens = 0;
     int m_mergeTokens = 0;
     QFutureWatcher<HealthReportData> m_healthWatcher;
 

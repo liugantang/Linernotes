@@ -15,12 +15,13 @@ Rectangle {
 
     function kindIcon(kind) {
         if (kind === Library.CorrectionKind.Mojibake) return "rotate-ccw"
-        if (kind === Library.CorrectionKind.ArtistSplit || kind === Library.CorrectionKind.ArtistMerge) return "mic-vocal"
+        if (kind === Library.CorrectionKind.ArtistSplit || kind === Library.CorrectionKind.ArtistCredit || kind === Library.CorrectionKind.ArtistMerge) return "mic-vocal"
         return "sparkles"
     }
 
     function kindTitle(kind) {
         if (kind === Library.CorrectionKind.Mojibake) return qsTr("Mojibake Fix")
+        if (kind === Library.CorrectionKind.ArtistCredit) return qsTr("Artist Credits")
         if (kind === Library.CorrectionKind.ArtistSplit) return qsTr("Split Artists")
         if (kind === Library.CorrectionKind.ArtistMerge) return qsTr("Merge Artists")
         return qsTr("Manual Fix")

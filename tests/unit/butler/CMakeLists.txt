@@ -58,16 +58,6 @@ linernotes_add_test(
         Linernotes::TestSupport
 )
 
-linernotes_add_test(
-    NAME butler_ArtistSplitLlm
-    SOURCES
-        tst_ArtistSplitLlm.cpp
-    LIBS
-        Linernotes::butler
-        Linernotes::library
-        Linernotes::core
-        Linernotes::TestSupport
-)
 
 linernotes_add_test(
     NAME butler_ArtistMerge
