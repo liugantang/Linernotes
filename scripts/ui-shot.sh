@@ -10,6 +10,7 @@
 #   --size <WxH>     窗口逻辑尺寸，默认 1200x800（与 Theme 默认窗口一致）
 #   --scale <n>      QT_SCALE_FACTOR，默认 1
 #   --binary <path>  默认 build/debug/app/linernotes
+#   --timeout <秒>   整个会话的时长上限，默认 120（长时间任务如全量整理需调大）
 # 步骤（按顺序执行，坐标为窗口内的物理像素）：
 #   shot:<名字>      截图保存为 <输出目录>/<名字>.png
 #   click:<x>,<y>    左键单击        dclick:<x>,<y>  双击
@@ -28,6 +29,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 HOME_DIR=""
 SIZE="1200x800"
 SCALE="1"
+TIMEOUT="120"
 BINARY="${REPO_ROOT}/build/debug/app/linernotes"
 
 while [[ $# -gt 0 && "$1" == --* ]]; do
@@ -36,6 +38,7 @@ while [[ $# -gt 0 && "$1" == --* ]]; do
         --size) SIZE="$2"; shift 2 ;;
         --scale) SCALE="$2"; shift 2 ;;
         --binary) BINARY="$2"; shift 2 ;;
+        --timeout) TIMEOUT="$2"; shift 2 ;;
         *) echo "Unknown option: $1" >&2; exit 2 ;;
     esac
 done
@@ -105,7 +108,7 @@ export -f run_steps
 export BINARY OUT_DIR SCREEN_W SCREEN_H
 
 env -u WAYLAND_DISPLAY QT_QPA_PLATFORM=xcb QT_SCALE_FACTOR="${SCALE}" LINERNOTES_HOME="${HOME_DIR}" \
-    timeout 120 xvfb-run -a -s "-screen 0 ${SCREEN_W}x${SCREEN_H}x24" bash -c 'run_steps "$@"' _ "$@"
+    timeout "${TIMEOUT}" xvfb-run -a -s "-screen 0 ${SCREEN_W}x${SCREEN_H}x24" bash -c 'run_steps "$@"' _ "$@"
 
 grep -E "\[W\]|\[C\]" "${OUT_DIR}/app.log" | grep -v "linernotes.player" || true
 [[ -n "${CLEANUP_HOME}" ]] && rm -rf "${CLEANUP_HOME}"
