@@ -38,7 +38,7 @@ std::optional<CreditPerformer> parsePerformer(const QJsonValue &val)
         return std::nullopt;
     }
     const QJsonObject obj = val.toObject();
-    if (!obj.contains(QStringLiteral("name")) || !obj.contains(QStringLiteral("aka"))) {
+    if (!obj.contains(QStringLiteral("name"))) {
         return std::nullopt;
     }
     const QJsonValue nameVal = obj.value(QStringLiteral("name"));
@@ -49,13 +49,17 @@ std::optional<CreditPerformer> parsePerformer(const QJsonValue &val)
     if (name.isEmpty()) {
         return std::nullopt;
     }
-    const auto akaOpt = parseStringList(obj.value(QStringLiteral("aka")));
-    if (!akaOpt.has_value()) {
-        return std::nullopt;
+    QStringList aka;
+    if (obj.contains(QStringLiteral("aka"))) {
+        const auto akaOpt = parseStringList(obj.value(QStringLiteral("aka")));
+        if (!akaOpt.has_value()) {
+            return std::nullopt;
+        }
+        aka = *akaOpt;
     }
     return CreditPerformer {
         .name = name,
-        .aka = *akaOpt,
+        .aka = aka,
     };
 }
 
@@ -115,8 +119,8 @@ QJsonObject toJson(const ArtistCredit &credit)
 
 std::optional<ArtistCredit> artistCreditFromJson(const QJsonObject &obj)
 {
-    if (!obj.contains(QStringLiteral("performers")) || !obj.contains(QStringLiteral("roles"))
-        || !obj.contains(QStringLiteral("confidence")) || !obj.contains(QStringLiteral("reason"))) {
+    if (!obj.contains(QStringLiteral("performers")) || !obj.contains(QStringLiteral("confidence"))
+        || !obj.contains(QStringLiteral("reason"))) {
         return std::nullopt;
     }
 
@@ -125,9 +129,13 @@ std::optional<ArtistCredit> artistCreditFromJson(const QJsonObject &obj)
         return std::nullopt;
     }
 
-    const auto rolesOpt = parseStringList(obj.value(QStringLiteral("roles")));
-    if (!rolesOpt.has_value()) {
-        return std::nullopt;
+    QStringList roles;
+    if (obj.contains(QStringLiteral("roles"))) {
+        const auto rolesOpt = parseStringList(obj.value(QStringLiteral("roles")));
+        if (!rolesOpt.has_value()) {
+            return std::nullopt;
+        }
+        roles = *rolesOpt;
     }
 
     const QJsonValue confVal = obj.value(QStringLiteral("confidence"));
@@ -143,7 +151,7 @@ std::optional<ArtistCredit> artistCreditFromJson(const QJsonObject &obj)
 
     return ArtistCredit {
         .performers = *performersOpt,
-        .roles = *rolesOpt,
+        .roles = roles,
         .confidence = confidence,
         .reason = reasonVal.toString(),
     };

@@ -25,6 +25,9 @@ class TstArtistCreditLlm : public QObject {
 
 private slots:
     void parseValidAndSkipInvalid();
+    void omittedValuesGetAsIsResult();
+    void emptyItemsArrayGivesAllAsIs();
+    void optionalAkaAndRolesParsedAsEmpty();
     void parseMissingItemsFails();
     void roundTripAndNormalizedValue();
 };
@@ -153,6 +156,138 @@ void TstArtistCreditLlm::parseValidAndSkipInvalid()
     QCOMPARE(c3.performers.at(1).aka, QStringList { QStringLiteral("早見沙織") });
 }
 
+void TstArtistCreditLlm::omittedValuesGetAsIsResult()
+{
+    const QStringList values = {
+        QStringLiteral("Jay Chou"),
+        QStringLiteral("高垣彩陽（as 雪音クリス）"),
+        QStringLiteral("IU"),
+    };
+
+    // Only return item for id 2 ("高垣彩陽（as 雪音クリス）"); id 1 and id 3 are omitted
+    QJsonObject obj2;
+    obj2.insert(QStringLiteral("id"), 2);
+    QJsonArray perf2;
+    QJsonObject p2;
+    p2.insert(QStringLiteral("name"), QStringLiteral("高垣彩陽"));
+    perf2.append(p2);
+    obj2.insert(QStringLiteral("performers"), perf2);
+    QJsonArray roles2;
+    roles2.append(QStringLiteral("雪音クリス"));
+    obj2.insert(QStringLiteral("roles"), roles2);
+    obj2.insert(QStringLiteral("confidence"), 0.95);
+    obj2.insert(QStringLiteral("reason"), QStringLiteral("Removed character role"));
+
+    QJsonArray itemsArr;
+    itemsArr.append(obj2);
+
+    QJsonObject root;
+    root.insert(QStringLiteral("items"), itemsArr);
+
+    const auto res = parseArtistCreditResult(root, values);
+    QVERIFY(res.ok());
+    const auto &map = res.value();
+
+    QCOMPARE(map.size(), 3);
+    QVERIFY(map.contains(QStringLiteral("Jay Chou")));
+    QVERIFY(map.contains(QStringLiteral("高垣彩陽（as 雪音クリス）")));
+    QVERIFY(map.contains(QStringLiteral("IU")));
+
+    // id 1: Omitted -> as-is result
+    const auto &c1 = map.value(QStringLiteral("Jay Chou"));
+    QCOMPARE(c1.performers.size(), 1);
+    QCOMPARE(c1.performers.at(0).name, QStringLiteral("Jay Chou"));
+    QVERIFY(c1.performers.at(0).aka.isEmpty());
+    QVERIFY(c1.roles.isEmpty());
+    QCOMPARE(c1.confidence, 1.0);
+    QVERIFY(c1.reason.isEmpty());
+    QCOMPARE(normalizedValue(c1), QStringLiteral("Jay Chou"));
+
+    // id 2: Parsed -> explicit result
+    const auto &c2 = map.value(QStringLiteral("高垣彩陽（as 雪音クリス）"));
+    QCOMPARE(c2.performers.size(), 1);
+    QCOMPARE(c2.performers.at(0).name, QStringLiteral("高垣彩陽"));
+    QCOMPARE(c2.roles, QStringList { QStringLiteral("雪音クリス") });
+    QCOMPARE(c2.confidence, 0.95);
+    QCOMPARE(normalizedValue(c2), QStringLiteral("高垣彩陽"));
+
+    // id 3: Omitted -> as-is result
+    const auto &c3 = map.value(QStringLiteral("IU"));
+    QCOMPARE(c3.performers.size(), 1);
+    QCOMPARE(c3.performers.at(0).name, QStringLiteral("IU"));
+    QVERIFY(c3.performers.at(0).aka.isEmpty());
+    QVERIFY(c3.roles.isEmpty());
+    QCOMPARE(c3.confidence, 1.0);
+    QVERIFY(c3.reason.isEmpty());
+    QCOMPARE(normalizedValue(c3), QStringLiteral("IU"));
+}
+
+void TstArtistCreditLlm::emptyItemsArrayGivesAllAsIs()
+{
+    const QStringList values = {
+        QStringLiteral("Artist 1"),
+        QStringLiteral("Artist 2"),
+    };
+
+    QJsonObject root;
+    root.insert(QStringLiteral("items"), QJsonArray());
+
+    const auto res = parseArtistCreditResult(root, values);
+    QVERIFY(res.ok());
+    const auto &map = res.value();
+
+    QCOMPARE(map.size(), 2);
+    QVERIFY(map.contains(QStringLiteral("Artist 1")));
+    QVERIFY(map.contains(QStringLiteral("Artist 2")));
+
+    const auto &c1 = map.value(QStringLiteral("Artist 1"));
+    QCOMPARE(c1.performers.size(), 1);
+    QCOMPARE(c1.performers.at(0).name, QStringLiteral("Artist 1"));
+    QVERIFY(c1.performers.at(0).aka.isEmpty());
+    QVERIFY(c1.roles.isEmpty());
+    QCOMPARE(c1.confidence, 1.0);
+    QVERIFY(c1.reason.isEmpty());
+    QCOMPARE(normalizedValue(c1), QStringLiteral("Artist 1"));
+
+    const auto &c2 = map.value(QStringLiteral("Artist 2"));
+    QCOMPARE(c2.performers.size(), 1);
+    QCOMPARE(c2.performers.at(0).name, QStringLiteral("Artist 2"));
+    QVERIFY(c2.performers.at(0).aka.isEmpty());
+    QVERIFY(c2.roles.isEmpty());
+    QCOMPARE(c2.confidence, 1.0);
+    QVERIFY(c2.reason.isEmpty());
+    QCOMPARE(normalizedValue(c2), QStringLiteral("Artist 2"));
+}
+
+void TstArtistCreditLlm::optionalAkaAndRolesParsedAsEmpty()
+{
+    QJsonObject itemObj;
+    itemObj.insert(QStringLiteral("id"), 1);
+
+    QJsonArray perfArr;
+    QJsonObject pObj;
+    pObj.insert(QStringLiteral("name"), QStringLiteral("Solo Artist"));
+    // "aka" is omitted
+    perfArr.append(pObj);
+    itemObj.insert(QStringLiteral("performers"), perfArr);
+    // "roles" is omitted
+    itemObj.insert(QStringLiteral("confidence"), 0.9);
+    itemObj.insert(QStringLiteral("reason"), QStringLiteral("Solo artist without aka or roles"));
+
+    const auto creditOpt = artistCreditFromJson(itemObj);
+    QVERIFY(creditOpt.has_value());
+    if (!creditOpt.has_value()) {
+        return;
+    }
+
+    QCOMPARE(creditOpt->performers.size(), 1);
+    QCOMPARE(creditOpt->performers.at(0).name, QStringLiteral("Solo Artist"));
+    QVERIFY(creditOpt->performers.at(0).aka.isEmpty());
+    QVERIFY(creditOpt->roles.isEmpty());
+    QCOMPARE(creditOpt->confidence, 0.9);
+    QCOMPARE(creditOpt->reason, QStringLiteral("Solo artist without aka or roles"));
+}
+
 void TstArtistCreditLlm::parseMissingItemsFails()
 {
     const QStringList values = { QStringLiteral("Artist") };
@@ -168,7 +303,7 @@ void TstArtistCreditLlm::roundTripAndNormalizedValue()
     ArtistCredit credit {
         .performers = {
             CreditPerformer { .name = QStringLiteral("Artist A"), .aka = { QStringLiteral("Aka A") } },
-            CreditPerformer { .name = QStringLiteral("Artist B"), .aka = {} },
+            CreditPerformer { .name = QStringLiteral("Artist B"), .aka = { } },
         },
         .roles = { QStringLiteral("Role 1"), QStringLiteral("Role 2") },
         .confidence = 0.88,
@@ -186,14 +321,41 @@ void TstArtistCreditLlm::roundTripAndNormalizedValue()
 
     QCOMPARE(*parsedOpt, credit);
 
-    // Invalid json tests
+    // Invalid json tests: missing performers
     QJsonObject emptyPerformers = json;
     emptyPerformers.insert(QStringLiteral("performers"), QJsonArray());
     QVERIFY(!artistCreditFromJson(emptyPerformers).has_value());
 
+    QJsonObject missingPerformers = json;
+    missingPerformers.remove(QStringLiteral("performers"));
+    QVERIFY(!artistCreditFromJson(missingPerformers).has_value());
+
+    // Missing confidence or reason
+    QJsonObject missingConfidence = json;
+    missingConfidence.remove(QStringLiteral("confidence"));
+    QVERIFY(!artistCreditFromJson(missingConfidence).has_value());
+
+    QJsonObject missingReason = json;
+    missingReason.remove(QStringLiteral("reason"));
+    QVERIFY(!artistCreditFromJson(missingReason).has_value());
+
+    // Missing roles or aka is valid (parsed as empty)
     QJsonObject missingRoles = json;
     missingRoles.remove(QStringLiteral("roles"));
-    QVERIFY(!artistCreditFromJson(missingRoles).has_value());
+    const auto optWithoutRoles = artistCreditFromJson(missingRoles);
+    QVERIFY(optWithoutRoles.has_value());
+    if (optWithoutRoles.has_value()) {
+        QVERIFY(optWithoutRoles->roles.isEmpty());
+    }
+
+    // Performer with empty name is invalid
+    QJsonObject invalidPerformer = json;
+    QJsonArray invalidPerfArr;
+    QJsonObject emptyNameP;
+    emptyNameP.insert(QStringLiteral("name"), QStringLiteral("   "));
+    invalidPerfArr.append(emptyNameP);
+    invalidPerformer.insert(QStringLiteral("performers"), invalidPerfArr);
+    QVERIFY(!artistCreditFromJson(invalidPerformer).has_value());
 }
 
 } // namespace

@@ -28,7 +28,7 @@ struct ArtistCredit {
 
 QJsonObject toJson(const ArtistCredit &credit);
 std::optional<ArtistCredit> artistCreditFromJson(
-    const QJsonObject &obj); // 字段缺失/类型错/performers 为空 → nullopt
+    const QJsonObject &obj); // 必填字段缺失/类型错/performers 为空 → nullopt（roles/aka 可省略）
 
 /// performers 的 name 用 " / " 连接。
 QString normalizedValue(const ArtistCredit &credit);

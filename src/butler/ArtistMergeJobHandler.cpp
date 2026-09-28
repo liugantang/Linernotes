@@ -317,7 +317,7 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::startLlm(
         .purpose = ai::Purpose::Cleanup,
         .request = std::move(req),
         .structured = spec,
-        .stream = false,
+        .stream = true,
         .cachePolicy = ai::CachePolicy::Use,
         .cacheTtlMs = std::nullopt,
         .dataCategories = { },

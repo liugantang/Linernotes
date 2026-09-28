@@ -104,6 +104,7 @@ private:
     std::unique_ptr<ai::JobQueue> m_jobs;
 
     qint64 m_jobId = 0;
+    qint64 m_jobStartTimeMs = 0;
     std::function<void()> m_onFinished;
     QElapsedTimer m_timer;
     bool m_finished = false;

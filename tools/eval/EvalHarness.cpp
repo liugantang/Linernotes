@@ -200,6 +200,7 @@ bool EvalHarness::runJob(const QString &kind, const QString &title, const QStrin
     const QJsonObject &params, std::function<void()> onFinished)
 {
     m_timer.start();
+    m_jobStartTimeMs = m_clock.nowMs();
     m_onFinished = std::move(onFinished);
     m_finished = false;
 
@@ -267,7 +268,7 @@ void EvalHarness::printLlmUsage()
     if (m_usage == nullptr) {
         return;
     }
-    const auto usageSummaryRes = m_usage->summarize(0, m_clock.nowMs() + 1000);
+    const auto usageSummaryRes = m_usage->summarize(m_jobStartTimeMs, m_clock.nowMs() + 1000);
     if (!usageSummaryRes.ok()) {
         return;
     }

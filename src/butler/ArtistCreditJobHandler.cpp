@@ -128,7 +128,12 @@ ai::TokenUsage ArtistCreditJobHandler::estimate(
     } else {
         promptTokens = (static_cast<int>(keyData.values.size()) * 30) + 200;
     }
-    const int completionTokens = static_cast<int>(keyData.values.size()) * 40;
+    // Source: Ollama Cloud deepseek-v4.1-flash measurement (2026-09-28): a batch of 100 values
+    // took 20k-32k completion tokens (avg 25k), almost all of it reasoning.
+    constexpr int kFixedReasoningTokensPerBatch = 10000;
+    constexpr int kCompletionTokensPerValue = 150;
+    const int completionTokens = kFixedReasoningTokensPerBatch
+        + (static_cast<int>(keyData.values.size()) * kCompletionTokensPerValue);
 
     return ai::TokenUsage {
         .promptTokens = promptTokens,
@@ -265,7 +270,7 @@ std::unique_ptr<QObject> ArtistCreditJobHandler::startLlm(const QStringList &val
         .purpose = ai::Purpose::Cleanup,
         .request = std::move(req),
         .structured = spec,
-        .stream = false,
+        .stream = true,
         .cachePolicy = ai::CachePolicy::Use,
         .cacheTtlMs = std::nullopt,
         .dataCategories = { },

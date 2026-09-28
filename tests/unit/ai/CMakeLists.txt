@@ -23,6 +23,11 @@ linernotes_add_test(
         tst_StructuredOutput.cpp
     LIBS
         Linernotes::ai
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Network
+        Qt6::Sql
 )
 
 linernotes_add_test(

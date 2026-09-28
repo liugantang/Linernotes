@@ -18,6 +18,9 @@ namespace linernotes::butler {
 
 class ArtistCreditSource {
 public:
+    static constexpr qsizetype kParseBatchSize = 100;
+    static constexpr qsizetype kCachedBatchSize = 100;
+
     explicit ArtistCreditSource(library::Database &db);
 
     /// promptVersion：当前提示词版本；缓存中 prompt_version 小于它的值视为未解析。

@@ -146,7 +146,7 @@ core::Result<QList<TrackFieldTarget>> queryTargetsForValue(
 }
 
 QStringList chunkValuesIntoKeys(
-    const QString &type, const QSet<QString> &valuesSet, qsizetype chunkSize = 100)
+    const QString &type, const QSet<QString> &valuesSet, qsizetype chunkSize)
 {
     QStringList sortedList = valuesSet.values();
     std::ranges::sort(sortedList);
@@ -261,8 +261,8 @@ core::Result<QStringList> ArtistCreditSource::findItems(int promptVersion) const
     }
 
     QStringList groupKeys;
-    groupKeys.append(chunkValuesIntoKeys(QStringLiteral("cached"), cachedSet));
-    groupKeys.append(chunkValuesIntoKeys(QStringLiteral("parse"), unparsedSet));
+    groupKeys.append(chunkValuesIntoKeys(QStringLiteral("cached"), cachedSet, kCachedBatchSize));
+    groupKeys.append(chunkValuesIntoKeys(QStringLiteral("parse"), unparsedSet, kParseBatchSize));
 
     return groupKeys;
 }

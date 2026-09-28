@@ -119,6 +119,7 @@ private slots:
     void cachedItemProducesCorrection();
     void oldPromptVersionIsUnparsed();
     void rejectedCorrectionExcludedFromTargets();
+    void batchSizeChunking();
 };
 
 void TstArtistCreditJob::cachedItemProducesCorrection()
@@ -361,6 +362,44 @@ void TstArtistCreditJob::rejectedCorrectionExcludedFromTargets()
     // targetsFor should now exclude this track field
     auto updatedTargets = source.targetsFor(QStringLiteral("Artist To Reject")).value();
     QCOMPARE(updatedTargets.size(), 0);
+}
+
+void TstArtistCreditJob::batchSizeChunking()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    Database db(tempDir.filePath(QStringLiteral("test_batch_size.db")));
+    QVERIFY(db.open(Migrator()).ok());
+    const auto conn = db.connection().value();
+
+    const qint64 rootId = TestDbHelper::insertRoot(conn);
+    EntityLinker linker(conn);
+
+    // Create 105 unparsed tracks -> should chunk into 2 parse groups (100 and 5)
+    for (int i = 1; i <= 105; ++i) {
+        const QString filePath = QStringLiteral("/music/%1.mp3").arg(i);
+        const qint64 fileId = TestDbHelper::insertFile(conn, rootId, filePath);
+        const qint64 trackId = TestDbHelper::insertTrack(conn, fileId);
+        const QString artist = QStringLiteral("Artist %1").arg(i);
+        TestDbHelper::insertRawTag(conn, trackId, QStringLiteral("ARTIST"), artist);
+        TestDbHelper::updateTagsReadAt(conn, trackId);
+        QVERIFY(linker.linkTrack(trackId).ok());
+    }
+
+    const ArtistCreditSource source(db);
+    const auto itemsRes = source.findItems(1);
+    QVERIFY(itemsRes.ok());
+    const auto &items = itemsRes.value();
+
+    QCOMPARE(items.size(), 2);
+    const auto doc1 = QJsonDocument::fromJson(items.at(0).toUtf8());
+    const auto doc2 = QJsonDocument::fromJson(items.at(1).toUtf8());
+    QCOMPARE(doc1.object().value(QStringLiteral("type")).toString(), QStringLiteral("parse"));
+    QCOMPARE(doc2.object().value(QStringLiteral("type")).toString(), QStringLiteral("parse"));
+    QCOMPARE(doc1.object().value(QStringLiteral("values")).toArray().size(),
+        ArtistCreditSource::kParseBatchSize);
+    QCOMPARE(doc2.object().value(QStringLiteral("values")).toArray().size(),
+        105 - ArtistCreditSource::kParseBatchSize);
 }
 
 } // namespace

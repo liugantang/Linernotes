@@ -19,8 +19,9 @@ QHash<QString, QString> artistCreditPromptVars(const QStringList &values);
 
 QJsonObject artistCreditSchema(); // ":/schemas/cleanup/artist_credit.json"
 
-/// 返回 值 → 解析结果。按 id 对回 values；id 越界、重复、performers 为空或某个 name trim
-/// 后为空的项跳过； 有的 value 没有返回结果也不算错（下次运行再解析）。顶层结构不对才返回错误。
+/// 返回 值 → 解析结果。按 id 对回 values；未在返回中出现的项视为“原样”（performers 为原值、aka 与
+/// roles 为空、置信度 1.0、理由为空）； id 越界、重复、performers 为空或 name
+/// 为空的非法项跳过、不记结果（下次重试）。顶层结构不对才返回错误。
 core::Result<QHash<QString, ArtistCredit>> parseArtistCreditResult(
     const QJsonValue &value, const QStringList &values);
 

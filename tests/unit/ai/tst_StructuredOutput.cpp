@@ -5,30 +5,110 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QNetworkAccessManager>
 #include <QObject>
+#include <QSignalSpy>
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QTemporaryDir>
 #include <QTest>
 
+#include <ai/AiConfig.h>
+#include <ai/AiEnums.h>
 #include <ai/ChatTypes.h>
 #include <ai/Errors.h>
 #include <ai/JsonSchema.h>
+#include <ai/LlmCache.h>
+#include <ai/LlmClient.h>
+#include <ai/LlmDebugLog.h>
+#include <ai/LlmReply.h>
+#include <ai/LlmService.h>
+#include <ai/PrivacyGuard.h>
+#include <ai/SecretStore.h>
 #include <ai/StructuredOutput.h>
+#include <ai/UsageStore.h>
+#include <common/ManualClock.h>
+#include <core/Settings.h>
+#include <library/Database.h>
+#include <library/Migrator.h>
 
+using linernotes::ai::AiConfig;
 using linernotes::ai::buildRepairRequest;
 using linernotes::ai::buildStructuredRequest;
+using linernotes::ai::CachePolicy;
 using linernotes::ai::Capabilities;
 using linernotes::ai::ChatRequest;
 using linernotes::ai::ChatResponse;
 using linernotes::ai::chooseStructuredMode;
 using linernotes::ai::JsonSchema;
+using linernotes::ai::LlmCache;
+using linernotes::ai::LlmCall;
+using linernotes::ai::LlmClient;
+using linernotes::ai::LlmDebugLog;
+using linernotes::ai::LlmReply;
+using linernotes::ai::LlmService;
+using linernotes::ai::LlmTask;
+using linernotes::ai::MemorySecretStore;
 using linernotes::ai::parseStructuredResponse;
+using linernotes::ai::PrivacyGuard;
+using linernotes::ai::Purpose;
 using linernotes::ai::ResponseFormat;
 using linernotes::ai::Role;
+using linernotes::ai::ServiceConfig;
+using linernotes::ai::ServiceProfile;
 using linernotes::ai::StructuredMode;
 using linernotes::ai::StructuredSpec;
 using linernotes::ai::ToolCall;
+using linernotes::ai::UsageStore;
+using linernotes::core::Settings;
+using linernotes::library::Database;
+using linernotes::library::Migrator;
+using linernotes::test::ManualClock;
 namespace errc = linernotes::ai::errc;
 
 namespace {
+
+class HttpSseServer : public QObject {
+    Q_OBJECT
+    Q_DISABLE_COPY_MOVE(HttpSseServer)
+
+public:
+    explicit HttpSseServer(QList<QByteArray> chunks, QObject *parent = nullptr)
+        : QObject(parent)
+        , m_chunks(std::move(chunks))
+    {
+        connect(&m_server, &QTcpServer::newConnection, this, &HttpSseServer::onNewConnection);
+        m_server.listen(QHostAddress::LocalHost, 0);
+    }
+
+    ~HttpSseServer() override { m_server.close(); }
+
+    QUrl url() const
+    {
+        return QUrl(QStringLiteral("http://127.0.0.1:%1/v1").arg(m_server.serverPort()));
+    }
+
+private:
+    void onNewConnection()
+    {
+        while (m_server.hasPendingConnections()) {
+            QTcpSocket *socket = m_server.nextPendingConnection();
+            connect(socket, &QTcpSocket::readyRead, this, [this, socket]() {
+                socket->readAll();
+                socket->write("HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nConnection: "
+                              "close\r\n\r\n");
+                for (const auto &chunk : m_chunks) {
+                    socket->write(chunk);
+                }
+                socket->disconnectFromHost();
+            });
+            connect(socket, &QTcpSocket::disconnected, socket, &QObject::deleteLater);
+        }
+    }
+
+    QTcpServer m_server;
+    QList<QByteArray> m_chunks;
+};
 
 QJsonObject makeTestSchema()
 {
@@ -67,6 +147,9 @@ private slots:
 
     void buildRepairRequestStandard();
     void buildRepairRequestToolMode();
+
+    void structuredStreamWithReasoning();
+    void streamingReasoningIgnoredInReply();
 };
 
 void TstStructuredOutput::chooseStructuredModePriority_data()
@@ -360,6 +443,138 @@ void TstStructuredOutput::buildRepairRequestToolMode()
     QCOMPARE(repairReq.messages.at(2).role, Role::User);
     QVERIFY(repairReq.messages.at(2).content.contains(QStringLiteral("/ok : expected boolean")));
     QCOMPARE(repairReq.forcedTool, QStringLiteral("report"));
+}
+
+void TstStructuredOutput::structuredStreamWithReasoning()
+{
+    const QList<QByteArray> chunks = {
+        "data: {\"choices\":[{\"delta\":{\"reasoning\":\"Thinking step 1...\"}}]}\n\n",
+        "data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"Thinking step 2...\"}}]}\n\n",
+        "data: {\"choices\":[{\"delta\":{\"content\":\"{\\\"ok\\\":\"}}]}\n\n",
+        "data: {\"choices\":[{\"delta\":{\"content\":\" true}\"}}]}\n\n",
+        QByteArray(R"(data: {"choices":[{"delta":{}}],)")
+            + "\"usage\":{\"prompt_tokens\":12,\"completion_tokens\":34}}\n\n",
+        "data: [DONE]\n\n",
+    };
+
+    HttpSseServer server(chunks);
+
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    Database db(tempDir.filePath(QStringLiteral("test_structured_stream.db")));
+    QVERIFY(db.open(Migrator()).ok());
+
+    ManualClock clock(1000);
+    Settings settings(tempDir.filePath(QStringLiteral("settings.ini")));
+    AiConfig aiConfig(settings);
+
+    ServiceProfile profile;
+    profile.id = QStringLiteral("test-profile");
+    profile.name = QStringLiteral("Test Server");
+    profile.baseUrl = server.url();
+    profile.defaultModel = QStringLiteral("test-model");
+    profile.timeoutMs = 5000;
+    profile.capabilities = Capabilities { .jsonSchema = true, .tools = false, .jsonObject = true };
+    profile.maxConcurrent = 2;
+    profile.requestsPerMinute = 0;
+    aiConfig.saveService(profile);
+
+    MemorySecretStore secrets;
+    QNetworkAccessManager network;
+    LlmClient client(network);
+    LlmCache cache(db, clock);
+    UsageStore usage(db);
+    PrivacyGuard privacy(settings);
+    LlmDebugLog debugLog(settings);
+    LlmService service(aiConfig, secrets, client, cache, usage, privacy, debugLog, clock);
+
+    StructuredSpec spec {
+        .name = QStringLiteral("test_spec"),
+        .description = QStringLiteral("Test Spec"),
+        .schema = makeTestSchema(),
+    };
+
+    ChatRequest req;
+    req.messages.append(makeMessage(Role::User, QStringLiteral("Run structured stream")));
+
+    LlmCall call {
+        .purpose = Purpose::Query,
+        .request = std::move(req),
+        .structured = spec,
+        .stream = true,
+        .cachePolicy = CachePolicy::Use,
+        .cacheTtlMs = std::nullopt,
+        .dataCategories = { },
+    };
+
+    auto task = service.start(std::move(call));
+    QVERIFY(task != nullptr);
+
+    QSignalSpy deltaSpy(task.get(), &LlmTask::delta);
+    QSignalSpy finishSpy(task.get(), &LlmTask::finished);
+
+    QVERIFY(finishSpy.wait(5000));
+    QVERIFY(task->isFinished());
+    QVERIFY(task->result().ok());
+
+    const auto &res = task->result().value();
+    QVERIFY(res.structured.has_value());
+    if (!res.structured.has_value()) {
+        return;
+    }
+    QVERIFY(res.structured->isObject());
+    QCOMPARE(res.structured->toObject().value(QStringLiteral("ok")).toBool(), true);
+    QCOMPARE(res.totalUsage.promptTokens, 12);
+    QCOMPARE(res.totalUsage.completionTokens, 34);
+    QCOMPARE(deltaSpy.count(), 0);
+}
+
+void TstStructuredOutput::streamingReasoningIgnoredInReply()
+{
+    const QList<QByteArray> chunks = {
+        "data: {\"choices\":[{\"delta\":{\"reasoning\":\"Thinking step 1...\"}}]}\n\n",
+        "data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"Thinking step 2...\"}}]}\n\n",
+        "data: {\"choices\":[{\"delta\":{\"content\":\"{\\\"ok\\\":\"}}]}\n\n",
+        "data: {\"choices\":[{\"delta\":{\"content\":\" true}\"}}]}\n\n",
+        QByteArray(R"(data: {"choices":[{"delta":{}}],)")
+            + "\"usage\":{\"prompt_tokens\":12,\"completion_tokens\":34}}\n\n",
+        "data: [DONE]\n\n",
+    };
+
+    HttpSseServer server(chunks);
+
+    QNetworkAccessManager network;
+    LlmClient client(network);
+
+    ServiceConfig config {
+        .baseUrl = server.url(),
+        .apiKey = QString(),
+        .model = QStringLiteral("test-model"),
+        .timeoutMs = 5000,
+    };
+
+    ChatRequest req;
+    req.messages.append(makeMessage(Role::User, QStringLiteral("hi")));
+
+    auto reply = client.stream(config, req);
+    QVERIFY(reply != nullptr);
+
+    QSignalSpy deltaSpy(reply.get(), &LlmReply::delta);
+    QSignalSpy finishSpy(reply.get(), &LlmReply::finished);
+
+    QVERIFY(finishSpy.wait(5000));
+    QVERIFY(reply->isFinished());
+    QVERIFY(reply->result().ok());
+
+    const auto &resp = reply->result().value();
+    QCOMPARE(resp.content, QStringLiteral("{\"ok\": true}"));
+    QVERIFY(!resp.content.contains(QStringLiteral("Thinking")));
+    QCOMPARE(resp.usage.promptTokens, 12);
+    QCOMPARE(resp.usage.completionTokens, 34);
+
+    QCOMPARE(deltaSpy.count(), 2);
+    QCOMPARE(deltaSpy.at(0).at(0).toString(), QStringLiteral("{\"ok\":"));
+    QCOMPARE(deltaSpy.at(1).at(0).toString(), QStringLiteral(" true}"));
 }
 
 } // namespace

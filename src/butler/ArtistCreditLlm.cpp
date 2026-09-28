@@ -90,6 +90,20 @@ core::Result<QHash<QString, ArtistCredit>> parseArtistCreditResult(
         results.insert(originalValue, *creditOpt);
     }
 
+    for (qsizetype i = 0; i < values.size(); ++i) {
+        const int id = static_cast<int>(i + 1);
+        if (!seenIds.contains(id)) {
+            const QString &val = values.at(i);
+            results.insert(val,
+                ArtistCredit {
+                    .performers = { CreditPerformer { .name = val, .aka = { } } },
+                    .roles = { },
+                    .confidence = 1.0,
+                    .reason = QString(),
+                });
+        }
+    }
+
     return results;
 }
 

@@ -26,7 +26,7 @@
                   }
                 }
               },
-              "required": ["name", "aka"],
+              "required": ["name"],
               "additionalProperties": false
             }
           },
@@ -45,7 +45,7 @@
             "type": "string"
           }
         },
-        "required": ["id", "performers", "roles", "confidence", "reason"],
+        "required": ["id", "performers", "confidence", "reason"],
         "additionalProperties": false
       }
     }
