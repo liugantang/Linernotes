@@ -58,3 +58,14 @@ linernotes_add_test(
         Linernotes::TestSupport
 )
 
+linernotes_add_test(
+    NAME butler_ArtistName
+    SOURCES
+        tst_ArtistName.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::core
+        Linernotes::TestSupport
+        Linernotes::Deps::ICU
+)
+
