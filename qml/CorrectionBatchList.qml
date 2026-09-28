@@ -48,13 +48,21 @@ Rectangle {
                     font.pixelSize: Theme.fontSizeNormal
                     font.bold: true
                     color: Theme.text
-                    Layout.fillWidth: true
                 }
 
                 Label {
                     text: AppContext.review && AppContext.review.batchModel ? qsTr("%n batch(es)", "", AppContext.review.batchModel.count) : ""
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.textSecondary
+                    Layout.fillWidth: true
+                }
+
+                Controls.AppButton {
+                    text: qsTr("Clear Processed")
+                    font.pixelSize: Theme.fontSizeSmall
+                    implicitHeight: 28
+                    enabled: AppContext.review && AppContext.review.batchModel && AppContext.review.batchModel.hasDecided
+                    onClicked: clearConfirmDialog.open()
                 }
             }
         }
@@ -195,6 +203,77 @@ Rectangle {
                     anchors.right: parent.right
                     height: 1
                     color: Theme.divider
+                }
+            }
+        }
+    }
+
+    Popup {
+        id: clearConfirmDialog
+        modal: true
+        focus: true
+        dim: true
+        parent: Overlay.overlay
+        anchors.centerIn: Overlay.overlay
+
+        implicitWidth: 380
+        implicitHeight: clearDialogLayout.implicitHeight + topPadding + bottomPadding
+        padding: Theme.spacingMedium
+
+        Overlay.modal: Rectangle {
+            color: Qt.rgba(0, 0, 0, 0.5)
+        }
+
+        background: Rectangle {
+            color: Theme.surface
+            border.color: Theme.divider
+            border.width: 1
+            radius: Theme.cardBorderRadius
+        }
+
+        contentItem: ColumnLayout {
+            id: clearDialogLayout
+            spacing: Theme.spacingMedium
+
+            Label {
+                text: qsTr("Clear Processed")
+                font.pixelSize: Theme.fontSizeLarge
+                font.bold: true
+                color: Theme.text
+                Layout.fillWidth: true
+            }
+
+            Label {
+                text: qsTr("Remove all batches with no pending proposals from the list? Accepted changes stay in effect.")
+                font.pixelSize: Theme.fontSizeNormal
+                color: Theme.textSecondary
+                wrapMode: Text.Wrap
+                Layout.fillWidth: true
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignRight
+                spacing: Theme.spacingSmall
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                Controls.AppButton {
+                    text: qsTr("Cancel")
+                    onClicked: clearConfirmDialog.close()
+                }
+
+                Controls.AppButton {
+                    text: qsTr("Delete")
+                    primary: true
+                    onClicked: {
+                        clearConfirmDialog.close()
+                        if (AppContext.review) {
+                            AppContext.review.deleteDecidedBatches()
+                        }
+                    }
                 }
             }
         }

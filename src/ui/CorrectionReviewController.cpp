@@ -10,6 +10,8 @@
 
 #include <library/EnumNames.h>
 
+#include <algorithm>
+
 namespace linernotes::ui {
 
 CorrectionReviewController::CorrectionReviewController(
@@ -237,13 +239,66 @@ void CorrectionReviewController::revertBatch(qint64 batchId)
     emit libraryModified();
 }
 
+void CorrectionReviewController::deleteBatch(qint64 batchId)
+{
+    auto res = m_store.deleteBatch(batchId);
+    if (!res.ok()) {
+        m_errorText = userErrorText(res.error());
+        if (!m_noticeText.isEmpty()) {
+            m_noticeText.clear();
+            emit noticeTextChanged();
+        }
+        qCWarning(
+            lcUi, "Failed to delete batch %lld: %s", batchId, qPrintable(res.error().toString()));
+        emit errorTextChanged();
+        return;
+    }
+
+    m_errorText.clear();
+    emit errorTextChanged();
+    if (!m_noticeText.isEmpty()) {
+        m_noticeText.clear();
+        emit noticeTextChanged();
+    }
+    refresh();
+}
+
+void CorrectionReviewController::deleteDecidedBatches()
+{
+    auto res = m_store.deleteDecidedBatches();
+    if (!res.ok()) {
+        m_errorText = userErrorText(res.error());
+        if (!m_noticeText.isEmpty()) {
+            m_noticeText.clear();
+            emit noticeTextChanged();
+        }
+        qCWarning(lcUi, "Failed to delete decided batches: %s", qPrintable(res.error().toString()));
+        emit errorTextChanged();
+        return;
+    }
+
+    m_errorText.clear();
+    emit errorTextChanged();
+    if (!m_noticeText.isEmpty()) {
+        m_noticeText.clear();
+        emit noticeTextChanged();
+    }
+    refresh();
+}
+
 void CorrectionReviewController::refresh()
 {
     m_batchModel.refresh();
-    if (m_currentBatchId > 0) {
+    const auto &batches = m_batchModel.batches();
+    const bool currentStillExists = (m_currentBatchId > 0)
+        && std::ranges::any_of(batches, [this](const auto &b) { return b.id == m_currentBatchId; });
+
+    if (currentStillExists) {
         selectBatch(m_currentBatchId);
+    } else if (!batches.isEmpty()) {
+        selectBatch(batches.first().id);
     } else {
-        m_listModel.setBatch(0, library::CorrectionKind::Manual);
+        selectBatch(0);
     }
 }
 

@@ -25,6 +25,7 @@ class CorrectionBatchModel : public QAbstractListModel {
     Q_DISABLE_COPY_MOVE(CorrectionBatchModel)
 
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(bool hasDecided READ hasDecided NOTIFY countChanged)
 
 public:
     enum Role : std::uint16_t { // NOLINT(cppcoreguidelines-use-enum-class) - Qt 模型角色需与 int
@@ -52,6 +53,7 @@ public:
     [[nodiscard]] QHash<int, QByteArray> roleNames() const override;
 
     [[nodiscard]] int count() const;
+    [[nodiscard]] bool hasDecided() const;
     [[nodiscard]] const QList<library::CorrectionBatchInfo> &batches() const;
 
     Q_INVOKABLE void refresh();

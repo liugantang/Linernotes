@@ -100,6 +100,12 @@ public:
     /// 整批撤销：accepted → reverted，pending → rejected，写
     /// reverted_at。已撤销的批次再撤销是空操作。
     core::Result<void> revertBatch(qint64 batchId);
+    /// 删除批次：软删除（写 deleted_at）；丢弃 pending 修正；空批次物理删除。
+    core::Result<void> deleteBatch(qint64 batchId);
+    /// 若批次为空（无任何修正）则物理删除，否则为空操作。
+    core::Result<void> deleteBatchIfEmpty(qint64 batchId);
+    /// 删除所有未删除且无 pending 修正的批次（空批次物理删除，其余软删除并丢弃 pending）。
+    core::Result<int> deleteDecidedBatches();
 
 private:
     Database &m_db;

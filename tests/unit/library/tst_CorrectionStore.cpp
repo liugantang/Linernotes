@@ -112,6 +112,10 @@ private slots:
     void rejectAndFilter();
     void revertBatchRestoresOriginal();
     void invalidConfidenceRejected();
+    void deleteBatchWithVariousCorrections();
+    void deleteEmptyBatchPhysicallyDeletes();
+    void deleteBatchIfEmptyDeletesOnlyWhenEmpty();
+    void deleteDecidedBatchesRemovesOnlyNonPending();
 };
 
 void TstCorrectionStore::addProposalsFillsOldValueAndStaysPending()
@@ -562,6 +566,305 @@ void TstCorrectionStore::invalidConfidenceRejected()
     QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM corrections;")));
     QVERIFY(q.next());
     QCOMPARE(q.value(0).toInt(), 0);
+}
+
+void TstCorrectionStore::deleteBatchWithVariousCorrections()
+{
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+    Database db(dbDir.filePath(QStringLiteral("test_delete_batch.db")));
+    QVERIFY(db.open(Migrator()).ok());
+    const auto conn = db.connection().value();
+
+    const qint64 rootId = TestDbHelper::insertRoot(conn);
+    const qint64 fileId = TestDbHelper::insertFile(conn, rootId);
+    const qint64 trackId = TestDbHelper::insertTrack(conn, fileId);
+
+    QVERIFY(TestDbHelper::insertRawTag(
+        conn, trackId, QStringLiteral("TITLE"), QStringLiteral("Orig Title")));
+    QVERIFY(TestDbHelper::insertRawTag(
+        conn, trackId, QStringLiteral("ARTIST"), QStringLiteral("Orig Artist")));
+    QVERIFY(TestDbHelper::insertRawTag(
+        conn, trackId, QStringLiteral("ALBUM"), QStringLiteral("Orig Album")));
+    QVERIFY(TestDbHelper::updateTagsReadAt(conn, trackId));
+
+    EntityLinker linker(conn);
+    QVERIFY(linker.linkTrack(trackId).ok());
+
+    ManualClock clock(1000);
+    CorrectionStore store(db, clock);
+
+    const auto batchIdRes = store.createBatch(CorrectionKind::Manual, QStringLiteral("Batch 1"));
+    QVERIFY(batchIdRes.ok());
+    const qint64 batchId = batchIdRes.value();
+
+    CorrectionProposal p1;
+    p1.trackId = trackId;
+    p1.field = TagField::Title;
+    p1.newValue = QStringLiteral("New Title");
+    p1.confidence = 0.9;
+    p1.reason = QStringLiteral("Fix title");
+
+    CorrectionProposal p2;
+    p2.trackId = trackId;
+    p2.field = TagField::Artist;
+    p2.newValue = QStringLiteral("New Artist");
+    p2.confidence = 0.8;
+    p2.reason = QStringLiteral("Fix artist");
+
+    CorrectionProposal p3;
+    p3.trackId = trackId;
+    p3.field = TagField::Album;
+    p3.newValue = QStringLiteral("New Album");
+    p3.confidence = 0.7;
+    p3.reason = QStringLiteral("Fix album");
+
+    QVERIFY(store.addProposals(batchId, { p1, p2, p3 }).ok());
+
+    const auto rows = store.corrections(batchId).value();
+    QCOMPARE(rows.size(), 3);
+
+    // Accept p1 (title)
+    QVERIFY(store.accept({ rows.at(0).id }).ok());
+    // Reject p2 (artist)
+    QVERIFY(store.reject({ rows.at(1).id }).ok());
+    // p3 (album) remains pending
+
+    QCOMPARE(onlyTrack(db).title, QStringLiteral("New Title"));
+
+    // Delete batch
+    clock.advance(100);
+    const auto delRes = store.deleteBatch(batchId);
+    QVERIFY(delRes.ok());
+
+    // batches() no longer contains the batch
+    const auto batches = store.batches().value();
+    QCOMPARE(batches.size(), 0);
+
+    // accepted change still in effect
+    QCOMPARE(onlyTrack(db).title, QStringLiteral("New Title"));
+
+    // Check database rows directly:
+    // accepted row preserved
+    QSqlQuery qAcc(conn);
+    qAcc.prepare(QStringLiteral("SELECT status FROM corrections WHERE id = ?;"));
+    qAcc.addBindValue(rows.at(0).id);
+    QVERIFY(qAcc.exec() && qAcc.next());
+    QCOMPARE(qAcc.value(0).toString(), QStringLiteral("accepted"));
+
+    // rejected row preserved
+    QSqlQuery qRej(conn);
+    qRej.prepare(QStringLiteral("SELECT status FROM corrections WHERE id = ?;"));
+    qRej.addBindValue(rows.at(1).id);
+    QVERIFY(qRej.exec() && qRej.next());
+    QCOMPARE(qRej.value(0).toString(), QStringLiteral("rejected"));
+
+    // pending row deleted
+    QSqlQuery qPen(conn);
+    qPen.prepare(QStringLiteral("SELECT COUNT(*) FROM corrections WHERE id = ?;"));
+    qPen.addBindValue(rows.at(2).id);
+    QVERIFY(qPen.exec() && qPen.next());
+    QCOMPARE(qPen.value(0).toInt(), 0);
+
+    // correction_batches soft deleted
+    QSqlQuery qBatch(conn);
+    qBatch.prepare(QStringLiteral("SELECT deleted_at FROM correction_batches WHERE id = ?;"));
+    qBatch.addBindValue(batchId);
+    QVERIFY(qBatch.exec() && qBatch.next());
+    QCOMPARE(qBatch.value(0).toLongLong(), 1100LL);
+
+    // Deleting again returns kCorrectionNotFound
+    const auto delAgain = store.deleteBatch(batchId);
+    QVERIFY(!delAgain.ok());
+    QCOMPARE(delAgain.error().code, QString(errc::kCorrectionNotFound));
+}
+
+void TstCorrectionStore::deleteEmptyBatchPhysicallyDeletes()
+{
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+    Database db(dbDir.filePath(QStringLiteral("test_empty_batch.db")));
+    QVERIFY(db.open(Migrator()).ok());
+    const auto conn = db.connection().value();
+
+    ManualClock clock(1000);
+    CorrectionStore store(db, clock);
+
+    const auto batchIdRes
+        = store.createBatch(CorrectionKind::Manual, QStringLiteral("Empty Batch"));
+    QVERIFY(batchIdRes.ok());
+    const qint64 batchId = batchIdRes.value();
+
+    QCOMPARE(store.batches().value().size(), 1);
+
+    const auto delRes = store.deleteBatch(batchId);
+    QVERIFY(delRes.ok());
+
+    QCOMPARE(store.batches().value().size(), 0);
+
+    // Physically deleted from correction_batches
+    QSqlQuery q(conn);
+    q.prepare(QStringLiteral("SELECT COUNT(*) FROM correction_batches WHERE id = ?;"));
+    q.addBindValue(batchId);
+    QVERIFY(q.exec() && q.next());
+    QCOMPARE(q.value(0).toInt(), 0);
+
+    // Deleting again returns kCorrectionNotFound
+    const auto delAgain = store.deleteBatch(batchId);
+    QVERIFY(!delAgain.ok());
+    QCOMPARE(delAgain.error().code, QString(errc::kCorrectionNotFound));
+}
+
+void TstCorrectionStore::deleteBatchIfEmptyDeletesOnlyWhenEmpty()
+{
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+    Database db(dbDir.filePath(QStringLiteral("test_delete_if_empty.db")));
+    QVERIFY(db.open(Migrator()).ok());
+    const auto conn = db.connection().value();
+
+    const qint64 rootId = TestDbHelper::insertRoot(conn);
+    const qint64 fileId = TestDbHelper::insertFile(conn, rootId);
+    const qint64 trackId = TestDbHelper::insertTrack(conn, fileId);
+
+    ManualClock clock(1000);
+    CorrectionStore store(db, clock);
+
+    // Empty batch -> physically deleted
+    const auto b1
+        = store.createBatch(CorrectionKind::Manual, QStringLiteral("Empty Batch")).value();
+    QVERIFY(store.deleteBatchIfEmpty(b1).ok());
+
+    QSqlQuery q1(conn);
+    q1.prepare(QStringLiteral("SELECT COUNT(*) FROM correction_batches WHERE id = ?;"));
+    q1.addBindValue(b1);
+    QVERIFY(q1.exec() && q1.next());
+    QCOMPARE(q1.value(0).toInt(), 0);
+
+    // Non-empty batch -> no-op
+    const auto b2
+        = store.createBatch(CorrectionKind::Manual, QStringLiteral("Non-empty Batch")).value();
+    CorrectionProposal p;
+    p.trackId = trackId;
+    p.field = TagField::Title;
+    p.newValue = QStringLiteral("Title");
+    p.confidence = 0.9;
+    QVERIFY(store.addProposals(b2, { p }).ok());
+
+    QVERIFY(store.deleteBatchIfEmpty(b2).ok());
+
+    QSqlQuery q2(conn);
+    q2.prepare(QStringLiteral("SELECT COUNT(*), deleted_at FROM correction_batches WHERE id = ?;"));
+    q2.addBindValue(b2);
+    QVERIFY(q2.exec() && q2.next());
+    QCOMPARE(q2.value(0).toInt(), 1);
+    QVERIFY(q2.value(1).isNull());
+}
+
+void TstCorrectionStore::deleteDecidedBatchesRemovesOnlyNonPending()
+{
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+    Database db(dbDir.filePath(QStringLiteral("test_delete_decided.db")));
+    QVERIFY(db.open(Migrator()).ok());
+    const auto conn = db.connection().value();
+
+    const qint64 rootId = TestDbHelper::insertRoot(conn);
+    const qint64 fileId = TestDbHelper::insertFile(conn, rootId);
+    const qint64 trackId = TestDbHelper::insertTrack(conn, fileId);
+
+    QVERIFY(TestDbHelper::insertRawTag(
+        conn, trackId, QStringLiteral("TITLE"), QStringLiteral("Song 1")));
+    QVERIFY(TestDbHelper::updateTagsReadAt(conn, trackId));
+
+    EntityLinker linker(conn);
+    QVERIFY(linker.linkTrack(trackId).ok());
+
+    ManualClock clock(1000);
+    CorrectionStore store(db, clock);
+
+    // Batch 1: empty
+    const auto b1 = store.createBatch(CorrectionKind::Manual, QStringLiteral("Batch 1")).value();
+
+    // Batch 2: all accepted
+    const auto b2 = store.createBatch(CorrectionKind::Manual, QStringLiteral("Batch 2")).value();
+    CorrectionProposal p2;
+    p2.trackId = trackId;
+    p2.field = TagField::Title;
+    p2.newValue = QStringLiteral("Title 2");
+    p2.confidence = 0.9;
+    QVERIFY(store.addProposals(b2, { p2 }).ok());
+    const auto rows2 = store.corrections(b2).value();
+    QVERIFY(store.accept({ rows2.at(0).id }).ok());
+
+    // Batch 3: all rejected
+    const auto b3 = store.createBatch(CorrectionKind::Manual, QStringLiteral("Batch 3")).value();
+    CorrectionProposal p3;
+    p3.trackId = trackId;
+    p3.field = TagField::Title;
+    p3.newValue = QStringLiteral("Title 3");
+    p3.confidence = 0.8;
+    QVERIFY(store.addProposals(b3, { p3 }).ok());
+    const auto rows3 = store.corrections(b3).value();
+    QVERIFY(store.reject({ rows3.at(0).id }).ok());
+
+    // Batch 4: has pending
+    const auto b4 = store.createBatch(CorrectionKind::Manual, QStringLiteral("Batch 4")).value();
+    CorrectionProposal p4a;
+    p4a.trackId = trackId;
+    p4a.field = TagField::Title;
+    p4a.newValue = QStringLiteral("Title 4a");
+    p4a.confidence = 0.9;
+
+    CorrectionProposal p4b;
+    p4b.trackId = trackId;
+    p4b.field = TagField::Artist;
+    p4b.newValue = QStringLiteral("Artist 4b");
+    p4b.confidence = 0.7;
+
+    QVERIFY(store.addProposals(b4, { p4a, p4b }).ok());
+    const auto rows4 = store.corrections(b4).value();
+    QVERIFY(store.accept({ rows4.at(0).id }).ok());
+    // rows4[1] is pending
+
+    QCOMPARE(store.batches().value().size(), 4);
+
+    // deleteDecidedBatches should delete b1 (empty), b2 (accepted), b3 (rejected) = 3 batches
+    const auto delCount = store.deleteDecidedBatches();
+    QVERIFY(delCount.ok());
+    QCOMPARE(delCount.value(), 3);
+
+    // Only b4 remains in batches()
+    const auto remaining = store.batches().value();
+    QCOMPARE(remaining.size(), 1);
+    QCOMPARE(remaining.first().id, b4);
+
+    // b1 is physically deleted
+    QSqlQuery q1(conn);
+    q1.prepare(QStringLiteral("SELECT COUNT(*) FROM correction_batches WHERE id = ?;"));
+    q1.addBindValue(b1);
+    QVERIFY(q1.exec() && q1.next());
+    QCOMPARE(q1.value(0).toInt(), 0);
+
+    // b2 and b3 are soft deleted
+    QSqlQuery q2(conn);
+    q2.prepare(QStringLiteral("SELECT deleted_at FROM correction_batches WHERE id = ?;"));
+    q2.addBindValue(b2);
+    QVERIFY(q2.exec() && q2.next());
+    QVERIFY(!q2.value(0).isNull());
+
+    QSqlQuery q3(conn);
+    q3.prepare(QStringLiteral("SELECT deleted_at FROM correction_batches WHERE id = ?;"));
+    q3.addBindValue(b3);
+    QVERIFY(q3.exec() && q3.next());
+    QVERIFY(!q3.value(0).isNull());
+
+    // b4 is not deleted
+    QSqlQuery q4(conn);
+    q4.prepare(QStringLiteral("SELECT deleted_at FROM correction_batches WHERE id = ?;"));
+    q4.addBindValue(b4);
+    QVERIFY(q4.exec() && q4.next());
+    QVERIFY(q4.value(0).isNull());
 }
 
 } // namespace

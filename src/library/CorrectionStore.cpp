@@ -126,6 +126,7 @@ core::Result<QList<CorrectionBatchInfo>> CorrectionStore::batches() const
         "  COALESCE(SUM(CASE WHEN c.status = 'reverted' THEN 1 ELSE 0 END), 0) AS reverted_cnt "
         "FROM correction_batches b "
         "LEFT JOIN corrections c ON c.batch_id = b.id "
+        "WHERE b.deleted_at IS NULL "
         "GROUP BY b.id "
         "ORDER BY b.created_at DESC, b.id DESC");
 
@@ -334,6 +335,141 @@ core::Result<void> CorrectionStore::revertBatch(qint64 batchId)
         }
 
         return { };
+    });
+}
+
+namespace {
+
+core::Result<void> deleteBatchInTx(const QSqlDatabase &conn, qint64 batchId, qint64 now)
+{
+    QSqlQuery countCheck(conn);
+    countCheck.prepare(QStringLiteral("SELECT COUNT(*) FROM corrections WHERE batch_id = ?"));
+    countCheck.addBindValue(batchId);
+    if (!countCheck.exec()) {
+        return core::Error {
+            .code = QString(errc::kDbQuery),
+            .message = countCheck.lastError().text(),
+            .detail = QString::number(batchId),
+        };
+    }
+    if (!countCheck.next()) {
+        return core::Error {
+            .code = QString(errc::kDbQuery),
+            .message = QStringLiteral("Failed to check batch corrections count"),
+            .detail = QString::number(batchId),
+        };
+    }
+
+    const int totalCount = countCheck.value(0).toInt();
+    if (totalCount == 0) {
+        QSqlQuery deleteBatchStmt(conn);
+        deleteBatchStmt.prepare(QStringLiteral("DELETE FROM correction_batches WHERE id = ?"));
+        deleteBatchStmt.addBindValue(batchId);
+        return detail::execWrite(deleteBatchStmt, QString::number(batchId));
+    }
+
+    QSqlQuery deletePending(conn);
+    deletePending.prepare(
+        QStringLiteral("DELETE FROM corrections WHERE batch_id = ? AND status = 'pending'"));
+    deletePending.addBindValue(batchId);
+    if (auto res = detail::execWrite(deletePending, QString::number(batchId)); !res.ok()) {
+        return res;
+    }
+
+    QSqlQuery updateBatch(conn);
+    updateBatch.prepare(
+        QStringLiteral("UPDATE correction_batches SET deleted_at = ? WHERE id = ?"));
+    updateBatch.addBindValue(now);
+    updateBatch.addBindValue(batchId);
+    return detail::execWrite(updateBatch, QString::number(batchId));
+}
+
+} // namespace
+
+core::Result<void> CorrectionStore::deleteBatch(qint64 batchId)
+{
+    const qint64 now = m_clock.nowMs();
+
+    return detail::inTransaction(m_db, [&](const QSqlDatabase &conn) -> core::Result<void> {
+        QSqlQuery batchCheck(conn);
+        batchCheck.prepare(
+            QStringLiteral("SELECT deleted_at FROM correction_batches WHERE id = ?"));
+        batchCheck.addBindValue(batchId);
+        if (!batchCheck.exec()) {
+            return core::Error {
+                .code = QString(errc::kDbQuery),
+                .message = batchCheck.lastError().text(),
+                .detail = QString::number(batchId),
+            };
+        }
+        if (!batchCheck.next() || !batchCheck.value(0).isNull()) {
+            return core::Error {
+                .code = QString(errc::kCorrectionNotFound),
+                .message = QStringLiteral("Correction batch not found"),
+                .detail = QString::number(batchId),
+            };
+        }
+
+        return deleteBatchInTx(conn, batchId, now);
+    });
+}
+
+core::Result<void> CorrectionStore::deleteBatchIfEmpty(qint64 batchId)
+{
+    const qint64 now = m_clock.nowMs();
+
+    return detail::inTransaction(m_db, [&](const QSqlDatabase &conn) -> core::Result<void> {
+        QSqlQuery countCheck(conn);
+        countCheck.prepare(QStringLiteral("SELECT COUNT(*) FROM corrections WHERE batch_id = ?"));
+        countCheck.addBindValue(batchId);
+        if (!countCheck.exec()) {
+            return core::Error {
+                .code = QString(errc::kDbQuery),
+                .message = countCheck.lastError().text(),
+                .detail = QString::number(batchId),
+            };
+        }
+        if (!countCheck.next() || countCheck.value(0).toInt() > 0) {
+            return { };
+        }
+
+        return deleteBatchInTx(conn, batchId, now);
+    });
+}
+
+core::Result<int> CorrectionStore::deleteDecidedBatches()
+{
+    const qint64 now = m_clock.nowMs();
+
+    return detail::inTransaction(m_db, [&](const QSqlDatabase &conn) -> core::Result<int> {
+        QSqlQuery q(conn);
+        const QString sql
+            = QStringLiteral("SELECT b.id "
+                             "FROM correction_batches b "
+                             "LEFT JOIN corrections c ON c.batch_id = b.id "
+                             "WHERE b.deleted_at IS NULL "
+                             "GROUP BY b.id "
+                             "HAVING SUM(CASE WHEN c.status = 'pending' THEN 1 ELSE 0 END) = 0");
+        if (!q.exec(sql)) {
+            return core::Error {
+                .code = QString(errc::kDbQuery),
+                .message = q.lastError().text(),
+                .detail = QString(),
+            };
+        }
+
+        QList<qint64> batchIds;
+        while (q.next()) {
+            batchIds.append(q.value(0).toLongLong());
+        }
+
+        for (const qint64 id : batchIds) {
+            if (auto res = deleteBatchInTx(conn, id, now); !res.ok()) {
+                return res.error();
+            }
+        }
+
+        return static_cast<int>(batchIds.size());
     });
 }
 

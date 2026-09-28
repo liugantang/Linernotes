@@ -113,6 +113,8 @@ private slots:
     void acceptSelectedUpdatesStatusAndEmits();
     void revertBatchMarksReverted();
     void staleCorrectionsHandling();
+    void deleteBatchRemovesFromListAndSelectsNext();
+    void deleteDecidedBatchesClearsProcessed();
 
 private:
     std::unique_ptr<QTemporaryDir> m_tempDir;
@@ -416,6 +418,49 @@ void TstCorrectionReview::staleCorrectionsHandling()
     listModel->selectAll();
     m_controller->rejectSelected();
     QCOMPARE(listModel->staleCount(), 0);
+}
+
+void TstCorrectionReview::deleteBatchRemovesFromListAndSelectsNext()
+{
+    CorrectionStore store(*m_db, *m_clock);
+    const auto extraBatch
+        = store.createBatch(CorrectionKind::Manual, QStringLiteral("Temporary Batch")).value();
+    m_controller->refresh();
+    m_controller->selectBatch(extraBatch);
+    QCOMPARE(m_controller->currentBatchId(), extraBatch);
+
+    // Delete it
+    m_controller->deleteBatch(extraBatch);
+
+    // Current batch switched to first batch in list
+    QVERIFY(m_controller->currentBatchId() > 0);
+    QVERIFY(m_controller->currentBatchId() != extraBatch);
+    QCOMPARE(m_controller->currentBatchId(), m_controller->batchModel()->batchIdAt(0));
+}
+
+void TstCorrectionReview::deleteDecidedBatchesClearsProcessed()
+{
+    CorrectionStore store(*m_db, *m_clock);
+    // Create an empty batch (which has 0 pending)
+    const auto emptyBatch
+        = store.createBatch(CorrectionKind::Manual, QStringLiteral("Empty Decided Batch")).value();
+    m_controller->refresh();
+
+    m_controller->deleteDecidedBatches();
+
+    const auto *batchModel = m_controller->batchModel();
+    bool foundEmpty = false;
+    bool foundPending = false;
+    for (int i = 0; i < batchModel->rowCount(); ++i) {
+        if (batchModel->batchIdAt(i) == emptyBatch) {
+            foundEmpty = true;
+        }
+        if (batchModel->batchIdAt(i) == m_artistMergeBatchId) {
+            foundPending = true;
+        }
+    }
+    QVERIFY(!foundEmpty);
+    QVERIFY(foundPending);
 }
 
 } // namespace

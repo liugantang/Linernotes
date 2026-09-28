@@ -133,6 +133,7 @@ private:
     void refreshLlmConfigured();
     void startNextStep();
     void executeStepWithItems(Step step, const QStringList &items);
+    void cleanupCurrentBatchIfEmpty();
 
     library::Database &m_db;
     const core::Clock &m_clock;
@@ -155,6 +156,7 @@ private:
     bool m_running = false;
     Step m_currentStep = Step::None;
     qint64 m_currentJobId = 0;
+    qint64 m_currentBatchId = 0;
     int m_stepDone = 0;
     int m_stepTotal = 0;
     int m_stepFailed = 0;

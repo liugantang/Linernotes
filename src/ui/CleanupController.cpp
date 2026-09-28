@@ -448,8 +448,8 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
             return;
         }
 
-        const qint64 batchId = batchRes.value();
-        params.insert(QStringLiteral("batchId"), batchId);
+        m_currentBatchId = batchRes.value();
+        params.insert(QStringLiteral("batchId"), m_currentBatchId);
         const double threshold = autoAcceptThreshold();
         if (threshold > 0.0) {
             params.insert(QStringLiteral("autoAccept"), threshold);
@@ -460,6 +460,7 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
     if (!enqueueRes.ok()) {
         qCWarning(
             lcUi, "Failed to enqueue job for step: %s", qPrintable(enqueueRes.error().toString()));
+        cleanupCurrentBatchIfEmpty();
         startNextStep();
         return;
     }
@@ -475,9 +476,11 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
         emit pausedChanged();
 
         if (jobInfo->state == ai::JobState::Completed) {
+            cleanupCurrentBatchIfEmpty();
             emit batchesChanged();
             startNextStep();
         } else if (jobInfo->state == ai::JobState::Cancelled) {
+            cleanupCurrentBatchIfEmpty();
             cancel();
         }
     }
@@ -499,9 +502,11 @@ void CleanupController::onJobChanged(qint64 jobId)
     emit pausedChanged();
 
     if (jobInfo->state == ai::JobState::Completed) {
+        cleanupCurrentBatchIfEmpty();
         emit batchesChanged();
         startNextStep();
     } else if (jobInfo->state == ai::JobState::Cancelled) {
+        cleanupCurrentBatchIfEmpty();
         m_pendingSteps.clear();
         m_running = false;
         m_currentStep = Step::None;
@@ -510,6 +515,22 @@ void CleanupController::onJobChanged(qint64 jobId)
         emit currentStepChanged();
         emit currentJobIdChanged();
         emit pausedChanged();
+    }
+}
+
+void CleanupController::cleanupCurrentBatchIfEmpty()
+{
+    if (m_currentBatchId <= 0) {
+        return;
+    }
+    const qint64 batchId = m_currentBatchId;
+    m_currentBatchId = 0;
+
+    library::CorrectionStore store(m_db, m_clock);
+    const auto res = store.deleteBatchIfEmpty(batchId);
+    if (!res.ok()) {
+        qCWarning(lcUi, "Failed to delete empty batch %lld: %s", batchId,
+            qPrintable(res.error().toString()));
     }
 }
 
@@ -533,6 +554,7 @@ void CleanupController::cancel()
     if (m_currentJobId > 0) {
         m_jobs.cancel(m_currentJobId);
     }
+    cleanupCurrentBatchIfEmpty();
     m_running = false;
     m_currentStep = Step::None;
     m_currentJobId = 0;

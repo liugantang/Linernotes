@@ -47,6 +47,8 @@ public:
     Q_INVOKABLE void acceptAllPending(double minConfidence);
     Q_INVOKABLE void acceptEdited(qint64 correctionId, const QString &value);
     Q_INVOKABLE void revertBatch(qint64 batchId);
+    Q_INVOKABLE void deleteBatch(qint64 batchId);
+    Q_INVOKABLE void deleteDecidedBatches();
     Q_INVOKABLE void refresh();
     Q_INVOKABLE void showStale();
     Q_INVOKABLE void clearNotice();

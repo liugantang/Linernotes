@@ -46,6 +46,8 @@ Rectangle {
         return false
     }
 
+    readonly property bool canDelete: AppContext.review && AppContext.review.currentBatchId > 0
+
     Flow {
         id: flowLayout
         anchors.left: parent.left
@@ -89,6 +91,12 @@ Rectangle {
             text: qsTr("Revert Batch")
             enabled: root.canRevert
             onClicked: revertConfirmDialog.open()
+        }
+
+        Controls.AppButton {
+            text: qsTr("Delete Batch")
+            enabled: root.canDelete
+            onClicked: deleteConfirmDialog.open()
         }
     }
 
@@ -156,6 +164,77 @@ Rectangle {
                         revertConfirmDialog.close()
                         if (AppContext.review) {
                             AppContext.review.revertBatch(AppContext.review.currentBatchId)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Popup {
+        id: deleteConfirmDialog
+        modal: true
+        focus: true
+        dim: true
+        parent: Overlay.overlay
+        anchors.centerIn: Overlay.overlay
+
+        implicitWidth: 380
+        implicitHeight: deleteDialogLayout.implicitHeight + topPadding + bottomPadding
+        padding: Theme.spacingMedium
+
+        Overlay.modal: Rectangle {
+            color: Qt.rgba(0, 0, 0, 0.5)
+        }
+
+        background: Rectangle {
+            color: Theme.surface
+            border.color: Theme.divider
+            border.width: 1
+            radius: Theme.cardBorderRadius
+        }
+
+        contentItem: ColumnLayout {
+            id: deleteDialogLayout
+            spacing: Theme.spacingMedium
+
+            Label {
+                text: qsTr("Delete Batch")
+                font.pixelSize: Theme.fontSizeLarge
+                font.bold: true
+                color: Theme.text
+                Layout.fillWidth: true
+            }
+
+            Label {
+                text: qsTr("Remove this batch from the list? Accepted changes stay in effect but can no longer be reverted as a batch. Pending proposals will be discarded.")
+                font.pixelSize: Theme.fontSizeNormal
+                color: Theme.textSecondary
+                wrapMode: Text.Wrap
+                Layout.fillWidth: true
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignRight
+                spacing: Theme.spacingSmall
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                Controls.AppButton {
+                    text: qsTr("Cancel")
+                    onClicked: deleteConfirmDialog.close()
+                }
+
+                Controls.AppButton {
+                    text: qsTr("Delete")
+                    primary: true
+                    onClicked: {
+                        deleteConfirmDialog.close()
+                        if (AppContext.review) {
+                            AppContext.review.deleteBatch(AppContext.review.currentBatchId)
                         }
                     }
                 }

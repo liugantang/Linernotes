@@ -607,6 +607,22 @@
         <source>Revert</source>
         <translation>撤销</translation>
     </message>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="94"/>
+        <location filename="../qml/CorrectionActionBar.qml" line="128"/>
+        <source>Delete Batch</source>
+        <translation>删除批次</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="136"/>
+        <source>Remove this batch from the list? Accepted changes stay in effect but can no longer be reverted as a batch. Pending proposals will be discarded.</source>
+        <translation>从列表中移除此批次？已接受的修改仍然生效，但不能再整批撤销；待审的建议将被丢弃。</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionActionBar.qml" line="159"/>
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
 </context>
 <context>
     <name>CorrectionBatchList</name>
@@ -646,6 +662,27 @@
         <translation>
             <numerusform>%n 个批次</numerusform>
         </translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="60"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="128"/>
+        <source>Clear Processed</source>
+        <translation>清除已处理</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="136"/>
+        <source>Remove all batches with no pending proposals from the list? Accepted changes stay in effect.</source>
+        <translation>从列表中移除所有没有待审建议的批次？已接受的修改仍然生效。</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="154"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="159"/>
+        <source>Delete</source>
+        <translation>删除</translation>
     </message>
     <message>
         <location filename="../qml/CorrectionBatchList.qml" line="175"/>

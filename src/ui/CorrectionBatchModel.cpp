@@ -6,6 +6,8 @@
 #include "Format.h"
 #include "UiLogging.h"
 
+#include <algorithm>
+
 namespace linernotes::ui {
 
 CorrectionBatchModel::CorrectionBatchModel(
@@ -75,6 +77,11 @@ QHash<int, QByteArray> CorrectionBatchModel::roleNames() const
 int CorrectionBatchModel::count() const
 {
     return static_cast<int>(m_batches.size());
+}
+
+bool CorrectionBatchModel::hasDecided() const
+{
+    return std::ranges::any_of(m_batches, [](const auto &b) { return b.pending == 0; });
 }
 
 const QList<library::CorrectionBatchInfo> &CorrectionBatchModel::batches() const
