@@ -6,6 +6,14 @@ file(GLOB SCHEMA_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/schema
 add_library(linernotes_butler STATIC
     ArtistCluster.cpp
     ArtistCluster.h
+    ArtistMerge.cpp
+    ArtistMerge.h
+    ArtistMergeJobHandler.cpp
+    ArtistMergeJobHandler.h
+    ArtistMergeLlm.cpp
+    ArtistMergeLlm.h
+    ArtistMergeSource.cpp
+    ArtistMergeSource.h
     ArtistName.cpp
     ArtistName.h
     ArtistSplit.cpp

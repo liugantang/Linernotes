@@ -2250,6 +2250,26 @@
         <source>Not confirmed by AI</source>
         <translation>未经 AI 确认</translation>
     </message>
+    <message>
+        <location filename="../src/butler/ArtistMerge.cpp" line="118"/>
+        <source>Matched via MusicBrainz</source>
+        <translation>经 MusicBrainz 确认为同一艺人</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistMerge.cpp" line="161"/>
+        <source>MusicBrainz localized alias</source>
+        <translation>MusicBrainz 提供的其他语言名</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistMerge.cpp" line="217"/>
+        <source>Same romanized name (word order or long vowels differ)</source>
+        <translation>罗马字相同（姓名顺序或长音写法不同）</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/ArtistMerge.cpp" line="218"/>
+        <source>Same name with different spelling</source>
+        <translation>同名，仅写法不同</translation>
+    </message>
 </context>
 <context>
     <name>linernotes::ui::AiSettingsController</name>

@@ -59,6 +59,28 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME butler_ArtistMerge
+    SOURCES
+        tst_ArtistMerge.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
+    NAME butler_ArtistMergeLlm
+    SOURCES
+        tst_ArtistMergeLlm.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
     NAME butler_ArtistName
     SOURCES
         tst_ArtistName.cpp

@@ -96,12 +96,6 @@ bool isKanaOrHangul(uint cp)
     return false;
 }
 
-bool containsCjk(QStringView text)
-{
-    const auto ucs4 = text.toUcs4();
-    return std::ranges::any_of(ucs4, [](uint cp) { return isHan(cp) || isKanaOrHangul(cp); });
-}
-
 bool isPunctuationSymbolOrSeparator(uint cp)
 {
     if (QChar::isSpace(cp)) {
@@ -156,6 +150,12 @@ QString normalizeRomajiToken(QString token)
 }
 
 } // namespace
+
+bool containsCjk(QStringView text)
+{
+    const auto ucs4 = text.toUcs4();
+    return std::ranges::any_of(ucs4, [](uint cp) { return isHan(cp) || isKanaOrHangul(cp); });
+}
 
 QString exactKey(QStringView name)
 {
