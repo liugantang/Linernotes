@@ -2,14 +2,19 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 add_executable(linernotes-eval
+    ArtistCreditEval.cpp
+    ArtistCreditEval.h
     ArtistMergeEval.cpp
     ArtistMergeEval.h
+    EvalHarness.cpp
+    EvalHarness.h
     main.cpp
 )
 
 target_compile_definitions(linernotes-eval
     PRIVATE
         DEFAULT_ARTIST_MERGE_CORPUS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/artist_merge.json"
+        DEFAULT_ARTIST_CREDIT_CORPUS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/artist_credit.json"
 )
 
 target_link_libraries(linernotes-eval

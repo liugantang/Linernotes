@@ -1,0 +1,401 @@
+[
+  {
+    "value": "周杰倫",
+    "performers": ["周杰倫"],
+    "aka": {
+      "周杰倫": ["Jay Chou", "周杰伦"]
+    }
+  },
+  {
+    "value": "宇多田ヒカル",
+    "performers": ["宇多田ヒカル"],
+    "aka": {
+      "宇多田ヒカル": ["Utada Hikaru", "Hikaru Utada"]
+    }
+  },
+  {
+    "value": "아이유",
+    "performers": ["아이유"],
+    "aka": {
+      "아이유": ["IU", "Lee Ji-eun", "李知恩"]
+    }
+  },
+  {
+    "value": "Radiohead",
+    "performers": ["Radiohead"]
+  },
+  {
+    "value": "陈奕迅",
+    "performers": ["陈奕迅"],
+    "aka": {
+      "陈奕迅": ["Eason Chan", "陳奕迅"]
+    }
+  },
+  {
+    "value": "米津玄師",
+    "performers": ["米津玄師"],
+    "aka": {
+      "米津玄師": ["Kenshi Yonezu", "Hachi", "ハチ"]
+    }
+  },
+  {
+    "value": "태연",
+    "performers": ["태연"],
+    "aka": {
+      "태연": ["Taeyeon", "Kim Tae-yeon", "太妍"]
+    }
+  },
+  {
+    "value": "Taylor Swift",
+    "performers": ["Taylor Swift"]
+  },
+  {
+    "value": "林俊傑",
+    "performers": ["林俊傑"],
+    "aka": {
+      "林俊傑": ["JJ Lin", "林俊杰"]
+    }
+  },
+  {
+    "value": "YOASOBI",
+    "performers": ["YOASOBI"]
+  },
+  {
+    "value": "高垣彩陽（as 雪音クリス）",
+    "performers": ["高垣彩陽"]
+  },
+  {
+    "value": "水树奈奈 (as 风鸣翼)",
+    "performers": ["水树奈奈"],
+    "aka": {
+      "水树奈奈": ["水樹奈々", "Nana Mizuki"]
+    }
+  },
+  {
+    "value": "悠木碧 (as 枢木スノウ)",
+    "performers": ["悠木碧"],
+    "aka": {
+      "悠木碧": ["Aoi Yuki"]
+    }
+  },
+  {
+    "value": "日笠陽子 as 秋山澪",
+    "performers": ["日笠陽子"]
+  },
+  {
+    "value": "花澤香菜 (as 千石撫子)",
+    "performers": ["花澤香菜"],
+    "aka": {
+      "花澤香菜": ["Kana Hanazawa"]
+    }
+  },
+  {
+    "value": "早見沙織（as 司波深雪）",
+    "performers": ["早見沙織"],
+    "aka": {
+      "早見沙織": ["Saori Hayami"]
+    }
+  },
+  {
+    "value": "内田真礼 as 小鳥遊六花",
+    "performers": ["内田真礼"],
+    "aka": {
+      "内田真礼": ["Maaya Uchida"]
+    }
+  },
+  {
+    "value": "雨宮天 (as アクア)",
+    "performers": ["雨宮天"],
+    "aka": {
+      "雨宮天": ["Sora Amamiya"]
+    }
+  },
+  {
+    "value": "高坂穂乃果(CV. 新田恵海)",
+    "performers": ["新田恵海"]
+  },
+  {
+    "value": "南ことり(CV:内田彩)",
+    "performers": ["内田彩"],
+    "aka": {
+      "内田彩": ["Aya Uchida"]
+    }
+  },
+  {
+    "value": "園田海未（CV：三森すずこ）",
+    "performers": ["三森すずこ"],
+    "aka": {
+      "三森すずこ": ["Suzuko Mimori"]
+    }
+  },
+  {
+    "value": "渋谷凛 (CV 福原綾香)",
+    "performers": ["福原綾香"]
+  },
+  {
+    "value": "島村卯月 (CV.大桥彩香)",
+    "performers": ["大桥彩香"],
+    "aka": {
+      "大桥彩香": ["Ayaka Ohashi", "大橋彩香"]
+    }
+  },
+  {
+    "value": "本田未央(CV: 原紗友里)",
+    "performers": ["原紗友里"]
+  },
+  {
+    "value": "中野三玖（CV：伊藤美来）",
+    "performers": ["伊藤美来"],
+    "aka": {
+      "伊藤美来": ["Miku Ito"]
+    }
+  },
+  {
+    "value": "竈門炭治郎(CV:花江夏樹)",
+    "performers": ["花江夏樹"],
+    "aka": {
+      "花江夏樹": ["Natsuki Hanae"]
+    }
+  },
+  {
+    "value": "御坂美琴 (CV. 佐藤利奈)",
+    "performers": ["佐藤利奈"],
+    "aka": {
+      "佐藤利奈": ["Rina Sato"]
+    }
+  },
+  {
+    "value": "鹿目まどか(CV.悠木碧)",
+    "performers": ["悠木碧"],
+    "aka": {
+      "悠木碧": ["Aoi Yuki"]
+    }
+  },
+  {
+    "value": "高坂穂乃果(CV.新田恵海)、絢瀬絵里(CV.南條愛乃)",
+    "performers": ["新田恵海", "南條愛乃"]
+  },
+  {
+    "value": "星空凛(CV.飯田里穂)・西木野真姫(CV.Pile)・小泉花陽(CV.久保ユリカ)",
+    "performers": ["飯田里穂", "Pile", "久保ユリカ"]
+  },
+  {
+    "value": "藤原千花(CV.小原好美) & 四宮かぐや(CV.古賀葵)",
+    "performers": ["小原好美", "古賀葵"]
+  },
+  {
+    "value": "チノ(CV.水瀬いのり)、ココア(CV.佐倉綾音)",
+    "performers": ["水瀬いのり", "佐倉綾音"]
+  },
+  {
+    "value": "トウカイテイオー(CV.Machico), メジロマックイーン(CV.大西沙織)",
+    "performers": ["Machico", "大西沙織"]
+  },
+  {
+    "value": "初音ミク (CV: 藤田咲) / 鏡音リン (CV: 下田麻美)",
+    "performers": ["藤田咲", "下田麻美"]
+  },
+  {
+    "value": "結城友奈(CV:照井春佳)・東郷美森(CV:三森すずこ)",
+    "performers": ["照井春佳", "三森すずこ"]
+  },
+  {
+    "value": "黒崎真音 (as 鳴海・エリシア・涼) / 南條愛乃 (as 笹塚・エル・涼)",
+    "performers": ["黒崎真音", "南條愛乃"]
+  },
+  {
+    "value": "Jay Chou feat. 孙燕姿",
+    "performers": ["Jay Chou", "孙燕姿"],
+    "aka": {
+      "Jay Chou": ["周杰伦", "周杰倫"],
+      "孙燕姿": ["Stefanie Sun", "孫燕姿"]
+    }
+  },
+  {
+    "value": "Eminem ft. Rihanna",
+    "performers": ["Eminem", "Rihanna"]
+  },
+  {
+    "value": "David Guetta featuring Sia",
+    "performers": ["David Guetta", "Sia"]
+  },
+  {
+    "value": "Queen with David Bowie",
+    "performers": ["Queen", "David Bowie"]
+  },
+  {
+    "value": "澤野弘之 × Aimer",
+    "performers": ["澤野弘之", "Aimer"],
+    "aka": {
+      "澤野弘之": ["Hiroyuki Sawano"]
+    }
+  },
+  {
+    "value": "LiSA & Uru",
+    "performers": ["LiSA", "Uru"]
+  },
+  {
+    "value": "林俊杰、蔡依林",
+    "performers": ["林俊杰", "蔡依林"],
+    "aka": {
+      "林俊杰": ["JJ Lin", "林俊傑"],
+      "蔡依林": ["Jolin Tsai"]
+    }
+  },
+  {
+    "value": "Ed Sheeran, Justin Bieber",
+    "performers": ["Ed Sheeran", "Justin Bieber"]
+  },
+  {
+    "value": "陶喆 / 蔡健雅",
+    "performers": ["陶喆", "蔡健雅"],
+    "aka": {
+      "陶喆": ["David Tao"],
+      "蔡健雅": ["Tanya Chua"]
+    }
+  },
+  {
+    "value": "米津玄師 + 菅田将暉",
+    "performers": ["米津玄師", "菅田将暉"],
+    "aka": {
+      "米津玄師": ["Kenshi Yonezu"]
+    }
+  },
+  {
+    "value": "Calvin Harris feat. Dua Lipa",
+    "performers": ["Calvin Harris", "Dua Lipa"]
+  },
+  {
+    "value": "IU feat. SUGA",
+    "performers": ["IU", "SUGA"],
+    "aka": {
+      "IU": ["아이유", "Lee Ji-eun"],
+      "SUGA": ["Agust D", "Min Yoon-gi", "슈가"]
+    }
+  },
+  {
+    "value": "Simon & Garfunkel",
+    "performers": ["Simon & Garfunkel"]
+  },
+  {
+    "value": "Earth, Wind & Fire",
+    "performers": ["Earth, Wind & Fire"]
+  },
+  {
+    "value": "Wake Up, Girls!",
+    "performers": ["Wake Up, Girls!"]
+  },
+  {
+    "value": "Hall & Oates",
+    "performers": ["Hall & Oates"],
+    "aka": {
+      "Hall & Oates": ["Daryl Hall & John Oates", "Daryl Hall and John Oates"]
+    }
+  },
+  {
+    "value": "Crosby, Stills, Nash & Young",
+    "performers": ["Crosby, Stills, Nash & Young"],
+    "aka": {
+      "Crosby, Stills, Nash & Young": ["CSNY"]
+    }
+  },
+  {
+    "value": "Mumford & Sons",
+    "performers": ["Mumford & Sons"]
+  },
+  {
+    "value": "Florence + the Machine",
+    "performers": ["Florence + the Machine"],
+    "aka": {
+      "Florence + the Machine": ["Florence and the Machine"]
+    }
+  },
+  {
+    "value": "AC/DC",
+    "performers": ["AC/DC"]
+  },
+  {
+    "value": "μ's",
+    "performers": ["μ's"],
+    "aka": {
+      "μ's": ["Muse", "ミューズ"]
+    }
+  },
+  {
+    "value": "King & Prince",
+    "performers": ["King & Prince"]
+  },
+  {
+    "value": "Emerson, Lake & Palmer",
+    "performers": ["Emerson, Lake & Palmer"],
+    "aka": {
+      "Emerson, Lake & Palmer": ["ELP"]
+    }
+  },
+  {
+    "value": "Blood, Sweat & Tears",
+    "performers": ["Blood, Sweat & Tears"]
+  },
+  {
+    "value": "放課後ティータイム (平沢唯, 秋山澪)",
+    "performers": ["放課後ティータイム"]
+  },
+  {
+    "value": "Roselia (相羽あいな, 工藤晴香, 中島由貴, 櫻川めぐ, 志崎樺音)",
+    "performers": ["Roselia"]
+  },
+  {
+    "value": "Poppin'Party（戸山香澄、花園たえ、牛込りみ、山吹沙綾、市ヶ谷有咲）",
+    "performers": ["Poppin'Party"]
+  },
+  {
+    "value": "BUMP OF CHICKEN (藤原基央, 増川弘晃)",
+    "performers": ["BUMP OF CHICKEN"]
+  },
+  {
+    "value": "back number (清水依与吏, 小島和也, 栗原寿)",
+    "performers": ["back number"]
+  },
+  {
+    "value": "結束バンド (喜多郁代, 後藤ひとり)",
+    "performers": ["結束バンド"]
+  },
+  {
+    "value": "LiSA (Live)",
+    "performers": ["LiSA"]
+  },
+  {
+    "value": "Aimer [Remastered]",
+    "performers": ["Aimer"]
+  },
+  {
+    "value": "周杰伦 (Live 2007)",
+    "performers": ["周杰伦"],
+    "aka": {
+      "周杰伦": ["Jay Chou", "周杰倫"]
+    }
+  },
+  {
+    "value": "Queen (2011 Remaster)",
+    "performers": ["Queen"]
+  },
+  {
+    "value": "Coldplay (Live in Buenos Aires)",
+    "performers": ["Coldplay"]
+  },
+  {
+    "value": "Linkin Park [Instrumental]",
+    "performers": ["Linkin Park"]
+  },
+  {
+    "value": "宇多田ヒカル (2024 Mix)",
+    "performers": ["宇多田ヒカル"],
+    "aka": {
+      "宇多田ヒカル": ["Utada Hikaru"]
+    }
+  },
+  {
+    "value": "RADWIMPS (Movie ver.)",
+    "performers": ["RADWIMPS"]
+  }
+]
