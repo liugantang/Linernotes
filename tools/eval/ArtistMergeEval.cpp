@@ -10,6 +10,7 @@
 #include <QJsonObject>
 #include <QSqlQuery>
 
+#include <butler/ArtistCreditSource.h>
 #include <butler/ArtistMergeSource.h>
 #include <library/ArtistAliasCorrections.h>
 #include <library/CorrectionStore.h>
@@ -325,11 +326,56 @@ bool ArtistMergeEval::importCorpusToDb()
 
 void ArtistMergeEval::start()
 {
+    int promptVersion = 0;
+    if (const auto promptRes = m_harness.prompts().load(QStringLiteral("cleanup/artist_credit"));
+        promptRes.ok()) {
+        promptVersion = promptRes.value().version;
+    } else {
+        std::cerr << "Failed to load cleanup/artist_credit prompt: "
+                  << qPrintable(promptRes.error().toString()) << "\n";
+        QCoreApplication::exit(2);
+        return;
+    }
+
+    library::CorrectionStore store(m_harness.db(), m_harness.clock());
+    const auto creditBatchRes = store.createBatch(
+        library::CorrectionKind::ArtistCredit, QStringLiteral("Artist credit eval batch"));
+    if (!creditBatchRes.ok()) {
+        std::cerr << "Failed to create credit correction batch: "
+                  << qPrintable(creditBatchRes.error().toString()) << "\n";
+        QCoreApplication::exit(2);
+        return;
+    }
+    const qint64 creditBatchId = creditBatchRes.value();
+
+    const butler::ArtistCreditSource creditSource(m_harness.db());
+    const auto creditItemsRes = creditSource.findItems(promptVersion);
+    if (!creditItemsRes.ok()) {
+        std::cerr << "Failed to find credit items: "
+                  << qPrintable(creditItemsRes.error().toString()) << "\n";
+        QCoreApplication::exit(2);
+        return;
+    }
+    const QStringList &creditItems = creditItemsRes.value();
+
+    QJsonObject creditParams;
+    creditParams.insert(QStringLiteral("batchId"), creditBatchId);
+
+    const bool creditStarted = m_harness.runJob(QStringLiteral("butler.artist_credit"),
+        QStringLiteral("Artist credit eval"), creditItems, creditParams,
+        [this]() { startMergeJob(); });
+    if (!creditStarted) {
+        QCoreApplication::exit(2);
+    }
+}
+
+void ArtistMergeEval::startMergeJob()
+{
     library::CorrectionStore store(m_harness.db(), m_harness.clock());
     const auto batchRes = store.createBatch(
         library::CorrectionKind::ArtistMerge, QStringLiteral("Artist merge eval batch"));
     if (!batchRes.ok()) {
-        std::cerr << "Failed to create correction batch: "
+        std::cerr << "Failed to create merge correction batch: "
                   << qPrintable(batchRes.error().toString()) << "\n";
         QCoreApplication::exit(2);
         return;

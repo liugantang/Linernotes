@@ -2,11 +2,8 @@
 // SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #include <QChar>
-#include <QLatin1Char>
-#include <QLatin1StringView>
-#include <QRegularExpression>
+#include <QList>
 #include <QString>
-#include <QStringList>
 #include <QStringView>
 
 #include <butler/ArtistName.h>
@@ -35,17 +32,6 @@ icu::Transliterator *getTradToSimp()
             t = icu::Transliterator::createInstance(
                 icu::UnicodeString::fromUTF8("Hant-Hans"), UTRANS_FORWARD, status);
         }
-        return std::unique_ptr<icu::Transliterator>(t);
-    }();
-    return s_trans.get();
-}
-
-icu::Transliterator *getAnyToLatin()
-{
-    thread_local const std::unique_ptr<icu::Transliterator> s_trans = []() {
-        UErrorCode status = U_ZERO_ERROR;
-        auto *t = icu::Transliterator::createInstance(
-            icu::UnicodeString::fromUTF8("Any-Latin; Latin-ASCII"), UTRANS_FORWARD, status);
         return std::unique_ptr<icu::Transliterator>(t);
     }();
     return s_trans.get();
@@ -125,30 +111,6 @@ bool isPunctuationSymbolOrSeparator(uint cp)
     }
 }
 
-QString normalizeRomajiToken(QString token)
-{
-    while (token.contains(QLatin1StringView("ou"))) {
-        token.replace(QLatin1StringView("ou"), QLatin1StringView("o"));
-    }
-    while (token.contains(QLatin1StringView("oo"))) {
-        token.replace(QLatin1StringView("oo"), QLatin1StringView("o"));
-    }
-    while (token.contains(QLatin1StringView("uu"))) {
-        token.replace(QLatin1StringView("uu"), QLatin1StringView("u"));
-    }
-    while (token.contains(QLatin1StringView("oh"))) {
-        token.replace(QLatin1StringView("oh"), QLatin1StringView("o"));
-    }
-    if (token.endsWith(QLatin1Char('h')) && token.length() > 1) {
-        const QChar prev = token.at(token.length() - 2);
-        if (prev == QLatin1Char('a') || prev == QLatin1Char('e') || prev == QLatin1Char('i')
-            || prev == QLatin1Char('o') || prev == QLatin1Char('u')) {
-            token.chop(1);
-        }
-    }
-    return token;
-}
-
 } // namespace
 
 bool containsCjk(QStringView text)
@@ -180,31 +142,6 @@ QString exactKey(QStringView name)
         }
     }
     return result;
-}
-
-QStringList romanTokens(QStringView name)
-{
-    if (name.trimmed().isEmpty() || containsCjk(name)) {
-        return { };
-    }
-
-    QString text = transliterateWith(getAnyToLatin(), name.toString());
-    text = text.toLower();
-
-    static const QRegularExpression s_splitRegex(QStringLiteral(R"([^a-z0-9]+)"));
-    const QStringList rawTokens = text.split(s_splitRegex, Qt::SkipEmptyParts);
-
-    QStringList tokens;
-    tokens.reserve(rawTokens.size());
-    for (const auto &raw : rawTokens) {
-        const QString norm = normalizeRomajiToken(raw);
-        if (!norm.isEmpty()) {
-            tokens.append(norm);
-        }
-    }
-
-    std::ranges::sort(tokens);
-    return tokens;
 }
 
 } // namespace linernotes::butler

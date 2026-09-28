@@ -199,8 +199,12 @@ void EvalHarness::initAiStack()
 bool EvalHarness::runJob(const QString &kind, const QString &title, const QStringList &items,
     const QJsonObject &params, std::function<void()> onFinished)
 {
-    m_timer.start();
-    m_jobStartTimeMs = m_clock.nowMs();
+    if (!m_timer.isValid()) {
+        m_timer.start();
+    }
+    if (m_jobStartTimeMs == 0) {
+        m_jobStartTimeMs = m_clock.nowMs();
+    }
     m_onFinished = std::move(onFinished);
     m_finished = false;
 

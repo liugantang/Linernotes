@@ -197,30 +197,25 @@ qint64 pickCanonical(const QList<ArtistEntry> &members)
     return best->artistId;
 }
 
-QList<library::ArtistAliasProposal> clusterProposals(const ArtistCluster &cluster)
+QList<library::ArtistAliasProposal> groupProposals(const ArtistGroup &group)
 {
-    if (cluster.members.size() < 2) {
+    if (group.members.size() < 2) {
         return { };
     }
 
-    const qint64 canonicalId = pickCanonical(cluster.members);
+    const qint64 canonicalId = pickCanonical(group.members);
     if (canonicalId <= 0) {
         return { };
     }
 
-    const bool hasRomanized = std::ranges::any_of(cluster.links,
-        [](const ArtistLink &link) { return link.kind == ArtistLinkKind::Romanized; });
-
-    const double confidence = hasRomanized ? 0.85 : 0.95;
-    const QString reason = hasRomanized
-        ? QString::fromUtf8(
-              QT_TRANSLATE_NOOP("butler", "Same romanized name (word order or long vowels differ)"))
-        : QString::fromUtf8(QT_TRANSLATE_NOOP("butler", "Same name with different spelling"));
+    const double confidence = 0.95;
+    const QString reason
+        = QString::fromUtf8(QT_TRANSLATE_NOOP("butler", "Same name with different spelling"));
 
     QList<library::ArtistAliasProposal> proposals;
-    proposals.reserve(cluster.members.size() - 1);
+    proposals.reserve(group.members.size() - 1);
 
-    for (const auto &member : cluster.members) {
+    for (const auto &member : group.members) {
         if (member.artistId == canonicalId) {
             continue;
         }

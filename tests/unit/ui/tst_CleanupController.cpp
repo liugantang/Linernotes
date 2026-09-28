@@ -166,7 +166,7 @@ void populateTestLibrary(const QSqlDatabase &conn)
     TestDbHelper::insertRawTag(conn, t3, QStringLiteral("ALBUM"), QStringLiteral("Album 1"));
     TestDbHelper::updateTagsReadAt(conn, t3);
 
-    // 3. Duplicate artists: Sora Amamiya / Amamiya Sora
+    // 3. Duplicate artists: Sora Amamiya / SORA AMAMIYA (same exact key)
     const qint64 f4
         = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/artists/4.mp3"));
     const qint64 t4 = TestDbHelper::insertTrack(conn, f4);
@@ -179,7 +179,7 @@ void populateTestLibrary(const QSqlDatabase &conn)
         = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/artists/5.mp3"));
     const qint64 t5 = TestDbHelper::insertTrack(conn, f5);
     TestDbHelper::insertRawTag(conn, t5, QStringLiteral("TITLE"), QStringLiteral("Song 5"));
-    TestDbHelper::insertRawTag(conn, t5, QStringLiteral("ARTIST"), QStringLiteral("Amamiya Sora"));
+    TestDbHelper::insertRawTag(conn, t5, QStringLiteral("ARTIST"), QStringLiteral("SORA AMAMIYA"));
     TestDbHelper::insertRawTag(conn, t5, QStringLiteral("ALBUM"), QStringLiteral("Album 2"));
     TestDbHelper::updateTagsReadAt(conn, t5);
 
@@ -347,7 +347,7 @@ void TstCleanupController::autoAcceptAppliesThreshold()
 
     const qint64 rootId = TestDbHelper::insertRoot(conn);
 
-    // Cluster 1: Romanized cluster -> Sora Amamiya (3 tracks) & Amamiya Sora (1 track) -> 0.85
+    // Sora Amamiya / Amamiya Sora share no identity key (no parsed aka) -> not grouped
     const qint64 f1
         = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/artists/1.mp3"));
     const qint64 f2
@@ -441,17 +441,8 @@ void TstCleanupController::autoAcceptAppliesThreshold()
     const auto correctionsRes = store.artistAliasCorrections(batchId);
     QVERIFY(correctionsRes.ok());
     const auto &corrections = correctionsRes.value();
-    QCOMPARE(corrections.size(), 2);
-
-    for (const auto &corr : corrections) {
-        if (corr.alias == QStringLiteral("Amamiya Sora")
-            || corr.alias == QStringLiteral("Sora Amamiya")) {
-            QCOMPARE(corr.status, CorrectionStatus::Pending);
-        } else if (corr.alias == QStringLiteral("MYTH&ROID")
-            || corr.alias == QStringLiteral("MYTH & ROID")) {
-            QCOMPARE(corr.status, CorrectionStatus::Accepted);
-        }
-    }
+    QCOMPARE(corrections.size(), 1);
+    QCOMPARE(corrections.first().status, CorrectionStatus::Accepted);
 }
 
 } // namespace

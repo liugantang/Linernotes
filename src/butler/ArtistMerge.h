@@ -7,7 +7,7 @@
 #include <QList>
 #include <QString>
 
-#include <butler/ArtistCluster.h>
+#include <butler/ArtistGroup.h>
 #include <butler/MusicBrainz.h>
 #include <library/ArtistAliasCorrections.h>
 
@@ -18,11 +18,10 @@ namespace linernotes::butler {
 /// 规范艺人：trackCount 最多者；相同时取名字按 QString::compare 较小者。
 qint64 pickCanonical(const QList<ArtistEntry> &members);
 
-/// 规则簇 → 把其余成员作为规范艺人的别名（locale nullopt）。
-/// confidence：簇内全部是 Exact 关系 → 0.95；含 Romanized → 0.85。source Rule；reason 用
-/// QT_TRANSLATE_NOOP 的英文固定串 （"Same name with different spelling" / "Same romanized name
-/// (word order or long vowels differ)"）。
-QList<library::ArtistAliasProposal> clusterProposals(const ArtistCluster &cluster);
+/// 规则组 → 把其余成员作为规范艺人的别名（locale nullopt）。
+/// confidence 0.95，source Rule，reason 用 QT_TRANSLATE_NOOP 的英文固定串（"Same name with
+/// different spelling"）。
+QList<library::ArtistAliasProposal> groupProposals(const ArtistGroup &group);
 
 /// MusicBrainz 结果 → 提议。只采用 score ≥ 90 且 (name == ours 或某个 alias.name == ours) 的第一条
 /// MB 艺人； 没有这样的条目 → 空列表。对采用的 MB 艺人：

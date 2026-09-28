@@ -4,8 +4,6 @@
 file(GLOB SCHEMA_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/schemas/*/*.json")
 
 add_library(linernotes_butler STATIC
-    ArtistCluster.cpp
-    ArtistCluster.h
     ArtistCredit.cpp
     ArtistCredit.h
     ArtistCreditJobHandler.cpp
@@ -16,6 +14,8 @@ add_library(linernotes_butler STATIC
     ArtistCreditSource.h
     ArtistCreditStore.cpp
     ArtistCreditStore.h
+    ArtistGroup.cpp
+    ArtistGroup.h
     ArtistMerge.cpp
     ArtistMerge.h
     ArtistMergeJobHandler.cpp
@@ -26,8 +26,6 @@ add_library(linernotes_butler STATIC
     ArtistMergeSource.h
     ArtistName.cpp
     ArtistName.h
-    ArtistSplit.cpp
-    ArtistSplit.h
     ButlerLogging.cpp
     ButlerLogging.h
     CharFrequency.cpp

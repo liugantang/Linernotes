@@ -39,11 +39,11 @@ public:
         std::function<void(const core::Result<void> &)> done) override;
 
 private:
-    std::unique_ptr<QObject> processCluster(const QJsonObject &keyObj, qint64 batchId,
+    std::unique_ptr<QObject> processGroup(const QJsonObject &keyObj, qint64 batchId,
         std::optional<double> autoAcceptThreshold,
         const std::function<void(const core::Result<void> &)> &done);
 
-    std::unique_ptr<QObject> processFuzzy(const QJsonObject &keyObj, const QJsonObject &params,
+    std::unique_ptr<QObject> processConfirm(const QJsonObject &keyObj, const QJsonObject &params,
         qint64 batchId, std::optional<double> autoAcceptThreshold,
         std::function<void(const core::Result<void> &)> done);
 
@@ -51,8 +51,7 @@ private:
         std::optional<double> autoAcceptThreshold,
         std::function<void(const core::Result<void> &)> done);
 
-    std::unique_ptr<QObject> startLlm(const QList<ArtistMergeCandidatePair> &pairs,
-        const QHash<qint64, ArtistEntry> &entriesById, qint64 batchId,
+    std::unique_ptr<QObject> startLlm(const QList<ArtistMergeGroup> &groups, qint64 batchId,
         std::optional<double> autoAcceptThreshold,
         std::function<void(const core::Result<void> &)> done);
 

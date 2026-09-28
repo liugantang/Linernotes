@@ -36,15 +36,14 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
-    NAME butler_ArtistSplit
+    NAME butler_ArtistGroup
     SOURCES
-        tst_ArtistSplit.cpp
+        tst_ArtistGroup.cpp
     LIBS
         Linernotes::butler
         Linernotes::library
         Linernotes::core
         Linernotes::TestSupport
-        Qt6::Sql
 )
 
 linernotes_add_test(

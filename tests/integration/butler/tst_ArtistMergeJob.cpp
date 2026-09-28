@@ -10,7 +10,9 @@
 #include <QTemporaryDir>
 #include <QTest>
 
-#include <butler/ArtistCluster.h>
+#include <butler/ArtistCredit.h>
+#include <butler/ArtistCreditStore.h>
+#include <butler/ArtistGroup.h>
 #include <butler/ArtistMerge.h>
 #include <butler/ArtistMergeSource.h>
 #include <common/ManualClock.h>
@@ -23,12 +25,13 @@
 
 namespace {
 
-using linernotes::butler::ArtistCluster;
+using linernotes::butler::ArtistCredit;
+using linernotes::butler::ArtistCreditStore;
 using linernotes::butler::ArtistEntry;
-using linernotes::butler::ArtistLink;
-using linernotes::butler::ArtistLinkKind;
+using linernotes::butler::ArtistGroup;
 using linernotes::butler::ArtistMergeSource;
-using linernotes::butler::clusterProposals;
+using linernotes::butler::CreditPerformer;
+using linernotes::butler::groupProposals;
 using linernotes::library::CorrectionKind;
 using linernotes::library::CorrectionProposal;
 using linernotes::library::CorrectionStore;
@@ -122,11 +125,12 @@ class TstArtistMergeJob : public QObject {
     Q_OBJECT
 
 private slots:
-    void clusterMergeAndAutoAccept();
-    void loadArtistsExcludesPendingTrackArtistOldValues();
+    void groupMergeAndAutoAccept();
+    void findItemsWithAkaProducesConfirmItem();
+    void loadArtistsAndFindItemsExcludePendingArtistCredit();
 };
 
-void TstArtistMergeJob::clusterMergeAndAutoAccept()
+void TstArtistMergeJob::groupMergeAndAutoAccept()
 {
     const QTemporaryDir dbDir;
     QVERIFY(dbDir.isValid());
@@ -138,55 +142,35 @@ void TstArtistMergeJob::clusterMergeAndAutoAccept()
     const qint64 f1 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/1.mp3"));
     const qint64 f2 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/2.mp3"));
     const qint64 f3 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/3.mp3"));
-    const qint64 f4 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/4.mp3"));
-    const qint64 f5 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/5.mp3"));
 
     const qint64 t1 = TestDbHelper::insertTrack(conn, f1);
     const qint64 t2 = TestDbHelper::insertTrack(conn, f2);
     const qint64 t3 = TestDbHelper::insertTrack(conn, f3);
-    const qint64 t4 = TestDbHelper::insertTrack(conn, f4);
-    const qint64 t5 = TestDbHelper::insertTrack(conn, f5);
 
-    // Amamiya Sora: 2 tracks (t1, t2)
+    // Jay Chou: 2 tracks (t1, t2)
     TestDbHelper::insertRawTag(conn, t1, QStringLiteral("TITLE"), QStringLiteral("Song 1"));
-    TestDbHelper::insertRawTag(conn, t1, QStringLiteral("ARTIST"), QStringLiteral("Amamiya Sora"));
+    TestDbHelper::insertRawTag(conn, t1, QStringLiteral("ARTIST"), QStringLiteral("Jay Chou"));
     TestDbHelper::updateTagsReadAt(conn, t1);
 
     TestDbHelper::insertRawTag(conn, t2, QStringLiteral("TITLE"), QStringLiteral("Song 2"));
-    TestDbHelper::insertRawTag(conn, t2, QStringLiteral("ARTIST"), QStringLiteral("Amamiya Sora"));
+    TestDbHelper::insertRawTag(conn, t2, QStringLiteral("ARTIST"), QStringLiteral("Jay Chou"));
     TestDbHelper::updateTagsReadAt(conn, t2);
 
-    // Sora Amamiya: 1 track (t3)
+    // jay chou: 1 track (t3)
     TestDbHelper::insertRawTag(conn, t3, QStringLiteral("TITLE"), QStringLiteral("Song 3"));
-    TestDbHelper::insertRawTag(conn, t3, QStringLiteral("ARTIST"), QStringLiteral("Sora Amamiya"));
+    TestDbHelper::insertRawTag(conn, t3, QStringLiteral("ARTIST"), QStringLiteral("jay chou"));
     TestDbHelper::updateTagsReadAt(conn, t3);
-
-    // Yuki Kajiura: 1 track (t4)
-    TestDbHelper::insertRawTag(conn, t4, QStringLiteral("TITLE"), QStringLiteral("Song 4"));
-    TestDbHelper::insertRawTag(conn, t4, QStringLiteral("ARTIST"), QStringLiteral("Yuki Kajiura"));
-    TestDbHelper::updateTagsReadAt(conn, t4);
-
-    // Yuki Kaji: 1 track (t5)
-    TestDbHelper::insertRawTag(conn, t5, QStringLiteral("TITLE"), QStringLiteral("Song 5"));
-    TestDbHelper::insertRawTag(conn, t5, QStringLiteral("ARTIST"), QStringLiteral("Yuki Kaji"));
-    TestDbHelper::updateTagsReadAt(conn, t5);
 
     EntityLinker linker(conn);
     QVERIFY(linker.linkTrack(t1).ok());
     QVERIFY(linker.linkTrack(t2).ok());
     QVERIFY(linker.linkTrack(t3).ok());
-    QVERIFY(linker.linkTrack(t4).ok());
-    QVERIFY(linker.linkTrack(t5).ok());
 
-    const qint64 amamiyaSoraId = TestDbHelper::getArtistId(conn, QStringLiteral("Amamiya Sora"));
-    const qint64 soraAmamiyaId = TestDbHelper::getArtistId(conn, QStringLiteral("Sora Amamiya"));
-    const qint64 yukiKajiuraId = TestDbHelper::getArtistId(conn, QStringLiteral("Yuki Kajiura"));
-    const qint64 yukiKajiId = TestDbHelper::getArtistId(conn, QStringLiteral("Yuki Kaji"));
+    const qint64 jayChouId = TestDbHelper::getArtistId(conn, QStringLiteral("Jay Chou"));
+    const qint64 lowerJayChouId = TestDbHelper::getArtistId(conn, QStringLiteral("jay chou"));
 
-    QVERIFY(amamiyaSoraId > 0);
-    QVERIFY(soraAmamiyaId > 0);
-    QVERIFY(yukiKajiuraId > 0);
-    QVERIFY(yukiKajiId > 0);
+    QVERIFY(jayChouId > 0);
+    QVERIFY(lowerJayChouId > 0);
 
     // Find items without MusicBrainz
     const ArtistMergeSource source(db);
@@ -194,70 +178,145 @@ void TstArtistMergeJob::clusterMergeAndAutoAccept()
     QVERIFY(itemsRes.ok());
     const auto &items = itemsRes.value();
 
-    int clusterItemCount = 0;
-    QJsonObject clusterObj;
+    int groupItemCount = 0;
+    QJsonObject groupObj;
 
     for (const auto &itemStr : items) {
         const auto doc = QJsonDocument::fromJson(itemStr.toUtf8());
         QVERIFY(doc.isObject());
         const auto obj = doc.object();
-        if (obj.value(QStringLiteral("type")).toString() == QLatin1StringView("cluster")) {
-            ++clusterItemCount;
-            clusterObj = obj;
+        if (obj.value(QStringLiteral("type")).toString() == QLatin1StringView("group")) {
+            ++groupItemCount;
+            groupObj = obj;
         }
     }
 
-    // Only 1 cluster item found (Amamiya Sora / Sora Amamiya)
-    QCOMPARE(clusterItemCount, 1);
+    // 1 group item found (Jay Chou / jay chou)
+    QCOMPARE(groupItemCount, 1);
 
-    const auto idsArr = clusterObj.value(QStringLiteral("ids")).toArray();
+    const auto idsArr = groupObj.value(QStringLiteral("ids")).toArray();
     QCOMPARE(idsArr.size(), 2);
-    const QList<qint64> clusterIds = { idsArr.at(0).toInteger(), idsArr.at(1).toInteger() };
-    QVERIFY(clusterIds.contains(amamiyaSoraId));
-    QVERIFY(clusterIds.contains(soraAmamiyaId));
+    const QList<qint64> groupIds = { idsArr.at(0).toInteger(), idsArr.at(1).toInteger() };
+    QVERIFY(groupIds.contains(jayChouId));
+    QVERIFY(groupIds.contains(lowerJayChouId));
 
-    // Build cluster proposals and apply with autoAccept threshold 0.9 (since Romanized has 0.85,
-    // test autoAccept=0.8)
-    const ArtistCluster cluster {
+    const ArtistGroup group {
         .members = {
+            ArtistEntry { .artistId = jayChouId, .name = QStringLiteral("Jay Chou"), .trackCount = 2 },
             ArtistEntry {
-                .artistId = amamiyaSoraId, .name = QStringLiteral("Amamiya Sora"), .trackCount = 2
-            },
-            ArtistEntry {
-                .artistId = soraAmamiyaId, .name = QStringLiteral("Sora Amamiya"), .trackCount = 1
+                .artistId = lowerJayChouId, .name = QStringLiteral("jay chou"), .trackCount = 1
             },
         },
-        .links = {
-            ArtistLink { .a = amamiyaSoraId, .b = soraAmamiyaId, .kind = ArtistLinkKind::Romanized }
-        },
+        .exactOnly = true,
     };
 
-    const auto proposals = clusterProposals(cluster);
+    const auto proposals = groupProposals(group);
     QCOMPARE(proposals.size(), 1);
 
     ManualClock clock(1000);
     CorrectionStore store(db, clock);
 
-    const auto batchIdRes = store.createBatch(
-        CorrectionKind::ArtistMerge, QStringLiteral("Auto-merge romanized cluster"));
+    const auto batchIdRes
+        = store.createBatch(CorrectionKind::ArtistMerge, QStringLiteral("Auto-merge exact group"));
     QVERIFY(batchIdRes.ok());
     const qint64 batchId = batchIdRes.value();
 
-    // Auto-accept proposals with threshold 0.8 (since confidence is 0.85)
-    const auto addRes = store.addArtistAliasProposals(batchId, proposals, 0.8);
+    // Auto-accept proposals with threshold 0.9 (since confidence is 0.95)
+    const auto addRes = store.addArtistAliasProposals(batchId, proposals, 0.9);
     QVERIFY(addRes.ok());
 
-    // Track 3 is now linked to Amamiya Sora (amamiyaSoraId)
+    // Track 3 is now linked to Jay Chou
     const auto t3Artists = TestDbHelper::getTrackArtistIds(conn, t3);
     QCOMPARE(t3Artists.size(), 1);
-    QCOMPARE(t3Artists.first(), amamiyaSoraId);
+    QCOMPARE(t3Artists.first(), jayChouId);
 
-    // Sora Amamiya entity is merged and no longer exists
-    QCOMPARE(TestDbHelper::getArtistId(conn, QStringLiteral("Sora Amamiya")), -1);
-    QCOMPARE(TestDbHelper::getArtistId(conn, QStringLiteral("Amamiya Sora")), amamiyaSoraId);
+    // jay chou entity is merged and no longer exists
+    QCOMPARE(TestDbHelper::getArtistId(conn, QStringLiteral("jay chou")), -1);
+    QCOMPARE(TestDbHelper::getArtistId(conn, QStringLiteral("Jay Chou")), jayChouId);
 }
 
-void TstArtistMergeJob::loadArtistsExcludesPendingTrackArtistOldValues()
+void TstArtistMergeJob::findItemsWithAkaProducesConfirmItem()
+{
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+    Database db(dbDir.filePath(QStringLiteral("test_aka_confirm.db")));
+    QVERIFY(db.open(Migrator()).ok());
+    const auto conn = db.connection().value();
+
+    const qint64 rootId = TestDbHelper::insertRoot(conn);
+    const qint64 f1 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/1.mp3"));
+    const qint64 f2 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/2.mp3"));
+
+    const qint64 t1 = TestDbHelper::insertTrack(conn, f1);
+    const qint64 t2 = TestDbHelper::insertTrack(conn, f2);
+
+    TestDbHelper::insertRawTag(conn, t1, QStringLiteral("TITLE"), QStringLiteral("Good Day"));
+    TestDbHelper::insertRawTag(conn, t1, QStringLiteral("ARTIST"), QStringLiteral("아이유"));
+    TestDbHelper::updateTagsReadAt(conn, t1);
+
+    TestDbHelper::insertRawTag(conn, t2, QStringLiteral("TITLE"), QStringLiteral("Celebrity"));
+    TestDbHelper::insertRawTag(conn, t2, QStringLiteral("ARTIST"), QStringLiteral("IU"));
+    TestDbHelper::updateTagsReadAt(conn, t2);
+
+    EntityLinker linker(conn);
+    QVERIFY(linker.linkTrack(t1).ok());
+    QVERIFY(linker.linkTrack(t2).ok());
+
+    const qint64 iuKoreanId = TestDbHelper::getArtistId(conn, QStringLiteral("아이유"));
+    const qint64 iuEnglishId = TestDbHelper::getArtistId(conn, QStringLiteral("IU"));
+    QVERIFY(iuKoreanId > 0);
+    QVERIFY(iuEnglishId > 0);
+
+    // Pre-populate artist_credits with aka "IU" for "아이유"
+    ManualClock clock(1000);
+    ArtistCreditStore creditStore(db, clock);
+
+    ArtistCredit credit;
+    credit.performers.append(CreditPerformer {
+        .name = QStringLiteral("아이유"),
+        .aka = { QStringLiteral("IU") },
+    });
+    credit.confidence = 0.95;
+    credit.reason = QStringLiteral("Known artist alias");
+
+    QHash<QString, ArtistCredit> credits;
+    credits.insert(QStringLiteral("아이유"), credit);
+    QVERIFY(creditStore.save(credits, QStringLiteral("test-model"), 1).ok());
+
+    // findItems should produce a "confirm" item grouping both entities
+    const ArtistMergeSource source(db);
+    const auto itemsRes = source.findItems(false);
+    QVERIFY(itemsRes.ok());
+    const auto &items = itemsRes.value();
+
+    int confirmCount = 0;
+    QJsonObject confirmObj;
+
+    for (const auto &itemStr : items) {
+        const auto doc = QJsonDocument::fromJson(itemStr.toUtf8());
+        QVERIFY(doc.isObject());
+        const auto obj = doc.object();
+        if (obj.value(QStringLiteral("type")).toString() == QLatin1StringView("confirm")) {
+            ++confirmCount;
+            confirmObj = obj;
+        }
+    }
+
+    QCOMPARE(confirmCount, 1);
+    const auto groupsArr = confirmObj.value(QStringLiteral("groups")).toArray();
+    QCOMPARE(groupsArr.size(), 1);
+    const auto firstGroupArr = groupsArr.at(0).toArray();
+    QCOMPARE(firstGroupArr.size(), 2);
+
+    const QList<qint64> memberIds = {
+        firstGroupArr.at(0).toInteger(),
+        firstGroupArr.at(1).toInteger(),
+    };
+    QVERIFY(memberIds.contains(iuKoreanId));
+    QVERIFY(memberIds.contains(iuEnglishId));
+}
+
+void TstArtistMergeJob::loadArtistsAndFindItemsExcludePendingArtistCredit()
 {
     const QTemporaryDir dbDir;
     QVERIFY(dbDir.isValid());
@@ -281,11 +340,11 @@ void TstArtistMergeJob::loadArtistsExcludesPendingTrackArtistOldValues()
     QCOMPARE(initialArtists.size(), 1);
     QCOMPARE(initialArtists.first().name, QStringLiteral("40mP feat. 初音ミク"));
 
-    // Add a pending track artist correction with old_value = "40mP feat. 初音ミク"
+    // Add a pending artist_credit correction with old_value = "40mP feat. 初音ミク"
     ManualClock clock(1000);
     CorrectionStore store(db, clock);
     const auto batchIdRes
-        = store.createBatch(CorrectionKind::ArtistSplit, QStringLiteral("Split batch"));
+        = store.createBatch(CorrectionKind::ArtistCredit, QStringLiteral("Credit batch"));
     QVERIFY(batchIdRes.ok());
     const qint64 batchId = batchIdRes.value();
 
@@ -295,13 +354,16 @@ void TstArtistMergeJob::loadArtistsExcludesPendingTrackArtistOldValues()
     proposal.oldValue = QStringLiteral("40mP feat. 初音ミク");
     proposal.newValue = QStringLiteral("40mP / 初音ミク");
     proposal.confidence = 0.9;
-    proposal.reason = QStringLiteral("Split credit");
+    proposal.reason = QStringLiteral("Artist credit resolution");
 
     QVERIFY(store.addProposals(batchId, { proposal }).ok());
 
-    // Now loadArtists() must exclude this artist
+    // loadArtists() and findItems() must exclude this artist
     auto filteredArtists = source.loadArtists().value();
     QCOMPARE(filteredArtists.size(), 0);
+
+    auto items = source.findItems(false).value();
+    QVERIFY(items.isEmpty());
 }
 
 } // namespace

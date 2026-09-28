@@ -8,7 +8,7 @@
 #include <QObject>
 #include <QTest>
 
-#include <butler/ArtistCluster.h>
+#include <butler/ArtistGroup.h>
 #include <butler/ArtistMergeLlm.h>
 #include <butler/Errors.h>
 #include <library/ArtistAliasCorrections.h>
@@ -16,8 +16,9 @@
 
 namespace {
 
-using linernotes::butler::ArtistEntry;
-using linernotes::butler::ArtistMergeCandidatePair;
+using linernotes::butler::ArtistMergeGroup;
+using linernotes::butler::ArtistMergeMember;
+using linernotes::butler::artistMergePromptVars;
 using linernotes::butler::parseArtistMergeResult;
 using linernotes::library::CorrectionSource;
 namespace errc = linernotes::butler::errc;
@@ -26,131 +27,251 @@ class TstArtistMergeLlm : public QObject {
     Q_OBJECT
 
 private slots:
-    void parseCreatesProposalForSame();
-    void parseRejectsBadId();
+    void parsePartitionsGroupIntoSubsets();
+    void parseSkipsGroupWithInvalidMember();
+    void parseIgnoresLowConfidenceAndSingleMember();
+    void promptVarsContainsMemberAka();
+    void parseRejectsBadTopLevel();
 };
 
-void TstArtistMergeLlm::parseCreatesProposalForSame()
+void TstArtistMergeLlm::parsePartitionsGroupIntoSubsets()
 {
-    const ArtistEntry e1 { .artistId = 1, .name = QStringLiteral("Amamiya Sora"), .trackCount = 2 };
-    const ArtistEntry e2 { .artistId = 2, .name = QStringLiteral("Sora Amamiya"), .trackCount = 1 };
-    const ArtistEntry e3 { .artistId = 3, .name = QStringLiteral("Yuki Kajiura"), .trackCount = 5 };
-    const ArtistEntry e4 { .artistId = 4, .name = QStringLiteral("Yuki Kaji"), .trackCount = 5 };
-    const ArtistEntry e5 { .artistId = 5, .name = QStringLiteral("Artist X"), .trackCount = 1 };
-    const ArtistEntry e6 { .artistId = 6, .name = QStringLiteral("Artist Y"), .trackCount = 1 };
+    const ArtistMergeMember m1 {
+        .entry = { .artistId = 1, .name = QStringLiteral("Amamiya Sora"), .trackCount = 10 },
+        .albums = { QStringLiteral("Album 1") },
+        .aka = { QStringLiteral("Sora Amamiya") },
+    };
+    const ArtistMergeMember m2 {
+        .entry = { .artistId = 2, .name = QStringLiteral("Sora Amamiya"), .trackCount = 2 },
+        .albums = { QStringLiteral("Album 2") },
+        .aka = { },
+    };
+    const ArtistMergeMember m3 {
+        .entry = { .artistId = 3, .name = QStringLiteral("Yuki Kajiura"), .trackCount = 8 },
+        .albums = { QStringLiteral("Album 3") },
+        .aka = { },
+    };
+    const ArtistMergeMember m4 {
+        .entry = { .artistId = 4, .name = QStringLiteral("FictionJunction"), .trackCount = 5 },
+        .albums = { QStringLiteral("Album 4") },
+        .aka = { },
+    };
 
-    const QList<ArtistMergeCandidatePair> pairs = {
-        ArtistMergeCandidatePair {
+    const QList<ArtistMergeGroup> groups = {
+        ArtistMergeGroup {
             .id = 0,
-            .artistA = e1,
-            .albumsA = { QStringLiteral("Album 1") },
-            .artistB = e2,
-            .albumsB = { QStringLiteral("Album 2") },
-        },
-        ArtistMergeCandidatePair {
-            .id = 1,
-            .artistA = e3,
-            .albumsA = { QStringLiteral("Album 3") },
-            .artistB = e4,
-            .albumsB = { QStringLiteral("Album 4") },
-        },
-        ArtistMergeCandidatePair {
-            .id = 2,
-            .artistA = e5,
-            .albumsA = { },
-            .artistB = e6,
-            .albumsB = { },
+            .members = { m1, m2, m3, m4 },
         },
     };
 
-    QHash<qint64, ArtistEntry> entriesById;
-    entriesById.insert(e1.artistId, e1);
-    entriesById.insert(e2.artistId, e2);
-    entriesById.insert(e3.artistId, e3);
-    entriesById.insert(e4.artistId, e4);
-    entriesById.insert(e5.artistId, e5);
-    entriesById.insert(e6.artistId, e6);
-
     const char *jsonStr = R"({
-        "pairs": [
-            { "id": 0, "same": true, "confidence": 0.9, "reason": "Romanization variation" },
-            { "id": 1, "same": false, "confidence": 0.95, "reason": "Different musicians" },
-            { "id": 2, "same": true, "confidence": 0.4, "reason": "Uncertain" }
+        "groups": [
+            {
+                "id": 0,
+                "subsets": [
+                    {
+                        "members": [1, 2],
+                        "confidence": 0.95,
+                        "reason": "Romanization variant"
+                    },
+                    {
+                        "members": [3, 4],
+                        "confidence": 0.9,
+                        "reason": "Same musical project"
+                    }
+                ]
+            }
         ]
     })";
 
     const auto doc = QJsonDocument::fromJson(QByteArray(jsonStr));
     QVERIFY(doc.isObject());
 
-    const auto res = parseArtistMergeResult(doc.object(), pairs, entriesById);
+    const auto res = parseArtistMergeResult(doc.object(), groups);
     QVERIFY(res.ok());
     const auto &proposals = res.value();
 
-    QCOMPARE(proposals.size(), 1);
-    const auto &p = proposals.first();
-    QCOMPARE(p.canonicalArtistId, 1);
-    QCOMPARE(p.alias, QStringLiteral("Sora Amamiya"));
-    QVERIFY(!p.locale.has_value());
-    QCOMPARE(p.source, CorrectionSource::Llm);
-    QCOMPARE(p.confidence, 0.9);
-    QCOMPARE(p.reason, QStringLiteral("Romanization variation"));
+    QCOMPARE(proposals.size(), 2);
+
+    const auto &p1 = proposals.at(0);
+    QCOMPARE(p1.canonicalArtistId, 1);
+    QCOMPARE(p1.alias, QStringLiteral("Sora Amamiya"));
+    QVERIFY(!p1.locale.has_value());
+    QCOMPARE(p1.source, CorrectionSource::Llm);
+    QCOMPARE(p1.confidence, 0.95);
+    QCOMPARE(p1.reason, QStringLiteral("Romanization variant"));
+
+    const auto &p2 = proposals.at(1);
+    QCOMPARE(p2.canonicalArtistId, 3);
+    QCOMPARE(p2.alias, QStringLiteral("FictionJunction"));
+    QVERIFY(!p2.locale.has_value());
+    QCOMPARE(p2.source, CorrectionSource::Llm);
+    QCOMPARE(p2.confidence, 0.9);
+    QCOMPARE(p2.reason, QStringLiteral("Same musical project"));
 }
 
-void TstArtistMergeLlm::parseRejectsBadId()
+void TstArtistMergeLlm::parseSkipsGroupWithInvalidMember()
 {
-    const ArtistEntry e1 { .artistId = 1, .name = QStringLiteral("Artist A"), .trackCount = 2 };
-    const ArtistEntry e2 { .artistId = 2, .name = QStringLiteral("Artist B"), .trackCount = 1 };
+    const ArtistMergeMember m1 {
+        .entry = { .artistId = 1, .name = QStringLiteral("Artist A"), .trackCount = 10 },
+        .albums = { },
+        .aka = { },
+    };
+    const ArtistMergeMember m2 {
+        .entry = { .artistId = 2, .name = QStringLiteral("Artist B"), .trackCount = 5 },
+        .albums = { },
+        .aka = { },
+    };
 
-    const QList<ArtistMergeCandidatePair> pairs = {
-        ArtistMergeCandidatePair {
+    const QList<ArtistMergeGroup> groups = {
+        ArtistMergeGroup {
             .id = 0,
-            .artistA = e1,
-            .albumsA = { },
-            .artistB = e2,
-            .albumsB = { },
+            .members = { m1, m2 },
         },
     };
 
-    QHash<qint64, ArtistEntry> entriesById;
-    entriesById.insert(e1.artistId, e1);
-    entriesById.insert(e2.artistId, e2);
-
-    // 1. Unknown ID 99
+    // Case 1: Member 999 does not belong to group 0 -> skip group 0 (return empty, no error)
     {
         const char *jsonStr = R"({
-            "pairs": [
-                { "id": 99, "same": true, "confidence": 0.9, "reason": "Test" }
+            "groups": [
+                {
+                    "id": 0,
+                    "subsets": [
+                        {
+                            "members": [1, 999],
+                            "confidence": 0.9,
+                            "reason": "Test"
+                        }
+                    ]
+                }
             ]
         })";
         const auto doc = QJsonDocument::fromJson(QByteArray(jsonStr));
-        const auto res = parseArtistMergeResult(doc.object(), pairs, entriesById);
+        const auto res = parseArtistMergeResult(doc.object(), groups);
+        QVERIFY(res.ok());
+        QVERIFY(res.value().isEmpty());
+    }
+
+    // Case 2: Member 1 repeated across multiple subsets in same group -> skip group 0
+    {
+        const char *jsonStr = R"({
+            "groups": [
+                {
+                    "id": 0,
+                    "subsets": [
+                        {
+                            "members": [1, 2],
+                            "confidence": 0.9,
+                            "reason": "Test 1"
+                        },
+                        {
+                            "members": [1, 2],
+                            "confidence": 0.9,
+                            "reason": "Test 2"
+                        }
+                    ]
+                }
+            ]
+        })";
+        const auto doc = QJsonDocument::fromJson(QByteArray(jsonStr));
+        const auto res = parseArtistMergeResult(doc.object(), groups);
+        QVERIFY(res.ok());
+        QVERIFY(res.value().isEmpty());
+    }
+}
+
+void TstArtistMergeLlm::parseIgnoresLowConfidenceAndSingleMember()
+{
+    const ArtistMergeMember m1 {
+        .entry = { .artistId = 1, .name = QStringLiteral("Artist A"), .trackCount = 10 },
+        .albums = { },
+        .aka = { },
+    };
+    const ArtistMergeMember m2 {
+        .entry = { .artistId = 2, .name = QStringLiteral("Artist B"), .trackCount = 5 },
+        .albums = { },
+        .aka = { },
+    };
+    const ArtistMergeMember m3 {
+        .entry = { .artistId = 3, .name = QStringLiteral("Artist C"), .trackCount = 3 },
+        .albums = { },
+        .aka = { },
+    };
+
+    const QList<ArtistMergeGroup> groups = {
+        ArtistMergeGroup {
+            .id = 0,
+            .members = { m1, m2, m3 },
+        },
+    };
+
+    // Subset with confidence 0.4 (< 0.5) is ignored; subset with single member [3] is ignored
+    const char *jsonStr = R"({
+        "groups": [
+            {
+                "id": 0,
+                "subsets": [
+                    {
+                        "members": [1, 2],
+                        "confidence": 0.4,
+                        "reason": "Low confidence"
+                    },
+                    {
+                        "members": [3],
+                        "confidence": 0.95,
+                        "reason": "Single member"
+                    }
+                ]
+            }
+        ]
+    })";
+
+    const auto doc = QJsonDocument::fromJson(QByteArray(jsonStr));
+    const auto res = parseArtistMergeResult(doc.object(), groups);
+    QVERIFY(res.ok());
+    QVERIFY(res.value().isEmpty());
+}
+
+void TstArtistMergeLlm::promptVarsContainsMemberAka()
+{
+    const ArtistMergeMember m1 {
+        .entry = { .artistId = 1, .name = QStringLiteral("아이유"), .trackCount = 20 },
+        .albums = { QStringLiteral("Palette"), QStringLiteral("LILAC") },
+        .aka = { QStringLiteral("IU"), QStringLiteral("Lee Ji-eun") },
+    };
+
+    const QList<ArtistMergeGroup> groups = {
+        ArtistMergeGroup {
+            .id = 0,
+            .members = { m1 },
+        },
+    };
+
+    const auto vars = artistMergePromptVars(groups);
+    QVERIFY(vars.contains(QStringLiteral("groups")));
+    const QString text = vars.value(QStringLiteral("groups"));
+    QVERIFY(text.contains(QStringLiteral("Group ID 0:")));
+    QVERIFY(text.contains(QStringLiteral("아이유")));
+    QVERIFY(text.contains(QStringLiteral("IU, Lee Ji-eun")));
+    QVERIFY(text.contains(QStringLiteral("Palette, LILAC")));
+}
+
+void TstArtistMergeLlm::parseRejectsBadTopLevel()
+{
+    const QList<ArtistMergeGroup> groups;
+
+    // 1. Not an object
+    {
+        const auto res = parseArtistMergeResult(QJsonValue(123), groups);
         QVERIFY(!res.ok());
         QCOMPARE(res.error().code, QString(errc::kArtistMergeInvalidResult));
     }
 
-    // 2. Duplicate ID 0
+    // 2. Missing "groups" array
     {
-        const char *jsonStr = R"({
-            "pairs": [
-                { "id": 0, "same": true, "confidence": 0.9, "reason": "Test 1" },
-                { "id": 0, "same": false, "confidence": 0.8, "reason": "Test 2" }
-            ]
-        })";
-        const auto doc = QJsonDocument::fromJson(QByteArray(jsonStr));
-        const auto res = parseArtistMergeResult(doc.object(), pairs, entriesById);
+        const auto res = parseArtistMergeResult(QJsonObject { }, groups);
         QVERIFY(!res.ok());
         QCOMPARE(res.error().code, QString(errc::kArtistMergeInvalidResult));
-    }
-
-    // 3. Not an object / missing pairs array
-    {
-        const auto res = parseArtistMergeResult(QJsonValue(42), pairs, entriesById);
-        QVERIFY(!res.ok());
-        QCOMPARE(res.error().code, QString(errc::kArtistMergeInvalidResult));
-
-        const auto res2 = parseArtistMergeResult(QJsonObject { }, pairs, entriesById);
-        QVERIFY(!res2.ok());
-        QCOMPARE(res2.error().code, QString(errc::kArtistMergeInvalidResult));
     }
 }
 

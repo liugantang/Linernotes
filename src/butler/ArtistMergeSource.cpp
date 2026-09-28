@@ -13,8 +13,12 @@
 #include <QSqlQuery>
 #include <QVariant>
 
+#include <butler/ArtistCredit.h>
+#include <butler/ArtistGroup.h>
 #include <butler/ArtistName.h>
+#include <butler/ButlerLogging.h>
 #include <butler/Errors.h>
+#include <core/Logging.h>
 #include <library/Database.h>
 
 #include <algorithm>
@@ -54,7 +58,89 @@ core::Result<SkippedArtists> fetchSkippedArtists(const QSqlDatabase &conn)
         }
     }
 
+    QSqlQuery q2(conn);
+    if (!q2.exec(
+            QStringLiteral("SELECT DISTINCT old_value FROM corrections "
+                           "WHERE entity_type = 'track' AND field IN ('artist', 'album_artist') "
+                           "  AND status = 'pending' AND old_value IS NOT NULL"))) {
+        return core::Error {
+            .code = QString(errc::kArtistMergeInvalidResult),
+            .message = q2.lastError().text(),
+            .detail = QString(),
+        };
+    }
+
+    while (q2.next()) {
+        const QString val = q2.value(0).toString().trimmed();
+        if (!val.isEmpty()) {
+            skipped.names.insert(val);
+        }
+    }
+
     return skipped;
+}
+
+constexpr qsizetype kConfirmGroupsPerItem = 10;
+
+void logOversizedGroups(const QList<QList<ArtistEntry>> &oversized)
+{
+    for (const auto &members : oversized) {
+        QStringList names;
+        names.reserve(members.size());
+        for (const auto &m : members) {
+            names.append(m.name);
+        }
+        qCWarning(lcButler) << "Oversized artist group skipped with members:"
+                            << names.join(QStringLiteral(", "));
+    }
+}
+
+QStringList buildGroupItems(const QList<ArtistGroup> &groups)
+{
+    QStringList items;
+    for (const auto &group : groups) {
+        if (!group.exactOnly) {
+            continue;
+        }
+        QJsonArray idsArr;
+        for (const auto &member : group.members) {
+            idsArr.append(member.artistId);
+        }
+        QJsonObject obj;
+        obj.insert(QStringLiteral("type"), QStringLiteral("group"));
+        obj.insert(QStringLiteral("ids"), idsArr);
+        items.append(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
+    }
+    return items;
+}
+
+QStringList buildConfirmItems(const QList<ArtistGroup> &groups)
+{
+    QList<ArtistGroup> confirmGroups;
+    for (const auto &group : groups) {
+        if (!group.exactOnly) {
+            confirmGroups.append(group);
+        }
+    }
+
+    QStringList items;
+    for (qsizetype i = 0; i < confirmGroups.size(); i += kConfirmGroupsPerItem) {
+        QJsonArray groupsArr;
+        const qsizetype end = std::min(i + kConfirmGroupsPerItem, confirmGroups.size());
+        for (qsizetype j = i; j < end; ++j) {
+            const auto &group = confirmGroups.at(j);
+            QJsonArray groupArr;
+            for (const auto &m : group.members) {
+                groupArr.append(m.artistId);
+            }
+            groupsArr.append(groupArr);
+        }
+        QJsonObject obj;
+        obj.insert(QStringLiteral("type"), QStringLiteral("confirm"));
+        obj.insert(QStringLiteral("groups"), groupsArr);
+        items.append(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
+    }
+    return items;
 }
 
 } // namespace
@@ -107,6 +193,58 @@ core::Result<QList<ArtistEntry>> ArtistMergeSource::loadArtists() const
     return entries;
 }
 
+core::Result<QHash<QString, QStringList>> ArtistMergeSource::loadAltNames() const
+{
+    auto connRes = m_db.connection();
+    if (!connRes.ok()) {
+        return connRes.error();
+    }
+    const auto &conn = connRes.value();
+
+    QSqlQuery q(conn);
+    if (!q.exec(QStringLiteral("SELECT result FROM artist_credits"))) {
+        return core::Error {
+            .code = QString(errc::kArtistMergeInvalidResult),
+            .message = q.lastError().text(),
+            .detail = QString(),
+        };
+    }
+
+    QHash<QString, QStringList> altNames;
+    while (q.next()) {
+        const QString jsonStr = q.value(0).toString();
+        QJsonParseError parseErr { };
+        const auto doc = QJsonDocument::fromJson(jsonStr.toUtf8(), &parseErr);
+        if (doc.isNull() || !doc.isObject()) {
+            continue;
+        }
+
+        const auto creditOpt = artistCreditFromJson(doc.object());
+        if (!creditOpt.has_value()) {
+            continue;
+        }
+
+        for (const auto &performer : creditOpt->performers) {
+            const QString key = exactKey(performer.name);
+            if (key.isEmpty() || performer.aka.isEmpty()) {
+                continue;
+            }
+            auto it = altNames.find(key);
+            if (it == altNames.end()) {
+                it = altNames.insert(key, { });
+            }
+            for (const auto &akaName : performer.aka) {
+                const QString trimmed = akaName.trimmed();
+                if (!trimmed.isEmpty() && !it.value().contains(trimmed)) {
+                    it.value().append(trimmed);
+                }
+            }
+        }
+    }
+
+    return altNames;
+}
+
 core::Result<QStringList> ArtistMergeSource::findItems(bool useMusicBrainz) const
 {
     auto connRes = m_db.connection();
@@ -136,38 +274,20 @@ core::Result<QStringList> ArtistMergeSource::findItems(bool useMusicBrainz) cons
         activeEntries.append(entry);
     }
 
-    const auto clustering = clusterArtists(activeEntries);
+    auto altNamesRes = loadAltNames();
+    if (!altNamesRes.ok()) {
+        return altNamesRes.error();
+    }
+    const auto &altNames = altNamesRes.value();
+
+    constexpr int kMaxGroupSize = 12;
+    const auto grouping = groupArtists(activeEntries, altNames, kMaxGroupSize);
+
+    logOversizedGroups(grouping.oversized);
 
     QStringList items;
-
-    // 1. Cluster items
-    for (const auto &cluster : clustering.clusters) {
-        QJsonArray idsArr;
-        for (const auto &member : cluster.members) {
-            idsArr.append(member.artistId);
-        }
-        QJsonObject obj;
-        obj.insert(QStringLiteral("type"), QStringLiteral("cluster"));
-        obj.insert(QStringLiteral("ids"), idsArr);
-        items.append(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
-    }
-
-    // 2. Fuzzy items (groups of 10 pairs)
-    for (qsizetype i = 0; i < clustering.fuzzyCandidates.size(); i += 10) {
-        QJsonArray pairsArr;
-        const qsizetype end = std::min(i + 10, clustering.fuzzyCandidates.size());
-        for (qsizetype j = i; j < end; ++j) {
-            const auto &pair = clustering.fuzzyCandidates.at(j);
-            QJsonArray pairArr;
-            pairArr.append(pair.a);
-            pairArr.append(pair.b);
-            pairsArr.append(pairArr);
-        }
-        QJsonObject obj;
-        obj.insert(QStringLiteral("type"), QStringLiteral("fuzzy"));
-        obj.insert(QStringLiteral("pairs"), pairsArr);
-        items.append(QString::fromUtf8(QJsonDocument(obj).toJson(QJsonDocument::Compact)));
-    }
+    items.append(buildGroupItems(grouping.groups));
+    items.append(buildConfirmItems(grouping.groups));
 
     // 3. MusicBrainz items (CJK artists)
     if (useMusicBrainz) {

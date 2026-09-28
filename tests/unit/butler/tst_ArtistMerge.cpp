@@ -8,7 +8,7 @@
 #include <QString>
 #include <QTest>
 
-#include <butler/ArtistCluster.h>
+#include <butler/ArtistGroup.h>
 #include <butler/ArtistMerge.h>
 #include <butler/MusicBrainz.h>
 #include <common/TestSupport.h>
@@ -17,11 +17,9 @@
 
 namespace {
 
-using linernotes::butler::ArtistCluster;
 using linernotes::butler::ArtistEntry;
-using linernotes::butler::ArtistLink;
-using linernotes::butler::ArtistLinkKind;
-using linernotes::butler::clusterProposals;
+using linernotes::butler::ArtistGroup;
+using linernotes::butler::groupProposals;
 using linernotes::butler::musicBrainzProposals;
 using linernotes::butler::parseArtistSearch;
 using linernotes::butler::pickCanonical;
@@ -32,7 +30,7 @@ class TstArtistMerge : public QObject {
 
 private slots:
     void pickCanonicalPrefersMoreTracks();
-    void clusterProposalsConfidence();
+    void groupProposalsCreatesRuleProposals();
     void musicBrainzMergesAndLocales();
     void musicBrainzIgnoresLowScoreOrNameMismatch();
 };
@@ -58,54 +56,24 @@ void TstArtistMerge::pickCanonicalPrefersMoreTracks()
     QCOMPARE(pickCanonical({ }), 0);
 }
 
-void TstArtistMerge::clusterProposalsConfidence()
+void TstArtistMerge::groupProposalsCreatesRuleProposals()
 {
-    // 1. All Exact links -> confidence 0.95
-    {
-        const ArtistEntry m1 {
-            .artistId = 1, .name = QStringLiteral("Jay Chou"), .trackCount = 20
-        };
-        const ArtistEntry m2 { .artistId = 2, .name = QStringLiteral("jay chou"), .trackCount = 2 };
-        const ArtistCluster exactCluster {
-            .members = { m1, m2 },
-            .links = { ArtistLink { .a = 1, .b = 2, .kind = ArtistLinkKind::Exact } },
-        };
+    const ArtistEntry m1 { .artistId = 1, .name = QStringLiteral("Jay Chou"), .trackCount = 20 };
+    const ArtistEntry m2 { .artistId = 2, .name = QStringLiteral("jay chou"), .trackCount = 2 };
+    const ArtistGroup exactGroup {
+        .members = { m1, m2 },
+        .exactOnly = true,
+    };
 
-        const auto proposals = clusterProposals(exactCluster);
-        QCOMPARE(proposals.size(), 1);
-        const auto &p = proposals.first();
-        QCOMPARE(p.canonicalArtistId, 1);
-        QCOMPARE(p.alias, QStringLiteral("jay chou"));
-        QVERIFY(!p.locale.has_value());
-        QCOMPARE(p.source, CorrectionSource::Rule);
-        QCOMPARE(p.confidence, 0.95);
-        QCOMPARE(p.reason, QStringLiteral("Same name with different spelling"));
-    }
-
-    // 2. Contains Romanized link -> confidence 0.85
-    {
-        const ArtistEntry m1 {
-            .artistId = 10, .name = QStringLiteral("Amamiya Sora"), .trackCount = 15
-        };
-        const ArtistEntry m2 {
-            .artistId = 11, .name = QStringLiteral("Sora Amamiya"), .trackCount = 3
-        };
-        const ArtistCluster romanCluster {
-            .members = { m1, m2 },
-            .links = { ArtistLink { .a = 10, .b = 11, .kind = ArtistLinkKind::Romanized } },
-        };
-
-        const auto proposals = clusterProposals(romanCluster);
-        QCOMPARE(proposals.size(), 1);
-        const auto &p = proposals.first();
-        QCOMPARE(p.canonicalArtistId, 10);
-        QCOMPARE(p.alias, QStringLiteral("Sora Amamiya"));
-        QVERIFY(!p.locale.has_value());
-        QCOMPARE(p.source, CorrectionSource::Rule);
-        QCOMPARE(p.confidence, 0.85);
-        QCOMPARE(
-            p.reason, QStringLiteral("Same romanized name (word order or long vowels differ)"));
-    }
+    const auto proposals = groupProposals(exactGroup);
+    QCOMPARE(proposals.size(), 1);
+    const auto &p = proposals.first();
+    QCOMPARE(p.canonicalArtistId, 1);
+    QCOMPARE(p.alias, QStringLiteral("jay chou"));
+    QVERIFY(!p.locale.has_value());
+    QCOMPARE(p.source, CorrectionSource::Rule);
+    QCOMPARE(p.confidence, 0.95);
+    QCOMPARE(p.reason, QStringLiteral("Same name with different spelling"));
 }
 
 void TstArtistMerge::musicBrainzMergesAndLocales()

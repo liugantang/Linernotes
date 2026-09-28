@@ -49,8 +49,10 @@ int countMergeClusters(const QStringList &items)
         if (doc.isObject()) {
             const auto obj = doc.object();
             const QString type = obj.value(QStringLiteral("type")).toString();
-            if (type == QLatin1StringView("cluster")) {
+            if (type == QLatin1StringView("group") || type == QLatin1StringView("cluster")) {
                 count += 1;
+            } else if (type == QLatin1StringView("confirm")) {
+                count += static_cast<int>(obj.value(QStringLiteral("groups")).toArray().size());
             } else if (type == QLatin1StringView("fuzzy")) {
                 count += static_cast<int>(obj.value(QStringLiteral("pairs")).toArray().size());
             }
