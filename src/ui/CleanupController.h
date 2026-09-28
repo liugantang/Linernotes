@@ -100,7 +100,6 @@ public:
     Q_INVOKABLE void pause();
     Q_INVOKABLE void resume();
     Q_INVOKABLE void cancel();
-    Q_INVOKABLE void refreshLlmConfigured();
 
 signals:
     void checkingChanged();
@@ -134,6 +133,7 @@ private:
     void onHealthCheckFinished();
     void onStepItemsReady();
     void onJobChanged(qint64 jobId);
+    void refreshLlmConfigured();
     void startNextStep();
     void executeStepWithItems(Step step, const QStringList &items);
 

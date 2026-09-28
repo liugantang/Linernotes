@@ -20,7 +20,6 @@ Item {
             }
         }
         if (AppContext.cleanup) {
-            AppContext.cleanup.refreshLlmConfigured()
             if (!AppContext.cleanup.healthReady && !AppContext.cleanup.checking) {
                 AppContext.cleanup.checkHealth()
             }

@@ -93,6 +93,7 @@ CleanupController::CleanupController(library::Database &db, const core::Clock &c
     connect(&m_stepWatcher, &QFutureWatcher<StepItemData>::finished, this,
         &CleanupController::onStepItemsReady);
     connect(&m_jobs, &ai::JobQueue::jobChanged, this, &CleanupController::onJobChanged);
+    connect(&m_aiConfig, &ai::AiConfig::changed, this, &CleanupController::refreshLlmConfigured);
 }
 
 CleanupController::~CleanupController()

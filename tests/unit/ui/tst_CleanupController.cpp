@@ -230,6 +230,13 @@ void TstCleanupController::healthCountsMatchLibrary()
     QCOMPARE(cleanup.isLlmConfigured(), false);
     QCOMPARE(cleanup.isHealthReady(), false);
 
+    // 设置里新增服务后立即可用，无需重启
+    linernotes::ai::ServiceProfile profile;
+    profile.name = QStringLiteral("Test");
+    profile.defaultModel = QStringLiteral("test-model");
+    Q_UNUSED(aiConfig.saveService(profile));
+    QCOMPARE(cleanup.isLlmConfigured(), true);
+
     cleanup.checkHealth();
     QTRY_VERIFY_WITH_TIMEOUT(cleanup.isHealthReady(), 5000);
 
