@@ -125,4 +125,18 @@ inline std::optional<CorrectionStatus> correctionStatusFromString(QStringView na
     return detail::enumFromName<CorrectionStatus>(name, correctionStatusToString);
 }
 
+inline QString trackIssueKindToString(TrackIssueKind kind)
+{
+    switch (kind) {
+    case TrackIssueKind::NeedsOnlineLookup:
+        return QStringLiteral("needs_online");
+    }
+    return { };
+}
+
+inline std::optional<TrackIssueKind> trackIssueKindFromString(QStringView name)
+{
+    return detail::enumFromName<TrackIssueKind>(name, trackIssueKindToString);
+}
+
 } // namespace linernotes::library

@@ -7,8 +7,10 @@
 
 namespace linernotes::butler::errc {
 
-// butler 模块错误码集中管理。
-// 当前乱码检测与规则修复为纯逻辑模块，无需特定错误码；
-// 后续 6.3/6.4 任务引入 JobHandler / 数据库 / LLM 时在此补充具体常量。
+inline constexpr QLatin1StringView kMojibakeGroupNotFound { "mojibake.group_not_found" };
+inline constexpr QLatin1StringView kMojibakeInvalidKey { "mojibake.invalid_key" };
+inline constexpr QLatin1StringView kMojibakeInvalidResult { "mojibake.invalid_result" };
+inline constexpr QLatin1StringView kMojibakeSchemaNotFound { "mojibake.schema_not_found" };
+inline constexpr QLatin1StringView kMojibakePromptRenderFailed { "mojibake.prompt_render_failed" };
 
 } // namespace linernotes::butler::errc

@@ -11,3 +11,27 @@ linernotes_add_test(
         Linernotes::TestSupport
         Linernotes::Deps::ICU
 )
+
+linernotes_add_test(
+    NAME butler_MojibakeAnalysis
+    SOURCES
+        tst_MojibakeAnalysis.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Linernotes::Deps::ICU
+)
+
+linernotes_add_test(
+    NAME butler_MojibakeLlm
+    SOURCES
+        tst_MojibakeLlm.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+)
+

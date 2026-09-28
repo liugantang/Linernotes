@@ -17,5 +17,7 @@
 # )
 
 add_subdirectory(app)
+add_subdirectory(butler)
 add_subdirectory(library)
 add_subdirectory(player)
+

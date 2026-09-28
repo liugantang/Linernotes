@@ -93,4 +93,7 @@ Q_ENUM_NS(CorrectionSource)
 enum class CorrectionStatus : std::uint8_t { Pending, Accepted, Rejected, Reverted };
 Q_ENUM_NS(CorrectionStatus)
 
+enum class TrackIssueKind : std::uint8_t { NeedsOnlineLookup };
+Q_ENUM_NS(TrackIssueKind)
+
 } // namespace linernotes::library

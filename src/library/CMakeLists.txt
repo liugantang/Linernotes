@@ -69,8 +69,11 @@ add_library(linernotes_library STATIC
     SmartRuleSql.h
     TagReader.cpp
     TagReader.h
+    TrackIssueStore.cpp
+    TrackIssueStore.h
 )
 add_library(Linernotes::library ALIAS linernotes_library)
+
 qt6_extract_metatypes(linernotes_library)
 
 if(MIGRATION_FILES)
