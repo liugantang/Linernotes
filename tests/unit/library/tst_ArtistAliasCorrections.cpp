@@ -657,8 +657,9 @@ void TstArtistAliasCorrections::acceptSkipsStaleCorrections()
     // Check stale computation on fetch
     rows = store.artistAliasCorrections(batchId).value();
     QCOMPARE(rows.size(), 2);
-    const auto &jayRow = (rows.at(0).artistId == setup.jayId) ? rows.at(0) : rows.at(1);
-    const auto &feiRow = (rows.at(0).artistId == setup.feiId) ? rows.at(0) : rows.at(1);
+    // 拷贝而非引用：下面会给 rows 重新赋值
+    const auto jayRow = (rows.at(0).artistId == setup.jayId) ? rows.at(0) : rows.at(1);
+    const auto feiRow = (rows.at(0).artistId == setup.feiId) ? rows.at(0) : rows.at(1);
     QCOMPARE(jayRow.stale, false);
     QCOMPARE(feiRow.stale, true);
 

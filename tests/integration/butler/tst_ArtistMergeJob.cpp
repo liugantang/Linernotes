@@ -176,7 +176,7 @@ void TstArtistMergeJob::groupMergeAndAutoAccept()
     ManualClock clock(1000);
 
     // Find items
-    const ArtistMergeSource source(db, clock);
+    const ArtistMergeSource source(db);
     const auto itemsRes = source.findItems();
     QVERIFY(itemsRes.ok());
     const auto &items = itemsRes.value();
@@ -286,7 +286,7 @@ void TstArtistMergeJob::findItemsWithAkaProducesConfirmItem()
     QVERIFY(creditStore.save(credits, QStringLiteral("test-model"), 1).ok());
 
     // findItems should produce a "confirm" item grouping both entities
-    const ArtistMergeSource source(db, clock);
+    const ArtistMergeSource source(db);
     const auto itemsRes = source.findItems();
     QVERIFY(itemsRes.ok());
     const auto &items = itemsRes.value();
@@ -338,7 +338,7 @@ void TstArtistMergeJob::loadArtistsAndFindItemsExcludePendingArtistCredit()
     QVERIFY(linker.linkTrack(t1).ok());
 
     ManualClock clock(1000);
-    const ArtistMergeSource source(db, clock);
+    const ArtistMergeSource source(db);
     auto initialArtists = source.loadArtists().value();
     QCOMPARE(initialArtists.size(), 1);
     QCOMPARE(initialArtists.first().name, QStringLiteral("40mP feat. 初音ミク"));

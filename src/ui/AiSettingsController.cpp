@@ -189,7 +189,7 @@ void AiSettingsController::executePing(const ai::ServiceConfig &svcConfig,
     if (rawReply != nullptr) {
         rawReply->setParent(this);
         connect(rawReply, &ai::LlmReply::finished, this,
-            [this, rawReply, timer, callback = std::move(callback)]() {
+            [rawReply, timer, callback = std::move(callback)]() {
                 const int latencyMs = static_cast<int>(timer->elapsed());
                 callback(rawReply->result(), latencyMs);
                 rawReply->deleteLater();

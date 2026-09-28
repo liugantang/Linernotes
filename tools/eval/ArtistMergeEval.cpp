@@ -497,7 +497,7 @@ void ArtistMergeEval::startMergeJob()
     }
     m_batchId = batchRes.value();
 
-    const butler::ArtistMergeSource source(m_harness.db(), m_harness.clock());
+    const butler::ArtistMergeSource source(m_harness.db());
     const auto itemsRes = source.findItems();
     if (!itemsRes.ok()) {
         std::cerr << "Failed to find merge items: " << qPrintable(itemsRes.error().toString())

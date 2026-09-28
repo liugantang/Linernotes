@@ -19,7 +19,6 @@
 #include <butler/ArtistName.h>
 #include <butler/ButlerLogging.h>
 #include <butler/Errors.h>
-#include <core/Clock.h>
 #include <core/Logging.h>
 #include <library/Database.h>
 
@@ -147,9 +146,8 @@ QStringList buildConfirmItems(const QList<ArtistGroup> &groups)
 
 } // namespace
 
-ArtistMergeSource::ArtistMergeSource(library::Database &db, const core::Clock &clock)
+ArtistMergeSource::ArtistMergeSource(library::Database &db)
     : m_db(db)
-    , m_clock(clock)
 {
 }
 

@@ -142,7 +142,7 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::processGroup(const QJsonObject &
         return nullptr;
     }
 
-    const ArtistMergeSource source(m_db, m_clock);
+    const ArtistMergeSource source(m_db);
     const auto artistsRes = source.loadArtists();
     if (!artistsRes.ok()) {
         done(artistsRes.error());
@@ -203,7 +203,7 @@ std::unique_ptr<QObject> ArtistMergeJobHandler::processConfirm(const QJsonObject
         return nullptr;
     }
 
-    const ArtistMergeSource source(m_db, m_clock);
+    const ArtistMergeSource source(m_db);
     const auto artistsRes = source.loadArtists();
     if (!artistsRes.ok()) {
         done(artistsRes.error());

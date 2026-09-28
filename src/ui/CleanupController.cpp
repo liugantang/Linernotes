@@ -240,31 +240,30 @@ void CleanupController::checkHealth()
             qPrintable(promptRes.error().toString()));
     }
 
-    auto future
-        = QtConcurrent::run([&db = m_db, &clock = m_clock, promptVersion]() -> HealthReportData {
-              HealthReportData report;
+    auto future = QtConcurrent::run([&db = m_db, promptVersion]() -> HealthReportData {
+        HealthReportData report;
 
-              const butler::MojibakeSource mojibakeSource(db);
-              if (auto res = mojibakeSource.findGroups(); res.ok()) {
-                  report.mojibakeItems = res.value();
-                  report.mojibakeGroups = static_cast<int>(report.mojibakeItems.size());
-              }
+        const butler::MojibakeSource mojibakeSource(db);
+        if (auto res = mojibakeSource.findGroups(); res.ok()) {
+            report.mojibakeItems = res.value();
+            report.mojibakeGroups = static_cast<int>(report.mojibakeItems.size());
+        }
 
-              const butler::ArtistCreditSource creditSource(db);
-              if (auto res = creditSource.findItems(promptVersion); res.ok()) {
-                  report.creditItems = res.value();
-                  report.creditValues = countCreditValues(report.creditItems);
-              }
+        const butler::ArtistCreditSource creditSource(db);
+        if (auto res = creditSource.findItems(promptVersion); res.ok()) {
+            report.creditItems = res.value();
+            report.creditValues = countCreditValues(report.creditItems);
+        }
 
-              const butler::ArtistMergeSource mergeSource(db, clock);
-              if (auto res = mergeSource.findItems(); res.ok()) {
-                  report.mergeItems = res.value();
-                  report.mergeClusters = countMergeClusters(report.mergeItems);
-              }
+        const butler::ArtistMergeSource mergeSource(db);
+        if (auto res = mergeSource.findItems(); res.ok()) {
+            report.mergeItems = res.value();
+            report.mergeClusters = countMergeClusters(report.mergeItems);
+        }
 
-              report.missingAlbumTracks = queryMissingAlbumTracks(db);
-              return report;
-          });
+        report.missingAlbumTracks = queryMissingAlbumTracks(db);
+        return report;
+    });
 
     m_healthWatcher.setFuture(future);
 }
@@ -370,28 +369,27 @@ void CleanupController::startNextStep()
         }
     }
 
-    auto future
-        = QtConcurrent::run([&db = m_db, &clock = m_clock, step, promptVersion]() -> StepItemData {
-              StepItemData res;
-              res.step = step;
-              if (step == Step::Mojibake) {
-                  const butler::MojibakeSource src(db);
-                  if (auto r = src.findGroups(); r.ok()) {
-                      res.items = r.value();
-                  }
-              } else if (step == Step::Credit) {
-                  const butler::ArtistCreditSource src(db);
-                  if (auto r = src.findItems(promptVersion); r.ok()) {
-                      res.items = r.value();
-                  }
-              } else if (step == Step::Merge) {
-                  const butler::ArtistMergeSource src(db, clock);
-                  if (auto r = src.findItems(); r.ok()) {
-                      res.items = r.value();
-                  }
-              }
-              return res;
-          });
+    auto future = QtConcurrent::run([&db = m_db, step, promptVersion]() -> StepItemData {
+        StepItemData res;
+        res.step = step;
+        if (step == Step::Mojibake) {
+            const butler::MojibakeSource src(db);
+            if (auto r = src.findGroups(); r.ok()) {
+                res.items = r.value();
+            }
+        } else if (step == Step::Credit) {
+            const butler::ArtistCreditSource src(db);
+            if (auto r = src.findItems(promptVersion); r.ok()) {
+                res.items = r.value();
+            }
+        } else if (step == Step::Merge) {
+            const butler::ArtistMergeSource src(db);
+            if (auto r = src.findItems(); r.ok()) {
+                res.items = r.value();
+            }
+        }
+        return res;
+    });
 
     m_stepWatcher.setFuture(future);
 }

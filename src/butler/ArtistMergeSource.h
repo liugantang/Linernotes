@@ -13,10 +13,6 @@
 
 #include <cstdint>
 
-namespace linernotes::core {
-class Clock;
-}
-
 namespace linernotes::library {
 class Database;
 }
@@ -25,7 +21,7 @@ namespace linernotes::butler {
 
 class ArtistMergeSource {
 public:
-    explicit ArtistMergeSource(library::Database &db, const core::Clock &clock);
+    explicit ArtistMergeSource(library::Database &db);
 
     /// artists 表全部艺人，trackCount = track_artists 中的曲目数（role 不限，去重）。
     core::Result<QList<ArtistEntry>> loadArtists() const;
@@ -46,7 +42,6 @@ public:
 
 private:
     library::Database &m_db;
-    const core::Clock &m_clock;
 };
 
 } // namespace linernotes::butler
