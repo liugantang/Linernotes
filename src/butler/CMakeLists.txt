@@ -4,6 +4,8 @@
 file(GLOB SCHEMA_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/schemas/*/*.json")
 
 add_library(linernotes_butler STATIC
+    AlbumMatch.cpp
+    AlbumMatch.h
     ArtistCredit.cpp
     ArtistCredit.h
     ArtistCreditJobHandler.cpp
@@ -30,9 +32,29 @@ add_library(linernotes_butler STATIC
     ButlerLogging.h
     CharFrequency.cpp
     CharFrequency.h
+    CoverArtJobHandler.cpp
+    CoverArtJobHandler.h
+    CoverArtSource.cpp
+    CoverArtSource.h
+    DuplicateFinder.cpp
+    DuplicateFinder.h
+    DuplicateJobHandler.cpp
+    DuplicateJobHandler.h
+    DuplicateResolver.cpp
+    DuplicateResolver.h
+    DuplicateSource.cpp
+    DuplicateSource.h
     EncodingScore.cpp
     EncodingScore.h
     Errors.h
+    FingerprintJobHandler.cpp
+    FingerprintJobHandler.h
+    MbMatchJobHandler.cpp
+    MbMatchJobHandler.h
+    MbMatchPlanner.cpp
+    MbMatchPlanner.h
+    MbMatchSource.cpp
+    MbMatchSource.h
     Mojibake.cpp
     Mojibake.h
     MojibakeAnalysis.cpp
@@ -43,7 +65,35 @@ add_library(linernotes_butler STATIC
     MojibakeLlm.h
     MojibakeSource.cpp
     MojibakeSource.h
+    MusicBrainz.cpp
+    MusicBrainz.h
+    MusicBrainzClient.cpp
+    MusicBrainzClient.h
+    TitleVersion.cpp
+    TitleVersion.h
     TrackFieldTarget.h
+    TranslationJobHandler.cpp
+    TranslationJobHandler.h
+    TranslationLlm.cpp
+    TranslationLlm.h
+    TranslationSource.cpp
+    TranslationSource.h
+    TranslationStore.cpp
+    TranslationStore.h
+    VersionLinkJobHandler.cpp
+    VersionLinkJobHandler.h
+    VersionLinker.cpp
+    VersionLinker.h
+    VersionSuffixJobHandler.cpp
+    VersionSuffixJobHandler.h
+    VersionSuffixLlm.cpp
+    VersionSuffixLlm.h
+    VersionSuffixSource.cpp
+    VersionSuffixSource.h
+    VersionSuffixStore.cpp
+    VersionSuffixStore.h
+    WritebackJobHandler.cpp
+    WritebackJobHandler.h
 )
 add_library(Linernotes::butler ALIAS linernotes_butler)
 
@@ -66,10 +116,12 @@ target_link_libraries(linernotes_butler
     PUBLIC
         Linernotes::core
         Linernotes::library
+        Linernotes::audio
         Linernotes::ai
         Qt6::Core
         Qt6::Sql
         Qt6::Network
+        Qt6::Concurrent
     PRIVATE
         Linernotes::Deps::ICU
         Linernotes::Deps::Uchardet

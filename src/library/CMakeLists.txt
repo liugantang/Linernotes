@@ -23,6 +23,8 @@ add_library(linernotes_library STATIC
     Errors.h
     FileFingerprint.cpp
     FileFingerprint.h
+    FingerprintStore.cpp
+    FingerprintStore.h
     FsType.cpp
     FsType.h
     LibraryLogging.cpp
@@ -72,10 +74,16 @@ add_library(linernotes_library STATIC
     SmartRuleSql.h
     TagReader.cpp
     TagReader.h
+    TagWriter.cpp
+    TagWriter.h
     TrackCorrections.cpp
     TrackCorrections.h
     TrackIssueStore.cpp
     TrackIssueStore.h
+    TrackMerge.cpp
+    TrackMerge.h
+    WritebackStore.cpp
+    WritebackStore.h
 )
 add_library(Linernotes::library ALIAS linernotes_library)
 

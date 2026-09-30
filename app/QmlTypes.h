@@ -23,6 +23,7 @@
 #include <ui/CorrectionBatchModel.h>
 #include <ui/CorrectionListModel.h>
 #include <ui/CorrectionReviewController.h>
+#include <ui/DuplicateController.h>
 #include <ui/LibraryActions.h>
 #include <ui/LibraryRootsModel.h>
 #include <ui/LlmDebugController.h>
@@ -39,6 +40,7 @@
 #include <ui/TagEditorModel.h>
 #include <ui/TrackListModel.h>
 #include <ui/UsageSummaryModel.h>
+#include <ui/WritebackController.h>
 
 struct AppContextForeign {
     Q_GADGET
@@ -248,6 +250,13 @@ struct CorrectionReviewControllerForeign {
     QML_UNCREATABLE("CorrectionReviewController is managed by AppContext")
 };
 
+struct WritebackControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::WritebackController)
+    QML_NAMED_ELEMENT(WritebackController)
+    QML_UNCREATABLE("WritebackController is managed by AppContext")
+};
+
 struct CorrectionBatchModelForeign {
     Q_GADGET
     QML_FOREIGN(linernotes::ui::CorrectionBatchModel)
@@ -267,4 +276,18 @@ struct CleanupControllerForeign {
     QML_FOREIGN(linernotes::ui::CleanupController)
     QML_NAMED_ELEMENT(CleanupController)
     QML_UNCREATABLE("CleanupController is managed by AppContext")
+};
+
+struct DuplicateControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::DuplicateController)
+    QML_NAMED_ELEMENT(DuplicateController)
+    QML_UNCREATABLE("DuplicateController is managed by AppContext")
+};
+
+struct DuplicateSectionModelForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::DuplicateSectionModel)
+    QML_NAMED_ELEMENT(DuplicateSectionModel)
+    QML_UNCREATABLE("DuplicateSectionModel is managed by DuplicateController")
 };

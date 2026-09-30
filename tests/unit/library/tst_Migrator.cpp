@@ -46,6 +46,9 @@ private slots:
     void upgradesTo0010AddsJobs();
     void upgradesTo0011AddsButlerTables();
     void upgradesTo0012AddsCorrectionLocale();
+    void upgradesTo0015AddsFingerprintsTable();
+    void upgradesTo0016AddsMbMatches();
+    void upgradesTo0017AddsCoverChecked();
 };
 
 void TstMigrator::appliesMigrationsInOrder()
@@ -601,6 +604,174 @@ void TstMigrator::upgradesTo0012AddsCorrectionLocale()
     QVERIFY(q.exec(QStringLiteral("SELECT locale FROM corrections WHERE id = 2;")));
     QVERIFY(q.next());
     QCOMPARE(q.value(0).toString(), QStringLiteral("en"));
+}
+
+void TstMigrator::upgradesTo0015AddsFingerprintsTable()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 15);
+
+    // Write migrations 1..14
+    for (int i = 0; i < 14; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 14);
+
+    // Add migration 15
+    const auto &m15 = allMigrations.at(14);
+    const QString fileName15
+        = QStringLiteral("%1_%2.sql").arg(m15.version, 4, 10, QLatin1Char('0')).arg(m15.name);
+    writeSqlFile(migDir.path(), fileName15, m15.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 15);
+
+    // Verify fingerprints table exists and can be queried
+    QSqlQuery q(conn);
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM fingerprints;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 0);
+}
+
+void TstMigrator::upgradesTo0016AddsMbMatches()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 16);
+
+    // Write migrations 1..15
+    for (int i = 0; i < 15; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 15);
+
+    // Add migration 16
+    const auto &m16 = allMigrations.at(15);
+    const QString fileName16
+        = QStringLiteral("%1_%2.sql").arg(m16.version, 4, 10, QLatin1Char('0')).arg(m16.name);
+    writeSqlFile(migDir.path(), fileName16, m16.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 16);
+
+    // Verify mb_album_matches and mb_track_matches tables exist and can be queried
+    QSqlQuery q(conn);
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM mb_album_matches;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 0);
+
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM mb_track_matches;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 0);
+}
+
+void TstMigrator::upgradesTo0017AddsCoverChecked()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 17);
+
+    // Write migrations 1..16
+    for (int i = 0; i < 16; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 16);
+
+    // Insert an mb_album_matches row in v16 schema
+    {
+        QSqlQuery q(conn);
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO albums (id, grouping_key, title, created_at) "
+                                      "VALUES (1, 'g1', 'Album 1', 100);")));
+        QVERIFY(
+            q.exec(QStringLiteral("INSERT INTO mb_album_matches (album_id, status, release_id, "
+                                  "release_group_id, score, label, matched_at) "
+                                  "VALUES (1, 'matched', 'rel-1', 'rg-1', 1.0, 'Label', 1000);")));
+    }
+
+    // Add migration 17
+    const auto &m17 = allMigrations.at(16);
+    const QString fileName17
+        = QStringLiteral("%1_%2.sql").arg(m17.version, 4, 10, QLatin1Char('0')).arg(m17.name);
+    writeSqlFile(migDir.path(), fileName17, m17.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 17);
+
+    // Verify existing row has NULL cover_checked_at
+    QSqlQuery q(conn);
+    QVERIFY(q.exec(
+        QStringLiteral("SELECT cover_checked_at FROM mb_album_matches WHERE album_id = 1;")));
+    QVERIFY(q.next());
+    QVERIFY(q.value(0).isNull());
+
+    // Verify update cover_checked_at works
+    QVERIFY(q.exec(
+        QStringLiteral("UPDATE mb_album_matches SET cover_checked_at = 2000 WHERE album_id = 1;")));
+    QVERIFY(q.exec(
+        QStringLiteral("SELECT cover_checked_at FROM mb_album_matches WHERE album_id = 1;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toLongLong(), 2000LL);
 }
 
 } // namespace

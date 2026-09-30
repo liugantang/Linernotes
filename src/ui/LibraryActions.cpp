@@ -251,6 +251,7 @@ QVariantMap LibraryActions::albumInfo(qint64 albumId) const
     map.insert(QStringLiteral("durationText"), formatDuration(row.totalDurationMs));
     map.insert(QStringLiteral("coverHash"), row.coverHash);
     map.insert(QStringLiteral("favorite"), row.favorite);
+    map.insert(QStringLiteral("titleTranslated"), row.titleTranslated);
     return map;
 }
 
@@ -286,6 +287,40 @@ QVariantMap LibraryActions::artistInfo(qint64 artistId) const
     map.insert(QStringLiteral("coverHash"), row.coverHash);
     map.insert(QStringLiteral("favorite"), row.favorite);
     return map;
+}
+
+QVariantList LibraryActions::otherVersions(qint64 trackId) const
+{
+    if (trackId <= 0 || !m_db.isOpen()) {
+        return { };
+    }
+
+    const auto connOpt = m_db.connection();
+    if (!connOpt.ok()) {
+        qCWarning(lcUi, "Database connection not available for otherVersions");
+        return { };
+    }
+
+    const library::LibraryQuery query(connOpt.value());
+    const auto res = query.otherVersions(trackId);
+    if (!res.ok() || res.value().isEmpty()) {
+        return { };
+    }
+
+    QVariantList list;
+    list.reserve(res.value().size());
+    for (const auto &row : res.value()) {
+        QVariantMap map;
+        map.insert(QStringLiteral("trackId"), row.trackId);
+        map.insert(QStringLiteral("title"), row.title);
+        map.insert(QStringLiteral("artist"), row.artist);
+        map.insert(QStringLiteral("album"), row.album);
+        map.insert(QStringLiteral("durationText"), formatDuration(row.durationMs));
+        map.insert(QStringLiteral("versionType"),
+            row.versionType.has_value() ? static_cast<int>(row.versionType.value()) : -1);
+        list.append(map);
+    }
+    return list;
 }
 
 void LibraryActions::showInFileManager(qint64 trackId) const

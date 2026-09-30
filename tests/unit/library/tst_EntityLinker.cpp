@@ -78,6 +78,7 @@ private slots:
     void artistsAndComposersWithIdReuseAndIdempotency();
     void albumGroupingAndYearAggregation();
     void userOverridesAndOrphanCleanup();
+    void preservesOnlineCoverWhenNoFileCover();
 };
 
 void TstEntityLinker::artistsAndComposersWithIdReuseAndIdempotency()
@@ -285,6 +286,67 @@ void TstEntityLinker::userOverridesAndOrphanCleanup()
     QCOMPARE(artists,
         (QStringList { QStringLiteral("New AA"), QStringLiteral("New Artist"),
             QStringLiteral("Stay AA"), QStringLiteral("Stay Artist") }));
+}
+
+void TstEntityLinker::preservesOnlineCoverWhenNoFileCover()
+{
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+    Database db(dbDir.filePath(QStringLiteral("online_cover.db")));
+    QVERIFY(db.open(Migrator()).ok());
+    const auto conn = db.connection().value();
+
+    const qint64 rootId = TestDbHelper::insertRoot(conn);
+    const qint64 f1 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/album1/1.mp3"));
+    const qint64 t1 = TestDbHelper::insertTrack(conn, f1);
+
+    TestDbHelper::insertRawTag(conn, t1, QStringLiteral("ALBUM"), QStringLiteral("Online Album"));
+    TestDbHelper::insertRawTag(conn, t1, QStringLiteral("ARTIST"), QStringLiteral("Artist X"));
+    TestDbHelper::updateTagsReadAt(conn, t1);
+
+    EntityLinker linker(conn);
+    QVERIFY(linker.linkTrack(t1).ok());
+
+    // Find album id
+    QSqlQuery q(conn);
+    QVERIFY(
+        q.exec(QStringLiteral("SELECT id, cover_id FROM albums WHERE title = 'Online Album';")));
+    QVERIFY(q.next());
+    const qint64 albumId = q.value(0).toLongLong();
+    QVERIFY(q.value(1).isNull());
+
+    // Insert an online cover into covers table
+    QVERIFY(q.exec(QStringLiteral(
+        "INSERT INTO covers (id, hash, mime, width, height, source, source_path, created_at) "
+        "VALUES (101, 'hash_online', 'image/jpeg', 500, 500, 'online', "
+        "'https://coverartarchive.org/release/1/front-500', 1000);")));
+
+    // Manually set albums.cover_id = 101
+    q.prepare(QStringLiteral("UPDATE albums SET cover_id = 101 WHERE id = ?;"));
+    q.addBindValue(albumId);
+    QVERIFY(q.exec());
+
+    // Re-link track (no file cover exists) -> online cover_id should be preserved
+    QVERIFY(linker.linkTrack(t1).ok());
+    q.prepare(QStringLiteral("SELECT cover_id FROM albums WHERE id = ?;"));
+    q.addBindValue(albumId);
+    QVERIFY(q.exec() && q.next());
+    QCOMPARE(q.value(0).toLongLong(), 101LL);
+
+    // Now insert a file cover (source = 'embedded') and attach to file
+    QVERIFY(q.exec(QStringLiteral(
+        "INSERT INTO covers (id, hash, mime, width, height, source, source_path, created_at) "
+        "VALUES (102, 'hash_file', 'image/jpeg', 800, 800, 'embedded', NULL, 1000);")));
+    q.prepare(QStringLiteral("UPDATE files SET cover_id = 102 WHERE id = ?;"));
+    q.addBindValue(f1);
+    QVERIFY(q.exec());
+
+    // Re-link track (now file cover exists) -> should update to file cover (102)
+    QVERIFY(linker.linkTrack(t1).ok());
+    q.prepare(QStringLiteral("SELECT cover_id FROM albums WHERE id = ?;"));
+    q.addBindValue(albumId);
+    QVERIFY(q.exec() && q.next());
+    QCOMPARE(q.value(0).toLongLong(), 102LL);
 }
 
 } // namespace

@@ -9,7 +9,15 @@
 
 #include <butler/ArtistCreditJobHandler.h>
 #include <butler/ArtistMergeJobHandler.h>
+#include <butler/CoverArtJobHandler.h>
+#include <butler/DuplicateJobHandler.h>
+#include <butler/FingerprintJobHandler.h>
+#include <butler/MbMatchJobHandler.h>
 #include <butler/MojibakeJobHandler.h>
+#include <butler/TranslationJobHandler.h>
+#include <butler/VersionLinkJobHandler.h>
+#include <butler/VersionSuffixJobHandler.h>
+#include <butler/WritebackJobHandler.h>
 
 #include <memory>
 
@@ -27,9 +35,10 @@ QStringList buildPromptDirs(const QString &promptsDir)
 }
 } // namespace
 
-AiContext::AiContext(core::Settings &settings, library::Database &db, const core::Clock &clock,
-    const QString &promptsDir, QObject *parent)
+AiContext::AiContext(core::Settings &settings, library::Database &db, library::CoverStore &covers,
+    const core::Clock &clock, const QString &promptsDir, QObject *parent)
     : QObject(parent)
+    , m_musicBrainz(m_network, db, clock)
     , m_config(settings)
     , m_client(m_network)
     , m_cache(db, clock)
@@ -48,7 +57,21 @@ AiContext::AiContext(core::Settings &settings, library::Database &db, const core
     m_jobs.registerHandler(
         std::make_unique<butler::ArtistCreditJobHandler>(db, m_llm, m_prompts, clock));
     m_jobs.registerHandler(
+        std::make_unique<butler::VersionSuffixJobHandler>(db, m_llm, m_prompts, clock));
+    m_jobs.registerHandler(std::make_unique<butler::VersionLinkJobHandler>(db, m_prompts, clock));
+    m_jobs.registerHandler(
+        std::make_unique<butler::TranslationJobHandler>(db, m_llm, m_prompts, clock));
+    m_jobs.registerHandler(
         std::make_unique<butler::ArtistMergeJobHandler>(db, m_llm, m_prompts, clock));
+    m_jobs.registerHandler(std::make_unique<butler::FingerprintJobHandler>(db, clock));
+    m_jobs.registerHandler(std::make_unique<butler::DuplicateJobHandler>(db, clock));
+    m_jobs.registerHandler(std::make_unique<butler::MbMatchJobHandler>(db, m_musicBrainz, clock));
+    m_jobs.registerHandler(
+        std::make_unique<butler::CoverArtJobHandler>(db, m_network, covers, clock,
+            QUrl(QString::fromLatin1(butler::kCoverArtArchiveBase.data(),
+                static_cast<qsizetype>(butler::kCoverArtArchiveBase.size())))));
+    m_jobs.registerHandler(std::make_unique<butler::WritebackJobHandler>(db, clock));
+    m_jobs.registerHandler(std::make_unique<butler::WritebackRevertJobHandler>(db, clock));
 }
 
 void AiContext::onDatabaseReady()

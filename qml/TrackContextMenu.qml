@@ -12,12 +12,54 @@ Controls.AppMenu {
     property var trackIds: []
     property var playlistId: 0
     property int playSource: PlaySource.Library
+    property var otherVersionsList: []
+
+    function updateOtherVersions(ids) {
+        if (ids && ids.length === 1 && AppContext.actions) {
+            otherVersionsList = AppContext.actions.otherVersions(ids[0])
+        } else {
+            otherVersionsList = []
+        }
+    }
+
+    function versionLabelText(vt) {
+        if (vt === Library.VersionType.Live) return qsTr("Live")
+        if (vt === Library.VersionType.Remaster) return qsTr("Remaster")
+        if (vt === Library.VersionType.Acoustic) return qsTr("Acoustic")
+        if (vt === Library.VersionType.Remix) return qsTr("Remix")
+        if (vt === Library.VersionType.Demo) return qsTr("Demo")
+        if (vt === Library.VersionType.Instrumental) return qsTr("Instrumental")
+        if (vt === Library.VersionType.Edit) return qsTr("Edit")
+        if (vt === Library.VersionType.Alternate) return qsTr("Alt. version")
+        return ""
+    }
+
+    function formatVersionItemText(item) {
+        const parts = []
+        if (item.title) {
+            parts.push(item.title)
+        } else {
+            parts.push(qsTr("Unknown Title"))
+        }
+        const vText = versionLabelText(item.versionType)
+        if (vText) {
+            parts.push(vText)
+        }
+        if (item.durationText) {
+            parts.push(item.durationText)
+        }
+        if (item.album) {
+            parts.push(item.album)
+        }
+        return parts.join(" · ")
+    }
 
     function popupFor(ids) {
         if (!ids || ids.length === 0) {
             return
         }
         trackIds = ids
+        updateOtherVersions(ids)
         popup()
     }
 
@@ -26,6 +68,7 @@ Controls.AppMenu {
             return
         }
         trackIds = ids
+        updateOtherVersions(ids)
         popup(item, 0, item.height)
     }
 
@@ -110,6 +153,33 @@ Controls.AppMenu {
                 if (!object.isSmart) {
                     addToPlaylistMenu.removeItem(object)
                 }
+            }
+        }
+    }
+
+    Controls.AppMenu {
+        id: otherVersionsMenu
+        title: qsTr("Other Versions")
+        visible: root.trackIds.length === 1 && root.otherVersionsList.length > 0
+        height: visible ? implicitHeight : 0
+
+        Instantiator {
+            id: otherVersionsInstantiator
+            model: root.otherVersionsList
+            delegate: Controls.AppMenuItem {
+                required property var modelData
+                text: root.formatVersionItemText(modelData)
+                onTriggered: {
+                    if (AppContext.actions && modelData && modelData.trackId) {
+                        AppContext.actions.playTracks([modelData.trackId], 0, root.playSource)
+                    }
+                }
+            }
+            onObjectAdded: (index, object) => {
+                otherVersionsMenu.addItem(object)
+            }
+            onObjectRemoved: (index, object) => {
+                otherVersionsMenu.removeItem(object)
             }
         }
     }

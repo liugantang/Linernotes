@@ -115,6 +115,8 @@ SettingsController::SettingsController(
     , m_closeToTray(m_settings.value(kAppearanceCloseToTray))
     , m_trackChangeNotifications(m_settings.value(kNotificationsTrackChange))
     , m_firstRunCompleted(m_settings.value(kAppFirstRunCompleted))
+    , m_autoCleanup(m_settings.value(kButlerAutoCleanup))
+    , m_showTranslations(m_settings.value(kUiShowTranslations))
 {
     m_player.setReplayGainMode(m_replayGainMode);
     m_player.setGapless(m_gapless);
@@ -358,6 +360,36 @@ void SettingsController::setFirstRunCompleted(bool completed)
     m_firstRunCompleted = completed;
     m_settings.setValue(kAppFirstRunCompleted, completed);
     emit firstRunCompletedChanged();
+}
+
+bool SettingsController::autoCleanup() const
+{
+    return m_autoCleanup;
+}
+
+void SettingsController::setAutoCleanup(bool enabled)
+{
+    if (enabled == m_autoCleanup) {
+        return;
+    }
+    m_autoCleanup = enabled;
+    m_settings.setValue(kButlerAutoCleanup, enabled);
+    emit autoCleanupChanged();
+}
+
+bool SettingsController::showTranslations() const
+{
+    return m_showTranslations;
+}
+
+void SettingsController::setShowTranslations(bool enabled)
+{
+    if (enabled == m_showTranslations) {
+        return;
+    }
+    m_showTranslations = enabled;
+    m_settings.setValue(kUiShowTranslations, enabled);
+    emit showTranslationsChanged();
 }
 
 } // namespace linernotes::ui

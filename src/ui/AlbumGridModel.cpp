@@ -82,6 +82,8 @@ QVariant AlbumGridModel::data(const QModelIndex &index, int role) const
         return row->coverHash;
     case FavoriteRole:
         return row->favorite;
+    case TitleTranslatedRole:
+        return row->titleTranslated;
     default:
         return { };
     }
@@ -99,6 +101,7 @@ QHash<int, QByteArray> AlbumGridModel::roleNames() const
         { DurationTextRole, "durationText" },
         { CoverHashRole, "coverHash" },
         { FavoriteRole, "favorite" },
+        { TitleTranslatedRole, "titleTranslated" },
     };
 }
 

@@ -20,6 +20,9 @@ Item {
                 AppContext.review.selectBatch(AppContext.review.batchModel.batchIdAt(0))
             }
         }
+        if (AppContext.duplicates) {
+            AppContext.duplicates.refresh()
+        }
         if (AppContext.cleanup) {
             if (!AppContext.cleanup.healthReady && !AppContext.cleanup.checking) {
                 AppContext.cleanup.checkHealth()
@@ -32,6 +35,20 @@ Item {
         function onCountChanged() {
             if (AppContext.review && AppContext.review.currentBatchId <= 0 && AppContext.review.batchModel.count > 0) {
                 AppContext.review.selectBatch(AppContext.review.batchModel.batchIdAt(0))
+            }
+        }
+    }
+
+    Connections {
+        target: AppContext.cleanup || null
+        function onBatchesChanged() {
+            if (AppContext.duplicates) {
+                AppContext.duplicates.refresh()
+            }
+        }
+        function onRunningChanged() {
+            if (AppContext.cleanup && !AppContext.cleanup.running && AppContext.duplicates) {
+                AppContext.duplicates.refresh()
             }
         }
     }
@@ -131,96 +148,133 @@ Item {
             Layout.margins: Theme.spacingMedium
         }
 
-        Item {
+        Controls.AppTabBar {
+            id: cleanupTabBar
             Layout.fillWidth: true
-            Layout.fillHeight: true
+            Layout.leftMargin: Theme.spacingMedium
+            Layout.rightMargin: Theme.spacingMedium
 
-            // Empty state when no batches
-            Item {
-                anchors.fill: parent
-                visible: !root.hasBatches
-
-                ColumnLayout {
-                    anchors.centerIn: parent
-                    spacing: Theme.spacingMedium
-                    width: Math.min(parent.width - Theme.spacingLarge * 2, 400)
-
-                    IconImage {
-                        source: "../icons/sparkles.svg"
-                        Layout.preferredWidth: 48
-                        Layout.preferredHeight: 48
-                        sourceSize: Qt.size(48, 48)
-                        color: Theme.textSecondary
-                        Layout.alignment: Qt.AlignHCenter
-                    }
-
-                    Label {
-                        text: qsTr("No Cleanup Batches")
-                        font.pixelSize: Theme.fontSizeLarge
-                        font.bold: true
-                        color: Theme.text
-                        Layout.alignment: Qt.AlignHCenter
-                    }
-
-                    Label {
-                        text: qsTr("No cleanup batches yet. Run a library cleanup to see proposed fixes here.")
-                        font.pixelSize: Theme.fontSizeNormal
-                        color: Theme.textSecondary
-                        wrapMode: Text.Wrap
-                        horizontalAlignment: Text.AlignHCenter
-                        Layout.fillWidth: true
-                    }
-                }
+            Controls.AppTabButton {
+                text: qsTr("Correction Batches")
             }
 
-            // Review area when batches exist
-            RowLayout {
-                anchors.fill: parent
-                spacing: 0
-                visible: root.hasBatches
+            Controls.AppTabButton {
+                text: {
+                    const count = AppContext.duplicates ? AppContext.duplicates.groupCount : 0
+                    return qsTr("Duplicate Songs (%1)").arg(count)
+                }
+            }
+        }
 
-                CorrectionBatchList {
-                    Layout.preferredWidth: root.width < 900 ? 220 : 280
-                    Layout.fillHeight: true
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Theme.divider
+        }
+
+        StackLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            currentIndex: cleanupTabBar.currentIndex
+
+            // Tab 0: Batches
+            Item {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                // Empty state when no batches
+                Item {
+                    anchors.fill: parent
+                    visible: !root.hasBatches
+
+                    ColumnLayout {
+                        anchors.centerIn: parent
+                        spacing: Theme.spacingMedium
+                        width: Math.min(parent.width - Theme.spacingLarge * 2, 400)
+
+                        IconImage {
+                            source: "../icons/sparkles.svg"
+                            Layout.preferredWidth: 48
+                            Layout.preferredHeight: 48
+                            sourceSize: Qt.size(48, 48)
+                            color: Theme.textSecondary
+                            Layout.alignment: Qt.AlignHCenter
+                        }
+
+                        Label {
+                            text: qsTr("No Cleanup Batches")
+                            font.pixelSize: Theme.fontSizeLarge
+                            font.bold: true
+                            color: Theme.text
+                            Layout.alignment: Qt.AlignHCenter
+                        }
+
+                        Label {
+                            text: qsTr("No cleanup batches yet. Run a library cleanup to see proposed fixes here.")
+                            font.pixelSize: Theme.fontSizeNormal
+                            color: Theme.textSecondary
+                            wrapMode: Text.Wrap
+                            horizontalAlignment: Text.AlignHCenter
+                            Layout.fillWidth: true
+                        }
+                    }
                 }
 
-                Rectangle {
-                    Layout.preferredWidth: 1
-                    Layout.fillHeight: true
-                    color: Theme.divider
-                }
-
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
+                // Review area when batches exist
+                RowLayout {
+                    anchors.fill: parent
                     spacing: 0
+                    visible: root.hasBatches
 
-                    CorrectionFilterBar {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 52
-                    }
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 1
-                        color: Theme.divider
-                    }
-
-                    CorrectionList {
-                        Layout.fillWidth: true
+                    CorrectionBatchList {
+                        Layout.preferredWidth: root.width < 900 ? 220 : 280
                         Layout.fillHeight: true
                     }
 
                     Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 1
+                        Layout.preferredWidth: 1
+                        Layout.fillHeight: true
                         color: Theme.divider
                     }
 
-                    CorrectionActionBar {
+                    ColumnLayout {
                         Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        spacing: 0
+
+                        CorrectionFilterBar {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 52
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 1
+                            color: Theme.divider
+                        }
+
+                        CorrectionList {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                        }
+
+                        Rectangle {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 1
+                            color: Theme.divider
+                        }
+
+                        CorrectionActionBar {
+                            Layout.fillWidth: true
+                        }
                     }
                 }
+            }
+
+            // Tab 1: Duplicate Songs
+            DuplicatePanel {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
             }
         }
     }

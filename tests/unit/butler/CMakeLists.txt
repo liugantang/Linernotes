@@ -2,6 +2,27 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 linernotes_add_test(
+    NAME butler_AlbumMatch
+    SOURCES
+        tst_AlbumMatch.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
+    NAME butler_DuplicateFinder
+    SOURCES
+        tst_DuplicateFinder.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::audio
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
     NAME butler_Mojibake
     SOURCES
         tst_Mojibake.cpp
@@ -90,5 +111,63 @@ linernotes_add_test(
         Linernotes::TestSupport
         Linernotes::Deps::ICU
 )
+
+linernotes_add_test(
+    NAME butler_MusicBrainz
+    SOURCES
+        tst_MusicBrainz.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Network
+)
+
+linernotes_add_test(
+    NAME butler_MbMatchPlanner
+    SOURCES
+        tst_MbMatchPlanner.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
+    NAME butler_TitleVersion
+    SOURCES
+        tst_TitleVersion.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Linernotes::Deps::ICU
+)
+
+linernotes_add_test(
+    NAME butler_TranslationLlm
+    SOURCES
+        tst_TranslationLlm.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
+    NAME butler_VersionSuffixLlm
+    SOURCES
+        tst_VersionSuffixLlm.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
 
 

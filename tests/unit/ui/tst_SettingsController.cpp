@@ -32,6 +32,7 @@ private slots:
     void testPlayCountRuleSettings();
     void testTrayAndNotificationSettings();
     void testArtistNamePreferenceSettings();
+    void testShowTranslationsSettings();
 };
 
 void TstSettingsController::testThemeAndReplayGainSettings()
@@ -303,6 +304,29 @@ void TstSettingsController::testArtistNamePreferenceSettings()
     SettingsController ctrl2(settings, player2);
 
     QCOMPARE(ctrl2.artistNamePreference(), ArtistNamePreference::SimplifiedChinese);
+}
+
+void TstSettingsController::testShowTranslationsSettings()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString iniPath = tempDir.filePath(QStringLiteral("settings.ini"));
+
+    Settings settings(iniPath);
+    Player player({ { QStringLiteral("ao"), QStringLiteral("null") } });
+
+    SettingsController ctrl1(settings, player);
+    QCOMPARE(ctrl1.showTranslations(), false);
+
+    QSignalSpy spy(&ctrl1, &SettingsController::showTranslationsChanged);
+
+    ctrl1.setShowTranslations(true);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(ctrl1.showTranslations(), true);
+
+    Player player2({ { QStringLiteral("ao"), QStringLiteral("null") } });
+    SettingsController ctrl2(settings, player2);
+    QCOMPARE(ctrl2.showTranslations(), true);
 }
 
 } // namespace

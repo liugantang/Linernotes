@@ -16,6 +16,7 @@
 #include <player/PlayQueue.h>
 #include <player/Player.h>
 #include <ui/AppContext.h>
+#include <ui/AppSettings.h>
 
 namespace {
 
@@ -137,6 +138,8 @@ void TstAppContext::startWithLibraryRootScansAndEmitsChanged()
     }
 
     Settings settings(tempDir.filePath(QStringLiteral("settings.ini")));
+    // 本测试只关心扫描发出的 libraryChanged；自动整理结束时也会发，关掉以免计数不稳定
+    settings.setValue(linernotes::ui::kButlerAutoCleanup, false);
 
     AppContext::Options options {
         .databasePath = dbPath,

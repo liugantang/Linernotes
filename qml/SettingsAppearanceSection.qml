@@ -178,4 +178,38 @@ ColumnLayout {
             }
         }
     }
+
+    // Chinese translations of foreign titles
+    ColumnLayout {
+        Layout.fillWidth: true
+        spacing: Theme.spacingTiny
+
+        Controls.AppCheckBox {
+            id: showTranslationsCheck
+            text: qsTr("Show Chinese translations of foreign titles")
+            checked: AppContext.settings ? AppContext.settings.showTranslations : false
+            onToggled: {
+                if (AppContext.settings) {
+                    AppContext.settings.showTranslations = checked
+                }
+            }
+
+            Connections {
+                target: AppContext.settings
+                function onShowTranslationsChanged() {
+                    if (AppContext.settings) {
+                        showTranslationsCheck.checked = AppContext.settings.showTranslations
+                    }
+                }
+            }
+        }
+
+        Label {
+            text: qsTr("Translations come from \"Translate foreign titles\" in Library Cleanup.")
+            font.pixelSize: Theme.fontSizeSmall
+            color: Theme.textSecondary
+            wrapMode: Text.Wrap
+            Layout.fillWidth: true
+        }
+    }
 }

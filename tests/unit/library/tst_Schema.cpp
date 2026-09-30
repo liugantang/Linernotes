@@ -100,7 +100,7 @@ void TstSchema::migratesFreshDatabaseToLatest()
     QVERIFY(db.open(Migrator()).ok());
     const auto conn = db.connection().value();
 
-    QCOMPARE(Migrator::currentVersion(conn).value(), 14);
+    QCOMPARE(Migrator::currentVersion(conn).value(), 23);
 
     // Verify core tables exist
     QSqlQuery q(conn);
@@ -117,6 +117,17 @@ void TstSchema::migratesFreshDatabaseToLatest()
     QVERIFY(tables.contains(QStringLiteral("llm_usage")));
     QVERIFY(tables.contains(QStringLiteral("track_issues")));
     QVERIFY(tables.contains(QStringLiteral("mb_cache")));
+    QVERIFY(tables.contains(QStringLiteral("fingerprints")));
+    QVERIFY(tables.contains(QStringLiteral("mb_album_matches")));
+    QVERIFY(tables.contains(QStringLiteral("mb_track_matches")));
+    QVERIFY(tables.contains(QStringLiteral("version_suffixes")));
+    QVERIFY(tables.contains(QStringLiteral("track_versions")));
+    QVERIFY(tables.contains(QStringLiteral("text_translations")));
+    QVERIFY(tables.contains(QStringLiteral("duplicate_groups")));
+    QVERIFY(tables.contains(QStringLiteral("duplicate_members")));
+    QVERIFY(tables.contains(QStringLiteral("duplicate_dismissals")));
+    QVERIFY(tables.contains(QStringLiteral("writebacks")));
+    QVERIFY(tables.contains(QStringLiteral("writeback_files")));
 
     // Integrity check
     QVERIFY(q.exec(QStringLiteral("PRAGMA integrity_check;")));
@@ -150,11 +161,15 @@ void TstSchema::cascadeDeletes()
     QVERIFY(q.exec(QStringLiteral(
         "INSERT INTO track_artists (track_id, artist_id, role) VALUES (1, 20, 'artist');")));
     QVERIFY(q.exec(QStringLiteral(
+        "INSERT INTO track_versions (track_id, base_title, version_type, unresolved, updated_at) "
+        "VALUES (1, 'Cascade Title', 'studio', 0, 100);")));
+    QVERIFY(q.exec(QStringLiteral(
         "INSERT INTO favorites (entity_type, entity_id, created_at) VALUES ('track', 1, 100);")));
     QVERIFY(q.exec(
         QStringLiteral("INSERT INTO play_events (id, track_id, started_at) VALUES (40, 1, 100);")));
 
-    // Delete file -> cascades to track, raw_tags, effective_metadata, track_artists, favorites
+    // Delete file -> cascades to track, raw_tags, effective_metadata, track_artists,
+    // track_versions, favorites
     QVERIFY(q.exec(QStringLiteral("DELETE FROM files WHERE id = 1;")));
 
     QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM tracks WHERE id = 1;")));
@@ -162,6 +177,8 @@ void TstSchema::cascadeDeletes()
     QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM effective_metadata WHERE track_id = 1;")));
     QVERIFY(q.next() && q.value(0).toInt() == 0);
     QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM track_artists WHERE track_id = 1;")));
+    QVERIFY(q.next() && q.value(0).toInt() == 0);
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM track_versions WHERE track_id = 1;")));
     QVERIFY(q.next() && q.value(0).toInt() == 0);
     QVERIFY(q.exec(QStringLiteral(
         "SELECT COUNT(*) FROM favorites WHERE entity_type = 'track' AND entity_id = 1;")));

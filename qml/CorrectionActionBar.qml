@@ -48,6 +48,24 @@ Rectangle {
 
     readonly property bool canDelete: AppContext.review && AppContext.review.currentBatchId > 0
 
+    readonly property int currentBatchId: AppContext.review ? AppContext.review.currentBatchId : 0
+
+    readonly property bool isWritebackRunning: AppContext.writeback ? AppContext.writeback.running : false
+
+    readonly property int writableFileCount: {
+        const _r = isWritebackRunning
+        const _c = batchModelCount
+        if (!AppContext.writeback || currentBatchId <= 0) return 0
+        return AppContext.writeback.writableFileCount(currentBatchId)
+    }
+
+    readonly property bool hasActiveWriteback: {
+        const _r = isWritebackRunning
+        const _c = batchModelCount
+        if (!AppContext.writeback || currentBatchId <= 0) return false
+        return AppContext.writeback.hasActiveWriteback(currentBatchId)
+    }
+
     Flow {
         id: flowLayout
         anchors.left: parent.left
@@ -97,6 +115,33 @@ Rectangle {
             text: qsTr("Delete Batch")
             enabled: root.canDelete
             onClicked: deleteConfirmDialog.open()
+        }
+
+        Controls.AppButton {
+            text: qsTr("Write to Files")
+            enabled: !root.isWritebackRunning && root.writableFileCount > 0
+            onClicked: writebackConfirmDialog.open()
+        }
+
+        Controls.AppButton {
+            text: qsTr("Undo Write")
+            visible: root.hasActiveWriteback
+            enabled: !root.isWritebackRunning && root.hasActiveWriteback
+            onClicked: undoWriteConfirmDialog.open()
+        }
+
+        Label {
+            text: qsTr("Writing... %1 / %2").arg(AppContext.writeback ? AppContext.writeback.done : 0).arg(AppContext.writeback ? AppContext.writeback.total : 0)
+            font.pixelSize: Theme.fontSizeNormal
+            color: Theme.textSecondary
+            visible: root.isWritebackRunning
+        }
+
+        Label {
+            text: AppContext.writeback ? AppContext.writeback.summary : ""
+            font.pixelSize: Theme.fontSizeNormal
+            color: Theme.textSecondary
+            visible: !root.isWritebackRunning && text !== ""
         }
     }
 
@@ -235,6 +280,148 @@ Rectangle {
                         deleteConfirmDialog.close()
                         if (AppContext.review) {
                             AppContext.review.deleteBatch(AppContext.review.currentBatchId)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Popup {
+        id: writebackConfirmDialog
+        modal: true
+        focus: true
+        dim: true
+        parent: Overlay.overlay
+        anchors.centerIn: Overlay.overlay
+
+        implicitWidth: 380
+        implicitHeight: writebackDialogLayout.implicitHeight + topPadding + bottomPadding
+        padding: Theme.spacingMedium
+
+        Overlay.modal: Rectangle {
+            color: Qt.rgba(0, 0, 0, 0.5)
+        }
+
+        background: Rectangle {
+            color: Theme.surface
+            border.color: Theme.divider
+            border.width: 1
+            radius: Theme.cardBorderRadius
+        }
+
+        contentItem: ColumnLayout {
+            id: writebackDialogLayout
+            spacing: Theme.spacingMedium
+
+            Label {
+                text: qsTr("Write to Files")
+                font.pixelSize: Theme.fontSizeLarge
+                font.bold: true
+                color: Theme.text
+                Layout.fillWidth: true
+            }
+
+            Label {
+                text: qsTr("Write the accepted changes of this batch into %n file(s)? Original tags are backed up and can be restored.", "", root.writableFileCount)
+                font.pixelSize: Theme.fontSizeNormal
+                color: Theme.textSecondary
+                wrapMode: Text.Wrap
+                Layout.fillWidth: true
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignRight
+                spacing: Theme.spacingSmall
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                Controls.AppButton {
+                    text: qsTr("Cancel")
+                    onClicked: writebackConfirmDialog.close()
+                }
+
+                Controls.AppButton {
+                    text: qsTr("Write to Files")
+                    primary: true
+                    onClicked: {
+                        writebackConfirmDialog.close()
+                        if (AppContext.writeback) {
+                            AppContext.writeback.startWriteback(root.currentBatchId)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Popup {
+        id: undoWriteConfirmDialog
+        modal: true
+        focus: true
+        dim: true
+        parent: Overlay.overlay
+        anchors.centerIn: Overlay.overlay
+
+        implicitWidth: 380
+        implicitHeight: undoDialogLayout.implicitHeight + topPadding + bottomPadding
+        padding: Theme.spacingMedium
+
+        Overlay.modal: Rectangle {
+            color: Qt.rgba(0, 0, 0, 0.5)
+        }
+
+        background: Rectangle {
+            color: Theme.surface
+            border.color: Theme.divider
+            border.width: 1
+            radius: Theme.cardBorderRadius
+        }
+
+        contentItem: ColumnLayout {
+            id: undoDialogLayout
+            spacing: Theme.spacingMedium
+
+            Label {
+                text: qsTr("Undo Write")
+                font.pixelSize: Theme.fontSizeLarge
+                font.bold: true
+                color: Theme.text
+                Layout.fillWidth: true
+            }
+
+            Label {
+                text: qsTr("Restore the original tags of the files written by this batch?")
+                font.pixelSize: Theme.fontSizeNormal
+                color: Theme.textSecondary
+                wrapMode: Text.Wrap
+                Layout.fillWidth: true
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignRight
+                spacing: Theme.spacingSmall
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                Controls.AppButton {
+                    text: qsTr("Cancel")
+                    onClicked: undoWriteConfirmDialog.close()
+                }
+
+                Controls.AppButton {
+                    text: qsTr("Undo Write")
+                    primary: true
+                    onClicked: {
+                        undoWriteConfirmDialog.close()
+                        if (AppContext.writeback) {
+                            AppContext.writeback.startRevert(root.currentBatchId)
                         }
                     }
                 }

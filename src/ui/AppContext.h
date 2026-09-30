@@ -10,17 +10,20 @@
 #include <QTimer>
 #include <QUrl>
 
+#include <butler/DuplicateResolver.h>
 #include <core/Clock.h>
 #include <core/Result.h>
 #include <library/CoverStore.h>
 #include <library/Database.h>
 #include <library/PlayStats.h>
+#include <library/Scanner.h>
 #include <player/MpvHandle.h>
 #include <player/Player.h>
 #include <ui/AiContext.h>
 #include <ui/AiSettingsController.h>
 #include <ui/CleanupController.h>
 #include <ui/CorrectionReviewController.h>
+#include <ui/DuplicateController.h>
 #include <ui/LibraryActions.h>
 #include <ui/LibraryRootsModel.h>
 #include <ui/LlmDebugController.h>
@@ -32,6 +35,7 @@
 #include <ui/SearchController.h>
 #include <ui/SettingsController.h>
 #include <ui/TagEditorModel.h>
+#include <ui/WritebackController.h>
 
 #include <memory>
 
@@ -69,7 +73,9 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::LibraryRootsModel *libraryRoots READ libraryRoots CONSTANT)
     Q_PROPERTY(linernotes::ui::TagEditorModel *tagEditor READ tagEditor CONSTANT)
     Q_PROPERTY(linernotes::ui::CorrectionReviewController *review READ review CONSTANT)
+    Q_PROPERTY(linernotes::ui::WritebackController *writeback READ writeback CONSTANT)
     Q_PROPERTY(linernotes::ui::CleanupController *cleanup READ cleanup CONSTANT)
+    Q_PROPERTY(linernotes::ui::DuplicateController *duplicates READ duplicates CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
     Q_PROPERTY(QString startupError READ startupError NOTIFY startupErrorChanged)
     Q_PROPERTY(bool scanning READ isScanning NOTIFY scanningChanged)
@@ -113,7 +119,9 @@ public:
     [[nodiscard]] LibraryRootsModel *libraryRoots();
     [[nodiscard]] TagEditorModel *tagEditor();
     [[nodiscard]] CorrectionReviewController *review();
+    [[nodiscard]] WritebackController *writeback();
     [[nodiscard]] CleanupController *cleanup();
+    [[nodiscard]] DuplicateController *duplicates();
     [[nodiscard]] library::Database &database();
     [[nodiscard]] const library::Database &database() const;
     [[nodiscard]] library::CoverStore *coverStore();
@@ -132,14 +140,20 @@ signals:
 
 private:
     void triggerBackupIfDue();
+    void connectScannerSignals();
 
     // 声明顺序即依赖顺序，析构逆序进行，依赖方先于被依赖方析构
     core::Settings &m_settings;
     Options m_options;
     core::SystemClock m_clock;
     library::Database m_db;
+    library::CoverStore m_coverStore;
+    library::Scanner m_scanner;
     AiContext m_ai;
+    WritebackController m_writeback;
     CleanupController m_cleanup;
+    butler::SystemFileTrash m_trash;
+    DuplicateController m_duplicates;
     library::PlayStats m_playStats;
     TagEditorModel m_tagEditor;
     CorrectionReviewController m_review;
@@ -148,14 +162,12 @@ private:
     player::Player m_player;
     PlayEventRecorder m_recorder;
     SettingsController m_settingsController;
-    library::CoverStore m_coverStore;
     std::unique_ptr<player::PlaybackStateStore> m_stateStore;
     NowPlaying m_nowPlaying;
     QueueModel m_queueModel;
     SearchController m_search;
     PlaylistController m_playlists;
     LibraryActions m_actions;
-    std::unique_ptr<library::Scanner> m_scanner;
     std::unique_ptr<library::LibraryWatcher> m_watcher;
     QTimer m_saveTimer;
     QTimer m_backupTimer;

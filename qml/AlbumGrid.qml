@@ -168,7 +168,6 @@ Item {
                 Keys.onReturnPressed: (event) => { activateCurrent(); event.accepted = true; }
                 Keys.onEnterPressed: (event) => { activateCurrent(); event.accepted = true; }
                 Keys.onSpacePressed: (event) => { playCurrent(); event.accepted = true; }
-
                 delegate: Item {
                     id: cardDelegate
                     required property int index
@@ -176,6 +175,7 @@ Item {
                     required property string title
                     required property string albumArtist
                     required property string coverHash
+                    required property string titleTranslated
 
                     width: gridView.cellWidth
                     height: gridView.cellHeight
@@ -277,6 +277,16 @@ Item {
                             font.pixelSize: Theme.fontSizeNormal
                             font.bold: true
                             color: Theme.text
+                            elide: Text.ElideRight
+                            Layout.fillWidth: true
+                            maximumLineCount: 1
+                        }
+
+                        Label {
+                            visible: AppContext.settings && AppContext.settings.showTranslations && cardDelegate.titleTranslated.length > 0
+                            text: cardDelegate.titleTranslated
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.textSecondary
                             elide: Text.ElideRight
                             Layout.fillWidth: true
                             maximumLineCount: 1

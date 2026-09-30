@@ -79,6 +79,8 @@ inline QString correctionKindToString(CorrectionKind kind)
         return QStringLiteral("artist_merge");
     case CorrectionKind::ArtistCredit:
         return QStringLiteral("artist_credit");
+    case CorrectionKind::MbMatch:
+        return QStringLiteral("mb_match");
     }
     return { };
 }
@@ -158,6 +160,60 @@ inline QString artistNamePreferenceToString(ArtistNamePreference pref)
 inline std::optional<ArtistNamePreference> artistNamePreferenceFromString(QStringView name)
 {
     return detail::enumFromName<ArtistNamePreference>(name, artistNamePreferenceToString);
+}
+
+inline QString versionTypeToString(VersionType type)
+{
+    switch (type) {
+    case VersionType::Studio:
+        return QStringLiteral("studio");
+    case VersionType::Live:
+        return QStringLiteral("live");
+    case VersionType::Remaster:
+        return QStringLiteral("remaster");
+    case VersionType::Acoustic:
+        return QStringLiteral("acoustic");
+    case VersionType::Remix:
+        return QStringLiteral("remix");
+    case VersionType::Demo:
+        return QStringLiteral("demo");
+    case VersionType::Instrumental:
+        return QStringLiteral("instrumental");
+    case VersionType::Edit:
+        return QStringLiteral("edit");
+    case VersionType::Alternate:
+        return QStringLiteral("alternate");
+    }
+    return { };
+}
+
+inline std::optional<VersionType> versionTypeFromString(QStringView name)
+{
+    return detail::enumFromName<VersionType>(name, versionTypeToString);
+}
+
+inline QString writebackFileStatusToString(WritebackFileStatus status)
+{
+    switch (status) {
+    case WritebackFileStatus::Pending:
+        return QStringLiteral("pending");
+    case WritebackFileStatus::Written:
+        return QStringLiteral("written");
+    case WritebackFileStatus::Failed:
+        return QStringLiteral("failed");
+    case WritebackFileStatus::Reverted:
+        return QStringLiteral("reverted");
+    case WritebackFileStatus::RevertFailed:
+        return QStringLiteral("revert_failed");
+    case WritebackFileStatus::Skipped:
+        return QStringLiteral("skipped");
+    }
+    return { };
+}
+
+inline std::optional<WritebackFileStatus> writebackFileStatusFromString(QStringView name)
+{
+    return detail::enumFromName<WritebackFileStatus>(name, writebackFileStatusToString);
 }
 
 } // namespace linernotes::library

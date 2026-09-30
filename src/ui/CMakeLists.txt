@@ -25,6 +25,8 @@ add_library(linernotes_ui STATIC
     CoverAccent.h
     CoverImageProvider.cpp
     CoverImageProvider.h
+    DuplicateController.cpp
+    DuplicateController.h
     ErrorText.cpp
     ErrorText.h
     Format.h
@@ -72,6 +74,8 @@ add_library(linernotes_ui STATIC
     UiLogging.h
     UsageSummaryModel.cpp
     UsageSummaryModel.h
+    WritebackController.cpp
+    WritebackController.h
 )
 add_library(Linernotes::ui ALIAS linernotes_ui)
 

@@ -205,6 +205,19 @@ linernotes_add_test(
         Qt6::Concurrent
 )
 
+linernotes_add_test(
+    NAME ui_DuplicateController
+    SOURCES
+        tst_DuplicateController.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Sql
+        Qt6::Concurrent
+)
+
 if(UNIX AND NOT APPLE)
     linernotes_add_test(
         NAME ui_Mpris

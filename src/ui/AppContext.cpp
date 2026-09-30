@@ -34,8 +34,17 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_settings(settings)
     , m_options(std::move(options))
     , m_db(m_options.databasePath)
-    , m_ai(m_settings, m_db, m_clock, m_options.promptsDir)
+    , m_coverStore(m_options.coverCacheDir)
+    , m_scanner(m_db,
+          [this]() {
+              library::Scanner::Options opts;
+              opts.coverStore = &m_coverStore;
+              return opts;
+          }())
+    , m_ai(m_settings, m_db, m_coverStore, m_clock, m_options.promptsDir)
+    , m_writeback(m_db, m_clock, m_ai.jobs(), m_scanner)
     , m_cleanup(m_db, m_clock, m_ai.jobs(), m_ai.prompts(), m_ai.config(), m_settings)
+    , m_duplicates(m_db, m_clock, m_trash)
     , m_playStats(m_db)
     , m_tagEditor(m_db)
     , m_review(m_db, m_clock)
@@ -44,7 +53,6 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_player(m_options.playerOptions)
     , m_recorder(m_player, m_db, m_clock)
     , m_settingsController(m_settings, m_player)
-    , m_coverStore(m_options.coverCacheDir)
     , m_nowPlaying(m_db, m_player, m_coverStore)
     , m_queueModel(m_db, m_player)
     , m_search(m_db)
@@ -56,12 +64,16 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     connect(&m_tagEditor, &TagEditorModel::saved, this, &AppContext::libraryChanged);
     connect(
         &m_review, &CorrectionReviewController::libraryModified, this, &AppContext::libraryChanged);
+    connect(&m_writeback, &WritebackController::libraryModified, this, &AppContext::libraryChanged);
+    connect(
+        &m_duplicates, &DuplicateController::libraryModified, this, &AppContext::libraryChanged);
     connect(&m_cleanup, &CleanupController::batchesChanged, &m_review,
         &CorrectionReviewController::refresh);
     connect(&m_cleanup, &CleanupController::batchesChanged, this, &AppContext::libraryChanged);
     connect(this, &AppContext::libraryChanged, &m_queueModel, &QueueModel::refresh);
     connect(this, &AppContext::libraryChanged, &m_search, &SearchController::refresh);
     connect(this, &AppContext::libraryChanged, &m_playlists, &PlaylistController::refresh);
+    connectScannerSignals();
     connect(&m_recorder, &PlayEventRecorder::playEventFinished, this, [this](qint64 trackId) {
         if (m_libraryReady) {
             const auto res
@@ -120,15 +132,41 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     });
 }
 
+void AppContext::connectScannerSignals()
+{
+    connect(&m_scanner, &library::Scanner::finished, this, [this](const library::ScanStats &stats) {
+        if (m_scanning) {
+            m_scanning = false;
+            emit scanningChanged();
+        }
+        if (!stats.cancelled) {
+            const bool hasChanges = stats.added > 0 || stats.updated > 0 || stats.moved > 0
+                || stats.missing > 0 || stats.restored > 0 || stats.albumsRemoved > 0
+                || stats.artistsRemoved > 0;
+            if (hasChanges) {
+                emit libraryChanged();
+            }
+            if ((stats.added > 0 || stats.updated > 0 || stats.restored > 0)
+                && m_settings.value(kButlerAutoCleanup) && m_libraryReady) {
+                m_cleanup.runAutomatic();
+            }
+        }
+    });
+    connect(&m_scanner, &library::Scanner::progress, this, [this](const library::ScanProgress &) {
+        if (!m_scanning) {
+            m_scanning = true;
+            emit scanningChanged();
+        }
+    });
+}
+
 AppContext::~AppContext()
 {
     m_backupTimer.stop();
     if (m_backupFuture.isRunning()) {
         m_backupFuture.waitForFinished();
     }
-    if (m_scanner) {
-        m_scanner->cancel();
-    }
+    m_scanner.cancel();
 }
 
 void AppContext::saveState() const
@@ -170,39 +208,10 @@ core::Result<void> AppContext::start()
     m_search.refresh();
     m_playlists.refresh();
     m_roots.refresh();
-
-    library::Scanner::Options scannerOpts;
-    scannerOpts.coverStore = &m_coverStore;
-    m_scanner = std::make_unique<library::Scanner>(m_db, scannerOpts);
-
-    connect(m_scanner.get(), &library::Scanner::finished, this,
-        [this](const library::ScanStats &stats) {
-            if (m_scanning) {
-                m_scanning = false;
-                emit scanningChanged();
-            }
-            if (!stats.cancelled) {
-                // Emit libraryChanged when library content has additions, modifications,
-                // removals, moves, missing/restored files, or orphaned entity cleanups.
-                const bool hasChanges = stats.added > 0 || stats.updated > 0 || stats.moved > 0
-                    || stats.missing > 0 || stats.restored > 0 || stats.albumsRemoved > 0
-                    || stats.artistsRemoved > 0;
-                if (hasChanges) {
-                    emit libraryChanged();
-                }
-            }
-        });
-
-    connect(
-        m_scanner.get(), &library::Scanner::progress, this, [this](const library::ScanProgress &) {
-            if (!m_scanning) {
-                m_scanning = true;
-                emit scanningChanged();
-            }
-        });
+    m_duplicates.refresh();
 
     m_watcher = std::make_unique<library::LibraryWatcher>(
-        m_db, *m_scanner, library::LibraryWatcher::Options { });
+        m_db, m_scanner, library::LibraryWatcher::Options { });
 
     m_libraryReady = true;
     m_startupError.clear();
@@ -222,7 +231,7 @@ core::Result<void> AppContext::start()
 
 void AppContext::rescan()
 {
-    if (!m_libraryReady || !m_scanner) {
+    if (!m_libraryReady) {
         return;
     }
     if (!m_scanning) {
@@ -233,7 +242,7 @@ void AppContext::rescan()
             const bool hasEnabledRoot = std::ranges::any_of(
                 rootsList, [](const library::LibraryRoot &r) { return r.enabled; });
             if (hasEnabledRoot) {
-                if (m_scanner->start()) {
+                if (m_scanner.start()) {
                     m_scanning = true;
                     emit scanningChanged();
                 }
@@ -302,9 +311,19 @@ CorrectionReviewController *AppContext::review()
     return &m_review;
 }
 
+WritebackController *AppContext::writeback()
+{
+    return &m_writeback;
+}
+
 CleanupController *AppContext::cleanup()
 {
     return &m_cleanup;
+}
+
+DuplicateController *AppContext::duplicates()
+{
+    return &m_duplicates;
 }
 
 library::Database &AppContext::database()

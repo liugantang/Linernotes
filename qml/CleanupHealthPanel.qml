@@ -14,7 +14,7 @@ Rectangle {
     property bool collapsed: false
 
     readonly property bool hasCleanup: typeof AppContext !== "undefined" && AppContext && AppContext.cleanup
-    readonly property bool hasSelectedTasks: mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked
+    readonly property bool hasSelectedTasks: mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || mbMatchCheck.checked || versionsCheck.checked || translateCheck.checked || duplicatesCheck.checked
 
     color: Theme.surface
     border.color: Theme.divider
@@ -38,10 +38,23 @@ Rectangle {
 
     function stepTitle(step) {
         if (hasCleanup && AppContext.cleanup.paused) return qsTr("Paused")
-        if (step === CleanupController.Mojibake) return qsTr("Fixing garbled tags...")
-        if (step === CleanupController.Credit) return qsTr("Normalizing artist credits...")
-        if (step === CleanupController.Merge) return qsTr("Merging duplicate artists...")
-        return qsTr("Cleaning up library...")
+        let title = ""
+        if (step === CleanupController.Mojibake) title = qsTr("Fixing garbled tags...")
+        else if (step === CleanupController.Credit) title = qsTr("Normalizing artist credits...")
+        else if (step === CleanupController.Merge) title = qsTr("Merging duplicate artists...")
+        else if (step === CleanupController.MbMatch) title = qsTr("Looking up MusicBrainz...")
+        else if (step === CleanupController.CoverArt) title = qsTr("Downloading covers...")
+        else if (step === CleanupController.VersionSuffix) title = qsTr("Classifying title suffixes...")
+        else if (step === CleanupController.VersionLink) title = qsTr("Grouping song versions...")
+        else if (step === CleanupController.Translate) title = qsTr("Translating titles...")
+        else if (step === CleanupController.Fingerprint) title = qsTr("Computing audio fingerprints...")
+        else if (step === CleanupController.Duplicates) title = qsTr("Finding duplicates...")
+        else title = qsTr("Cleaning up library...")
+
+        if (hasCleanup && AppContext.cleanup.automatic) {
+            return qsTr("Automatic cleanup: ") + title
+        }
+        return title
     }
 
     Component.onCompleted: {
@@ -50,6 +63,9 @@ Rectangle {
             mojibakeCheck.checked = AppContext.cleanup.mojibakeGroups > 0
             creditCheck.checked = AppContext.cleanup.creditValues > 0
             mergeCheck.checked = AppContext.cleanup.mergeClusters > 0
+            mbMatchCheck.checked = AppContext.cleanup.mbMatchAlbums > 0
+            versionsCheck.checked = AppContext.cleanup.versionTracks > 0
+            duplicatesCheck.checked = AppContext.cleanup.duplicateCandidates > 0
         }
     }
 
@@ -60,6 +76,9 @@ Rectangle {
                 mojibakeCheck.checked = AppContext.cleanup.mojibakeGroups > 0
                 creditCheck.checked = AppContext.cleanup.creditValues > 0
                 mergeCheck.checked = AppContext.cleanup.mergeClusters > 0
+                mbMatchCheck.checked = AppContext.cleanup.mbMatchAlbums > 0
+                versionsCheck.checked = AppContext.cleanup.versionTracks > 0
+                duplicatesCheck.checked = AppContext.cleanup.duplicateCandidates > 0
             }
         }
         function onAutoAcceptThresholdChanged() {
@@ -201,15 +220,122 @@ Rectangle {
                 Item { Layout.fillWidth: true }
             }
 
-            // Task 4: Missing album metadata
+            // Task 4: MusicBrainz
             RowLayout {
                 Layout.fillWidth: true
-                Layout.leftMargin: 28
+                spacing: Theme.spacingSmall
+                Controls.AppCheckBox {
+                    id: mbMatchCheck
+                    text: qsTr("Fill in from MusicBrainz")
+                    enabled: hasCleanup && !AppContext.cleanup.running
+                }
                 Label {
-                    text: hasCleanup ? qsTr("Missing album metadata: %n track(s) (online lookup comes later)", "", AppContext.cleanup.missingAlbumTracks) : ""
-                    font.pixelSize: Theme.fontSizeSmall
+                    text: {
+                        if (!hasCleanup) return ""
+                        const count = AppContext.cleanup.mbMatchAlbums
+                        const coverCount = AppContext.cleanup.coverArtAlbums
+                        const base = qsTr("%n album(s) with missing info", "", count)
+                        const coverSuffix = coverCount > 0 ? qsTr(" · %n cover(s) to download", "", coverCount) : ""
+                        if (count > 0) {
+                            const minutes = Math.max(1, Math.ceil(count * 4 / 60))
+                            return base + coverSuffix + qsTr(" · about %n min online", "", minutes)
+                        }
+                        return base + coverSuffix
+                    }
+                    font.pixelSize: Theme.fontSizeNormal
                     color: Theme.textSecondary
                 }
+                Item { Layout.fillWidth: true }
+            }
+
+            // Task 5: Versions
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Theme.spacingSmall
+                Controls.AppCheckBox {
+                    id: versionsCheck
+                    text: qsTr("Identify song versions")
+                    enabled: hasCleanup && !AppContext.cleanup.running
+                }
+                Label {
+                    text: {
+                        if (!hasCleanup) return ""
+                        const tracks = AppContext.cleanup.versionTracks
+                        const suffixes = AppContext.cleanup.versionSuffixes
+                        const tokens = AppContext.cleanup.versionTokens
+                        let desc = qsTr("%n track(s) to check", "", tracks)
+                        if (suffixes > 0) {
+                            desc += qsTr(" · %n suffix(es) for AI", "", suffixes)
+                            if (tokens > 0) {
+                                desc += qsTr(" · ≈ %1 tokens").arg(tokens)
+                            }
+                        }
+                        return desc
+                    }
+                    font.pixelSize: Theme.fontSizeNormal
+                    color: Theme.textSecondary
+                }
+                Item { Layout.fillWidth: true }
+            }
+
+            // Task 6: Translate
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Theme.spacingSmall
+                Controls.AppCheckBox {
+                    id: translateCheck
+                    text: qsTr("Translate foreign titles")
+                    enabled: hasCleanup && !AppContext.cleanup.running
+                }
+                Label {
+                    text: {
+                        if (!hasCleanup) return ""
+                        const count = AppContext.cleanup.translateTexts
+                        const tokens = AppContext.cleanup.translateTokens
+                        let desc = qsTr("%n title(s) to translate", "", count)
+                        if (tokens > 0) {
+                            desc += qsTr(" · ≈ %1 tokens").arg(tokens)
+                        }
+                        return desc
+                    }
+                    font.pixelSize: Theme.fontSizeNormal
+                    color: Theme.textSecondary
+                }
+                Item { Layout.fillWidth: true }
+            }
+
+            // Task 7: Duplicates
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Theme.spacingSmall
+                Controls.AppCheckBox {
+                    id: duplicatesCheck
+                    text: qsTr("Find duplicate songs")
+                    enabled: hasCleanup && !AppContext.cleanup.running
+                }
+                Label {
+                    text: {
+                        if (!hasCleanup) return ""
+                        const candidates = AppContext.cleanup.duplicateCandidates
+                        const fpPending = AppContext.cleanup.fingerprintPending
+                        const groups = AppContext.cleanup.duplicateGroups
+                        const versionPending = AppContext.cleanup.versionTracks
+                        let desc = qsTr("%n candidate track(s)", "", candidates)
+                        if (fpPending > 0) {
+                            desc += qsTr(" · %n audio fingerprint(s) to compute", "", fpPending)
+                        }
+                        if (groups > 0) {
+                            desc += qsTr(" · %n group(s) found last time", "", groups)
+                        }
+                        if (versionPending > 0) {
+                            desc += qsTr(" · run version identification first")
+                        }
+                        return desc
+                    }
+                    font.pixelSize: Theme.fontSizeNormal
+                    color: Theme.textSecondary
+                }
+                Item { Layout.fillWidth: true }
             }
 
             Rectangle {
@@ -252,8 +378,9 @@ Rectangle {
                     primary: true
                     text: qsTr("Run")
                     visible: hasCleanup && !AppContext.cleanup.running
-                    enabled: root.hasSelectedTasks && hasCleanup && AppContext.cleanup.llmConfigured && !AppContext.cleanup.checking
-                    onClicked: if (hasCleanup) AppContext.cleanup.run(mojibakeCheck.checked, creditCheck.checked, mergeCheck.checked)
+                    enabled: root.hasSelectedTasks && hasCleanup && !AppContext.cleanup.checking
+                        && (!(mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || translateCheck.checked || (versionsCheck.checked && AppContext.cleanup.versionSuffixes > 0)) || AppContext.cleanup.llmConfigured)
+                    onClicked: if (hasCleanup) AppContext.cleanup.run(mojibakeCheck.checked, creditCheck.checked, mergeCheck.checked, mbMatchCheck.checked, versionsCheck.checked, translateCheck.checked, duplicatesCheck.checked)
                 }
 
                 // Progress controls

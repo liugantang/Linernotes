@@ -527,6 +527,174 @@ private slots:
         QVERIFY(!fullPlan.contains(QStringLiteral("idx_files_missing_since")));
         QVERIFY(fullPlan.contains(QStringLiteral("SEARCH t USING INTEGER PRIMARY KEY")));
     }
+
+    void otherVersionsAndTrackVersionType()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        Database db(dir.filePath(u"test_versions.db"_s));
+        QVERIFY(db.open(Migrator()).ok());
+        const auto qDb = db.connection().value();
+        const LibraryQuery q(qDb);
+
+        exec(qDb, u"INSERT INTO works (id, title, created_at) VALUES (1, 'Work A', 100);"_s);
+        exec(qDb, u"INSERT INTO works (id, title, created_at) VALUES (2, 'Work B', 100);"_s);
+
+        const qint64 r = DbHelper::insertRoot(qDb);
+        const qint64 alb1 = DbHelper::insertAlbum(qDb, u"Album 1990"_s);
+        const qint64 alb2 = DbHelper::insertAlbum(qDb, u"Album 2000"_s);
+        exec(qDb, QStringLiteral("UPDATE albums SET year = 1990 WHERE id = %1;").arg(alb1));
+        exec(qDb, QStringLiteral("UPDATE albums SET year = 2000 WHERE id = %1;").arg(alb2));
+
+        const qint64 f1 = DbHelper::insertFile(qDb, r, u"1.mp3"_s, 100);
+        const qint64 f2 = DbHelper::insertFile(qDb, r, u"2.mp3"_s, 100);
+        const qint64 f3 = DbHelper::insertFile(qDb, r, u"3.mp3"_s, 100);
+        const qint64 f4 = DbHelper::insertFile(qDb, r, u"4.mp3"_s, 100);
+        const qint64 f5 = DbHelper::insertFile(qDb, r, u"5.mp3"_s, 100);
+
+        const qint64 t1 = DbHelper::insertTrack(qDb, f1, alb2);
+        const qint64 t2 = DbHelper::insertTrack(qDb, f2, alb1);
+        const qint64 t3 = DbHelper::insertTrack(qDb, f3, alb2);
+        const qint64 t4 = DbHelper::insertTrack(qDb, f4, alb1);
+        const qint64 t5 = DbHelper::insertTrack(qDb, f5, alb1);
+
+        exec(qDb,
+            QStringLiteral("UPDATE tracks SET work_id = 1 WHERE id IN (%1, %2, %3);")
+                .arg(t1)
+                .arg(t2)
+                .arg(t3));
+        exec(qDb, QStringLiteral("UPDATE tracks SET work_id = 2 WHERE id = %1;").arg(t4));
+
+        exec(qDb,
+            QStringLiteral("INSERT INTO track_versions (track_id, base_title, version_type, "
+                           "unresolved, updated_at) "
+                           "VALUES (%1, 'Work A', 'studio', 0, 100);")
+                .arg(t1));
+        exec(qDb,
+            QStringLiteral("INSERT INTO track_versions (track_id, base_title, version_type, "
+                           "unresolved, updated_at) "
+                           "VALUES (%1, 'Work A', 'live', 0, 100);")
+                .arg(t2));
+        exec(qDb,
+            QStringLiteral("INSERT INTO track_versions (track_id, base_title, version_type, "
+                           "unresolved, updated_at) "
+                           "VALUES (%1, 'Work A', 'remix', 0, 100);")
+                .arg(t3));
+        exec(qDb,
+            QStringLiteral("INSERT INTO track_versions (track_id, base_title, version_type, "
+                           "unresolved, updated_at) "
+                           "VALUES (%1, 'Work B', 'studio', 0, 100);")
+                .arg(t4));
+
+        const auto res1 = q.otherVersions(t1);
+        QVERIFY(res1.ok());
+        const auto &rows1 = res1.value();
+        QCOMPARE(rows1.size(), 2);
+        QCOMPARE(rows1.at(0).trackId, t2);
+        QCOMPARE(rows1.at(0).versionType, std::optional<VersionType>(VersionType::Live));
+        QCOMPARE(rows1.at(1).trackId, t3);
+        QCOMPARE(rows1.at(1).versionType, std::optional<VersionType>(VersionType::Remix));
+
+        const auto res2 = q.otherVersions(t2);
+        QVERIFY(res2.ok());
+        const auto &rows2 = res2.value();
+        QCOMPARE(rows2.size(), 2);
+        QCOMPARE(rows2.at(0).trackId, t1);
+        QCOMPARE(rows2.at(0).versionType, std::optional<VersionType>(VersionType::Studio));
+        QCOMPARE(rows2.at(1).trackId, t3);
+        QCOMPARE(rows2.at(1).versionType, std::optional<VersionType>(VersionType::Remix));
+
+        const auto res5 = q.otherVersions(t5);
+        QVERIFY(res5.ok());
+        QVERIFY(res5.value().isEmpty());
+
+        const auto trackRows = q.tracksByIds({ t1, t2, t5 }).value();
+        QCOMPARE(trackRows.size(), 3);
+        QCOMPARE(trackRows.at(0).versionType, std::optional<VersionType>(VersionType::Studio));
+        QCOMPARE(trackRows.at(1).versionType, std::optional<VersionType>(VersionType::Live));
+        QCOMPARE(trackRows.at(2).versionType, std::nullopt);
+    }
+
+    void translationsInTrackAndAlbumRows()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        Database db(dir.filePath(u"test_trans.db"_s));
+        QVERIFY(db.open(Migrator()).ok());
+        const auto qDb = db.connection().value();
+        const LibraryQuery q(qDb);
+
+        const qint64 r = DbHelper::insertRoot(qDb);
+        const qint64 alb1 = DbHelper::insertAlbum(qDb, u"Blue Album"_s);
+        const qint64 alb2 = DbHelper::insertAlbum(qDb, u"Untranslated Album"_s);
+
+        const qint64 f1 = DbHelper::insertFile(qDb, r, u"1.mp3"_s, 100);
+        const qint64 f2 = DbHelper::insertFile(qDb, r, u"2.mp3"_s, 200);
+
+        const qint64 t1 = DbHelper::insertTrack(qDb, f1, alb1);
+        const qint64 t2 = DbHelper::insertTrack(qDb, f2, alb2);
+
+        DbHelper::setMeta(qDb, t1, u"Song One"_s, u"Artist 1"_s, u"Blue Album"_s, u"Artist 1"_s);
+        DbHelper::setMeta(
+            qDb, t2, u"Song Two"_s, u"Artist 2"_s, u"Untranslated Album"_s, u"Artist 2"_s);
+
+        exec(qDb,
+            u"INSERT INTO text_translations (source_text, target_lang, translated, model, "
+            u"prompt_version, translated_at) "
+            u"VALUES ('Song One', 'zh-Hans', '第一首歌', 'test-model', 1, 100);"_s);
+        exec(qDb,
+            u"INSERT INTO text_translations (source_text, target_lang, translated, model, "
+            u"prompt_version, translated_at) "
+            u"VALUES ('Song Two', 'zh-Hans', '', 'test-model', 1, 100);"_s);
+        exec(qDb,
+            u"INSERT INTO text_translations (source_text, target_lang, translated, model, "
+            u"prompt_version, translated_at) "
+            u"VALUES ('Blue Album', 'zh-Hans', '蓝色专辑', 'test-model', 1, 100);"_s);
+
+        // 1. tracks 查询
+        const auto tracksRes = q.tracks({ }, TrackSortKey::Title, Qt::AscendingOrder, 0, 10);
+        QVERIFY(tracksRes.ok());
+        const auto &tracks = tracksRes.value();
+        QCOMPARE(tracks.size(), 2);
+        QCOMPARE(tracks.at(0).trackId, t1);
+        QCOMPARE(tracks.at(0).titleTranslated, u"第一首歌"_s);
+        QCOMPARE(tracks.at(0).albumTranslated, u"蓝色专辑"_s);
+
+        QCOMPARE(tracks.at(1).trackId, t2);
+        QCOMPARE(tracks.at(1).titleTranslated, QString());
+        QCOMPARE(tracks.at(1).albumTranslated, QString());
+
+        // 2. tracksByIds 查询
+        const auto byIdsRes = q.tracksByIds({ t1, t2 });
+        QVERIFY(byIdsRes.ok());
+        const auto &byIds = byIdsRes.value();
+        QCOMPARE(byIds.size(), 2);
+        QCOMPARE(byIds.at(0).titleTranslated, u"第一首歌"_s);
+        QCOMPARE(byIds.at(0).albumTranslated, u"蓝色专辑"_s);
+        QCOMPARE(byIds.at(1).titleTranslated, QString());
+        QCOMPARE(byIds.at(1).albumTranslated, QString());
+
+        // 3. albums 查询
+        const auto albumsRes = q.albums({ }, AlbumSortKey::Title, Qt::AscendingOrder, 0, 10);
+        QVERIFY(albumsRes.ok());
+        const auto &albums = albumsRes.value();
+        QCOMPARE(albums.size(), 2);
+        QCOMPARE(albums.at(0).albumId, alb1);
+        QCOMPARE(albums.at(0).titleTranslated, u"蓝色专辑"_s);
+        QCOMPARE(albums.at(1).albumId, alb2);
+        QCOMPARE(albums.at(1).titleTranslated, QString());
+
+        // 4. album(id) 单个查询
+        const auto albRes1 = q.album(alb1);
+        QVERIFY(albRes1.ok());
+        QVERIFY(albRes1.value().has_value());
+        QCOMPARE(albRes1.value().value_or(AlbumRow { }).titleTranslated, u"蓝色专辑"_s);
+
+        const auto albRes2 = q.album(alb2);
+        QVERIFY(albRes2.ok());
+        QVERIFY(albRes2.value().has_value());
+        QCOMPARE(albRes2.value().value_or(AlbumRow { }).titleTranslated, QString());
+    }
 };
 
 } // namespace

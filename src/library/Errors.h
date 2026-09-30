@@ -24,11 +24,20 @@ inline constexpr QLatin1StringView kRootOverlap { "root.overlap" };
 inline constexpr QLatin1StringView kCoverDecode { "cover.decode" };
 inline constexpr QLatin1StringView kTagRead { "tag.read" };
 inline constexpr QLatin1StringView kTagUnsupported { "tag.unsupported" };
+inline constexpr QLatin1StringView kTagWriteUnsupported { "tag.write_unsupported" };
+inline constexpr QLatin1StringView kTagWriteFailed { "tag.write_failed" };
+inline constexpr QLatin1StringView kTagWriteVerifyFailed { "tag.write_verify_failed" };
 inline constexpr QLatin1StringView kPlaylistInvalid { "playlist.invalid" };
 inline constexpr QLatin1StringView kPlaylistRuleInvalid { "playlist.rule_invalid" };
 inline constexpr QLatin1StringView kRatingInvalid { "rating.invalid" };
 inline constexpr QLatin1StringView kTagOverrideInvalid { "tag.override_invalid" };
 inline constexpr QLatin1StringView kCorrectionInvalid { "correction.invalid" };
 inline constexpr QLatin1StringView kCorrectionNotFound { "correction.not_found" };
+inline constexpr QLatin1StringView kTrackNotFound { "track.not_found" };
+inline constexpr QLatin1StringView kTrackMergeInvalid { "track.merge_invalid" };
+inline constexpr QLatin1StringView kWritebackNotFound { "writeback.not_found" };
+inline constexpr QLatin1StringView kWritebackInvalid { "writeback.invalid" };
+inline constexpr QLatin1StringView kWritebackRevertFailed { "writeback.revert_failed" };
+inline constexpr QLatin1StringView kWritebackFileModified { "writeback.file_modified" };
 
 } // namespace linernotes::library::errc

@@ -3,6 +3,7 @@
 
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import Linernotes
 import "controls" as Controls
 import "TrackColumns.js" as TrackColumns
@@ -34,6 +35,9 @@ Rectangle {
     required property var addedAt
     required property int playCount
     required property var lastPlayedAt
+    required property int versionType
+    required property string titleTranslated
+    required property string albumTranslated
 
     readonly property bool isCurrent: rootRow.table.currentIndex === rootRow.index && rootRow.table.activeFocus
     readonly property bool isSelectedRow: rootRow.selection.revision >= 0 && rootRow.selection.isSelected(rootRow.index)
@@ -48,6 +52,19 @@ Rectangle {
             return Theme.hoverOverlay
         }
         return "transparent"
+    }
+
+    function escapeHtml(str) {
+        if (!str) return ""
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    }
+
+    function albumDisplayText() {
+        if (!album) return ""
+        if (AppContext.settings && AppContext.settings.showTranslations && albumTranslated && albumTranslated.length > 0) {
+            return escapeHtml(album) + " <font color=\"" + Theme.textSecondary + "\">· " + escapeHtml(albumTranslated) + "</font>"
+        }
+        return album
     }
 
     function cellText(key) {
@@ -125,15 +142,54 @@ Rectangle {
                     }
                 }
 
+                RowLayout {
+                    visible: modelData.key === "title"
+                    anchors.fill: parent
+                    anchors.leftMargin: Theme.spacingSmall
+                    anchors.rightMargin: Theme.spacingSmall
+                    spacing: Theme.spacingTiny
+
+                    Label {
+                        Layout.fillWidth: true
+                        Layout.maximumWidth: implicitWidth
+                        verticalAlignment: Text.AlignVCenter
+                        text: rootRow.cellText("title")
+                        textFormat: Text.PlainText
+                        elide: Text.ElideRight
+                        color: rootRow.isSelectedRow ? Theme.text : Theme.text
+                        font.pixelSize: Theme.fontSizeNormal
+                    }
+
+                    Label {
+                        visible: AppContext.settings && AppContext.settings.showTranslations && rootRow.titleTranslated.length > 0
+                        text: rootRow.titleTranslated
+                        textFormat: Text.PlainText
+                        elide: Text.ElideRight
+                        color: Theme.textSecondary
+                        font.pixelSize: Theme.fontSizeSmall
+                        verticalAlignment: Text.AlignVCenter
+                        Layout.maximumWidth: (cellItem.width - Theme.spacingSmall * 2) * 0.4
+                    }
+
+                    VersionBadge {
+                        versionType: rootRow.versionType
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                    }
+                }
+
                 Label {
-                    visible: modelData.key !== "favorite" && modelData.key !== "rating"
+                    visible: modelData.key !== "title" && modelData.key !== "favorite" && modelData.key !== "rating"
                     anchors.fill: parent
                     anchors.leftMargin: Theme.spacingSmall
                     anchors.rightMargin: Theme.spacingSmall
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: modelData.alignRight ? Text.AlignRight : Text.AlignLeft
-                    text: rootRow.cellText(modelData.key)
-                    textFormat: Text.PlainText
+                    text: modelData.key === "album" ? rootRow.albumDisplayText() : rootRow.cellText(modelData.key)
+                    textFormat: (modelData.key === "album" && AppContext.settings && AppContext.settings.showTranslations && rootRow.albumTranslated.length > 0) ? Text.StyledText : Text.PlainText
                     elide: Text.ElideRight
                     color: rootRow.isSelectedRow ? Theme.text : Theme.text
                     font.pixelSize: Theme.fontSizeNormal

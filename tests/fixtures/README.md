@@ -18,6 +18,9 @@
 | `audio/tone_660_1s.flac` | FLAC / 单声道 22050 Hz | ~17 KB / 1.0 s | `generate.sh` 自行合成，CC0 | 660 Hz 正弦测试音频，用于 gapless 测试 |
 | `audio/tone_880_1s.ogg` | OGG (Vorbis) / 单声道 22050 Hz | ~5 KB / 1.0 s | `generate.sh` 自行合成，CC0 | 880 Hz 正弦测试音频 |
 | `audio/silence_5s.flac` | FLAC / 单声道 22050 Hz | ~9 KB / 5.0 s | `generate.sh` 自行合成，CC0 | 静音 5 秒测试音频，用于长时播放与导航测试 |
+| `audio/melody_8s.flac` | FLAC / 单声道 11025 Hz | ~140 KB / 8.0 s | `generate.sh` 自行合成，CC0 | 8 秒音阶旋律测试音频（FLAC 编码），用于声学指纹“同录音”测试 |
+| `audio/melody_8s.ogg` | OGG (Vorbis) / 单声道 11025 Hz | ~12 KB / 8.0 s | `generate.sh` 自行合成，CC0 | 8 秒音阶旋律测试音频（Vorbis 编码，与 melody_8s.flac 相同旋律），用于声学指纹跨编码匹配测试 |
+| `audio/other_8s.flac` | FLAC / 单声道 11025 Hz | ~148 KB / 8.0 s | `generate.sh` 自行合成，CC0 | 另一段 8 秒不同旋律测试音频，用于声学指纹“不同录音”区分测试 |
 | `audio/corrupt.flac` | 损坏文件 / 文本 | ~360 B / 0 s | `generate.sh` 自行合成，CC0 | 非法音频数据样本，用于错误处理测试 |
 | `library/mp3_id3v24_utf8.mp3` | MP3 / ID3v2.4 UTF-8 | ~10 KB / 1.0 s | `generate.py` 自行合成，CC0 | ID3v2.4 完整标签测试：中文标题、多值 ARTIST、ALBUMARTIST、ALBUM、DATE、TRACKNUMBER、DISCNUMBER、GENRE、COMPOSER、MusicBrainz IDs、ReplayGain、USLT 歌词、APIC 封面 |
 | `library/mp3_id3v23_gbk.mp3` | MP3 / ID3v2.3 (GBK as Latin-1) | ~10 KB / 1.0 s | `generate.py` 自行合成，CC0 | 乱码样本（GBK）：TIT2/TPE1/TALB 填入 Latin-1 映射的 GBK 字节。<br/>- TITLE: `晚风里的歌`<br/>- ARTIST: `林晓风`<br/>- ALBUM: `山谷的回响` |
@@ -50,3 +53,12 @@
 | `mojibake/latin_legit.txt` | 文本 / 合法带重音拉丁字母名字 | 300+ 行 | 自行编写，CC0 | 乱码检测防误报测试语料（合法拉丁字符） |
 | `artists/same_artist_rule.txt` | 文本 / 55 簇同一艺人的不同写法 | 57 行 | 开发者真实曲库中的公开艺名 / 审查者编写 | 艺人名规则层归一测试素材（日文姓名顺序颠倒、长音罗马字、全半角、标点等） |
 | `artists/distinct_artists.txt` | 文本 / 30 组不同艺人 | 32 行 | 开发者真实曲库中的公开艺名 / 审查者编写 | 艺人名防误合并测试素材（共享词、相似拼写等不同艺人） |
+| `musicbrainz/release_search_flowerflower.json` | JSON / MusicBrainz 响应 | ~6 KB | 2026-09-30 从 musicbrainz.org/ws/2 录制，CC0 | release 搜索 `宝物` / `FLOWER FLOWER`，5 条结果（多个同名 Digital Media 版本 + CD 版本） |
+| `musicbrainz/release_flowerflower_takaramono.json` | JSON / MusicBrainz 响应 | ~6 KB | 2026-09-30 从 musicbrainz.org/ws/2 录制，CC0 | 其中 `11ade0fa-...` 的详情，5 首，`label-info[0].label` 为 null |
+| `musicbrainz/release_kalafina_best_3cd.json` | JSON / MusicBrainz 响应 | ~31 KB | 2026-09-30 从 musicbrainz.org/ws/2 录制，CC0 | `Kalafina All Time Best 2008–2018` 3CD 版详情（3 张碟各 12 首，厂牌 SACRA MUSIC） |
+| `musicbrainz/recording_search_daoko.json` | JSON / MusicBrainz 响应 | ~12 KB | 2026-09-30 从 musicbrainz.org/ws/2 录制，CC0 | recording 搜索 `拝啓グッバイさようなら` / `DAOKO` |
+| `musicbrainz/release_search_wakeupgirls.json` | JSON / MusicBrainz 响应 | ~13 KB | 2026-09-30 从 musicbrainz.org/ws/2 录制，CC0 | release 搜索 `Wake up girls Vocal Best`（无艺人），10 条：同一 release group 下有 Pseudo-Release `0dee3457-...`（13 首）与 Official 24bit/48kHz 数字版 `1b9d7ee6-...`（13 首）同分 88，另有 46 首 2CD、50 首 2CD+Blu-ray 版 |
+| `musicbrainz/release_wakeupgirls_cd_bluray.json` | JSON / MusicBrainz 响应 | ~48 KB | 2026-09-30 从 musicbrainz.org/ws/2 录制，CC0 | `Wake Up, Best!` 2CD+Blu-ray 版 `12b65d81-...` 详情，第 3 个 media 为 Blu-ray（4 个视频条目，无时长） |
+| `coverart/release/11ade0fa-.../front-500` | JPEG 300×300 | ~2 KB | 自制（ImageMagick 渐变图），CC0 | 按 Cover Art Archive 的路径布局，作为 `file://` 基址下 FLOWER FLOWER「宝物」release 的正面封面。真实服务：`https://coverartarchive.org/release/<mbid>/front-500` 307 重定向到 archive.org 后 200；无封面时 404 |
+| `coverart/release-group/ffb76de5-.../front-500` | JPEG 300×300 | ~4 KB | 自制，CC0 | 同上，release-group 级正面封面（release 没有封面时的回退） |
+

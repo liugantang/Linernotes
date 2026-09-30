@@ -46,10 +46,14 @@ public:
     Q_INVOKABLE void openFiles(const QStringList &paths);
 
     /// 专辑/艺人详情页头部信息；不存在返回空 map。
-    /// 键：albumId,title,albumArtist,year,trackCount,durationText,coverHash /
+    /// 键：albumId,title,albumArtist,year,trackCount,durationText,coverHash,titleTranslated /
     /// artistId,name,originalName,trackCount,albumCount,coverHash
     [[nodiscard]] Q_INVOKABLE QVariantMap albumInfo(qint64 albumId) const;
     [[nodiscard]] Q_INVOKABLE QVariantMap artistInfo(qint64 artistId) const;
+
+    /// 同一作品的其他版本。每项：trackId、title、artist、album、durationText、versionType（int，同上，-1
+    /// 表示未知）。
+    [[nodiscard]] Q_INVOKABLE QVariantList otherVersions(qint64 trackId) const;
 
     /// 在系统文件管理器中打开该曲目所在目录。
     Q_INVOKABLE void showInFileManager(qint64 trackId) const;

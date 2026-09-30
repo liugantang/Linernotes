@@ -52,3 +52,136 @@ linernotes_add_test(
     TIMEOUT
         60
 )
+
+linernotes_add_test(
+    NAME integration_FingerprintJob
+    SOURCES
+        tst_FingerprintJob.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::ai
+        Linernotes::TestSupport
+        Qt6::Sql
+    LABELS
+        integration
+    TIMEOUT
+        60
+)
+
+linernotes_add_test(
+    NAME integration_CoverArtJob
+    SOURCES
+        tst_CoverArtJob.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::ai
+        Linernotes::TestSupport
+        Qt6::Network
+        Qt6::Sql
+    LABELS
+        integration
+    TIMEOUT
+        60
+)
+
+linernotes_add_test(
+    NAME integration_MbMatchJob
+    SOURCES
+        tst_MbMatchJob.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::ai
+        Linernotes::TestSupport
+        Qt6::Network
+        Qt6::Sql
+    LABELS
+        integration
+    TIMEOUT
+        60
+)
+
+linernotes_add_test(
+    NAME integration_TranslationSource
+    SOURCES
+        tst_TranslationSource.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+    LABELS
+        integration
+    TIMEOUT
+        60
+)
+
+linernotes_add_test(
+    NAME integration_VersionSuffix
+    SOURCES
+        tst_VersionSuffix.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+    LABELS
+        integration
+    TIMEOUT
+        60
+)
+
+linernotes_add_test(
+    NAME integration_VersionLinker
+    SOURCES
+        tst_VersionLinker.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+    LABELS
+        integration
+    TIMEOUT
+        60
+)
+
+linernotes_add_test(
+    NAME integration_DuplicateSource
+    SOURCES
+        tst_DuplicateSource.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+    LABELS
+        integration
+    TIMEOUT
+        60
+)
+
+linernotes_add_test(
+    NAME integration_DuplicateResolver
+    SOURCES
+        tst_DuplicateResolver.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+    LABELS
+        integration
+    TIMEOUT
+        60
+)

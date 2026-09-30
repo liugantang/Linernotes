@@ -44,5 +44,22 @@ linernotes_add_test(
 target_compile_definitions(tst_library_ScanCli
     PRIVATE
         SCANCLI_PATH="$<TARGET_FILE:linernotes-scan>"
-)
+    )
 add_dependencies(tst_library_ScanCli linernotes-scan)
+
+linernotes_add_test(
+    NAME library_Writeback
+    SOURCES
+        tst_Writeback.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::butler
+        Linernotes::core
+        Linernotes::ai
+        Linernotes::TestSupport
+        Qt6::Sql
+    LABELS
+        integration
+    TIMEOUT
+        60
+)
