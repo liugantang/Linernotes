@@ -8,6 +8,7 @@
 #include <QStringList>
 
 #include <core/Result.h>
+#include <library/LibraryQuery.h>
 
 namespace linernotes::library {
 class Database;
@@ -15,7 +16,7 @@ class Database;
 
 namespace linernotes::butler {
 
-inline constexpr QLatin1StringView kTargetLangZhHans { "zh-Hans" };
+using library::kTargetLangZhHans;
 
 /// 纯函数：判定是否需要翻译（含假名、谚文、或至少 2
 /// 个拉丁字母；只由汉字、数字、标点、空白组成的不翻译）

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <QHash>
+#include <QLatin1StringView>
 #include <QList>
 #include <QSqlDatabase>
 #include <QString>
@@ -19,6 +20,8 @@
 #include <optional>
 
 namespace linernotes::library {
+
+inline constexpr QLatin1StringView kTargetLangZhHans { "zh-Hans" };
 
 /// 专辑排序列。
 enum class AlbumSortKey : std::uint8_t {
@@ -82,6 +85,8 @@ struct TrackRow {
     int playCount = 0;
     std::optional<qint64> lastPlayedAtMs;
     std::optional<VersionType> versionType;
+    QString titleTranslated { };
+    QString albumTranslated { };
 
     bool operator==(const TrackRow &) const = default;
 };
@@ -96,6 +101,7 @@ struct AlbumRow {
     qint64 totalDurationMs = 0;
     QString coverHash;
     bool favorite = false;
+    QString titleTranslated { };
 
     bool operator==(const AlbumRow &) const = default;
 };

@@ -230,6 +230,7 @@ Item {
                     required property string album
                     required property string durationText
                     required property int versionType
+                    required property string titleTranslated
 
                     width: ListView.view.width
                     height: Theme.trackRowHeight
@@ -259,6 +260,7 @@ Item {
                         }
 
                         RowLayout {
+                            id: titleRowLayout
                             // 固定比例分配宽度，避免按文字长度分配导致专辑列不对齐
                             Layout.fillWidth: true
                             Layout.preferredWidth: 0
@@ -274,6 +276,17 @@ Item {
                                 elide: Text.ElideRight
                                 color: Theme.text
                                 font.pixelSize: Theme.fontSizeNormal
+                            }
+
+                            Label {
+                                visible: AppContext.settings && AppContext.settings.showTranslations && trackRowDelegate.titleTranslated.length > 0
+                                text: trackRowDelegate.titleTranslated
+                                textFormat: Text.PlainText
+                                elide: Text.ElideRight
+                                color: Theme.textSecondary
+                                font.pixelSize: Theme.fontSizeSmall
+                                verticalAlignment: Text.AlignVCenter
+                                Layout.maximumWidth: titleRowLayout.width * 0.4
                             }
 
                             VersionBadge {

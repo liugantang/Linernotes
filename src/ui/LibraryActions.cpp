@@ -251,6 +251,7 @@ QVariantMap LibraryActions::albumInfo(qint64 albumId) const
     map.insert(QStringLiteral("durationText"), formatDuration(row.totalDurationMs));
     map.insert(QStringLiteral("coverHash"), row.coverHash);
     map.insert(QStringLiteral("favorite"), row.favorite);
+    map.insert(QStringLiteral("titleTranslated"), row.titleTranslated);
     return map;
 }
 

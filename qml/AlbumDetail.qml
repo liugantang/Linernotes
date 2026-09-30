@@ -27,6 +27,13 @@ Item {
         }
     }
 
+    Connections {
+        target: AppContext.settings
+        function onShowTranslationsChanged() {
+            root.infoRevision++
+        }
+    }
+
     Shortcut {
         sequence: "Esc"
         onActivated: root.backRequested()
@@ -161,6 +168,15 @@ Item {
                     font.pixelSize: Theme.fontSizeTitle
                     font.bold: true
                     color: Theme.text
+                    wrapMode: Text.Wrap
+                    Layout.fillWidth: true
+                }
+
+                Label {
+                    visible: !!(AppContext.settings && AppContext.settings.showTranslations && root.info && root.info.titleTranslated && root.info.titleTranslated.length > 0)
+                    text: (root.info && root.info.titleTranslated) ? root.info.titleTranslated : ""
+                    font.pixelSize: Theme.fontSizeNormal
+                    color: Theme.textSecondary
                     wrapMode: Text.Wrap
                     Layout.fillWidth: true
                 }

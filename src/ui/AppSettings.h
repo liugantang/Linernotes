@@ -54,5 +54,7 @@ inline const core::SettingKey<QString> kLibraryArtistNamePreference {
 inline const core::SettingKey<double> kButlerAutoAccept { u"butler/autoAccept", 0.0 };
 // NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 inline const core::SettingKey<bool> kButlerAutoCleanup { u"butler/autoCleanup", true };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<bool> kUiShowTranslations { u"ui/showTranslations", false };
 
 } // namespace linernotes::ui

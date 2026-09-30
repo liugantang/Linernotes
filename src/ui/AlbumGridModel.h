@@ -41,6 +41,7 @@ public:
         DurationTextRole,
         CoverHashRole,
         FavoriteRole,
+        TitleTranslatedRole,
     };
     Q_ENUM(Role)
 

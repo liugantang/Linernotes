@@ -53,6 +53,8 @@ public:
     Q_PROPERTY(bool firstRunCompleted READ firstRunCompleted WRITE setFirstRunCompleted NOTIFY
             firstRunCompletedChanged)
     Q_PROPERTY(bool autoCleanup READ autoCleanup WRITE setAutoCleanup NOTIFY autoCleanupChanged)
+    Q_PROPERTY(bool showTranslations READ showTranslations WRITE setShowTranslations NOTIFY
+            showTranslationsChanged)
 
     explicit SettingsController(
         core::Settings &settings, player::Player &player, QObject *parent = nullptr);
@@ -105,6 +107,9 @@ public:
     [[nodiscard]] bool autoCleanup() const;
     void setAutoCleanup(bool enabled);
 
+    [[nodiscard]] bool showTranslations() const;
+    void setShowTranslations(bool enabled);
+
 signals:
     void replayGainModeChanged();
     void gaplessChanged();
@@ -122,6 +127,7 @@ signals:
     void trackChangeNotificationsChanged();
     void firstRunCompletedChanged();
     void autoCleanupChanged();
+    void showTranslationsChanged();
 
 private:
     core::Settings &m_settings;
@@ -144,6 +150,7 @@ private:
     bool m_trackChangeNotifications { true };
     bool m_firstRunCompleted { false };
     bool m_autoCleanup { true };
+    bool m_showTranslations { false };
 };
 
 } // namespace linernotes::ui

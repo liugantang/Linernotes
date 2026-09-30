@@ -119,6 +119,10 @@ QVariant TrackListModel::data(const QModelIndex &index, int role) const
         return row->lastPlayedAtMs.has_value() ? QVariant(row->lastPlayedAtMs.value()) : QVariant();
     case VersionTypeRole:
         return row->versionType.has_value() ? static_cast<int>(row->versionType.value()) : -1;
+    case TitleTranslatedRole:
+        return row->titleTranslated;
+    case AlbumTranslatedRole:
+        return row->albumTranslated;
     default:
         return { };
     }
@@ -150,6 +154,8 @@ QHash<int, QByteArray> TrackListModel::roleNames() const
         { PlayCountRole, "playCount" },
         { LastPlayedAtRole, "lastPlayedAt" },
         { VersionTypeRole, "versionType" },
+        { TitleTranslatedRole, "titleTranslated" },
+        { AlbumTranslatedRole, "albumTranslated" },
     };
 }
 

@@ -614,6 +614,87 @@ private slots:
         QCOMPARE(trackRows.at(1).versionType, std::optional<VersionType>(VersionType::Live));
         QCOMPARE(trackRows.at(2).versionType, std::nullopt);
     }
+
+    void translationsInTrackAndAlbumRows()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        Database db(dir.filePath(u"test_trans.db"_s));
+        QVERIFY(db.open(Migrator()).ok());
+        const auto qDb = db.connection().value();
+        const LibraryQuery q(qDb);
+
+        const qint64 r = DbHelper::insertRoot(qDb);
+        const qint64 alb1 = DbHelper::insertAlbum(qDb, u"Blue Album"_s);
+        const qint64 alb2 = DbHelper::insertAlbum(qDb, u"Untranslated Album"_s);
+
+        const qint64 f1 = DbHelper::insertFile(qDb, r, u"1.mp3"_s, 100);
+        const qint64 f2 = DbHelper::insertFile(qDb, r, u"2.mp3"_s, 200);
+
+        const qint64 t1 = DbHelper::insertTrack(qDb, f1, alb1);
+        const qint64 t2 = DbHelper::insertTrack(qDb, f2, alb2);
+
+        DbHelper::setMeta(qDb, t1, u"Song One"_s, u"Artist 1"_s, u"Blue Album"_s, u"Artist 1"_s);
+        DbHelper::setMeta(
+            qDb, t2, u"Song Two"_s, u"Artist 2"_s, u"Untranslated Album"_s, u"Artist 2"_s);
+
+        exec(qDb,
+            u"INSERT INTO text_translations (source_text, target_lang, translated, model, "
+            u"prompt_version, translated_at) "
+            u"VALUES ('Song One', 'zh-Hans', '第一首歌', 'test-model', 1, 100);"_s);
+        exec(qDb,
+            u"INSERT INTO text_translations (source_text, target_lang, translated, model, "
+            u"prompt_version, translated_at) "
+            u"VALUES ('Song Two', 'zh-Hans', '', 'test-model', 1, 100);"_s);
+        exec(qDb,
+            u"INSERT INTO text_translations (source_text, target_lang, translated, model, "
+            u"prompt_version, translated_at) "
+            u"VALUES ('Blue Album', 'zh-Hans', '蓝色专辑', 'test-model', 1, 100);"_s);
+
+        // 1. tracks 查询
+        const auto tracksRes = q.tracks({ }, TrackSortKey::Title, Qt::AscendingOrder, 0, 10);
+        QVERIFY(tracksRes.ok());
+        const auto &tracks = tracksRes.value();
+        QCOMPARE(tracks.size(), 2);
+        QCOMPARE(tracks.at(0).trackId, t1);
+        QCOMPARE(tracks.at(0).titleTranslated, u"第一首歌"_s);
+        QCOMPARE(tracks.at(0).albumTranslated, u"蓝色专辑"_s);
+
+        QCOMPARE(tracks.at(1).trackId, t2);
+        QCOMPARE(tracks.at(1).titleTranslated, QString());
+        QCOMPARE(tracks.at(1).albumTranslated, QString());
+
+        // 2. tracksByIds 查询
+        const auto byIdsRes = q.tracksByIds({ t1, t2 });
+        QVERIFY(byIdsRes.ok());
+        const auto &byIds = byIdsRes.value();
+        QCOMPARE(byIds.size(), 2);
+        QCOMPARE(byIds.at(0).titleTranslated, u"第一首歌"_s);
+        QCOMPARE(byIds.at(0).albumTranslated, u"蓝色专辑"_s);
+        QCOMPARE(byIds.at(1).titleTranslated, QString());
+        QCOMPARE(byIds.at(1).albumTranslated, QString());
+
+        // 3. albums 查询
+        const auto albumsRes = q.albums({ }, AlbumSortKey::Title, Qt::AscendingOrder, 0, 10);
+        QVERIFY(albumsRes.ok());
+        const auto &albums = albumsRes.value();
+        QCOMPARE(albums.size(), 2);
+        QCOMPARE(albums.at(0).albumId, alb1);
+        QCOMPARE(albums.at(0).titleTranslated, u"蓝色专辑"_s);
+        QCOMPARE(albums.at(1).albumId, alb2);
+        QCOMPARE(albums.at(1).titleTranslated, QString());
+
+        // 4. album(id) 单个查询
+        const auto albRes1 = q.album(alb1);
+        QVERIFY(albRes1.ok());
+        QVERIFY(albRes1.value().has_value());
+        QCOMPARE(albRes1.value().value_or(AlbumRow { }).titleTranslated, u"蓝色专辑"_s);
+
+        const auto albRes2 = q.album(alb2);
+        QVERIFY(albRes2.ok());
+        QVERIFY(albRes2.value().has_value());
+        QCOMPARE(albRes2.value().value_or(AlbumRow { }).titleTranslated, QString());
+    }
 };
 
 } // namespace

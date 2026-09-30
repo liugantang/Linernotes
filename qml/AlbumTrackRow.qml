@@ -18,6 +18,7 @@ Rectangle {
     required property var albumDetail
     required property var contextMenu
     required property int versionType
+    required property string titleTranslated
     property real trailingInset: 0
 
     width: ListView.view ? ListView.view.width : parent.width
@@ -53,6 +54,7 @@ Rectangle {
             spacing: 2
 
             RowLayout {
+                id: titleRowLayout
                 Layout.fillWidth: true
                 spacing: Theme.spacingTiny
 
@@ -65,6 +67,17 @@ Rectangle {
                     elide: Text.ElideRight
                     color: Theme.text
                     font.pixelSize: Theme.fontSizeNormal
+                }
+
+                Label {
+                    visible: AppContext.settings && AppContext.settings.showTranslations && trackDelegate.titleTranslated.length > 0
+                    text: trackDelegate.titleTranslated
+                    textFormat: Text.PlainText
+                    elide: Text.ElideRight
+                    color: Theme.textSecondary
+                    font.pixelSize: Theme.fontSizeSmall
+                    verticalAlignment: Text.AlignVCenter
+                    Layout.maximumWidth: titleRowLayout.width * 0.4
                 }
 
                 VersionBadge {
