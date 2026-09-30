@@ -84,6 +84,8 @@ add_library(linernotes_butler STATIC
     VersionSuffixSource.h
     VersionSuffixStore.cpp
     VersionSuffixStore.h
+    WritebackJobHandler.cpp
+    WritebackJobHandler.h
 )
 add_library(Linernotes::butler ALIAS linernotes_butler)
 

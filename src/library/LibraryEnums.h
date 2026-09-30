@@ -116,4 +116,14 @@ enum class VersionType : std::uint8_t {
 };
 Q_ENUM_NS(VersionType)
 
+enum class WritebackFileStatus : std::uint8_t {
+    Pending,
+    Written,
+    Failed,
+    Reverted,
+    RevertFailed,
+    Skipped
+};
+Q_ENUM_NS(WritebackFileStatus)
+
 } // namespace linernotes::library

@@ -82,6 +82,8 @@ add_library(linernotes_library STATIC
     TrackIssueStore.h
     TrackMerge.cpp
     TrackMerge.h
+    WritebackStore.cpp
+    WritebackStore.h
 )
 add_library(Linernotes::library ALIAS linernotes_library)
 

@@ -11,6 +11,7 @@
 #include <QJsonValue>
 #include <QList>
 #include <QMap>
+#include <QSet>
 #include <QString>
 #include <QStringList>
 
@@ -1139,7 +1140,12 @@ std::optional<TagSnapshot> TagSnapshot::fromJson(const QJsonObject &obj)
 
 bool TagWriter::isSupported(const QString &path)
 {
-    return detectFormat(path) != SupportedFormat::None;
+    // 只看扩展名、不打开文件：界面上按批次统计可写文件数时会对成百上千个文件调用，
+    // 曲库常在网络共享上，逐个打开会卡住界面。真实格式在 snapshot / writeFields 打开时再确认。
+    static const QSet<QString> s_extensions { QStringLiteral("flac"), QStringLiteral("mp3"),
+        QStringLiteral("m4a"), QStringLiteral("mp4"), QStringLiteral("ogg"), QStringLiteral("oga"),
+        QStringLiteral("opus") };
+    return s_extensions.contains(QFileInfo(path).suffix().toLower());
 }
 
 core::Result<TagSnapshot> TagWriter::snapshot(const QString &path)

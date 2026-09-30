@@ -35,5 +35,9 @@ inline constexpr QLatin1StringView kCorrectionInvalid { "correction.invalid" };
 inline constexpr QLatin1StringView kCorrectionNotFound { "correction.not_found" };
 inline constexpr QLatin1StringView kTrackNotFound { "track.not_found" };
 inline constexpr QLatin1StringView kTrackMergeInvalid { "track.merge_invalid" };
+inline constexpr QLatin1StringView kWritebackNotFound { "writeback.not_found" };
+inline constexpr QLatin1StringView kWritebackInvalid { "writeback.invalid" };
+inline constexpr QLatin1StringView kWritebackRevertFailed { "writeback.revert_failed" };
+inline constexpr QLatin1StringView kWritebackFileModified { "writeback.file_modified" };
 
 } // namespace linernotes::library::errc

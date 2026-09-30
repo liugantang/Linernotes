@@ -192,4 +192,28 @@ inline std::optional<VersionType> versionTypeFromString(QStringView name)
     return detail::enumFromName<VersionType>(name, versionTypeToString);
 }
 
+inline QString writebackFileStatusToString(WritebackFileStatus status)
+{
+    switch (status) {
+    case WritebackFileStatus::Pending:
+        return QStringLiteral("pending");
+    case WritebackFileStatus::Written:
+        return QStringLiteral("written");
+    case WritebackFileStatus::Failed:
+        return QStringLiteral("failed");
+    case WritebackFileStatus::Reverted:
+        return QStringLiteral("reverted");
+    case WritebackFileStatus::RevertFailed:
+        return QStringLiteral("revert_failed");
+    case WritebackFileStatus::Skipped:
+        return QStringLiteral("skipped");
+    }
+    return { };
+}
+
+inline std::optional<WritebackFileStatus> writebackFileStatusFromString(QStringView name)
+{
+    return detail::enumFromName<WritebackFileStatus>(name, writebackFileStatusToString);
+}
+
 } // namespace linernotes::library

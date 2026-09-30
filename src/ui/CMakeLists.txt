@@ -74,6 +74,8 @@ add_library(linernotes_ui STATIC
     UiLogging.h
     UsageSummaryModel.cpp
     UsageSummaryModel.h
+    WritebackController.cpp
+    WritebackController.h
 )
 add_library(Linernotes::ui ALIAS linernotes_ui)
 

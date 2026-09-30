@@ -16,6 +16,7 @@
 #include <butler/MojibakeJobHandler.h>
 #include <butler/VersionLinkJobHandler.h>
 #include <butler/VersionSuffixJobHandler.h>
+#include <butler/WritebackJobHandler.h>
 
 #include <memory>
 
@@ -66,6 +67,8 @@ AiContext::AiContext(core::Settings &settings, library::Database &db, library::C
         std::make_unique<butler::CoverArtJobHandler>(db, m_network, covers, clock,
             QUrl(QString::fromLatin1(butler::kCoverArtArchiveBase.data(),
                 static_cast<qsizetype>(butler::kCoverArtArchiveBase.size())))));
+    m_jobs.registerHandler(std::make_unique<butler::WritebackJobHandler>(db, clock));
+    m_jobs.registerHandler(std::make_unique<butler::WritebackRevertJobHandler>(db, clock));
 }
 
 void AiContext::onDatabaseReady()

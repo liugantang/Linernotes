@@ -40,6 +40,7 @@
 #include <ui/TagEditorModel.h>
 #include <ui/TrackListModel.h>
 #include <ui/UsageSummaryModel.h>
+#include <ui/WritebackController.h>
 
 struct AppContextForeign {
     Q_GADGET
@@ -247,6 +248,13 @@ struct CorrectionReviewControllerForeign {
     QML_FOREIGN(linernotes::ui::CorrectionReviewController)
     QML_NAMED_ELEMENT(CorrectionReviewController)
     QML_UNCREATABLE("CorrectionReviewController is managed by AppContext")
+};
+
+struct WritebackControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::WritebackController)
+    QML_NAMED_ELEMENT(WritebackController)
+    QML_UNCREATABLE("WritebackController is managed by AppContext")
 };
 
 struct CorrectionBatchModelForeign {

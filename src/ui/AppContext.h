@@ -16,6 +16,7 @@
 #include <library/CoverStore.h>
 #include <library/Database.h>
 #include <library/PlayStats.h>
+#include <library/Scanner.h>
 #include <player/MpvHandle.h>
 #include <player/Player.h>
 #include <ui/AiContext.h>
@@ -34,6 +35,7 @@
 #include <ui/SearchController.h>
 #include <ui/SettingsController.h>
 #include <ui/TagEditorModel.h>
+#include <ui/WritebackController.h>
 
 #include <memory>
 
@@ -71,6 +73,7 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::LibraryRootsModel *libraryRoots READ libraryRoots CONSTANT)
     Q_PROPERTY(linernotes::ui::TagEditorModel *tagEditor READ tagEditor CONSTANT)
     Q_PROPERTY(linernotes::ui::CorrectionReviewController *review READ review CONSTANT)
+    Q_PROPERTY(linernotes::ui::WritebackController *writeback READ writeback CONSTANT)
     Q_PROPERTY(linernotes::ui::CleanupController *cleanup READ cleanup CONSTANT)
     Q_PROPERTY(linernotes::ui::DuplicateController *duplicates READ duplicates CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
@@ -116,6 +119,7 @@ public:
     [[nodiscard]] LibraryRootsModel *libraryRoots();
     [[nodiscard]] TagEditorModel *tagEditor();
     [[nodiscard]] CorrectionReviewController *review();
+    [[nodiscard]] WritebackController *writeback();
     [[nodiscard]] CleanupController *cleanup();
     [[nodiscard]] DuplicateController *duplicates();
     [[nodiscard]] library::Database &database();
@@ -136,6 +140,7 @@ signals:
 
 private:
     void triggerBackupIfDue();
+    void connectScannerSignals();
 
     // 声明顺序即依赖顺序，析构逆序进行，依赖方先于被依赖方析构
     core::Settings &m_settings;
@@ -143,7 +148,9 @@ private:
     core::SystemClock m_clock;
     library::Database m_db;
     library::CoverStore m_coverStore;
+    library::Scanner m_scanner;
     AiContext m_ai;
+    WritebackController m_writeback;
     CleanupController m_cleanup;
     butler::SystemFileTrash m_trash;
     DuplicateController m_duplicates;
@@ -161,7 +168,6 @@ private:
     SearchController m_search;
     PlaylistController m_playlists;
     LibraryActions m_actions;
-    std::unique_ptr<library::Scanner> m_scanner;
     std::unique_ptr<library::LibraryWatcher> m_watcher;
     QTimer m_saveTimer;
     QTimer m_backupTimer;

@@ -37,6 +37,7 @@ public:
     /// 支持写回的格式：FLAC（xiph）、MP3（id3v2；若文件原本还有 id3v1 /
     /// ape，也记入快照）、M4A/MP4（mp4）、Ogg Vorbis 与 Opus（xiph）。 其他格式 →
     /// Error{errc::kTagWriteUnsupported}。
+    /// isSupported 只按扩展名判断、不打开文件（批量统计时不能逐个读网络上的文件）。
     static bool isSupported(const QString &path);
     static core::Result<TagSnapshot> snapshot(const QString &path);
 
