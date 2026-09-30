@@ -64,6 +64,14 @@ add_library(linernotes_butler STATIC
     TitleVersion.cpp
     TitleVersion.h
     TrackFieldTarget.h
+    VersionSuffixJobHandler.cpp
+    VersionSuffixJobHandler.h
+    VersionSuffixLlm.cpp
+    VersionSuffixLlm.h
+    VersionSuffixSource.cpp
+    VersionSuffixSource.h
+    VersionSuffixStore.cpp
+    VersionSuffixStore.h
 )
 add_library(Linernotes::butler ALIAS linernotes_butler)
 
