@@ -46,6 +46,17 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME library_TagWriter
+    SOURCES
+        tst_TagWriter.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::audio
+        Linernotes::TestSupport
+)
+
+
+linernotes_add_test(
     NAME library_FileFingerprint
     SOURCES
         tst_FileFingerprint.cpp

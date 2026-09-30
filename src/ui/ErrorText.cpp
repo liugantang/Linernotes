@@ -46,6 +46,18 @@ QString userErrorText(const core::Error &error)
         return QCoreApplication::translate(
             "linernotes::ui::ErrorText", "The audio file format or tag format is not supported.");
     }
+    if (error.code == library::errc::kTagWriteUnsupported) {
+        return QCoreApplication::translate(
+            "linernotes::ui::ErrorText", "Writing tags to this audio format is not supported.");
+    }
+    if (error.code == library::errc::kTagWriteFailed) {
+        return QCoreApplication::translate(
+            "linernotes::ui::ErrorText", "Failed to write tags to audio file.");
+    }
+    if (error.code == library::errc::kTagWriteVerifyFailed) {
+        return QCoreApplication::translate(
+            "linernotes::ui::ErrorText", "Tag verification failed after writing.");
+    }
     if (error.code == library::errc::kFileRead) {
         return QCoreApplication::translate("linernotes::ui::ErrorText", "Failed to read file.");
     }

@@ -74,6 +74,8 @@ add_library(linernotes_library STATIC
     SmartRuleSql.h
     TagReader.cpp
     TagReader.h
+    TagWriter.cpp
+    TagWriter.h
     TrackCorrections.cpp
     TrackCorrections.h
     TrackIssueStore.cpp
