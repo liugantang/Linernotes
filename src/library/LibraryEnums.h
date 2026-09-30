@@ -90,7 +90,8 @@ enum class CorrectionKind : std::uint8_t {
     ArtistSplit,
     ArtistMerge,
     ArtistCredit,
-    MbMatch
+    MbMatch,
+    AlbumInfo
 };
 Q_ENUM_NS(CorrectionKind)
 

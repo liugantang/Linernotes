@@ -16,7 +16,7 @@ Rectangle {
     function kindIcon(kind) {
         if (kind === Library.CorrectionKind.Mojibake) return "rotate-ccw"
         if (kind === Library.CorrectionKind.ArtistSplit || kind === Library.CorrectionKind.ArtistCredit || kind === Library.CorrectionKind.ArtistMerge) return "mic-vocal"
-        if (kind === Library.CorrectionKind.MbMatch) return "disc-3"
+        if (kind === Library.CorrectionKind.MbMatch || kind === Library.CorrectionKind.AlbumInfo) return "disc-3"
         return "sparkles"
     }
 
@@ -26,6 +26,7 @@ Rectangle {
         if (kind === Library.CorrectionKind.ArtistSplit) return qsTr("Split Artists")
         if (kind === Library.CorrectionKind.ArtistMerge) return qsTr("Merge Artists")
         if (kind === Library.CorrectionKind.MbMatch) return qsTr("MusicBrainz Match")
+        if (kind === Library.CorrectionKind.AlbumInfo) return qsTr("Album Info")
         return qsTr("Manual Fix")
     }
 

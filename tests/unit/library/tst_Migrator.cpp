@@ -49,6 +49,7 @@ private slots:
     void upgradesTo0015AddsFingerprintsTable();
     void upgradesTo0016AddsMbMatches();
     void upgradesTo0017AddsCoverChecked();
+    void upgradesTo0024AddsAlbumInfoChecks();
 };
 
 void TstMigrator::appliesMigrationsInOrder()
@@ -772,6 +773,70 @@ void TstMigrator::upgradesTo0017AddsCoverChecked()
         QStringLiteral("SELECT cover_checked_at FROM mb_album_matches WHERE album_id = 1;")));
     QVERIFY(q.next());
     QCOMPARE(q.value(0).toLongLong(), 2000LL);
+}
+
+void TstMigrator::upgradesTo0024AddsAlbumInfoChecks()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 24);
+
+    // Write migrations 1..23
+    for (int i = 0; i < 23; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 23);
+
+    // Insert an album in v23 schema
+    {
+        QSqlQuery q(conn);
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO albums (id, grouping_key, title, created_at) "
+                                      "VALUES (1, 'g1', 'Album 1', 100);")));
+    }
+
+    // Add migration 24
+    const auto &m24 = allMigrations.at(23);
+    const QString fileName24
+        = QStringLiteral("%1_%2.sql").arg(m24.version, 4, 10, QLatin1Char('0')).arg(m24.name);
+    writeSqlFile(migDir.path(), fileName24, m24.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 24);
+
+    // Verify album_info_checks table exists and supports insert/delete cascade
+    QSqlQuery q(conn);
+    QVERIFY(q.exec(QStringLiteral(
+        "INSERT INTO album_info_checks (album_id, checked_at, model, prompt_version) "
+        "VALUES (1, 1000, 'gpt-4o', 1);")));
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM album_info_checks;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 1);
+
+    // Cascade delete on albums
+    QVERIFY(q.exec(QStringLiteral("DELETE FROM albums WHERE id = 1;")));
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM album_info_checks;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 0);
 }
 
 } // namespace

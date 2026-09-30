@@ -4,6 +4,12 @@
 file(GLOB SCHEMA_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/schemas/*/*.json")
 
 add_library(linernotes_butler STATIC
+    AlbumInfoJobHandler.cpp
+    AlbumInfoJobHandler.h
+    AlbumInfoLlm.cpp
+    AlbumInfoLlm.h
+    AlbumInfoSource.cpp
+    AlbumInfoSource.h
     AlbumMatch.cpp
     AlbumMatch.h
     ArtistCredit.cpp

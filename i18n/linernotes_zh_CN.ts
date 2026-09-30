@@ -15,45 +15,45 @@
 <context>
     <name>AlbumDetail</name>
     <message numerus="yes">
-        <location filename="../qml/AlbumDetail.qml" line="78"/>
+        <location filename="../qml/AlbumDetail.qml" line="85"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n 首</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="99"/>
+        <location filename="../qml/AlbumDetail.qml" line="106"/>
         <source>Back</source>
         <translation>返回</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="160"/>
+        <location filename="../qml/AlbumDetail.qml" line="167"/>
         <source>Unknown Album</source>
         <translation>未知专辑</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="169"/>
+        <location filename="../qml/AlbumDetail.qml" line="185"/>
         <source>Unknown Artist</source>
         <translation>未知艺人</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="190"/>
+        <location filename="../qml/AlbumDetail.qml" line="206"/>
         <source>Play</source>
         <translation>播放</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="197"/>
+        <location filename="../qml/AlbumDetail.qml" line="213"/>
         <source>Shuffle</source>
         <translation>随机播放</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="239"/>
+        <location filename="../qml/AlbumDetail.qml" line="255"/>
         <source>Title</source>
         <extracomment>Track title header</extracomment>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="247"/>
+        <location filename="../qml/AlbumDetail.qml" line="263"/>
         <source>Duration</source>
         <extracomment>Track duration header</extracomment>
         <translation>时长</translation>
@@ -128,7 +128,7 @@
         <translation>未知专辑</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumGrid.qml" line="286"/>
+        <location filename="../qml/AlbumGrid.qml" line="296"/>
         <source>Unknown Artist</source>
         <translation>未知艺人</translation>
     </message>
@@ -136,7 +136,7 @@
 <context>
     <name>AlbumTrackRow</name>
     <message>
-        <location filename="../qml/AlbumTrackRow.qml" line="63"/>
+        <location filename="../qml/AlbumTrackRow.qml" line="65"/>
         <source>Unknown Title</source>
         <translation>未知标题</translation>
     </message>
@@ -320,7 +320,7 @@
         <translation>全部歌曲 (%1)</translation>
     </message>
     <message>
-        <location filename="../qml/ArtistDetail.qml" line="272"/>
+        <location filename="../qml/ArtistDetail.qml" line="274"/>
         <source>Unknown Title</source>
         <translation>未知标题</translation>
     </message>
@@ -820,49 +820,54 @@
     </message>
     <message>
         <location filename="../qml/CorrectionBatchList.qml" line="29"/>
+        <source>Album Info</source>
+        <translation>专辑信息补全</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="30"/>
         <source>Manual Fix</source>
         <translation>手动修正</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionBatchList.qml" line="49"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="50"/>
         <source>Batches</source>
         <translation>批次</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CorrectionBatchList.qml" line="56"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="57"/>
         <source>%n batch(es)</source>
         <translation>
             <numerusform>%n 个批次</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionBatchList.qml" line="63"/>
-        <location filename="../qml/CorrectionBatchList.qml" line="241"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="64"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="242"/>
         <source>Clear Processed</source>
         <translation>清除已处理</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionBatchList.qml" line="249"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="250"/>
         <source>Remove all batches with no pending proposals from the list? Accepted changes stay in effect.</source>
         <translation>从列表中移除所有没有待审建议的批次？已接受的修改仍然生效。</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionBatchList.qml" line="266"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="267"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionBatchList.qml" line="271"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="272"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionBatchList.qml" line="185"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="186"/>
         <source>Reverted</source>
         <translation>已撤销</translation>
     </message>
     <message>
-        <location filename="../qml/CorrectionBatchList.qml" line="193"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="194"/>
         <source>%1 pending · %2 accepted</source>
         <translation>%1 待审 · %2 已接受</translation>
     </message>
@@ -2226,6 +2231,16 @@
         <source>Hide to system tray when closing window</source>
         <translation>关闭窗口时隐藏到托盘</translation>
     </message>
+    <message>
+        <location filename="../qml/SettingsAppearanceSection.qml" line="189"/>
+        <source>Show Chinese translations of foreign titles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsAppearanceSection.qml" line="208"/>
+        <source>Translations come from &quot;Translate foreign titles&quot; in Library Cleanup.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SettingsLibrarySection</name>
@@ -3121,6 +3136,22 @@
         <location filename="../src/butler/ArtistMerge.cpp" line="55"/>
         <source>Same name with different spelling</source>
         <translation>同名，仅写法不同</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/AlbumInfoLlm.cpp" line="80"/>
+        <source>From file or folder name</source>
+        <translation>来自文件名或目录名</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/AlbumInfoLlm.cpp" line="82"/>
+        <source>From tags of other tracks</source>
+        <translation>来自同专辑其他曲目的标签</translation>
+    </message>
+    <message>
+        <location filename="../src/butler/AlbumInfoLlm.cpp" line="84"/>
+        <location filename="../src/butler/AlbumInfoLlm.cpp" line="86"/>
+        <source>From model knowledge, unverified</source>
+        <translation>来自模型知识，未经核实</translation>
     </message>
 </context>
 <context>

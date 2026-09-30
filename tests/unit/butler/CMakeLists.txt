@@ -2,6 +2,17 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 linernotes_add_test(
+    NAME butler_AlbumInfoLlm
+    SOURCES
+        tst_AlbumInfoLlm.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
     NAME butler_AlbumMatch
     SOURCES
         tst_AlbumMatch.cpp
