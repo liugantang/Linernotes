@@ -60,6 +60,35 @@ private:
     QFutureWatcher<core::Result<void>> m_watcher;
 };
 
+/// 写前快照：已存过的（重试时）直接用存的；否则现在读并先存库再返回。
+core::Result<library::TagSnapshot> originalSnapshot(library::WritebackStore &store,
+    qint64 writebackId, qint64 fileId, const library::WritebackFileRecord &record)
+{
+    if (!record.snapshot.isEmpty()) {
+        const auto stored = library::TagSnapshot::fromJson(
+            QJsonDocument::fromJson(record.snapshot.toUtf8()).object());
+        if (stored.has_value()) {
+            return *stored;
+        }
+        return core::Error {
+            .code = QString(library::errc::kWritebackInvalid),
+            .message = QStringLiteral("Stored tag snapshot is corrupt"),
+            .detail = record.path,
+        };
+    }
+    const auto snapRes = library::TagWriter::snapshot(record.path);
+    if (!snapRes.ok()) {
+        return snapRes.error();
+    }
+    const QString snapJson
+        = QString::fromUtf8(QJsonDocument(snapRes.value().toJson()).toJson(QJsonDocument::Compact));
+    const auto saveRes = store.saveSnapshot(writebackId, fileId, snapJson);
+    if (!saveRes.ok()) {
+        return saveRes.error();
+    }
+    return snapRes.value();
+}
+
 } // namespace
 
 WritebackJobHandler::WritebackJobHandler(library::Database &db, const core::Clock &clock)
@@ -116,22 +145,16 @@ std::unique_ptr<QObject> WritebackJobHandler::process(const QString &itemKey,
                 return recRes.error();
             }
             const auto &record = recRes.value();
-
-            const auto snapRes = library::TagWriter::snapshot(record.path);
+            // 幂等：任务项可能被重试（例如更新任务状态时数据库忙）。已写过的直接成功；
+            // 已存过快照的沿用旧快照——重新快照拿到的会是已修改的标签，撤销就回不到原样了。
+            if (record.status == library::WritebackFileStatus::Written) {
+                return { };
+            }
+            const auto snapRes = originalSnapshot(store, writebackId, fileId, record);
             if (!snapRes.ok()) {
                 static_cast<void>(store.markFailed(writebackId, fileId,
                     library::WritebackFileStatus::Failed, snapRes.error().message));
                 return snapRes.error();
-            }
-
-            const auto snapObj = snapRes.value().toJson();
-            const QString snapJson
-                = QString::fromUtf8(QJsonDocument(snapObj).toJson(QJsonDocument::Compact));
-            const auto saveRes = store.saveSnapshot(writebackId, fileId, snapJson);
-            if (!saveRes.ok()) {
-                static_cast<void>(store.markFailed(writebackId, fileId,
-                    library::WritebackFileStatus::Failed, saveRes.error().message));
-                return saveRes.error();
             }
 
             const auto writeRes = library::TagWriter::writeFields(record.path, record.fields);

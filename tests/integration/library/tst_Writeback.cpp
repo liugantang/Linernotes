@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 #include <QFile>
+#include <QJsonDocument>
 #include <QJsonObject>
 #include <QList>
 #include <QObject>
@@ -38,6 +39,7 @@ using linernotes::library::LibraryRoots;
 using linernotes::library::Migrator;
 using linernotes::library::Scanner;
 using linernotes::library::TagField;
+using linernotes::library::TagSnapshot;
 using linernotes::library::TagWriter;
 using linernotes::library::WritebackFileStatus;
 using linernotes::library::WritebackStore;
@@ -103,6 +105,8 @@ void TstWriteback::writebackAndRevert()
         }
     }
     QVERIFY(flacTrackId > 0 && mp3TrackId > 0);
+    q.finish(); // 不留活动语句：否则主线程连接持有旧读快照，工作线程提交后主线程写会
+                // SQLITE_BUSY_SNAPSHOT
 
     ManualClock clock(1000);
     CorrectionStore corrStore(db, clock);
@@ -182,6 +186,19 @@ void TstWriteback::writebackAndRevert()
     }
     QVERIFY(mp3TitleFound);
 
+    // 任务项被重试（再跑一次写回任务）不能覆盖已存的写前快照
+    const auto retryRes = queue.enqueue(
+        QStringLiteral("library.writeback"), QStringLiteral("Writeback retry"), itemKeys, params);
+    QVERIFY(retryRes.ok());
+    QTRY_VERIFY_WITH_TIMEOUT(
+        queue.job(retryRes.value()).value_or(JobInfo { }).state == JobState::Completed, 10000);
+    const auto flacRecord = wbStore.fileRecord(wbId, flacFileId);
+    QVERIFY(flacRecord.ok());
+    const auto storedFlacSnap = TagSnapshot::fromJson(
+        QJsonDocument::fromJson(flacRecord.value().snapshot.toUtf8()).object());
+    QVERIFY(storedFlacSnap.has_value());
+    QVERIFY(storedFlacSnap.value_or(TagSnapshot { }) == initialFlacSnap.value());
+
     // Run revert
     const auto writtenRes = wbStore.writtenFileIds(wbId);
     QVERIFY(writtenRes.ok());
@@ -259,6 +276,7 @@ void TstWriteback::revertFailsWhenFileModified()
             mp3FileId = q.value(1).toLongLong();
         }
     }
+    q.finish();
 
     ManualClock clock(1000);
     CorrectionStore corrStore(db, clock);
