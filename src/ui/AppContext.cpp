@@ -41,7 +41,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
               opts.coverStore = &m_coverStore;
               return opts;
           }())
-    , m_ai(m_settings, m_db, m_coverStore, m_clock, m_options.promptsDir)
+    , m_ai(m_settings, m_db, m_clock, m_options.promptsDir)
     , m_writeback(m_db, m_clock, m_ai.jobs(), m_scanner)
     , m_cleanup(m_db, m_clock, m_ai.jobs(), m_ai.prompts(), m_ai.config(), m_settings)
     , m_duplicates(m_db, m_clock, m_trash)

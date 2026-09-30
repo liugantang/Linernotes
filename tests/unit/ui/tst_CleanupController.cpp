@@ -17,21 +17,17 @@
 #include <ai/PrivacyGuard.h>
 #include <ai/PromptLibrary.h>
 #include <ai/SecretStore.h>
-#include <ai/UsageStore.h>
+#include <butler/AlbumInfoJobHandler.h>
+#include <butler/AlbumInfoSource.h>
 #include <butler/ArtistCredit.h>
 #include <butler/ArtistCreditJobHandler.h>
 #include <butler/ArtistCreditStore.h>
 #include <butler/ArtistMergeJobHandler.h>
-#include <butler/CoverArtJobHandler.h>
 #include <butler/DuplicateFinder.h>
 #include <butler/DuplicateJobHandler.h>
 #include <butler/DuplicateSource.h>
 #include <butler/FingerprintJobHandler.h>
-#include <butler/MbMatchJobHandler.h>
-#include <butler/MbMatchSource.h>
 #include <butler/MojibakeJobHandler.h>
-#include <butler/MusicBrainz.h>
-#include <butler/MusicBrainzClient.h>
 #include <butler/VersionLinkJobHandler.h>
 #include <common/ManualClock.h>
 #include <common/TestSupport.h>
@@ -58,31 +54,27 @@ using linernotes::ai::MemorySecretStore;
 using linernotes::ai::PrivacyGuard;
 using linernotes::ai::PromptLibrary;
 using linernotes::ai::UsageStore;
+using linernotes::butler::AlbumInfoJobHandler;
+using linernotes::butler::AlbumInfoSource;
 using linernotes::butler::ArtistCredit;
 using linernotes::butler::ArtistCreditJobHandler;
 using linernotes::butler::ArtistCreditStore;
 using linernotes::butler::ArtistMergeJobHandler;
-using linernotes::butler::CoverArtJobHandler;
 using linernotes::butler::CreditPerformer;
 using linernotes::butler::DuplicateJobHandler;
 using linernotes::butler::DuplicateKind;
 using linernotes::butler::DuplicateSource;
 using linernotes::butler::FingerprintJobHandler;
-using linernotes::butler::MbMatchJobHandler;
-using linernotes::butler::MbMatchSource;
 using linernotes::butler::MojibakeJobHandler;
-using linernotes::butler::MusicBrainzClient;
 using linernotes::butler::VersionLinkJobHandler;
 using linernotes::core::Settings;
 using linernotes::library::CorrectionKind;
 using linernotes::library::CorrectionStatus;
 using linernotes::library::CorrectionStore;
-using linernotes::library::CoverStore;
 using linernotes::library::Database;
 using linernotes::library::EntityLinker;
 using linernotes::library::FingerprintStore;
 using linernotes::library::Migrator;
-using linernotes::test::fixturePath;
 using linernotes::test::ManualClock;
 using linernotes::ui::CleanupController;
 
@@ -279,7 +271,7 @@ private slots:
     void healthCountsMatchLibrary();
     void runExecutesStepsInOrder();
     void autoAcceptAppliesThreshold();
-    void mbMatchStepRunsWithoutLlm();
+    void albumInfoStepRequiresLlm();
     void duplicatesStepRuns();
     void automaticRunsRuleStepsOnly();
 };
@@ -312,6 +304,7 @@ void TstCleanupController::healthCountsMatchLibrary()
     jobs.registerHandler(std::make_unique<MojibakeJobHandler>(db, llm, prompts, clock));
     jobs.registerHandler(std::make_unique<ArtistCreditJobHandler>(db, llm, prompts, clock));
     jobs.registerHandler(std::make_unique<ArtistMergeJobHandler>(db, llm, prompts, clock));
+    jobs.registerHandler(std::make_unique<AlbumInfoJobHandler>(db, llm, prompts, clock));
 
     CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
     QCOMPARE(cleanup.isLlmConfigured(), false);
@@ -330,7 +323,8 @@ void TstCleanupController::healthCountsMatchLibrary()
     QVERIFY(cleanup.mojibakeGroups() >= 1);
     QVERIFY(cleanup.creditValues() >= 1);
     QVERIFY(cleanup.mergeClusters() >= 1);
-    QCOMPARE(cleanup.mbMatchAlbums(), 3);
+    QCOMPARE(cleanup.albumInfoAlbums(), 3);
+    QVERIFY(cleanup.albumInfoTokens() > 0);
 }
 
 void TstCleanupController::runExecutesStepsInOrder()
@@ -524,11 +518,11 @@ void TstCleanupController::autoAcceptAppliesThreshold()
     QCOMPARE(corrections.first().status, CorrectionStatus::Accepted);
 }
 
-void TstCleanupController::mbMatchStepRunsWithoutLlm()
+void TstCleanupController::albumInfoStepRequiresLlm()
 {
     const QTemporaryDir tempDir;
     QVERIFY(tempDir.isValid());
-    Database db(tempDir.filePath(QStringLiteral("test_mb_match.db")));
+    Database db(tempDir.filePath(QStringLiteral("test_album_info_step.db")));
     QVERIFY(db.open(Migrator()).ok());
     const auto conn = db.connection().value();
     populateTestLibrary(conn);
@@ -539,63 +533,39 @@ void TstCleanupController::mbMatchStepRunsWithoutLlm()
     ManualClock clock(1000);
     AiConfig aiConfig(settings);
     PromptLibrary prompts({ QStringLiteral(":/prompts") });
+    MemorySecretStore secrets;
     QNetworkAccessManager network;
-    MusicBrainzClient mbClient(network, db, clock);
-
-    const QTemporaryDir coverCacheDir;
-    QVERIFY(coverCacheDir.isValid());
-    CoverStore coverStore(coverCacheDir.path());
+    LlmClient client(network);
+    LlmCache cache(db, clock);
+    UsageStore usage(db);
+    PrivacyGuard privacy(settings);
+    LlmDebugLog debugLog(settings);
+    LlmService llm(aiConfig, secrets, client, cache, usage, privacy, debugLog, clock);
 
     JobQueue jobs(db, clock);
-    jobs.registerHandler(std::make_unique<MbMatchJobHandler>(db, mbClient, clock));
-    jobs.registerHandler(std::make_unique<CoverArtJobHandler>(db, network, coverStore, clock,
-        QUrl::fromLocalFile(fixturePath(QStringLiteral("coverart")))));
+    jobs.registerHandler(std::make_unique<AlbumInfoJobHandler>(db, llm, prompts, clock));
 
-    const MbMatchSource mbSource(db);
-    const auto pendingRes = mbSource.pendingAlbums();
+    const AlbumInfoSource source(db);
+    const auto pendingRes = source.pendingAlbums();
     QVERIFY(pendingRes.ok());
     const auto &pendingAlbums = pendingRes.value();
     QCOMPARE(pendingAlbums.size(), 3);
 
-    const QByteArray emptySearchJson = "{\"created\":\"2026-09-30T00:00:00.000Z\",\"count\":0,"
-                                       "\"offset\":0,\"releases\":[]}";
-    for (const qint64 albumId : pendingAlbums) {
-        const auto loadRes = mbSource.load(albumId);
-        QVERIFY(loadRes.ok());
-        const auto &input = loadRes.value();
-        const QUrl url
-            = linernotes::butler::releaseSearchUrl(input.searchTitle, input.searchArtist, 10);
-        QSqlQuery q(conn);
-        q.prepare(QStringLiteral(
-            "INSERT OR REPLACE INTO mb_cache (url, body, fetched_at) VALUES (?, ?, ?);"));
-        q.addBindValue(url.toString());
-        q.addBindValue(QString::fromUtf8(emptySearchJson));
-        q.addBindValue(clock.nowMs());
-        QVERIFY(q.exec());
-    }
-
     CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
     QCOMPARE(cleanup.isLlmConfigured(), false);
 
+    // 配置 LLM 服务后立即可用
+    linernotes::ai::ServiceProfile profile;
+    profile.name = QStringLiteral("Test");
+    profile.defaultModel = QStringLiteral("test-model");
+    Q_UNUSED(aiConfig.saveService(profile));
+    QCOMPARE(cleanup.isLlmConfigured(), true);
+
     cleanup.run(false, false, false, true, false, false, false);
     QCOMPARE(cleanup.isRunning(), true);
+    QCOMPARE(cleanup.currentStep(), CleanupController::Step::AlbumInfo);
 
     QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
-
-    QSqlQuery matchQ(conn);
-    QVERIFY(matchQ.exec(QStringLiteral("SELECT status FROM mb_album_matches;")));
-    int matchCount = 0;
-    while (matchQ.next()) {
-        QCOMPARE(matchQ.value(0).toString(), QStringLiteral("no_match"));
-        ++matchCount;
-    }
-    QCOMPARE(matchCount, 3);
-
-    QSqlQuery batchQ(conn);
-    QVERIFY(batchQ.exec(
-        QStringLiteral("SELECT COUNT(*) FROM correction_batches WHERE kind = 'mb_match';")));
-    QVERIFY(batchQ.next());
-    QCOMPARE(batchQ.value(0).toInt(), 0);
 }
 
 void TstCleanupController::duplicatesStepRuns()

@@ -12,15 +12,7 @@ linernotes_add_test(
         Linernotes::TestSupport
 )
 
-linernotes_add_test(
-    NAME butler_AlbumMatch
-    SOURCES
-        tst_AlbumMatch.cpp
-    LIBS
-        Linernotes::butler
-        Linernotes::core
-        Linernotes::TestSupport
-)
+
 
 linernotes_add_test(
     NAME butler_DuplicateFinder
@@ -123,28 +115,7 @@ linernotes_add_test(
         Linernotes::Deps::ICU
 )
 
-linernotes_add_test(
-    NAME butler_MusicBrainz
-    SOURCES
-        tst_MusicBrainz.cpp
-    LIBS
-        Linernotes::butler
-        Linernotes::library
-        Linernotes::core
-        Linernotes::TestSupport
-        Qt6::Network
-)
 
-linernotes_add_test(
-    NAME butler_MbMatchPlanner
-    SOURCES
-        tst_MbMatchPlanner.cpp
-    LIBS
-        Linernotes::butler
-        Linernotes::library
-        Linernotes::core
-        Linernotes::TestSupport
-)
 
 linernotes_add_test(
     NAME butler_TitleVersion

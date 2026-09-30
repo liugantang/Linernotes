@@ -17,7 +17,6 @@
 #include <ai/PrivacyGuard.h>
 #include <ai/PromptLibrary.h>
 #include <ai/UsageStore.h>
-#include <butler/MusicBrainzClient.h>
 #include <core/Clock.h>
 #include <ui/AiSettingsController.h>
 #include <ui/LlmDebugController.h>
@@ -28,7 +27,6 @@ class Settings;
 
 namespace linernotes::library {
 class Database;
-class CoverStore;
 } // namespace linernotes::library
 
 namespace linernotes::ui {
@@ -39,8 +37,8 @@ class AiContext : public QObject {
 
 public:
     /// promptsDir：用户覆盖模板目录（<配置目录>/prompts）；为空时只用内置模板。
-    AiContext(core::Settings &settings, library::Database &db, library::CoverStore &covers,
-        const core::Clock &clock, const QString &promptsDir, QObject *parent = nullptr);
+    AiContext(core::Settings &settings, library::Database &db, const core::Clock &clock,
+        const QString &promptsDir, QObject *parent = nullptr);
     ~AiContext() override = default;
 
     /// 数据库打开后由 AppContext::start() 调用：JobQueue::restore()、LlmCache::purgeExpired()。
@@ -57,7 +55,6 @@ public:
 private:
     // 声明顺序即依赖顺序
     QNetworkAccessManager m_network;
-    butler::MusicBrainzClient m_musicBrainz;
     ai::AiConfig m_config;
     ai::KeychainSecretStore m_secrets;
     ai::LlmClient m_client;

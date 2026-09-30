@@ -29,13 +29,7 @@ inline constexpr QLatin1StringView kArtistMergePromptRenderFailed {
     "artist_merge.prompt_render_failed"
 };
 
-inline constexpr QLatin1StringView kMbInvalidResponse { "mb.invalid_response" };
-inline constexpr QLatin1StringView kMbRateLimited { "mb.rate_limited" };
-inline constexpr QLatin1StringView kMbNetwork { "mb.network" };
-inline constexpr QLatin1StringView kMbNotFound { "mb.not_found" };
 inline constexpr QLatin1StringView kFingerprintInvalidKey { "fingerprint.invalid_key" };
-inline constexpr QLatin1StringView kMbMatchInvalidKey { "mb_match.invalid_key" };
-inline constexpr QLatin1StringView kMbMatchAlbumNotFound { "mb_match.album_not_found" };
 
 inline constexpr QLatin1StringView kVersionSuffixInvalidKey { "version_suffix.invalid_key" };
 inline constexpr QLatin1StringView kVersionSuffixInvalidResult { "version_suffix.invalid_result" };

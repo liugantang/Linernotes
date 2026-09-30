@@ -50,6 +50,7 @@ private slots:
     void upgradesTo0016AddsMbMatches();
     void upgradesTo0017AddsCoverChecked();
     void upgradesTo0024AddsAlbumInfoChecks();
+    void upgradesTo0025DropsMusicBrainz();
 };
 
 void TstMigrator::appliesMigrationsInOrder()
@@ -837,6 +838,77 @@ void TstMigrator::upgradesTo0024AddsAlbumInfoChecks()
     QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM album_info_checks;")));
     QVERIFY(q.next());
     QCOMPARE(q.value(0).toInt(), 0);
+}
+
+void TstMigrator::upgradesTo0025DropsMusicBrainz()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 25);
+
+    // Write migrations 1..24
+    for (int i = 0; i < 24; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 24);
+
+    // Insert data into MB tables in v24 schema
+    {
+        QSqlQuery q(conn);
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO albums (id, grouping_key, title, created_at) "
+                                      "VALUES (1, 'g1', 'Album 1', 100);")));
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO library_roots (id, path, enabled, added_at) "
+                                      "VALUES (1, '/music', 1, 100);")));
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO files (id, root_id, path, duration_ms, size, "
+                                      "mtime, first_seen_at, scanned_at) VALUES "
+                                      "(1, 1, '/music/1.mp3', 60000, 1, 1, 1, 1);")));
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO tracks (id, file_id, tags_read_at, created_at) "
+                                      "VALUES (1, 1, 1, 1);")));
+        QVERIFY(q.exec(QStringLiteral(
+            "INSERT INTO mb_album_matches (album_id, status, release_id, release_group_id, "
+            "score, matched_at) VALUES (1, 'matched', 'rel-1', 'rg-1', 1.0, 1000);")));
+        QVERIFY(q.exec(QStringLiteral(
+            "INSERT INTO mb_track_matches (track_id, release_id, recording_id, score) "
+            "VALUES (1, 'rel-1', 'rec-1', 1.0);")));
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO mb_cache (url, body, fetched_at) VALUES "
+                                      "('http://example.com', '{}', 1000);")));
+    }
+
+    // Add migration 25
+    const auto &m25 = allMigrations.at(24);
+    const QString fileName25
+        = QStringLiteral("%1_%2.sql").arg(m25.version, 4, 10, QLatin1Char('0')).arg(m25.name);
+    writeSqlFile(migDir.path(), fileName25, m25.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 25);
+
+    // Verify mb_cache, mb_album_matches, mb_track_matches tables are dropped
+    QSqlQuery checkQ(conn);
+    QVERIFY(
+        checkQ.exec(QStringLiteral("SELECT name FROM sqlite_master WHERE type='table' AND name IN "
+                                   "('mb_cache', 'mb_album_matches', 'mb_track_matches');")));
+    QVERIFY(!checkQ.next());
 }
 
 } // namespace

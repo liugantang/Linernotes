@@ -72,7 +72,7 @@
 <context>
     <name>CleanupHealthPanel</name>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="179"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="178"/>
         <source>%n folder(s) with garbled tags</source>
         <translation>
             <numerusform>%n folder with garbled tags</numerusform>
@@ -87,7 +87,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="197"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="196"/>
         <source>%n artist credit(s) to check</source>
         <translation>
             <numerusform>%n artist credit to check</numerusform>
@@ -95,7 +95,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="215"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="214"/>
         <source>%n possible duplicate artist(s)</source>
         <translation>
             <numerusform>%n possible duplicate artist</numerusform>
@@ -103,7 +103,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="237"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="236"/>
         <source>%n album(s) with missing info</source>
         <translation>
             <numerusform>%n album with missing info</numerusform>
@@ -111,23 +111,21 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="238"/>
         <source> · %n cover(s) to download</source>
-        <translation>
+        <translation type="vanished">
             <numerusform> · %n cover to download</numerusform>
             <numerusform> · %n covers to download</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="241"/>
         <source> · about %n min online</source>
-        <translation>
+        <translation type="vanished">
             <numerusform> · about %n min online</numerusform>
             <numerusform> · about %n mins online</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="266"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="263"/>
         <source>%n track(s) to check</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -135,7 +133,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="268"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="265"/>
         <source> · %n suffix(es) for AI</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -143,7 +141,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="295"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="292"/>
         <source>%n title(s) to translate</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -151,7 +149,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="323"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="320"/>
         <source>%n candidate track(s)</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -159,7 +157,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="325"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="322"/>
         <source> · %n audio fingerprint(s) to compute</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -167,7 +165,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="328"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="325"/>
         <source> · %n group(s) found last time</source>
         <translation type="unfinished">
             <numerusform></numerusform>
