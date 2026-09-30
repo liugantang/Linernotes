@@ -389,6 +389,7 @@ void CleanupController::startNextStep()
         emit currentJobIdChanged();
         emit progressChanged();
         emit pausedChanged();
+        checkHealth(); // 运行结束后刷新体检数字
         return;
     }
 
