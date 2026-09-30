@@ -42,6 +42,7 @@ public:
         CoverArt,
         VersionSuffix,
         VersionLink,
+        Translate,
         Fingerprint,
         Duplicates,
     };
@@ -57,6 +58,7 @@ public:
     Q_PROPERTY(int coverArtAlbums READ coverArtAlbums NOTIFY healthChanged)
     Q_PROPERTY(int versionTracks READ versionTracks NOTIFY healthChanged)
     Q_PROPERTY(int versionSuffixes READ versionSuffixes NOTIFY healthChanged)
+    Q_PROPERTY(int translateTexts READ translateTexts NOTIFY healthChanged)
     Q_PROPERTY(int duplicateCandidates READ duplicateCandidates NOTIFY healthChanged)
     Q_PROPERTY(int fingerprintPending READ fingerprintPending NOTIFY healthChanged)
     Q_PROPERTY(int duplicateGroups READ duplicateGroups NOTIFY healthChanged)
@@ -64,6 +66,7 @@ public:
     Q_PROPERTY(int creditTokens READ creditTokens NOTIFY healthChanged)
     Q_PROPERTY(int mergeTokens READ mergeTokens NOTIFY healthChanged)
     Q_PROPERTY(int versionTokens READ versionTokens NOTIFY healthChanged)
+    Q_PROPERTY(int translateTokens READ translateTokens NOTIFY healthChanged)
 
     // Run / Progress
     Q_PROPERTY(bool running READ isRunning NOTIFY runningChanged)
@@ -94,6 +97,8 @@ public:
         int versionTracks = 0;
         int versionSuffixes = 0;
         QStringList versionSuffixItems;
+        int translateTexts = 0;
+        QStringList translateItems;
         int duplicateCandidates = 0;
         int fingerprintPending = 0;
         int duplicateGroups = 0;
@@ -113,6 +118,7 @@ public:
     [[nodiscard]] int coverArtAlbums() const;
     [[nodiscard]] int versionTracks() const;
     [[nodiscard]] int versionSuffixes() const;
+    [[nodiscard]] int translateTexts() const;
     [[nodiscard]] int duplicateCandidates() const;
     [[nodiscard]] int fingerprintPending() const;
     [[nodiscard]] int duplicateGroups() const;
@@ -120,6 +126,7 @@ public:
     [[nodiscard]] int creditTokens() const;
     [[nodiscard]] int mergeTokens() const;
     [[nodiscard]] int versionTokens() const;
+    [[nodiscard]] int translateTokens() const;
 
     [[nodiscard]] bool isRunning() const;
     [[nodiscard]] bool isAutomatic() const;
@@ -136,7 +143,7 @@ public:
 
     Q_INVOKABLE void checkHealth();
     Q_INVOKABLE void run(bool mojibake, bool credit, bool merge, bool mbMatch, bool versions,
-        bool duplicates = false);
+        bool translate = false, bool duplicates = false);
     Q_INVOKABLE void runAutomatic();
     Q_INVOKABLE void pause();
     Q_INVOKABLE void resume();
@@ -184,6 +191,7 @@ private:
     int m_coverArtAlbums = 0;
     int m_versionTracks = 0;
     int m_versionSuffixes = 0;
+    int m_translateTexts = 0;
     int m_duplicateCandidates = 0;
     int m_fingerprintPending = 0;
     int m_duplicateGroups = 0;
@@ -191,6 +199,7 @@ private:
     int m_creditTokens = 0;
     int m_mergeTokens = 0;
     int m_versionTokens = 0;
+    int m_translateTokens = 0;
     QFutureWatcher<HealthReportData> m_healthWatcher;
 
     bool m_running = false;

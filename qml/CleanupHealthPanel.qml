@@ -14,7 +14,7 @@ Rectangle {
     property bool collapsed: false
 
     readonly property bool hasCleanup: typeof AppContext !== "undefined" && AppContext && AppContext.cleanup
-    readonly property bool hasSelectedTasks: mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || mbMatchCheck.checked || versionsCheck.checked || duplicatesCheck.checked
+    readonly property bool hasSelectedTasks: mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || mbMatchCheck.checked || versionsCheck.checked || translateCheck.checked || duplicatesCheck.checked
 
     color: Theme.surface
     border.color: Theme.divider
@@ -46,6 +46,7 @@ Rectangle {
         else if (step === CleanupController.CoverArt) title = qsTr("Downloading covers...")
         else if (step === CleanupController.VersionSuffix) title = qsTr("Classifying title suffixes...")
         else if (step === CleanupController.VersionLink) title = qsTr("Grouping song versions...")
+        else if (step === CleanupController.Translate) title = qsTr("Translating titles...")
         else if (step === CleanupController.Fingerprint) title = qsTr("Computing audio fingerprints...")
         else if (step === CleanupController.Duplicates) title = qsTr("Finding duplicates...")
         else title = qsTr("Cleaning up library...")
@@ -277,7 +278,33 @@ Rectangle {
                 Item { Layout.fillWidth: true }
             }
 
-            // Task 6: Duplicates
+            // Task 6: Translate
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Theme.spacingSmall
+                Controls.AppCheckBox {
+                    id: translateCheck
+                    text: qsTr("Translate foreign titles")
+                    enabled: hasCleanup && !AppContext.cleanup.running
+                }
+                Label {
+                    text: {
+                        if (!hasCleanup) return ""
+                        const count = AppContext.cleanup.translateTexts
+                        const tokens = AppContext.cleanup.translateTokens
+                        let desc = qsTr("%n title(s) to translate", "", count)
+                        if (tokens > 0) {
+                            desc += qsTr(" · ≈ %1 tokens").arg(tokens)
+                        }
+                        return desc
+                    }
+                    font.pixelSize: Theme.fontSizeNormal
+                    color: Theme.textSecondary
+                }
+                Item { Layout.fillWidth: true }
+            }
+
+            // Task 7: Duplicates
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Theme.spacingSmall
@@ -352,8 +379,8 @@ Rectangle {
                     text: qsTr("Run")
                     visible: hasCleanup && !AppContext.cleanup.running
                     enabled: root.hasSelectedTasks && hasCleanup && !AppContext.cleanup.checking
-                        && (!(mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || (versionsCheck.checked && AppContext.cleanup.versionSuffixes > 0)) || AppContext.cleanup.llmConfigured)
-                    onClicked: if (hasCleanup) AppContext.cleanup.run(mojibakeCheck.checked, creditCheck.checked, mergeCheck.checked, mbMatchCheck.checked, versionsCheck.checked, duplicatesCheck.checked)
+                        && (!(mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || translateCheck.checked || (versionsCheck.checked && AppContext.cleanup.versionSuffixes > 0)) || AppContext.cleanup.llmConfigured)
+                    onClicked: if (hasCleanup) AppContext.cleanup.run(mojibakeCheck.checked, creditCheck.checked, mergeCheck.checked, mbMatchCheck.checked, versionsCheck.checked, translateCheck.checked, duplicatesCheck.checked)
                 }
 
                 // Progress controls

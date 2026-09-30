@@ -72,6 +72,14 @@ add_library(linernotes_butler STATIC
     TitleVersion.cpp
     TitleVersion.h
     TrackFieldTarget.h
+    TranslationJobHandler.cpp
+    TranslationJobHandler.h
+    TranslationLlm.cpp
+    TranslationLlm.h
+    TranslationSource.cpp
+    TranslationSource.h
+    TranslationStore.cpp
+    TranslationStore.h
     VersionLinkJobHandler.cpp
     VersionLinkJobHandler.h
     VersionLinker.cpp

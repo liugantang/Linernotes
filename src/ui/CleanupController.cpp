@@ -22,6 +22,7 @@
 #include <butler/DuplicateSource.h>
 #include <butler/MbMatchSource.h>
 #include <butler/MojibakeSource.h>
+#include <butler/TranslationSource.h>
 #include <butler/VersionLinker.h>
 #include <butler/VersionSuffixSource.h>
 #include <core/Clock.h>
@@ -135,6 +136,17 @@ void collectVersions(
     }
 }
 
+void collectTranslations(library::Database &db, int promptVersion, HealthReportData &report)
+{
+    const butler::TranslationSource translationSource(db);
+    if (auto res = translationSource.findItems(promptVersion); res.ok()) {
+        report.translateItems = res.value();
+    }
+    if (auto res = translationSource.countPending(promptVersion); res.ok()) {
+        report.translateTexts = res.value();
+    }
+}
+
 void collectDuplicates(library::Database &db, const core::Clock &clock, HealthReportData &report)
 {
     const butler::DuplicateSource dupSource(db, clock);
@@ -215,6 +227,8 @@ QStringList collectStepItems(library::Database &db, const core::Clock &clock,
         return idsOrEmpty(butler::CoverArtSource(db).pendingAlbums());
     case Step::VersionSuffix:
         return valueOrEmpty(butler::VersionSuffixSource(db).findItems(promptVersion));
+    case Step::Translate:
+        return valueOrEmpty(butler::TranslationSource(db).findItems(promptVersion));
     case Step::Fingerprint:
         return idsOrEmpty(butler::DuplicateSource(db, clock).fingerprintCandidates());
     case Step::VersionLink:
@@ -313,6 +327,11 @@ int CleanupController::versionSuffixes() const
     return m_versionSuffixes;
 }
 
+int CleanupController::translateTexts() const
+{
+    return m_translateTexts;
+}
+
 int CleanupController::duplicateCandidates() const
 {
     return m_duplicateCandidates;
@@ -346,6 +365,11 @@ int CleanupController::mergeTokens() const
 int CleanupController::versionTokens() const
 {
     return m_versionTokens;
+}
+
+int CleanupController::translateTokens() const
+{
+    return m_translateTokens;
 }
 
 bool CleanupController::isRunning() const
@@ -433,19 +457,23 @@ void CleanupController::checkHealth()
         = loadPromptVersion(m_prompts, QStringLiteral("cleanup/artist_credit"));
     const int versionPromptVersion
         = loadPromptVersion(m_prompts, QStringLiteral("cleanup/version_suffix"));
+    const int translatePromptVersion
+        = loadPromptVersion(m_prompts, QStringLiteral("cleanup/translate_titles"));
 
-    auto future = QtConcurrent::run([&db = m_db, &clock = m_clock, creditPromptVersion,
-                                        versionPromptVersion]() -> HealthReportData {
-        HealthReportData report;
-        collectMojibake(db, report);
-        collectCredit(db, creditPromptVersion, report);
-        collectMerge(db, report);
-        collectMbMatch(db, report);
-        collectCoverArt(db, report);
-        collectVersions(db, clock, versionPromptVersion, report);
-        collectDuplicates(db, clock, report);
-        return report;
-    });
+    auto future = QtConcurrent::run(
+        [&db = m_db, &clock = m_clock, creditPromptVersion, versionPromptVersion,
+            translatePromptVersion]() -> HealthReportData {
+            HealthReportData report;
+            collectMojibake(db, report);
+            collectCredit(db, creditPromptVersion, report);
+            collectMerge(db, report);
+            collectMbMatch(db, report);
+            collectCoverArt(db, report);
+            collectVersions(db, clock, versionPromptVersion, report);
+            collectTranslations(db, translatePromptVersion, report);
+            collectDuplicates(db, clock, report);
+            return report;
+        });
 
     m_healthWatcher.setFuture(future);
 }
@@ -460,6 +488,7 @@ void CleanupController::onHealthCheckFinished()
     m_coverArtAlbums = data.coverArtAlbums;
     m_versionTracks = data.versionTracks;
     m_versionSuffixes = data.versionSuffixes;
+    m_translateTexts = data.translateTexts;
     m_duplicateCandidates = data.duplicateCandidates;
     m_fingerprintPending = data.fingerprintPending;
     m_duplicateGroups = data.duplicateGroups;
@@ -471,6 +500,8 @@ void CleanupController::onHealthCheckFinished()
     m_mergeTokens = estimateTokens(m_jobs, QStringLiteral("butler.artist_merge"), data.mergeItems);
     m_versionTokens
         = estimateTokens(m_jobs, QStringLiteral("butler.version_suffix"), data.versionSuffixItems);
+    m_translateTokens
+        = estimateTokens(m_jobs, QStringLiteral("butler.translate"), data.translateItems);
 
     m_healthReady = true;
     m_checking = false;
@@ -478,8 +509,8 @@ void CleanupController::onHealthCheckFinished()
     emit healthChanged();
 }
 
-void CleanupController::run(
-    bool mojibake, bool credit, bool merge, bool mbMatch, bool versions, bool duplicates)
+void CleanupController::run(bool mojibake, bool credit, bool merge, bool mbMatch, bool versions,
+    bool translate, bool duplicates)
 {
     if (m_running) {
         return;
@@ -502,6 +533,9 @@ void CleanupController::run(
     if (versions) {
         m_pendingSteps.append(Step::VersionSuffix);
         m_pendingSteps.append(Step::VersionLink);
+    }
+    if (translate) {
+        m_pendingSteps.append(Step::Translate);
     }
     if (duplicates) {
         m_pendingSteps.append(Step::Fingerprint);
@@ -583,6 +617,14 @@ void CleanupController::startNextStep()
             qCWarning(lcUi, "Failed to load cleanup/version_suffix prompt: %s",
                 qPrintable(promptRes.error().toString()));
         }
+    } else if (step == Step::Translate) {
+        if (const auto promptRes = m_prompts.load(QStringLiteral("cleanup/translate_titles"));
+            promptRes.ok()) {
+            promptVersion = promptRes.value().version;
+        } else {
+            qCWarning(lcUi, "Failed to load cleanup/translate_titles prompt: %s",
+                qPrintable(promptRes.error().toString()));
+        }
     }
 
     const bool automatic = m_automatic;
@@ -653,6 +695,10 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
     case Step::VersionLink:
         jobKind = QStringLiteral("butler.version_link");
         title = QStringLiteral("Group song versions");
+        break;
+    case Step::Translate:
+        jobKind = QStringLiteral("butler.translate");
+        title = QStringLiteral("Translate foreign titles");
         break;
     case Step::Fingerprint:
         jobKind = QStringLiteral("butler.fingerprint");

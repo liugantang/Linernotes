@@ -40,6 +40,8 @@ inline constexpr QLatin1StringView kMbMatchAlbumNotFound { "mb_match.album_not_f
 inline constexpr QLatin1StringView kVersionSuffixInvalidKey { "version_suffix.invalid_key" };
 inline constexpr QLatin1StringView kVersionSuffixInvalidResult { "version_suffix.invalid_result" };
 inline constexpr QLatin1StringView kVersionLinkInvalidKey { "version_link.invalid_key" };
+inline constexpr QLatin1StringView kTranslationInvalidKey { "translation.invalid_key" };
+inline constexpr QLatin1StringView kTranslationInvalidResult { "translation.invalid_result" };
 inline constexpr QLatin1StringView kDuplicatesInvalidKey { "duplicates.invalid_key" };
 inline constexpr QLatin1StringView kDuplicateTrashFailed { "duplicates.trash_failed" };
 inline constexpr QLatin1StringView kDuplicateGroupNotFound { "duplicates.group_not_found" };

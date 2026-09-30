@@ -14,6 +14,7 @@
 #include <butler/FingerprintJobHandler.h>
 #include <butler/MbMatchJobHandler.h>
 #include <butler/MojibakeJobHandler.h>
+#include <butler/TranslationJobHandler.h>
 #include <butler/VersionLinkJobHandler.h>
 #include <butler/VersionSuffixJobHandler.h>
 #include <butler/WritebackJobHandler.h>
@@ -58,6 +59,8 @@ AiContext::AiContext(core::Settings &settings, library::Database &db, library::C
     m_jobs.registerHandler(
         std::make_unique<butler::VersionSuffixJobHandler>(db, m_llm, m_prompts, clock));
     m_jobs.registerHandler(std::make_unique<butler::VersionLinkJobHandler>(db, m_prompts, clock));
+    m_jobs.registerHandler(
+        std::make_unique<butler::TranslationJobHandler>(db, m_llm, m_prompts, clock));
     m_jobs.registerHandler(
         std::make_unique<butler::ArtistMergeJobHandler>(db, m_llm, m_prompts, clock));
     m_jobs.registerHandler(std::make_unique<butler::FingerprintJobHandler>(db, clock));

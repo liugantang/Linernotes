@@ -107,6 +107,22 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME integration_TranslationSource
+    SOURCES
+        tst_TranslationSource.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+    LABELS
+        integration
+    TIMEOUT
+        60
+)
+
+linernotes_add_test(
     NAME integration_VersionSuffix
     SOURCES
         tst_VersionSuffix.cpp

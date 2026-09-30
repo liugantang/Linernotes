@@ -148,6 +148,17 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME butler_TranslationLlm
+    SOURCES
+        tst_TranslationLlm.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
     NAME butler_VersionSuffixLlm
     SOURCES
         tst_VersionSuffixLlm.cpp
