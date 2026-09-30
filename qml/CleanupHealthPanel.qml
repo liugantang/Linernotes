@@ -14,7 +14,7 @@ Rectangle {
     property bool collapsed: false
 
     readonly property bool hasCleanup: typeof AppContext !== "undefined" && AppContext && AppContext.cleanup
-    readonly property bool hasSelectedTasks: mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || albumInfoCheck.checked || versionsCheck.checked || translateCheck.checked || duplicatesCheck.checked
+    readonly property bool hasSelectedTasks: mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || versionsCheck.checked || translateCheck.checked || duplicatesCheck.checked
 
     color: Theme.surface
     border.color: Theme.divider
@@ -42,7 +42,6 @@ Rectangle {
         if (step === CleanupController.Mojibake) title = qsTr("Fixing garbled tags...")
         else if (step === CleanupController.Credit) title = qsTr("Normalizing artist credits...")
         else if (step === CleanupController.Merge) title = qsTr("Merging duplicate artists...")
-        else if (step === CleanupController.AlbumInfo) title = qsTr("Filling in album info...")
         else if (step === CleanupController.VersionSuffix) title = qsTr("Classifying title suffixes...")
         else if (step === CleanupController.VersionLink) title = qsTr("Grouping song versions...")
         else if (step === CleanupController.Translate) title = qsTr("Translating titles...")
@@ -62,7 +61,6 @@ Rectangle {
             mojibakeCheck.checked = AppContext.cleanup.mojibakeGroups > 0
             creditCheck.checked = AppContext.cleanup.creditValues > 0
             mergeCheck.checked = AppContext.cleanup.mergeClusters > 0
-            albumInfoCheck.checked = AppContext.cleanup.albumInfoAlbums > 0
             versionsCheck.checked = AppContext.cleanup.versionTracks > 0
             duplicatesCheck.checked = AppContext.cleanup.duplicateCandidates > 0
         }
@@ -75,7 +73,6 @@ Rectangle {
                 mojibakeCheck.checked = AppContext.cleanup.mojibakeGroups > 0
                 creditCheck.checked = AppContext.cleanup.creditValues > 0
                 mergeCheck.checked = AppContext.cleanup.mergeClusters > 0
-                albumInfoCheck.checked = AppContext.cleanup.albumInfoAlbums > 0
                 versionsCheck.checked = AppContext.cleanup.versionTracks > 0
                 duplicatesCheck.checked = AppContext.cleanup.duplicateCandidates > 0
             }
@@ -219,33 +216,7 @@ Rectangle {
                 Item { Layout.fillWidth: true }
             }
 
-            // Task 4: Album info
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: Theme.spacingSmall
-                Controls.AppCheckBox {
-                    id: albumInfoCheck
-                    text: qsTr("Fill in album info")
-                    enabled: hasCleanup && !AppContext.cleanup.running
-                }
-                Label {
-                    text: {
-                        if (!hasCleanup) return ""
-                        const count = AppContext.cleanup.albumInfoAlbums
-                        const tokens = AppContext.cleanup.albumInfoTokens
-                        let desc = qsTr("%n album(s) with missing info", "", count)
-                        if (tokens > 0) {
-                            desc += qsTr(" · ≈ %1 tokens").arg(tokens)
-                        }
-                        return desc
-                    }
-                    font.pixelSize: Theme.fontSizeNormal
-                    color: Theme.textSecondary
-                }
-                Item { Layout.fillWidth: true }
-            }
-
-            // Task 5: Versions
+            // Task 4: Versions
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Theme.spacingSmall
@@ -275,7 +246,7 @@ Rectangle {
                 Item { Layout.fillWidth: true }
             }
 
-            // Task 6: Translate
+            // Task 5: Translate
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Theme.spacingSmall
@@ -301,7 +272,7 @@ Rectangle {
                 Item { Layout.fillWidth: true }
             }
 
-            // Task 7: Duplicates
+            // Task 6: Duplicates
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Theme.spacingSmall
@@ -376,8 +347,8 @@ Rectangle {
                     text: qsTr("Run")
                     visible: hasCleanup && !AppContext.cleanup.running
                     enabled: root.hasSelectedTasks && hasCleanup && !AppContext.cleanup.checking
-                        && (!(mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || albumInfoCheck.checked || translateCheck.checked || (versionsCheck.checked && AppContext.cleanup.versionSuffixes > 0)) || AppContext.cleanup.llmConfigured)
-                    onClicked: if (hasCleanup) AppContext.cleanup.run(mojibakeCheck.checked, creditCheck.checked, mergeCheck.checked, albumInfoCheck.checked, versionsCheck.checked, translateCheck.checked, duplicatesCheck.checked)
+                        && (!(mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || translateCheck.checked || (versionsCheck.checked && AppContext.cleanup.versionSuffixes > 0)) || AppContext.cleanup.llmConfigured)
+                    onClicked: if (hasCleanup) AppContext.cleanup.run(mojibakeCheck.checked, creditCheck.checked, mergeCheck.checked, versionsCheck.checked, translateCheck.checked, duplicatesCheck.checked)
                 }
 
                 // Progress controls

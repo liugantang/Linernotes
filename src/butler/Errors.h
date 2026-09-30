@@ -41,12 +41,6 @@ inline constexpr QLatin1StringView kDuplicateTrashFailed { "duplicates.trash_fai
 inline constexpr QLatin1StringView kDuplicateGroupNotFound { "duplicates.group_not_found" };
 inline constexpr QLatin1StringView kDuplicateTrackNotInGroup { "duplicates.track_not_in_group" };
 
-inline constexpr QLatin1StringView kAlbumInfoInvalidKey { "album_info.invalid_key" };
-inline constexpr QLatin1StringView kAlbumInfoInvalidResult { "album_info.invalid_result" };
-inline constexpr QLatin1StringView kAlbumInfoPromptRenderFailed {
-    "album_info.prompt_render_failed"
-};
-
 inline constexpr QLatin1StringView kItunesParseFailed { "itunes.parse_failed" };
 inline constexpr QLatin1StringView kItunesInvalidResult { "itunes.invalid_result" };
 

@@ -51,6 +51,7 @@ private slots:
     void upgradesTo0017AddsCoverChecked();
     void upgradesTo0024AddsAlbumInfoChecks();
     void upgradesTo0025DropsMusicBrainz();
+    void upgradesTo0026DropsAlbumInfo();
 };
 
 void TstMigrator::appliesMigrationsInOrder()
@@ -908,6 +909,64 @@ void TstMigrator::upgradesTo0025DropsMusicBrainz()
     QVERIFY(
         checkQ.exec(QStringLiteral("SELECT name FROM sqlite_master WHERE type='table' AND name IN "
                                    "('mb_cache', 'mb_album_matches', 'mb_track_matches');")));
+    QVERIFY(!checkQ.next());
+}
+
+void TstMigrator::upgradesTo0026DropsAlbumInfo()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 26);
+
+    // Write migrations 1..25
+    for (int i = 0; i < 25; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 25);
+
+    // Insert an album and album_info_checks entry in v25 schema
+    {
+        QSqlQuery q(conn);
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO albums (id, grouping_key, title, created_at) "
+                                      "VALUES (1, 'g1', 'Album 1', 100);")));
+        QVERIFY(q.exec(QStringLiteral(
+            "INSERT INTO album_info_checks (album_id, checked_at, model, prompt_version) "
+            "VALUES (1, 1000, 'gpt-4o', 1);")));
+    }
+
+    // Add migration 26
+    const auto &m26 = allMigrations.at(25);
+    const QString fileName26
+        = QStringLiteral("%1_%2.sql").arg(m26.version, 4, 10, QLatin1Char('0')).arg(m26.name);
+    writeSqlFile(migDir.path(), fileName26, m26.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 26);
+
+    // Verify album_info_checks table is dropped
+    QSqlQuery checkQ(conn);
+    QVERIFY(checkQ.exec(QStringLiteral(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name = 'album_info_checks';")));
     QVERIFY(!checkQ.next());
 }
 

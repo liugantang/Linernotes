@@ -17,8 +17,6 @@
 #include <ai/PrivacyGuard.h>
 #include <ai/PromptLibrary.h>
 #include <ai/SecretStore.h>
-#include <butler/AlbumInfoJobHandler.h>
-#include <butler/AlbumInfoSource.h>
 #include <butler/ArtistCredit.h>
 #include <butler/ArtistCreditJobHandler.h>
 #include <butler/ArtistCreditStore.h>
@@ -54,8 +52,6 @@ using linernotes::ai::MemorySecretStore;
 using linernotes::ai::PrivacyGuard;
 using linernotes::ai::PromptLibrary;
 using linernotes::ai::UsageStore;
-using linernotes::butler::AlbumInfoJobHandler;
-using linernotes::butler::AlbumInfoSource;
 using linernotes::butler::ArtistCredit;
 using linernotes::butler::ArtistCreditJobHandler;
 using linernotes::butler::ArtistCreditStore;
@@ -271,7 +267,6 @@ private slots:
     void healthCountsMatchLibrary();
     void runExecutesStepsInOrder();
     void autoAcceptAppliesThreshold();
-    void albumInfoStepRequiresLlm();
     void duplicatesStepRuns();
     void automaticRunsRuleStepsOnly();
 };
@@ -304,7 +299,6 @@ void TstCleanupController::healthCountsMatchLibrary()
     jobs.registerHandler(std::make_unique<MojibakeJobHandler>(db, llm, prompts, clock));
     jobs.registerHandler(std::make_unique<ArtistCreditJobHandler>(db, llm, prompts, clock));
     jobs.registerHandler(std::make_unique<ArtistMergeJobHandler>(db, llm, prompts, clock));
-    jobs.registerHandler(std::make_unique<AlbumInfoJobHandler>(db, llm, prompts, clock));
 
     CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
     QCOMPARE(cleanup.isLlmConfigured(), false);
@@ -323,8 +317,6 @@ void TstCleanupController::healthCountsMatchLibrary()
     QVERIFY(cleanup.mojibakeGroups() >= 1);
     QVERIFY(cleanup.creditValues() >= 1);
     QVERIFY(cleanup.mergeClusters() >= 1);
-    QCOMPARE(cleanup.albumInfoAlbums(), 3);
-    QVERIFY(cleanup.albumInfoTokens() > 0);
 }
 
 void TstCleanupController::runExecutesStepsInOrder()
@@ -391,7 +383,7 @@ void TstCleanupController::runExecutesStepsInOrder()
 
     CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
 
-    cleanup.run(true, true, true, false, false, false, false);
+    cleanup.run(true, true, true, false, false, false);
     QCOMPARE(cleanup.isRunning(), true);
 
     QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
@@ -501,7 +493,7 @@ void TstCleanupController::autoAcceptAppliesThreshold()
     CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
     cleanup.setAutoAcceptThreshold(0.9);
 
-    cleanup.run(false, false, true, false, false, false, false);
+    cleanup.run(false, false, true, false, false, false);
     QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
 
     CorrectionStore store(db, clock);
@@ -516,56 +508,6 @@ void TstCleanupController::autoAcceptAppliesThreshold()
     const auto &corrections = correctionsRes.value();
     QCOMPARE(corrections.size(), 1);
     QCOMPARE(corrections.first().status, CorrectionStatus::Accepted);
-}
-
-void TstCleanupController::albumInfoStepRequiresLlm()
-{
-    const QTemporaryDir tempDir;
-    QVERIFY(tempDir.isValid());
-    Database db(tempDir.filePath(QStringLiteral("test_album_info_step.db")));
-    QVERIFY(db.open(Migrator()).ok());
-    const auto conn = db.connection().value();
-    populateTestLibrary(conn);
-
-    const QTemporaryDir settingsDir;
-    QVERIFY(settingsDir.isValid());
-    Settings settings(settingsDir.filePath(QStringLiteral("settings.ini")));
-    ManualClock clock(1000);
-    AiConfig aiConfig(settings);
-    PromptLibrary prompts({ QStringLiteral(":/prompts") });
-    MemorySecretStore secrets;
-    QNetworkAccessManager network;
-    LlmClient client(network);
-    LlmCache cache(db, clock);
-    UsageStore usage(db);
-    PrivacyGuard privacy(settings);
-    LlmDebugLog debugLog(settings);
-    LlmService llm(aiConfig, secrets, client, cache, usage, privacy, debugLog, clock);
-
-    JobQueue jobs(db, clock);
-    jobs.registerHandler(std::make_unique<AlbumInfoJobHandler>(db, llm, prompts, clock));
-
-    const AlbumInfoSource source(db);
-    const auto pendingRes = source.pendingAlbums();
-    QVERIFY(pendingRes.ok());
-    const auto &pendingAlbums = pendingRes.value();
-    QCOMPARE(pendingAlbums.size(), 3);
-
-    CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
-    QCOMPARE(cleanup.isLlmConfigured(), false);
-
-    // 配置 LLM 服务后立即可用
-    linernotes::ai::ServiceProfile profile;
-    profile.name = QStringLiteral("Test");
-    profile.defaultModel = QStringLiteral("test-model");
-    Q_UNUSED(aiConfig.saveService(profile));
-    QCOMPARE(cleanup.isLlmConfigured(), true);
-
-    cleanup.run(false, false, false, true, false, false, false);
-    QCOMPARE(cleanup.isRunning(), true);
-    QCOMPARE(cleanup.currentStep(), CleanupController::Step::AlbumInfo);
-
-    QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
 }
 
 void TstCleanupController::duplicatesStepRuns()
@@ -630,7 +572,7 @@ void TstCleanupController::duplicatesStepRuns()
     QCOMPARE(cleanup.duplicateCandidates(), 2);
     QCOMPARE(cleanup.fingerprintPending(), 0);
 
-    cleanup.run(false, false, false, false, false, false, true);
+    cleanup.run(false, false, false, false, false, true);
     QCOMPARE(cleanup.isRunning(), true);
 
     QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);

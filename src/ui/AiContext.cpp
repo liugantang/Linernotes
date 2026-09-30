@@ -7,7 +7,6 @@
 
 #include <QStringList>
 
-#include <butler/AlbumInfoJobHandler.h>
 #include <butler/ArtistCreditJobHandler.h>
 #include <butler/ArtistMergeJobHandler.h>
 #include <butler/DuplicateJobHandler.h>
@@ -50,8 +49,6 @@ AiContext::AiContext(core::Settings &settings, library::Database &db, const core
           m_config, m_secrets, m_client, m_privacy, m_usage, m_cache, m_prompts, clock)
     , m_debugController(m_debugLog, m_llm)
 {
-    m_jobs.registerHandler(
-        std::make_unique<butler::AlbumInfoJobHandler>(db, m_llm, m_prompts, clock));
     m_jobs.registerHandler(
         std::make_unique<butler::MojibakeJobHandler>(db, m_llm, m_prompts, clock));
     m_jobs.registerHandler(

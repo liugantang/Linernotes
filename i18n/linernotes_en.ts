@@ -72,7 +72,7 @@
 <context>
     <name>CleanupHealthPanel</name>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="178"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="175"/>
         <source>%n folder(s) with garbled tags</source>
         <translation>
             <numerusform>%n folder with garbled tags</numerusform>
@@ -87,7 +87,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="196"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="193"/>
         <source>%n artist credit(s) to check</source>
         <translation>
             <numerusform>%n artist credit to check</numerusform>
@@ -95,7 +95,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="214"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="211"/>
         <source>%n possible duplicate artist(s)</source>
         <translation>
             <numerusform>%n possible duplicate artist</numerusform>
@@ -103,9 +103,8 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="236"/>
         <source>%n album(s) with missing info</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%n album with missing info</numerusform>
             <numerusform>%n albums with missing info</numerusform>
         </translation>
@@ -125,7 +124,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="263"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="234"/>
         <source>%n track(s) to check</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -133,7 +132,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="265"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="236"/>
         <source> · %n suffix(es) for AI</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -141,7 +140,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="292"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="263"/>
         <source>%n title(s) to translate</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -149,7 +148,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="320"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="291"/>
         <source>%n candidate track(s)</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -157,7 +156,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="322"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="293"/>
         <source> · %n audio fingerprint(s) to compute</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -165,7 +164,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="325"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="296"/>
         <source> · %n group(s) found last time</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -187,7 +186,7 @@
 <context>
     <name>CorrectionBatchList</name>
     <message numerus="yes">
-        <location filename="../qml/CorrectionBatchList.qml" line="57"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="56"/>
         <source>%n batch(es)</source>
         <translation>
             <numerusform>%n batch</numerusform>
