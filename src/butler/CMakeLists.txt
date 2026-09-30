@@ -45,6 +45,10 @@ add_library(linernotes_butler STATIC
     MojibakeLlm.h
     MojibakeSource.cpp
     MojibakeSource.h
+    MusicBrainz.cpp
+    MusicBrainz.h
+    MusicBrainzClient.cpp
+    MusicBrainzClient.h
     TrackFieldTarget.h
 )
 add_library(Linernotes::butler ALIAS linernotes_butler)

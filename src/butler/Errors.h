@@ -32,6 +32,7 @@ inline constexpr QLatin1StringView kArtistMergePromptRenderFailed {
 inline constexpr QLatin1StringView kMbInvalidResponse { "mb.invalid_response" };
 inline constexpr QLatin1StringView kMbRateLimited { "mb.rate_limited" };
 inline constexpr QLatin1StringView kMbNetwork { "mb.network" };
+inline constexpr QLatin1StringView kMbNotFound { "mb.not_found" };
 inline constexpr QLatin1StringView kFingerprintInvalidKey { "fingerprint.invalid_key" };
 
 } // namespace linernotes::butler::errc

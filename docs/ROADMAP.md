@@ -333,7 +333,7 @@
 | # | 任务 |
 |---|---|
 | ✅ 7.1 | 声学指纹：Chromaprint 计算（后台任务，结果入库） |
-| 7.2 | AcoustID 查询 → MusicBrainz Recording/Release 获取；遵守速率限制（MB 1 req/s），本地缓存 |
+| ✅ 7.2 | MusicBrainz Release/Recording 文本搜索与详情获取（本阶段不做 AcoustID，指纹只用于本地去重）；遵守速率限制（MB 1 req/s），本地缓存 |
 | 7.3 | 专辑级匹配：同目录曲目作为整体匹配到一个 Release（按音轨数、时长序列打分），避免单曲各自匹配到不同专辑 |
 | 7.4 | 文本匹配兜底：无指纹结果时用“艺人+标题+时长”搜索 MB；LLM 协助判别候选 |
 | 7.5 | 补全字段：专辑、专辑艺人、年份/原始发行年份、音轨号/碟号、厂牌、MBID；封面（Cover Art Archive） |
