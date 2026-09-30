@@ -61,6 +61,8 @@ add_library(linernotes_butler STATIC
     MusicBrainz.h
     MusicBrainzClient.cpp
     MusicBrainzClient.h
+    TitleVersion.cpp
+    TitleVersion.h
     TrackFieldTarget.h
 )
 add_library(Linernotes::butler ALIAS linernotes_butler)

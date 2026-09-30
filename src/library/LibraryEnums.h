@@ -103,4 +103,17 @@ Q_ENUM_NS(CorrectionStatus)
 enum class TrackIssueKind : std::uint8_t { NeedsOnlineLookup };
 Q_ENUM_NS(TrackIssueKind)
 
+enum class VersionType : std::uint8_t {
+    Studio, // 无版本标记（录音室/原版）
+    Live,
+    Remaster,
+    Acoustic, // 含不插电、钢琴版
+    Remix, // 含 mix、extended
+    Demo,
+    Instrumental, // 含伴奏、off vocal、karaoke
+    Edit, // TV size、radio edit、single/short ver.
+    Alternate, // 其他具名版本：album ver.、english ver.、角色/solo ver.、泛指的 “xxx ver.”
+};
+Q_ENUM_NS(VersionType)
+
 } // namespace linernotes::library
