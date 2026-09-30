@@ -45,8 +45,13 @@ public:
             if (!tracksRes.ok()) {
                 return tracksRes.error();
             }
+            const auto dismissalsRes = source.loadDismissals();
+            if (!dismissalsRes.ok()) {
+                return dismissalsRes.error();
+            }
             const auto &tracks = tracksRes.value();
-            const auto groups = findDuplicates(tracks);
+            const auto &dismissals = dismissalsRes.value();
+            const auto groups = findDuplicates(tracks, dismissals);
             const auto saveRes = source.saveGroups(groups, tracks);
             if (!saveRes.ok()) {
                 return saveRes.error();

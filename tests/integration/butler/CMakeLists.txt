@@ -153,3 +153,19 @@ linernotes_add_test(
     TIMEOUT
         60
 )
+
+linernotes_add_test(
+    NAME integration_DuplicateResolver
+    SOURCES
+        tst_DuplicateResolver.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+    LABELS
+        integration
+    TIMEOUT
+        60
+)

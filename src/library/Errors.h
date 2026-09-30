@@ -30,5 +30,7 @@ inline constexpr QLatin1StringView kRatingInvalid { "rating.invalid" };
 inline constexpr QLatin1StringView kTagOverrideInvalid { "tag.override_invalid" };
 inline constexpr QLatin1StringView kCorrectionInvalid { "correction.invalid" };
 inline constexpr QLatin1StringView kCorrectionNotFound { "correction.not_found" };
+inline constexpr QLatin1StringView kTrackNotFound { "track.not_found" };
+inline constexpr QLatin1StringView kTrackMergeInvalid { "track.merge_invalid" };
 
 } // namespace linernotes::library::errc

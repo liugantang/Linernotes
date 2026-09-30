@@ -158,6 +158,33 @@ core::Result<QList<DupTrack>> DuplicateSource::loadTracks(bool withFingerprints)
     return results;
 }
 
+core::Result<QSet<QPair<qint64, qint64>>> DuplicateSource::loadDismissals() const
+{
+    auto connRes = m_db.connection();
+    if (!connRes.ok()) {
+        return connRes.error();
+    }
+    const auto &conn = connRes.value();
+
+    QSqlQuery q(conn);
+    if (!q.exec(QStringLiteral("SELECT track_a, track_b FROM duplicate_dismissals;"))) {
+        return core::Error {
+            .code = QString(library::errc::kDbQuery),
+            .message = q.lastError().text(),
+            .detail = QStringLiteral("DuplicateSource::loadDismissals query failed"),
+        };
+    }
+
+    QSet<QPair<qint64, qint64>> dismissals;
+    while (q.next()) {
+        const qint64 a = q.value(0).toLongLong();
+        const qint64 b = q.value(1).toLongLong();
+        dismissals.insert(qMakePair(std::min(a, b), std::max(a, b)));
+    }
+
+    return dismissals;
+}
+
 core::Result<QList<qint64>> DuplicateSource::fingerprintCandidates() const
 {
     const auto tracksRes = loadTracks(false);

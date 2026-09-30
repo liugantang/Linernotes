@@ -5,6 +5,8 @@
 
 #include <QHash>
 #include <QList>
+#include <QPair>
+#include <QSet>
 #include <QtGlobal>
 
 #include <butler/DuplicateFinder.h>
@@ -31,6 +33,9 @@ public:
     /// 是否有封面（files.cover_id 或所属 album 的 cover_id 非空），
     /// withFingerprints 为 true 时附上 FingerprintStore::loadAll() 的指纹，keepScore 算好。
     core::Result<QList<DupTrack>> loadTracks(bool withFingerprints = true) const;
+
+    /// 读出所有 duplicate_dismissals 中的 (track_a, track_b) 对，track_a < track_b
+    core::Result<QSet<QPair<qint64, qint64>>> loadDismissals() const;
 
     /// 需要计算声学指纹的文件：属于某个候选簇（candidateClusters）的曲目所在文件中，FingerprintStore::pendingFileIds()
     /// 里有的。升序。

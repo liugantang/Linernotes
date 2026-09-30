@@ -5,6 +5,8 @@
 
 #include <QHash>
 #include <QList>
+#include <QPair>
+#include <QSet>
 #include <QString>
 #include <QtGlobal>
 
@@ -54,13 +56,15 @@ QList<QList<qint64>> candidateClusters(const QList<DupTrack> &tracks);
 /// 识别重复：
 /// 1. 并查集。content_hash 相同（非空）的曲目两两连边（不要求同作品）。
 /// 2. 每个候选簇内：两首都有指纹且 fingerprintSimilarity ≥ kSameRecordingThreshold → 连边。
-/// 3. 每个 ≥ 2 首的连通分量成一组：所有成员 content_hash 相同 → Exact，否则 SameRecording。
-/// 4.
+/// 3. 并查集连边前，被 dismissed 的两首不连边（exact 与指纹两种边都跳过）。
+/// 4. 每个 ≥ 2 首的连通分量成一组：所有成员 content_hash 相同 → Exact，否则 SameRecording。
+/// 5.
 /// 候选簇内没有指纹的曲目（指纹缺失或计算失败）：若它不在任何已成的组里，把簇内所有未入组的曲目合成一个
-/// Suspect 组（≥ 2 首时）。
-/// 5. 每组 recommendedTrackId = keepScore 最高者（相同取 trackId 最小）。结果按组内最小 trackId
+/// Suspect 组（≥ 2 首时）。若组内所有两两组合都已被 dismiss 则不生成。
+/// 6. 每组 recommendedTrackId = keepScore 最高者（相同取 trackId 最小）。结果按组内最小 trackId
 /// 排序。
-QList<DupGroup> findDuplicates(const QList<DupTrack> &tracks);
+QList<DupGroup> findDuplicates(
+    const QList<DupTrack> &tracks, const QSet<QPair<qint64, qint64>> &dismissed = { });
 
 struct KeepFactors {
     QString codec { }; // files.codec，小写比较

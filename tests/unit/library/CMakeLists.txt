@@ -222,6 +222,15 @@ linernotes_add_test(
         Linernotes::TestSupport
 )
 
+linernotes_add_test(
+    NAME library_TrackMerge
+    SOURCES
+        tst_TrackMerge.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+)
+
 
 
 

@@ -3,6 +3,8 @@
 
 #include <QList>
 #include <QObject>
+#include <QPair>
+#include <QSet>
 #include <QTest>
 
 #include <audio/Fingerprint.h>
@@ -27,6 +29,7 @@ private slots:
     void dissimilarFingerprintsDoNotGroup();
     void missingFingerprintFormsSuspectGroup();
     void keepScoreCalculationAndRecommended();
+    void dismissedPairsAreNotGrouped();
 };
 
 void TstDuplicateFinder::clustersCandidatesByWorkVersionAndDuration()
@@ -251,6 +254,80 @@ void TstDuplicateFinder::keepScoreCalculationAndRecommended()
     const auto groups = findDuplicates({ t1, t2, t3 });
     QCOMPARE(groups.size(), 1);
     QCOMPARE(groups.first().recommendedTrackId, 1);
+}
+
+void TstDuplicateFinder::dismissedPairsAreNotGrouped()
+{
+    // 1. Exact duplicates with dismissal
+    const DupTrack t1 {
+        .trackId = 1,
+        .workId = 10,
+        .versionType = QStringLiteral("studio"),
+        .durationMs = 200000,
+        .contentHash = QStringLiteral("hash_same"),
+        .fingerprint = std::nullopt,
+        .keepScore = 100.0,
+    };
+    const DupTrack t2 {
+        .trackId = 2,
+        .workId = 10,
+        .versionType = QStringLiteral("studio"),
+        .durationMs = 200000,
+        .contentHash = QStringLiteral("hash_same"),
+        .fingerprint = std::nullopt,
+        .keepScore = 90.0,
+    };
+
+    // Without dismissal -> 1 group
+    const auto groupsWithoutDismissal = findDuplicates({ t1, t2 });
+    QCOMPARE(groupsWithoutDismissal.size(), 1);
+
+    // With dismissal (1, 2) -> 0 groups
+    const auto groupsWithDismissal = findDuplicates({ t1, t2 }, { qMakePair(1LL, 2LL) });
+    QVERIFY(groupsWithDismissal.isEmpty());
+
+    // 2. Suspect duplicates: all pairs dismissed vs partial dismissal
+    const DupTrack s1 {
+        .trackId = 10,
+        .workId = 50,
+        .versionType = QStringLiteral("studio"),
+        .durationMs = 200000,
+        .contentHash = QStringLiteral("hash_s1"),
+        .fingerprint = std::nullopt,
+        .keepScore = 100.0,
+    };
+    const DupTrack s2 {
+        .trackId = 11,
+        .workId = 50,
+        .versionType = QStringLiteral("studio"),
+        .durationMs = 200000,
+        .contentHash = QStringLiteral("hash_s2"),
+        .fingerprint = std::nullopt,
+        .keepScore = 90.0,
+    };
+    const DupTrack s3 {
+        .trackId = 12,
+        .workId = 50,
+        .versionType = QStringLiteral("studio"),
+        .durationMs = 200000,
+        .contentHash = QStringLiteral("hash_s3"),
+        .fingerprint = std::nullopt,
+        .keepScore = 80.0,
+    };
+
+    // Partial dismissal: only (10, 11) is dismissed -> suspect group with 3 tracks still formed
+    const auto partialDismissGroups = findDuplicates({ s1, s2, s3 }, { qMakePair(10LL, 11LL) });
+    QCOMPARE(partialDismissGroups.size(), 1);
+    QCOMPARE(partialDismissGroups.first().kind, DuplicateKind::Suspect);
+
+    // All pairs dismissed -> no suspect group formed
+    const QSet<QPair<qint64, qint64>> allDismissed = {
+        qMakePair(10LL, 11LL),
+        qMakePair(10LL, 12LL),
+        qMakePair(11LL, 12LL),
+    };
+    const auto allDismissGroups = findDuplicates({ s1, s2, s3 }, allDismissed);
+    QVERIFY(allDismissGroups.isEmpty());
 }
 
 } // namespace

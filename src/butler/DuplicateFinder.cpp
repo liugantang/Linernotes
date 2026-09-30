@@ -96,7 +96,16 @@ private:
     QHash<qint64, qint64> m_parent;
 };
 
-void connectExactContentHashes(DisjointSet &dsu, const QList<DupTrack> &tracks)
+bool isPairDismissed(const QSet<QPair<qint64, qint64>> &dismissed, qint64 a, qint64 b)
+{
+    if (a == b || dismissed.isEmpty()) {
+        return false;
+    }
+    return dismissed.contains(qMakePair(std::min(a, b), std::max(a, b)));
+}
+
+void connectExactContentHashes(
+    DisjointSet &dsu, const QList<DupTrack> &tracks, const QSet<QPair<qint64, qint64>> &dismissed)
 {
     QHash<QString, QList<qint64>> hashToTracks;
     for (const auto &track : tracks) {
@@ -111,10 +120,13 @@ void connectExactContentHashes(DisjointSet &dsu, const QList<DupTrack> &tracks)
     }
     for (auto it = hashToTracks.cbegin(); it != hashToTracks.cend(); ++it) {
         const auto &ids = it.value();
-        if (ids.size() >= 2) {
-            const qint64 firstId = ids.first();
-            for (qsizetype i = 1; i < ids.size(); ++i) {
-                dsu.unite(firstId, ids.at(i));
+        for (qsizetype i = 0; i < ids.size(); ++i) {
+            for (qsizetype j = i + 1; j < ids.size(); ++j) {
+                const qint64 idA = ids.at(i);
+                const qint64 idB = ids.at(j);
+                if (!isPairDismissed(dismissed, idA, idB)) {
+                    dsu.unite(idA, idB);
+                }
             }
         }
     }
@@ -130,8 +142,8 @@ const audio::RawFingerprint *fingerprintOf(const QHash<qint64, DupTrack> &trackM
     return fp.has_value() ? &fp.value() : nullptr;
 }
 
-void compareClusterFingerprints(
-    DisjointSet &dsu, const QList<QList<qint64>> &clusters, const QHash<qint64, DupTrack> &trackMap)
+void compareClusterFingerprints(DisjointSet &dsu, const QList<QList<qint64>> &clusters,
+    const QHash<qint64, DupTrack> &trackMap, const QSet<QPair<qint64, qint64>> &dismissed)
 {
     for (const auto &cluster : clusters) {
         qsizetype limit = cluster.size();
@@ -149,6 +161,9 @@ void compareClusterFingerprints(
             }
             for (qsizetype j = i + 1; j < limit; ++j) {
                 const qint64 idB = cluster.at(j);
+                if (isPairDismissed(dismissed, idA, idB)) {
+                    continue;
+                }
                 const audio::RawFingerprint *fpB = fingerprintOf(trackMap, idB);
                 if (fpB == nullptr) {
                     continue;
@@ -181,8 +196,24 @@ bool areAllContentHashesSame(const QList<qint64> &members, const QHash<qint64, D
     return true;
 }
 
+bool areAllPairsDismissed(const QList<qint64> &ids, const QSet<QPair<qint64, qint64>> &dismissed)
+{
+    if (ids.size() < 2 || dismissed.isEmpty()) {
+        return false;
+    }
+    for (qsizetype i = 0; i < ids.size(); ++i) {
+        for (qsizetype j = i + 1; j < ids.size(); ++j) {
+            if (!isPairDismissed(dismissed, ids.at(i), ids.at(j))) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 void formSuspectGroups(QList<DupGroup> &groups, QSet<qint64> &assignedTrackIds,
-    const QList<QList<qint64>> &clusters, const QHash<qint64, DupTrack> &trackMap)
+    const QList<QList<qint64>> &clusters, const QHash<qint64, DupTrack> &trackMap,
+    const QSet<QPair<qint64, qint64>> &dismissed)
 {
     for (const auto &cluster : clusters) {
         QList<qint64> unassigned;
@@ -196,7 +227,8 @@ void formSuspectGroups(QList<DupGroup> &groups, QSet<qint64> &assignedTrackIds,
                 }
             }
         }
-        if (unassigned.size() >= 2 && hasMissingFingerprint) {
+        if (unassigned.size() >= 2 && hasMissingFingerprint
+            && !areAllPairsDismissed(unassigned, dismissed)) {
             DupGroup suspectGroup;
             suspectGroup.kind = DuplicateKind::Suspect;
             suspectGroup.trackIds = unassigned;
@@ -352,7 +384,8 @@ QList<QList<qint64>> candidateClusters(const QList<DupTrack> &tracks)
     return allClusters;
 }
 
-QList<DupGroup> findDuplicates(const QList<DupTrack> &tracks)
+QList<DupGroup> findDuplicates(
+    const QList<DupTrack> &tracks, const QSet<QPair<qint64, qint64>> &dismissed)
 {
     QHash<qint64, DupTrack> trackMap;
     DisjointSet dsu;
@@ -362,11 +395,11 @@ QList<DupGroup> findDuplicates(const QList<DupTrack> &tracks)
     }
 
     // 1. Union exact content hashes
-    connectExactContentHashes(dsu, tracks);
+    connectExactContentHashes(dsu, tracks, dismissed);
 
     // 2. Candidate clusters & acoustic fingerprint comparison
     const auto clusters = candidateClusters(tracks);
-    compareClusterFingerprints(dsu, clusters, trackMap);
+    compareClusterFingerprints(dsu, clusters, trackMap, dismissed);
 
     // 3. Form Exact and SameRecording groups from connected components >= 2
     QList<DupGroup> groups;
@@ -391,7 +424,7 @@ QList<DupGroup> findDuplicates(const QList<DupTrack> &tracks)
     }
 
     // 4. Form Suspect groups for unassigned tracks with missing fingerprint in clusters
-    formSuspectGroups(groups, assignedTrackIds, clusters, trackMap);
+    formSuspectGroups(groups, assignedTrackIds, clusters, trackMap, dismissed);
 
     // 5. Assign recommendedTrackId and sort groups by smallest trackId
     assignRecommendationsAndSort(groups, trackMap);
