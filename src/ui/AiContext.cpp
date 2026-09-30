@@ -9,6 +9,7 @@
 
 #include <butler/ArtistCreditJobHandler.h>
 #include <butler/ArtistMergeJobHandler.h>
+#include <butler/FingerprintJobHandler.h>
 #include <butler/MojibakeJobHandler.h>
 
 #include <memory>
@@ -49,6 +50,7 @@ AiContext::AiContext(core::Settings &settings, library::Database &db, const core
         std::make_unique<butler::ArtistCreditJobHandler>(db, m_llm, m_prompts, clock));
     m_jobs.registerHandler(
         std::make_unique<butler::ArtistMergeJobHandler>(db, m_llm, m_prompts, clock));
+    m_jobs.registerHandler(std::make_unique<butler::FingerprintJobHandler>(db, clock));
 }
 
 void AiContext::onDatabaseReady()

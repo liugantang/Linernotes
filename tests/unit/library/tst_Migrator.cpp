@@ -46,6 +46,7 @@ private slots:
     void upgradesTo0010AddsJobs();
     void upgradesTo0011AddsButlerTables();
     void upgradesTo0012AddsCorrectionLocale();
+    void upgradesTo0015AddsFingerprintsTable();
 };
 
 void TstMigrator::appliesMigrationsInOrder()
@@ -601,6 +602,54 @@ void TstMigrator::upgradesTo0012AddsCorrectionLocale()
     QVERIFY(q.exec(QStringLiteral("SELECT locale FROM corrections WHERE id = 2;")));
     QVERIFY(q.next());
     QCOMPARE(q.value(0).toString(), QStringLiteral("en"));
+}
+
+void TstMigrator::upgradesTo0015AddsFingerprintsTable()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 15);
+
+    // Write migrations 1..14
+    for (int i = 0; i < 14; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 14);
+
+    // Add migration 15
+    const auto &m15 = allMigrations.at(14);
+    const QString fileName15
+        = QStringLiteral("%1_%2.sql").arg(m15.version, 4, 10, QLatin1Char('0')).arg(m15.name);
+    writeSqlFile(migDir.path(), fileName15, m15.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 15);
+
+    // Verify fingerprints table exists and can be queried
+    QSqlQuery q(conn);
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM fingerprints;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 0);
 }
 
 } // namespace

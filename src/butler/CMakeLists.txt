@@ -33,6 +33,8 @@ add_library(linernotes_butler STATIC
     EncodingScore.cpp
     EncodingScore.h
     Errors.h
+    FingerprintJobHandler.cpp
+    FingerprintJobHandler.h
     Mojibake.cpp
     Mojibake.h
     MojibakeAnalysis.cpp
@@ -66,10 +68,12 @@ target_link_libraries(linernotes_butler
     PUBLIC
         Linernotes::core
         Linernotes::library
+        Linernotes::audio
         Linernotes::ai
         Qt6::Core
         Qt6::Sql
         Qt6::Network
+        Qt6::Concurrent
     PRIVATE
         Linernotes::Deps::ICU
         Linernotes::Deps::Uchardet

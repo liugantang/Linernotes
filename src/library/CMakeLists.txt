@@ -23,6 +23,8 @@ add_library(linernotes_library STATIC
     Errors.h
     FileFingerprint.cpp
     FileFingerprint.h
+    FingerprintStore.cpp
+    FingerprintStore.h
     FsType.cpp
     FsType.h
     LibraryLogging.cpp

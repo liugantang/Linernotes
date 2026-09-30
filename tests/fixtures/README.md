@@ -18,6 +18,9 @@
 | `audio/tone_660_1s.flac` | FLAC / 单声道 22050 Hz | ~17 KB / 1.0 s | `generate.sh` 自行合成，CC0 | 660 Hz 正弦测试音频，用于 gapless 测试 |
 | `audio/tone_880_1s.ogg` | OGG (Vorbis) / 单声道 22050 Hz | ~5 KB / 1.0 s | `generate.sh` 自行合成，CC0 | 880 Hz 正弦测试音频 |
 | `audio/silence_5s.flac` | FLAC / 单声道 22050 Hz | ~9 KB / 5.0 s | `generate.sh` 自行合成，CC0 | 静音 5 秒测试音频，用于长时播放与导航测试 |
+| `audio/melody_8s.flac` | FLAC / 单声道 11025 Hz | ~140 KB / 8.0 s | `generate.sh` 自行合成，CC0 | 8 秒音阶旋律测试音频（FLAC 编码），用于声学指纹“同录音”测试 |
+| `audio/melody_8s.ogg` | OGG (Vorbis) / 单声道 11025 Hz | ~12 KB / 8.0 s | `generate.sh` 自行合成，CC0 | 8 秒音阶旋律测试音频（Vorbis 编码，与 melody_8s.flac 相同旋律），用于声学指纹跨编码匹配测试 |
+| `audio/other_8s.flac` | FLAC / 单声道 11025 Hz | ~148 KB / 8.0 s | `generate.sh` 自行合成，CC0 | 另一段 8 秒不同旋律测试音频，用于声学指纹“不同录音”区分测试 |
 | `audio/corrupt.flac` | 损坏文件 / 文本 | ~360 B / 0 s | `generate.sh` 自行合成，CC0 | 非法音频数据样本，用于错误处理测试 |
 | `library/mp3_id3v24_utf8.mp3` | MP3 / ID3v2.4 UTF-8 | ~10 KB / 1.0 s | `generate.py` 自行合成，CC0 | ID3v2.4 完整标签测试：中文标题、多值 ARTIST、ALBUMARTIST、ALBUM、DATE、TRACKNUMBER、DISCNUMBER、GENRE、COMPOSER、MusicBrainz IDs、ReplayGain、USLT 歌词、APIC 封面 |
 | `library/mp3_id3v23_gbk.mp3` | MP3 / ID3v2.3 (GBK as Latin-1) | ~10 KB / 1.0 s | `generate.py` 自行合成，CC0 | 乱码样本（GBK）：TIT2/TPE1/TALB 填入 Latin-1 映射的 GBK 字节。<br/>- TITLE: `晚风里的歌`<br/>- ARTIST: `林晓风`<br/>- ALBUM: `山谷的回响` |
