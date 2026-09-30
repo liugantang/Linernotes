@@ -20,6 +20,8 @@ namespace linernotes::butler {
 
 namespace {
 
+constexpr int kMaxFingerprintThreads = 4;
+
 class FingerprintJobWorker final : public QObject {
     Q_OBJECT
 public:
@@ -91,7 +93,10 @@ FingerprintJobHandler::FingerprintJobHandler(library::Database &db, const core::
     : m_db(db)
     , m_clock(clock)
 {
-    m_pool.setMaxThreadCount(std::max(1, QThread::idealThreadCount() / 2));
+    // 瓶颈是读文件而不是 CPU：曲库常在网络共享上，并发读多了反而更慢（实测 SMB 上 48
+    // 路并发不如串行）
+    m_pool.setMaxThreadCount(
+        std::clamp(QThread::idealThreadCount() / 2, 1, kMaxFingerprintThreads));
 }
 
 FingerprintJobHandler::~FingerprintJobHandler()

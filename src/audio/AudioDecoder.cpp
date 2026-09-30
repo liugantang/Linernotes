@@ -237,7 +237,6 @@ bool convertAndAppendFrame(SwrContext *swrCtx, const AVFrame *inFrame, int targe
         // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
         const std::span<const qint16> sampleSpan(
             s16, static_cast<size_t>(converted) * static_cast<size_t>(targetChannels));
-        pcmSamples.reserve(pcmSamples.size() + static_cast<qsizetype>(sampleSpan.size()));
         for (const qint16 sample : sampleSpan) {
             pcmSamples.append(sample);
         }
@@ -346,6 +345,11 @@ core::Result<PcmBuffer> AudioDecoder::decode(const QString &path, const DecodeOp
         = (options.maxDurationMs > 0) ? (options.maxDurationMs * targetSampleRate / 1000) : 0;
 
     QList<qint16> pcmSamples;
+    if (maxFrames > 0) {
+        // 一次预留到上限；逐帧按精确大小 reserve 会让 QList 放弃倍增、每帧重新分配并复制（96 kHz
+        // 长曲目慢几十倍）
+        pcmSamples.reserve(static_cast<qsizetype>(maxFrames) * targetChannels);
+    }
     const auto decodeRes = decodePackets(streamInfo.formatCtx.get(), streamInfo.audioStreamIndex,
         codecCtx.get(), swrCtx.get(), targetChannels, maxFrames, path, pcmSamples);
     if (!decodeRes.ok()) {
