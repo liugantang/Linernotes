@@ -2234,12 +2234,12 @@
     <message>
         <location filename="../qml/SettingsAppearanceSection.qml" line="189"/>
         <source>Show Chinese translations of foreign titles</source>
-        <translation type="unfinished"></translation>
+        <translation>显示外文标题的中文译名</translation>
     </message>
     <message>
         <location filename="../qml/SettingsAppearanceSection.qml" line="208"/>
         <source>Translations come from &quot;Translate foreign titles&quot; in Library Cleanup.</source>
-        <translation type="unfinished"></translation>
+        <translation>译名来自“曲库整理”中的“翻译外文标题”。</translation>
     </message>
 </context>
 <context>
