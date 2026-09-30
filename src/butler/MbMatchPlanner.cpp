@@ -4,6 +4,7 @@
 #include "MbMatchPlanner.h"
 
 #include <QHash>
+#include <QLatin1StringView>
 #include <QPair>
 
 #include <algorithm>
@@ -12,6 +13,81 @@
 namespace linernotes::butler {
 
 namespace {
+
+bool isPseudoRelease(const MbReleaseSummary &summary)
+{
+    return summary.status == QLatin1StringView("Pseudo-Release");
+}
+
+bool isBetterDuplicate(const MbReleaseSummary &candidate, const MbReleaseSummary &existing)
+{
+    if (candidate.score != existing.score) {
+        return candidate.score > existing.score;
+    }
+    return !isPseudoRelease(candidate) && isPseudoRelease(existing);
+}
+
+int trackCountTier(int trackCount, int localTrackCount)
+{
+    if (trackCount == localTrackCount) {
+        return 0;
+    }
+    if (trackCount > localTrackCount) {
+        return 1;
+    }
+    return 2;
+}
+
+bool compareCandidates(const MbReleaseSummary &a, const MbReleaseSummary &b, int localTrackCount)
+{
+    const int aTier = trackCountTier(a.trackCount, localTrackCount);
+    const int bTier = trackCountTier(b.trackCount, localTrackCount);
+    if (aTier != bTier) {
+        return aTier < bTier;
+    }
+
+    if (a.score != b.score) {
+        return a.score > b.score;
+    }
+
+    const bool aPseudo = isPseudoRelease(a);
+    const bool bPseudo = isPseudoRelease(b);
+    if (aPseudo != bPseudo) {
+        return !aPseudo;
+    }
+
+    return false;
+}
+
+QList<MbReleaseSummary> deduplicateSummaries(const QList<MbReleaseSummary> &summaries)
+{
+    QList<MbReleaseSummary> deduplicated;
+    QHash<QPair<QString, int>, int> seenMap;
+
+    for (const auto &s : summaries) {
+        if (s.score < kMinCandidateScore) {
+            continue;
+        }
+
+        if (s.releaseGroupId.isEmpty()) {
+            deduplicated.append(s);
+        } else {
+            const auto key = qMakePair(s.releaseGroupId, s.trackCount);
+            auto it = seenMap.find(key);
+            if (it == seenMap.end()) {
+                seenMap.insert(key, static_cast<int>(deduplicated.size()));
+                deduplicated.append(s);
+            } else {
+                const int existingIdx = it.value();
+                if (isBetterDuplicate(s, deduplicated.at(existingIdx))) {
+                    deduplicated.replace(existingIdx, s);
+                }
+            }
+        }
+    }
+
+    return deduplicated;
+}
 
 QHash<int, int> countDiscTracks(const MbRelease &release)
 {
@@ -190,43 +266,16 @@ void appendTrackProposals(QList<library::CorrectionProposal> &proposals,
 
 QStringList selectCandidates(const QList<MbReleaseSummary> &summaries, int localTrackCount)
 {
-    QList<MbReleaseSummary> deduplicated;
-    QHash<QPair<QString, int>, int> seenMap;
-
-    for (const auto &s : summaries) {
-        if (s.score < kMinCandidateScore) {
-            continue;
-        }
-
-        if (s.releaseGroupId.isEmpty()) {
-            deduplicated.append(s);
-        } else {
-            const auto key = qMakePair(s.releaseGroupId, s.trackCount);
-            auto it = seenMap.find(key);
-            if (it == seenMap.end()) {
-                seenMap.insert(key, static_cast<int>(deduplicated.size()));
-                deduplicated.append(s);
-            } else {
-                const int existingIdx = it.value();
-                if (s.score > deduplicated.at(existingIdx).score) {
-                    deduplicated.replace(existingIdx, s);
-                }
-            }
-        }
-    }
+    auto deduplicated = deduplicateSummaries(summaries);
 
     std::ranges::stable_sort(
         deduplicated, [localTrackCount](const MbReleaseSummary &a, const MbReleaseSummary &b) {
-            const bool aGte = a.trackCount >= localTrackCount;
-            const bool bGte = b.trackCount >= localTrackCount;
-            if (aGte != bGte) {
-                return aGte;
-            }
-            return a.score > b.score;
+            return compareCandidates(a, b, localTrackCount);
         });
 
     QStringList result;
     const int count = std::min(static_cast<int>(deduplicated.size()), kMaxDetailFetches);
+    result.reserve(count);
     for (int i = 0; i < count; ++i) {
         result.append(deduplicated.at(i).id);
     }

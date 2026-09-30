@@ -28,6 +28,7 @@
 
 namespace {
 
+using linernotes::butler::isVideoFormat;
 using linernotes::butler::luceneEscape;
 using linernotes::butler::MbFetch;
 using linernotes::butler::MusicBrainzClient;
@@ -58,10 +59,13 @@ class TstMusicBrainz : public QObject {
 
 private slots:
     void parseReleaseSearchRealFixture();
+    void parseReleaseSearchWakeupgirls();
     void parseReleaseFlowerflowerFixture();
     void parseReleaseKalafinaFixture();
+    void parseReleaseWakeupgirlsCdBluray();
     void parseRecordingSearchDaokoFixture();
     void parseRejectsInvalid();
+    void isVideoFormatHelper();
     void yearFromDateHelper();
     void luceneEscapeHelper();
     void urlBuilders();
@@ -103,6 +107,37 @@ void TstMusicBrainz::parseReleaseSearchRealFixture()
     QCOMPARE(cdRelease.primaryType, QStringLiteral("Single"));
 }
 
+void TstMusicBrainz::parseReleaseSearchWakeupgirls()
+{
+    const QByteArray json
+        = readFixture(QStringLiteral("musicbrainz/release_search_wakeupgirls.json"));
+    QVERIFY(!json.isEmpty());
+
+    const auto res = parseReleaseSearch(json);
+    QVERIFY(res.ok());
+    const auto &summaries = res.value();
+
+    // 12b65d81-dc08-4fce-915c-7fc9fa3ab374 (2CD + Blu-ray)
+    auto cdBlurayIt = std::ranges::find_if(summaries, [](const auto &s) {
+        return s.id == QStringLiteral("12b65d81-dc08-4fce-915c-7fc9fa3ab374");
+    });
+    QVERIFY(cdBlurayIt != summaries.end());
+    if (cdBlurayIt != summaries.end()) {
+        QCOMPARE(cdBlurayIt->trackCount, 46);
+        QCOMPARE(cdBlurayIt->discCount, 2);
+        QCOMPARE(cdBlurayIt->status, QStringLiteral("Official"));
+    }
+
+    // 0dee3457-012f-44e7-8556-ccf63c95ce5a (Pseudo-Release)
+    auto pseudoIt = std::ranges::find_if(summaries, [](const auto &s) {
+        return s.id == QStringLiteral("0dee3457-012f-44e7-8556-ccf63c95ce5a");
+    });
+    QVERIFY(pseudoIt != summaries.end());
+    if (pseudoIt != summaries.end()) {
+        QCOMPARE(pseudoIt->status, QStringLiteral("Pseudo-Release"));
+    }
+}
+
 void TstMusicBrainz::parseReleaseFlowerflowerFixture()
 {
     const QByteArray json
@@ -118,6 +153,7 @@ void TstMusicBrainz::parseReleaseFlowerflowerFixture()
     QCOMPARE(rel.artist, QStringLiteral("FLOWER FLOWER"));
     QCOMPARE(rel.date, QStringLiteral("2016-09-07"));
     QCOMPARE(rel.country, QStringLiteral("JP"));
+    QCOMPARE(rel.status, QStringLiteral("Official"));
     QCOMPARE(rel.originalDate, QStringLiteral("2016-09-07"));
     QCOMPARE(rel.releaseGroupId, QStringLiteral("ffb76de5-227e-4acb-9b6f-9bfc292433f8"));
     QCOMPARE(rel.primaryType, QStringLiteral("Single"));
@@ -151,6 +187,7 @@ void TstMusicBrainz::parseReleaseKalafinaFixture()
     QCOMPARE(rel.id, QStringLiteral("81b8318a-797e-425b-ad3a-f2681f610959"));
     QCOMPARE(rel.title, QStringLiteral("Kalafina All Time Best 2008–2018"));
     QCOMPARE(rel.artist, QStringLiteral("Kalafina"));
+    QCOMPARE(rel.status, QStringLiteral("Official"));
     QCOMPARE(rel.discCount, 3);
     QCOMPARE(rel.tracks.size(), 36);
 
@@ -168,6 +205,26 @@ void TstMusicBrainz::parseReleaseKalafinaFixture()
 
     QCOMPARE(rel.primaryType, QStringLiteral("Album"));
     QCOMPARE(rel.originalDate, QStringLiteral("2018-10-24"));
+}
+
+void TstMusicBrainz::parseReleaseWakeupgirlsCdBluray()
+{
+    const QByteArray json
+        = readFixture(QStringLiteral("musicbrainz/release_wakeupgirls_cd_bluray.json"));
+    QVERIFY(!json.isEmpty());
+
+    const auto res = parseRelease(json);
+    QVERIFY(res.ok());
+    const auto &rel = res.value();
+
+    QCOMPARE(rel.id, QStringLiteral("12b65d81-dc08-4fce-915c-7fc9fa3ab374"));
+    QCOMPARE(rel.status, QStringLiteral("Official"));
+    QCOMPARE(rel.discCount, 2);
+    QCOMPARE(rel.tracks.size(), 46);
+
+    const bool hasDisc3
+        = std::ranges::any_of(rel.tracks, [](const auto &t) { return t.disc == 3; });
+    QVERIFY(!hasDisc3);
 }
 
 void TstMusicBrainz::parseRecordingSearchDaokoFixture()
@@ -236,6 +293,32 @@ void TstMusicBrainz::parseRejectsInvalid()
         QVERIFY(!objRes.ok());
         QCOMPARE(objRes.error().code, QString(errc::kMbInvalidResponse));
     }
+}
+
+void TstMusicBrainz::isVideoFormatHelper()
+{
+    // Video formats -> true
+    QVERIFY(isVideoFormat(QStringLiteral("Blu-ray")));
+    QVERIFY(isVideoFormat(QStringLiteral("DVD-Video")));
+    QVERIFY(isVideoFormat(QStringLiteral("DVD")));
+    QVERIFY(isVideoFormat(QStringLiteral("Blu-ray-R")));
+    QVERIFY(isVideoFormat(QStringLiteral("HD-DVD")));
+    QVERIFY(isVideoFormat(QStringLiteral("VHS")));
+    QVERIFY(isVideoFormat(QStringLiteral("VCD")));
+    QVERIFY(isVideoFormat(QStringLiteral("SVCD")));
+    QVERIFY(isVideoFormat(QStringLiteral("LaserDisc")));
+    QVERIFY(isVideoFormat(QStringLiteral("UMD")));
+    QVERIFY(isVideoFormat(QStringLiteral("Betamax")));
+    QVERIFY(isVideoFormat(QStringLiteral("CED")));
+    QVERIFY(isVideoFormat(QStringLiteral("VHD")));
+
+    // Audio formats -> false
+    QVERIFY(!isVideoFormat(QStringLiteral("CD")));
+    QVERIFY(!isVideoFormat(QStringLiteral("Blu-spec CD")));
+    QVERIFY(!isVideoFormat(QStringLiteral("DVD-Audio")));
+    QVERIFY(!isVideoFormat(QStringLiteral("Digital Media")));
+    QVERIFY(!isVideoFormat(QStringLiteral("Vinyl")));
+    QVERIFY(!isVideoFormat(QString()));
 }
 
 void TstMusicBrainz::yearFromDateHelper()

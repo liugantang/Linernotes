@@ -17,9 +17,12 @@ inline constexpr int kMaxDetailFetches = 3;
 inline constexpr int kMinCandidateScore = 70;
 
 /// 从搜索结果选出要取详情的 release：
-/// 丢弃 score < 70 的；按 (releaseGroupId, trackCount) 去重（保留 score 最高的；releaseGroupId
-/// 为空的不去重）； 优先 trackCount >= 本地曲目数的，再按 score 降序；最多 kMaxDetailFetches(3)
-/// 个。
+/// 1. 丢弃 score < 70 的
+/// 2. 按 (releaseGroupId, trackCount) 去重（冲突时分数高者胜，同分时非伪发行胜；releaseGroupId
+/// 为空不去重）
+/// 3. 排序：音轨数档位（== 本地曲目数 > 大于本地曲目数 > 小于本地曲目数）→ score 降序 →
+/// 非伪发行优先
+/// 4. 最多取前 kMaxDetailFetches(3) 个
 [[nodiscard]] QStringList selectCandidates(
     const QList<MbReleaseSummary> &summaries, int localTrackCount);
 

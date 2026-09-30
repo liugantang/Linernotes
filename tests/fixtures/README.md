@@ -57,6 +57,8 @@
 | `musicbrainz/release_flowerflower_takaramono.json` | JSON / MusicBrainz 响应 | ~6 KB | 2026-09-30 从 musicbrainz.org/ws/2 录制，CC0 | 其中 `11ade0fa-...` 的详情，5 首，`label-info[0].label` 为 null |
 | `musicbrainz/release_kalafina_best_3cd.json` | JSON / MusicBrainz 响应 | ~31 KB | 2026-09-30 从 musicbrainz.org/ws/2 录制，CC0 | `Kalafina All Time Best 2008–2018` 3CD 版详情（3 张碟各 12 首，厂牌 SACRA MUSIC） |
 | `musicbrainz/recording_search_daoko.json` | JSON / MusicBrainz 响应 | ~12 KB | 2026-09-30 从 musicbrainz.org/ws/2 录制，CC0 | recording 搜索 `拝啓グッバイさようなら` / `DAOKO` |
+| `musicbrainz/release_search_wakeupgirls.json` | JSON / MusicBrainz 响应 | ~13 KB | 2026-09-30 从 musicbrainz.org/ws/2 录制，CC0 | release 搜索 `Wake up girls Vocal Best`（无艺人），10 条：同一 release group 下有 Pseudo-Release `0dee3457-...`（13 首）与 Official 24bit/48kHz 数字版 `1b9d7ee6-...`（13 首）同分 88，另有 46 首 2CD、50 首 2CD+Blu-ray 版 |
+| `musicbrainz/release_wakeupgirls_cd_bluray.json` | JSON / MusicBrainz 响应 | ~48 KB | 2026-09-30 从 musicbrainz.org/ws/2 录制，CC0 | `Wake Up, Best!` 2CD+Blu-ray 版 `12b65d81-...` 详情，第 3 个 media 为 Blu-ray（4 个视频条目，无时长） |
 | `coverart/release/11ade0fa-.../front-500` | JPEG 300×300 | ~2 KB | 自制（ImageMagick 渐变图），CC0 | 按 Cover Art Archive 的路径布局，作为 `file://` 基址下 FLOWER FLOWER「宝物」release 的正面封面。真实服务：`https://coverartarchive.org/release/<mbid>/front-500` 307 重定向到 archive.org 后 200；无封面时 404 |
 | `coverart/release-group/ffb76de5-.../front-500` | JPEG 300×300 | ~4 KB | 自制，CC0 | 同上，release-group 级正面封面（release 没有封面时的回退） |
 

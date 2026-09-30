@@ -7,6 +7,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QLatin1StringView>
 #include <QRegularExpression>
 #include <QUrlQuery>
 
@@ -14,9 +15,31 @@
 #include <core/Version.h>
 
 #include <algorithm>
+#include <array>
 #include <utility>
 
 namespace linernotes::butler {
+
+bool isVideoFormat(const QString &format)
+{
+    static const auto s_videoFormats = std::to_array<QLatin1StringView>({
+        QLatin1StringView("DVD"),
+        QLatin1StringView("DVD-Video"),
+        QLatin1StringView("Blu-ray"),
+        QLatin1StringView("Blu-ray-R"),
+        QLatin1StringView("HD-DVD"),
+        QLatin1StringView("VHS"),
+        QLatin1StringView("VCD"),
+        QLatin1StringView("SVCD"),
+        QLatin1StringView("LaserDisc"),
+        QLatin1StringView("UMD"),
+        QLatin1StringView("Betamax"),
+        QLatin1StringView("CED"),
+        QLatin1StringView("VHD"),
+    });
+    return std::ranges::any_of(
+        s_videoFormats, [&format](QLatin1StringView v) { return format == v; });
+}
 
 namespace {
 
@@ -55,19 +78,38 @@ MbReleaseSummary parseSummary(const QJsonObject &relObj)
     summary.artist = joinArtistCredit(relObj.value(QStringLiteral("artist-credit")));
     summary.date = relObj.value(QStringLiteral("date")).toString();
     summary.country = relObj.value(QStringLiteral("country")).toString();
+    summary.status = relObj.value(QStringLiteral("status")).toString();
     summary.trackCount = relObj.value(QStringLiteral("track-count")).toInt(0);
 
     if (relObj.contains(QStringLiteral("media"))
         && relObj.value(QStringLiteral("media")).isArray()) {
         const QJsonArray mediaArr = relObj.value(QStringLiteral("media")).toArray();
-        summary.discCount = static_cast<int>(mediaArr.size());
+        int nonVideoDiscCount = 0;
+        int nonVideoTrackSum = 0;
+        bool hasMediaTrackCount = false;
+
         for (const auto &mediaVal : mediaArr) {
-            if (mediaVal.isObject()) {
-                const QString fmt = mediaVal.toObject().value(QStringLiteral("format")).toString();
-                if (!fmt.isEmpty()) {
-                    summary.formats.append(fmt);
+            if (!mediaVal.isObject()) {
+                continue;
+            }
+            const QJsonObject mediaObj = mediaVal.toObject();
+            const QString fmt = mediaObj.value(QStringLiteral("format")).toString();
+            if (!fmt.isEmpty()) {
+                summary.formats.append(fmt);
+            }
+            if (mediaObj.contains(QStringLiteral("track-count"))) {
+                hasMediaTrackCount = true;
+            }
+            if (!isVideoFormat(fmt)) {
+                ++nonVideoDiscCount;
+                if (mediaObj.contains(QStringLiteral("track-count"))) {
+                    nonVideoTrackSum += mediaObj.value(QStringLiteral("track-count")).toInt(0);
                 }
             }
+        }
+        summary.discCount = nonVideoDiscCount;
+        if (hasMediaTrackCount) {
+            summary.trackCount = nonVideoTrackSum;
         }
     }
 
@@ -154,6 +196,11 @@ QList<MbTrack> parseMediaTracks(const QJsonArray &mediaArr, const QString &fallb
             continue;
         }
         const QJsonObject mediaObj = mediaVal.toObject();
+        const QString fmt = mediaObj.value(QStringLiteral("format")).toString();
+        if (isVideoFormat(fmt)) {
+            continue;
+        }
+
         int disc = mediaObj.value(QStringLiteral("position")).toInt(0);
         if (disc <= 0) {
             disc = static_cast<int>(mediaIdx + 1);
@@ -260,6 +307,7 @@ core::Result<MbRelease> parseRelease(const QByteArray &json)
     release.artist = joinArtistCredit(rootObj.value(QStringLiteral("artist-credit")));
     release.date = rootObj.value(QStringLiteral("date")).toString();
     release.country = rootObj.value(QStringLiteral("country")).toString();
+    release.status = rootObj.value(QStringLiteral("status")).toString();
 
     parseReleaseGroup(rootObj, release);
 
@@ -271,7 +319,16 @@ core::Result<MbRelease> parseRelease(const QByteArray &json)
     if (rootObj.contains(QStringLiteral("media"))
         && rootObj.value(QStringLiteral("media")).isArray()) {
         const QJsonArray mediaArr = rootObj.value(QStringLiteral("media")).toArray();
-        release.discCount = static_cast<int>(mediaArr.size());
+        int nonVideoDiscCount = 0;
+        for (const auto &mediaVal : mediaArr) {
+            if (mediaVal.isObject()) {
+                const QString fmt = mediaVal.toObject().value(QStringLiteral("format")).toString();
+                if (!isVideoFormat(fmt)) {
+                    ++nonVideoDiscCount;
+                }
+            }
+        }
+        release.discCount = nonVideoDiscCount;
         release.tracks = parseMediaTracks(mediaArr, release.artist);
     }
 

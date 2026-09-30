@@ -50,9 +50,26 @@ class TstMbMatchPlanner : public QObject {
 
 private slots:
     void testSelectCandidatesFlowerflower();
+    void testSelectCandidatesWakeupgirls();
     void testBuildProposalsFlowerflower();
     void testTitleNeedsOnlineProposal();
 };
+
+void TstMbMatchPlanner::testSelectCandidatesWakeupgirls()
+{
+    const QByteArray json
+        = readFixture(QStringLiteral("musicbrainz/release_search_wakeupgirls.json"));
+    QVERIFY(!json.isEmpty());
+
+    const auto searchRes = parseReleaseSearch(json);
+    QVERIFY(searchRes.ok());
+    const auto &summaries = searchRes.value();
+
+    const QStringList candidates = selectCandidates(summaries, 13);
+    QVERIFY(!candidates.isEmpty());
+    QCOMPARE(candidates.at(0), QStringLiteral("1b9d7ee6-fea3-4c7b-83b3-e807a0f379e3"));
+    QVERIFY(!candidates.contains(QStringLiteral("0dee3457-012f-44e7-8556-ccf63c95ce5a")));
+}
 
 void TstMbMatchPlanner::testSelectCandidatesFlowerflower()
 {
