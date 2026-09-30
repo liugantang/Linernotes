@@ -40,6 +40,8 @@ public:
         Merge,
         MbMatch,
         CoverArt,
+        VersionSuffix,
+        VersionLink,
     };
     Q_ENUM(Step)
 
@@ -51,9 +53,12 @@ public:
     Q_PROPERTY(int mergeClusters READ mergeClusters NOTIFY healthChanged)
     Q_PROPERTY(int mbMatchAlbums READ mbMatchAlbums NOTIFY healthChanged)
     Q_PROPERTY(int coverArtAlbums READ coverArtAlbums NOTIFY healthChanged)
+    Q_PROPERTY(int versionTracks READ versionTracks NOTIFY healthChanged)
+    Q_PROPERTY(int versionSuffixes READ versionSuffixes NOTIFY healthChanged)
     Q_PROPERTY(int mojibakeTokens READ mojibakeTokens NOTIFY healthChanged)
     Q_PROPERTY(int creditTokens READ creditTokens NOTIFY healthChanged)
     Q_PROPERTY(int mergeTokens READ mergeTokens NOTIFY healthChanged)
+    Q_PROPERTY(int versionTokens READ versionTokens NOTIFY healthChanged)
 
     // Run / Progress
     Q_PROPERTY(bool running READ isRunning NOTIFY runningChanged)
@@ -81,9 +86,12 @@ public:
     [[nodiscard]] int mergeClusters() const;
     [[nodiscard]] int mbMatchAlbums() const;
     [[nodiscard]] int coverArtAlbums() const;
+    [[nodiscard]] int versionTracks() const;
+    [[nodiscard]] int versionSuffixes() const;
     [[nodiscard]] int mojibakeTokens() const;
     [[nodiscard]] int creditTokens() const;
     [[nodiscard]] int mergeTokens() const;
+    [[nodiscard]] int versionTokens() const;
 
     [[nodiscard]] bool isRunning() const;
     [[nodiscard]] Step currentStep() const;
@@ -98,7 +106,7 @@ public:
     [[nodiscard]] bool isLlmConfigured() const;
 
     Q_INVOKABLE void checkHealth();
-    Q_INVOKABLE void run(bool mojibake, bool credit, bool merge, bool mbMatch);
+    Q_INVOKABLE void run(bool mojibake, bool credit, bool merge, bool mbMatch, bool versions);
     Q_INVOKABLE void pause();
     Q_INVOKABLE void resume();
     Q_INVOKABLE void cancel();
@@ -127,6 +135,9 @@ private:
         QStringList mbMatchItems;
         int coverArtAlbums = 0;
         QStringList coverArtItems;
+        int versionTracks = 0;
+        int versionSuffixes = 0;
+        QStringList versionSuffixItems;
     };
 
     struct StepItemData {
@@ -156,9 +167,12 @@ private:
     int m_mergeClusters = 0;
     int m_mbMatchAlbums = 0;
     int m_coverArtAlbums = 0;
+    int m_versionTracks = 0;
+    int m_versionSuffixes = 0;
     int m_mojibakeTokens = 0;
     int m_creditTokens = 0;
     int m_mergeTokens = 0;
+    int m_versionTokens = 0;
     QFutureWatcher<HealthReportData> m_healthWatcher;
 
     bool m_running = false;

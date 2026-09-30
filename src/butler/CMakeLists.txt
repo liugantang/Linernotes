@@ -64,6 +64,10 @@ add_library(linernotes_butler STATIC
     TitleVersion.cpp
     TitleVersion.h
     TrackFieldTarget.h
+    VersionLinkJobHandler.cpp
+    VersionLinkJobHandler.h
+    VersionLinker.cpp
+    VersionLinker.h
     VersionSuffixJobHandler.cpp
     VersionSuffixJobHandler.h
     VersionSuffixLlm.cpp

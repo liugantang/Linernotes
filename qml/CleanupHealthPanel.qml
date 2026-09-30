@@ -14,7 +14,7 @@ Rectangle {
     property bool collapsed: false
 
     readonly property bool hasCleanup: typeof AppContext !== "undefined" && AppContext && AppContext.cleanup
-    readonly property bool hasSelectedTasks: mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || mbMatchCheck.checked
+    readonly property bool hasSelectedTasks: mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || mbMatchCheck.checked || versionsCheck.checked
 
     color: Theme.surface
     border.color: Theme.divider
@@ -43,6 +43,8 @@ Rectangle {
         if (step === CleanupController.Merge) return qsTr("Merging duplicate artists...")
         if (step === CleanupController.MbMatch) return qsTr("Looking up MusicBrainz...")
         if (step === CleanupController.CoverArt) return qsTr("Downloading covers...")
+        if (step === CleanupController.VersionSuffix) return qsTr("Classifying title suffixes...")
+        if (step === CleanupController.VersionLink) return qsTr("Grouping song versions...")
         return qsTr("Cleaning up library...")
     }
 
@@ -53,6 +55,7 @@ Rectangle {
             creditCheck.checked = AppContext.cleanup.creditValues > 0
             mergeCheck.checked = AppContext.cleanup.mergeClusters > 0
             mbMatchCheck.checked = AppContext.cleanup.mbMatchAlbums > 0
+            versionsCheck.checked = AppContext.cleanup.versionTracks > 0
         }
     }
 
@@ -64,6 +67,7 @@ Rectangle {
                 creditCheck.checked = AppContext.cleanup.creditValues > 0
                 mergeCheck.checked = AppContext.cleanup.mergeClusters > 0
                 mbMatchCheck.checked = AppContext.cleanup.mbMatchAlbums > 0
+                versionsCheck.checked = AppContext.cleanup.versionTracks > 0
             }
         }
         function onAutoAcceptThresholdChanged() {
@@ -233,6 +237,36 @@ Rectangle {
                 Item { Layout.fillWidth: true }
             }
 
+            // Task 5: Versions
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Theme.spacingSmall
+                Controls.AppCheckBox {
+                    id: versionsCheck
+                    text: qsTr("Identify song versions")
+                    enabled: hasCleanup && !AppContext.cleanup.running
+                }
+                Label {
+                    text: {
+                        if (!hasCleanup) return ""
+                        const tracks = AppContext.cleanup.versionTracks
+                        const suffixes = AppContext.cleanup.versionSuffixes
+                        const tokens = AppContext.cleanup.versionTokens
+                        let desc = qsTr("%n track(s) to check", "", tracks)
+                        if (suffixes > 0) {
+                            desc += qsTr(" · %n suffix(es) for AI", "", suffixes)
+                            if (tokens > 0) {
+                                desc += qsTr(" · ≈ %1 tokens").arg(tokens)
+                            }
+                        }
+                        return desc
+                    }
+                    font.pixelSize: Theme.fontSizeNormal
+                    color: Theme.textSecondary
+                }
+                Item { Layout.fillWidth: true }
+            }
+
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
@@ -274,8 +308,8 @@ Rectangle {
                     text: qsTr("Run")
                     visible: hasCleanup && !AppContext.cleanup.running
                     enabled: root.hasSelectedTasks && hasCleanup && !AppContext.cleanup.checking
-                        && (!(mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked) || AppContext.cleanup.llmConfigured)
-                    onClicked: if (hasCleanup) AppContext.cleanup.run(mojibakeCheck.checked, creditCheck.checked, mergeCheck.checked, mbMatchCheck.checked)
+                        && (!(mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || (versionsCheck.checked && AppContext.cleanup.versionSuffixes > 0)) || AppContext.cleanup.llmConfigured)
+                    onClicked: if (hasCleanup) AppContext.cleanup.run(mojibakeCheck.checked, creditCheck.checked, mergeCheck.checked, mbMatchCheck.checked, versionsCheck.checked)
                 }
 
                 // Progress controls

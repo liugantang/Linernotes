@@ -325,7 +325,7 @@ void TstCleanupController::runExecutesStepsInOrder()
 
     CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
 
-    cleanup.run(true, true, true, false);
+    cleanup.run(true, true, true, false, false);
     QCOMPARE(cleanup.isRunning(), true);
 
     QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
@@ -435,7 +435,7 @@ void TstCleanupController::autoAcceptAppliesThreshold()
     CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
     cleanup.setAutoAcceptThreshold(0.9);
 
-    cleanup.run(false, false, true, false);
+    cleanup.run(false, false, true, false, false);
     QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
 
     CorrectionStore store(db, clock);
@@ -505,7 +505,7 @@ void TstCleanupController::mbMatchStepRunsWithoutLlm()
     CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
     QCOMPARE(cleanup.isLlmConfigured(), false);
 
-    cleanup.run(false, false, false, true);
+    cleanup.run(false, false, false, true, false);
     QCOMPARE(cleanup.isRunning(), true);
 
     QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);

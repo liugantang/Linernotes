@@ -412,6 +412,16 @@
     </message>
     <message>
         <location filename="../qml/CleanupHealthPanel.qml" line="46"/>
+        <source>Classifying title suffixes...</source>
+        <translation>正在判断标题后缀…</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="47"/>
+        <source>Grouping song versions...</source>
+        <translation>正在归并歌曲版本…</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="48"/>
         <source>Cleaning up library...</source>
         <translation>正在整理曲库…</translation>
     </message>
@@ -530,7 +540,26 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="249"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="244"/>
+        <source>Identify song versions</source>
+        <translation>识别歌曲版本</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="252"/>
+        <source>%n track(s) to check</source>
+        <translation>
+            <numerusform>%n 首歌曲待识别</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="254"/>
+        <source> · %n suffix(es) for AI</source>
+        <translation>
+            <numerusform> · %n 种后缀需 AI 判断</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="279"/>
         <source>Auto-accept:</source>
         <translation>自动接受：</translation>
     </message>

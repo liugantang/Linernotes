@@ -20,6 +20,8 @@
 #include <butler/CoverArtSource.h>
 #include <butler/MbMatchSource.h>
 #include <butler/MojibakeSource.h>
+#include <butler/VersionLinker.h>
+#include <butler/VersionSuffixSource.h>
 #include <core/Clock.h>
 #include <core/Settings.h>
 #include <library/CorrectionStore.h>
@@ -96,8 +98,26 @@ QStringList collectStepItems(library::Database &db, CleanupController::Step step
                 items.append(QString::number(id));
             }
         }
+    } else if (step == Step::VersionSuffix) {
+        const butler::VersionSuffixSource src(db);
+        if (auto r = src.findItems(promptVersion); r.ok()) {
+            items = r.value();
+        }
+    } else if (step == Step::VersionLink) {
+        items = QStringList { QStringLiteral("all") };
     }
     return items;
+}
+
+int loadPromptVersion(const ai::PromptLibrary &prompts, const QString &name)
+{
+    const auto promptRes = prompts.load(name);
+    if (!promptRes.ok()) {
+        qCWarning(lcUi, "Failed to load %s prompt: %s", qPrintable(name),
+            qPrintable(promptRes.error().toString()));
+        return 0;
+    }
+    return promptRes.value().version;
 }
 
 } // namespace
@@ -166,6 +186,16 @@ int CleanupController::coverArtAlbums() const
     return m_coverArtAlbums;
 }
 
+int CleanupController::versionTracks() const
+{
+    return m_versionTracks;
+}
+
+int CleanupController::versionSuffixes() const
+{
+    return m_versionSuffixes;
+}
+
 int CleanupController::mojibakeTokens() const
 {
     return m_mojibakeTokens;
@@ -179,6 +209,11 @@ int CleanupController::creditTokens() const
 int CleanupController::mergeTokens() const
 {
     return m_mergeTokens;
+}
+
+int CleanupController::versionTokens() const
+{
+    return m_versionTokens;
 }
 
 bool CleanupController::isRunning() const
@@ -257,16 +292,13 @@ void CleanupController::checkHealth()
     m_checking = true;
     emit checkingChanged();
 
-    int promptVersion = 0;
-    if (const auto promptRes = m_prompts.load(QStringLiteral("cleanup/artist_credit"));
-        promptRes.ok()) {
-        promptVersion = promptRes.value().version;
-    } else {
-        qCWarning(lcUi, "Failed to load cleanup/artist_credit prompt: %s",
-            qPrintable(promptRes.error().toString()));
-    }
+    const int creditPromptVersion
+        = loadPromptVersion(m_prompts, QStringLiteral("cleanup/artist_credit"));
+    const int versionPromptVersion
+        = loadPromptVersion(m_prompts, QStringLiteral("cleanup/version_suffix"));
 
-    auto future = QtConcurrent::run([&db = m_db, promptVersion]() -> HealthReportData {
+    auto future = QtConcurrent::run([&db = m_db, &clock = m_clock, creditPromptVersion,
+                                        versionPromptVersion]() -> HealthReportData {
         HealthReportData report;
 
         const butler::MojibakeSource mojibakeSource(db);
@@ -276,7 +308,7 @@ void CleanupController::checkHealth()
         }
 
         const butler::ArtistCreditSource creditSource(db);
-        if (auto res = creditSource.findItems(promptVersion); res.ok()) {
+        if (auto res = creditSource.findItems(creditPromptVersion); res.ok()) {
             report.creditItems = res.value();
             report.creditValues = countCreditValues(report.creditItems);
         }
@@ -303,6 +335,19 @@ void CleanupController::checkHealth()
             report.coverArtAlbums = static_cast<int>(report.coverArtItems.size());
         }
 
+        const butler::VersionLinker versionLinker(db, clock);
+        if (auto res = versionLinker.countPending(); res.ok()) {
+            report.versionTracks = res.value();
+        }
+
+        const butler::VersionSuffixSource versionSuffixSource(db);
+        if (auto res = versionSuffixSource.findItems(versionPromptVersion); res.ok()) {
+            report.versionSuffixItems = res.value();
+        }
+        if (auto res = versionSuffixSource.countPending(versionPromptVersion); res.ok()) {
+            report.versionSuffixes = res.value();
+        }
+
         return report;
     });
 
@@ -317,6 +362,8 @@ void CleanupController::onHealthCheckFinished()
     m_mergeClusters = data.mergeClusters;
     m_mbMatchAlbums = data.mbMatchAlbums;
     m_coverArtAlbums = data.coverArtAlbums;
+    m_versionTracks = data.versionTracks;
+    m_versionSuffixes = data.versionSuffixes;
 
     if (auto est = m_jobs.estimate(QStringLiteral("butler.mojibake"), data.mojibakeItems);
         est.ok()) {
@@ -339,13 +386,21 @@ void CleanupController::onHealthCheckFinished()
         m_mergeTokens = 0;
     }
 
+    if (auto est
+        = m_jobs.estimate(QStringLiteral("butler.version_suffix"), data.versionSuffixItems);
+        est.ok()) {
+        m_versionTokens = est.value().promptTokens + est.value().completionTokens;
+    } else {
+        m_versionTokens = 0;
+    }
+
     m_healthReady = true;
     m_checking = false;
     emit checkingChanged();
     emit healthChanged();
 }
 
-void CleanupController::run(bool mojibake, bool credit, bool merge, bool mbMatch)
+void CleanupController::run(bool mojibake, bool credit, bool merge, bool mbMatch, bool versions)
 {
     if (m_running) {
         return;
@@ -364,6 +419,10 @@ void CleanupController::run(bool mojibake, bool credit, bool merge, bool mbMatch
     if (mbMatch) {
         m_pendingSteps.append(Step::MbMatch);
         m_pendingSteps.append(Step::CoverArt);
+    }
+    if (versions) {
+        m_pendingSteps.append(Step::VersionSuffix);
+        m_pendingSteps.append(Step::VersionLink);
     }
 
     if (m_pendingSteps.isEmpty()) {
@@ -412,6 +471,14 @@ void CleanupController::startNextStep()
             promptVersion = promptRes.value().version;
         } else {
             qCWarning(lcUi, "Failed to load cleanup/artist_credit prompt: %s",
+                qPrintable(promptRes.error().toString()));
+        }
+    } else if (step == Step::VersionSuffix) {
+        if (const auto promptRes = m_prompts.load(QStringLiteral("cleanup/version_suffix"));
+            promptRes.ok()) {
+            promptVersion = promptRes.value().version;
+        } else {
+            qCWarning(lcUi, "Failed to load cleanup/version_suffix prompt: %s",
                 qPrintable(promptRes.error().toString()));
         }
     }
@@ -471,6 +538,14 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
     case Step::CoverArt:
         jobKind = QStringLiteral("butler.cover_art");
         title = QStringLiteral("Download covers");
+        break;
+    case Step::VersionSuffix:
+        jobKind = QStringLiteral("butler.version_suffix");
+        title = QStringLiteral("Classify title suffixes");
+        break;
+    case Step::VersionLink:
+        jobKind = QStringLiteral("butler.version_link");
+        title = QStringLiteral("Group song versions");
         break;
     case Step::None:
     default:
