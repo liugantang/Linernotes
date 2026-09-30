@@ -71,7 +71,7 @@
 | F-BUT-01 | **乱码修复**：检测 GBK/Big5/Shift-JIS/EUC-KR 被误读为 Latin-1 的 mojibake，自动给出修复候选；规则优先，疑难项交给 LLM | P0 |
 | F-BUT-02 | **艺人归一**：把「周杰伦 / Jay Chou / 周杰倫」合并为同一艺人实体，保留别名；可选择显示名（原文/中文/英文/简体） | P0 |
 | F-BUT-03 | 多艺人拆分：识别 `A feat. B`、`A & B`、`A、B`、`A / B` 等并拆分为多值，但不误拆「Simon & Garfunkel」这类组合名 | P1 |
-| F-BUT-04 | **元数据补全**：以专辑为单位由 LLM 根据目录名、文件名与现有标签补全年份、专辑艺人、音轨号/碟号、总数等；来自模型知识的值需审核；只补空字段（不依赖 MusicBrainz，见 decisions/0005） | P0 |
+| F-BUT-04 | **元数据补全**：补全年份、专辑艺人、音轨号/碟号等缺失字段，只补空字段。**暂不提供**：MusicBrainz 慢且不稳定，LLM 凭记忆补年份不可靠（见 decisions/0005 及其修订）；封面见 F-LIB-04 | P2 |
 | F-BUT-05 | **版本识别**：识别录音室版、Live、Remaster、Acoustic、Remix、Demo、Instrumental、伴奏、单曲版/专辑版，并归入同一「作品」 | P1 |
 | F-BUT-06 | **重复识别**：完全重复（相同 hash）、同录音不同编码（指纹相同）、疑似重复；给出保留建议（按音质、标签完整度） | P1 |
 | F-BUT-07 | **翻译**：外文歌名/专辑名翻译为用户语言，作为附加字段显示，不覆盖原名 | P1 |
@@ -196,7 +196,7 @@
 | 标签 | TagLib 2.x | 读写 |
 | 编码检测 | uchardet + ICU（转码、简繁、拼音辅助） | |
 | 数据库 | SQLite（QtSql 或直接 sqlite3）、FTS5；向量先用内存暴力检索，规模大时再上 sqlite-vec | 10 万 × 512 维 float ≈ 200 MB，可用 float16/int8 量化 |
-| 指纹 | Chromaprint（本地重复识别）；元数据补全由 LLM 完成，封面按需查 iTunes Search（不接 MusicBrainz / AcoustID，见 decisions/0005） | |
+| 指纹 | Chromaprint（本地重复识别）；封面按需查 iTunes Search；暂不做在线元数据补全（不接 MusicBrainz / AcoustID，见 decisions/0005） | |
 | 音频分析 | FFmpeg（解码/重采样）、libebur128（响度）、BPM/调性算法（自实现或 Essentia/aubio） | |
 | 音频理解 | 待阶段 9 评测决定。候选：CLAP 类文本-音频模型；Essentia 预训练分类模型（乐器/情绪/流派）；传统特征（响度/BPM/频谱）。推理倾向 ONNX Runtime | 备选：Python sidecar 进程 |
 | LLM | 自研轻量 OpenAI 兼容客户端（QNetworkAccessManager + SSE） | 不引入重型 SDK |
