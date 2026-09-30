@@ -10,6 +10,7 @@
 #include <QTimer>
 #include <QUrl>
 
+#include <butler/DuplicateResolver.h>
 #include <core/Clock.h>
 #include <core/Result.h>
 #include <library/CoverStore.h>
@@ -21,6 +22,7 @@
 #include <ui/AiSettingsController.h>
 #include <ui/CleanupController.h>
 #include <ui/CorrectionReviewController.h>
+#include <ui/DuplicateController.h>
 #include <ui/LibraryActions.h>
 #include <ui/LibraryRootsModel.h>
 #include <ui/LlmDebugController.h>
@@ -70,6 +72,7 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::TagEditorModel *tagEditor READ tagEditor CONSTANT)
     Q_PROPERTY(linernotes::ui::CorrectionReviewController *review READ review CONSTANT)
     Q_PROPERTY(linernotes::ui::CleanupController *cleanup READ cleanup CONSTANT)
+    Q_PROPERTY(linernotes::ui::DuplicateController *duplicates READ duplicates CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
     Q_PROPERTY(QString startupError READ startupError NOTIFY startupErrorChanged)
     Q_PROPERTY(bool scanning READ isScanning NOTIFY scanningChanged)
@@ -114,6 +117,7 @@ public:
     [[nodiscard]] TagEditorModel *tagEditor();
     [[nodiscard]] CorrectionReviewController *review();
     [[nodiscard]] CleanupController *cleanup();
+    [[nodiscard]] DuplicateController *duplicates();
     [[nodiscard]] library::Database &database();
     [[nodiscard]] const library::Database &database() const;
     [[nodiscard]] library::CoverStore *coverStore();
@@ -141,6 +145,8 @@ private:
     library::CoverStore m_coverStore;
     AiContext m_ai;
     CleanupController m_cleanup;
+    butler::SystemFileTrash m_trash;
+    DuplicateController m_duplicates;
     library::PlayStats m_playStats;
     TagEditorModel m_tagEditor;
     CorrectionReviewController m_review;

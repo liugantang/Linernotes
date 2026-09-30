@@ -102,6 +102,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS CorrectionActionBar.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/DuplicatePanel.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS DuplicatePanel.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/pages/SettingsPage.qml
     PROPERTIES
         QT_RESOURCE_ALIAS pages/SettingsPage.qml
@@ -621,6 +626,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/CorrectionList.qml
         ${CMAKE_SOURCE_DIR}/qml/CorrectionRowItem.qml
         ${CMAKE_SOURCE_DIR}/qml/CorrectionActionBar.qml
+        ${CMAKE_SOURCE_DIR}/qml/DuplicatePanel.qml
         ${CMAKE_SOURCE_DIR}/qml/CleanupHealthPanel.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/TracksPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/AlbumsPage.qml

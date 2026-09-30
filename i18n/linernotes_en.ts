@@ -246,6 +246,25 @@
     </message>
 </context>
 <context>
+    <name>DuplicatePanel</name>
+    <message numerus="yes">
+        <location filename="../qml/DuplicatePanel.qml" line="398"/>
+        <source>Move %n extra file(s) to the trash?</source>
+        <translation>
+            <numerusform>Move %n extra file to the trash?</numerusform>
+            <numerusform>Move %n extra files to the trash?</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/DuplicatePanel.qml" line="162"/>
+        <source>%n duplicate(s)</source>
+        <translation>
+            <numerusform>%n duplicate</numerusform>
+            <numerusform>%n duplicates</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>linernotes::ui::CorrectionReviewController</name>
     <message numerus="yes">
         <location filename="../src/ui/CorrectionReviewController.cpp" line="114"/>
@@ -263,6 +282,17 @@
         <translation>
             <numerusform>%n skipped because the artist or track no longer exists.</numerusform>
             <numerusform>%n skipped because the artist or track no longer exists.</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>linernotes::ui::DuplicateController</name>
+    <message numerus="yes">
+        <location filename="../src/ui/DuplicateController.cpp" line="489"/>
+        <source>%n file(s) could not be moved to the trash</source>
+        <translation>
+            <numerusform>%n file could not be moved to the trash</numerusform>
+            <numerusform>%n files could not be moved to the trash</numerusform>
         </translation>
     </message>
 </context>

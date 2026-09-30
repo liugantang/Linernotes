@@ -659,13 +659,98 @@
     </message>
     <message>
         <location filename="../qml/pages/CleanupPage.qml" line="158"/>
+        <source>Correction Batches</source>
+        <translation>修正批次</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/CleanupPage.qml" line="164"/>
+        <source>Duplicate Songs (%1)</source>
+        <translation>重复歌曲 (%1)</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/CleanupPage.qml" line="196"/>
         <source>No Cleanup Batches</source>
         <translation>暂无整理批次</translation>
     </message>
     <message>
-        <location filename="../qml/pages/CleanupPage.qml" line="166"/>
+        <location filename="../qml/pages/CleanupPage.qml" line="204"/>
         <source>No cleanup batches yet. Run a library cleanup to see proposed fixes here.</source>
         <translation>还没有整理批次。运行一次曲库整理后，建议的修正会显示在这里。</translation>
+    </message>
+</context>
+<context>
+    <name>DuplicatePanel</name>
+    <message>
+        <location filename="../qml/DuplicatePanel.qml" line="27"/>
+        <source>Extra copies are moved to the system trash; play history, favorites and playlists move to the kept copy.</source>
+        <translation>多余的文件会移入系统回收站，播放记录、收藏和歌单会迁移到保留的那份。</translation>
+    </message>
+    <message>
+        <location filename="../qml/DuplicatePanel.qml" line="34"/>
+        <location filename="../qml/DuplicatePanel.qml" line="391"/>
+        <source>Keep all recommended</source>
+        <translation>全部按推荐保留</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/DuplicatePanel.qml" line="398"/>
+        <source>Move %n extra file(s) to the trash?</source>
+        <translation>
+            <numerusform>将 %n 个多余文件移入回收站？</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/DuplicatePanel.qml" line="81"/>
+        <source>Processing duplicates...</source>
+        <translation>正在处理重复歌曲...</translation>
+    </message>
+    <message>
+        <location filename="../qml/DuplicatePanel.qml" line="108"/>
+        <source>No duplicates found. Run &quot;Find duplicate songs&quot; above.</source>
+        <translation>没有发现重复。请先运行上方的“查找重复歌曲”。</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/DuplicatePanel.qml" line="162"/>
+        <source>%n duplicate(s)</source>
+        <translation>
+            <numerusform>%n 组重复</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/DuplicatePanel.qml" line="216"/>
+        <location filename="../qml/DuplicatePanel.qml" line="337"/>
+        <source>Recommended</source>
+        <translation>推荐保留</translation>
+    </message>
+    <message>
+        <location filename="../qml/DuplicatePanel.qml" line="245"/>
+        <source>Keep this album</source>
+        <translation>保留这张专辑</translation>
+    </message>
+    <message>
+        <location filename="../qml/DuplicatePanel.qml" line="262"/>
+        <source>Not duplicates</source>
+        <translation>不是重复</translation>
+    </message>
+    <message>
+        <location filename="../qml/DuplicatePanel.qml" line="275"/>
+        <source>Hide details</source>
+        <translation>收起明细</translation>
+    </message>
+    <message>
+        <location filename="../qml/DuplicatePanel.qml" line="275"/>
+        <source>Show details</source>
+        <translation>展开明细</translation>
+    </message>
+    <message>
+        <location filename="../qml/DuplicatePanel.qml" line="346"/>
+        <location filename="../qml/DuplicatePanel.qml" line="419"/>
+        <source>Keep</source>
+        <translation>保留</translation>
+    </message>
+    <message>
+        <location filename="../qml/DuplicatePanel.qml" line="414"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
     </message>
 </context>
 <context>
@@ -3109,6 +3194,16 @@
         <source>%n skipped because the artist or track no longer exists.</source>
         <translation>
             <numerusform>%n 条因艺人或曲目已不存在而跳过。</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>linernotes::ui::DuplicateController</name>
+    <message numerus="yes">
+        <location filename="../src/ui/DuplicateController.cpp" line="489"/>
+        <source>%n file(s) could not be moved to the trash</source>
+        <translation>
+            <numerusform>%n 个文件无法移入回收站</numerusform>
         </translation>
     </message>
 </context>

@@ -37,6 +37,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_coverStore(m_options.coverCacheDir)
     , m_ai(m_settings, m_db, m_coverStore, m_clock, m_options.promptsDir)
     , m_cleanup(m_db, m_clock, m_ai.jobs(), m_ai.prompts(), m_ai.config(), m_settings)
+    , m_duplicates(m_db, m_clock, m_trash)
     , m_playStats(m_db)
     , m_tagEditor(m_db)
     , m_review(m_db, m_clock)
@@ -56,6 +57,8 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     connect(&m_tagEditor, &TagEditorModel::saved, this, &AppContext::libraryChanged);
     connect(
         &m_review, &CorrectionReviewController::libraryModified, this, &AppContext::libraryChanged);
+    connect(
+        &m_duplicates, &DuplicateController::libraryModified, this, &AppContext::libraryChanged);
     connect(&m_cleanup, &CleanupController::batchesChanged, &m_review,
         &CorrectionReviewController::refresh);
     connect(&m_cleanup, &CleanupController::batchesChanged, this, &AppContext::libraryChanged);
@@ -170,6 +173,7 @@ core::Result<void> AppContext::start()
     m_search.refresh();
     m_playlists.refresh();
     m_roots.refresh();
+    m_duplicates.refresh();
 
     library::Scanner::Options scannerOpts;
     scannerOpts.coverStore = &m_coverStore;
@@ -305,6 +309,11 @@ CorrectionReviewController *AppContext::review()
 CleanupController *AppContext::cleanup()
 {
     return &m_cleanup;
+}
+
+DuplicateController *AppContext::duplicates()
+{
+    return &m_duplicates;
 }
 
 library::Database &AppContext::database()

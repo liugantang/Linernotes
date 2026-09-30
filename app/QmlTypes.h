@@ -23,6 +23,7 @@
 #include <ui/CorrectionBatchModel.h>
 #include <ui/CorrectionListModel.h>
 #include <ui/CorrectionReviewController.h>
+#include <ui/DuplicateController.h>
 #include <ui/LibraryActions.h>
 #include <ui/LibraryRootsModel.h>
 #include <ui/LlmDebugController.h>
@@ -267,4 +268,18 @@ struct CleanupControllerForeign {
     QML_FOREIGN(linernotes::ui::CleanupController)
     QML_NAMED_ELEMENT(CleanupController)
     QML_UNCREATABLE("CleanupController is managed by AppContext")
+};
+
+struct DuplicateControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::DuplicateController)
+    QML_NAMED_ELEMENT(DuplicateController)
+    QML_UNCREATABLE("DuplicateController is managed by AppContext")
+};
+
+struct DuplicateSectionModelForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::DuplicateSectionModel)
+    QML_NAMED_ELEMENT(DuplicateSectionModel)
+    QML_UNCREATABLE("DuplicateSectionModel is managed by DuplicateController")
 };
