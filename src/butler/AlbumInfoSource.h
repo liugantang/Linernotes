@@ -50,8 +50,9 @@ class AlbumInfoSource {
 public:
     explicit AlbumInfoSource(library::Database &db);
 
-    // 至少一首曲目 effective 值中上述任一字段为空（Title 仅 needs_online），且没有
-    // album_info_checks 行；按 id 升序
+    // 至少一首曲目的 artist / album_artist / year / track_number 为空或标题 needs_online，且没有
+    // album_info_checks 行；按 id 升序。只缺碟号与总数的专辑不入选（真实曲库约三成专辑只缺这些，
+    // 为此调用 LLM 不划算），入选专辑的碟号与总数会一并补全
     [[nodiscard]] core::Result<QList<qint64>> pendingAlbums() const;
     [[nodiscard]] core::Result<QList<QPair<qint64, int>>> pendingAlbumTrackCounts() const;
     [[nodiscard]] core::Result<QList<AlbumInfoInput>> load(const QList<qint64> &albumIds) const;

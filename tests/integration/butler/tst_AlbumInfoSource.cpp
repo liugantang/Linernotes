@@ -137,7 +137,8 @@ void TstAlbumInfoSource::pendingAlbumsFilteringAndMarkChecked()
     TestDbHelper::insertRawTag(conn, t2, QStringLiteral("ALBUMARTIST"), QStringLiteral("Artist 2"));
     TestDbHelper::insertRawTag(conn, t2, QStringLiteral("DATE"), QStringLiteral("2020"));
     TestDbHelper::insertRawTag(conn, t2, QStringLiteral("TRACKNUMBER"), QStringLiteral("1/1"));
-    TestDbHelper::insertRawTag(conn, t2, QStringLiteral("DISCNUMBER"), QStringLiteral("1/1"));
+    // 只缺碟总数：不入选
+    TestDbHelper::insertRawTag(conn, t2, QStringLiteral("DISCNUMBER"), QStringLiteral("1"));
     TestDbHelper::updateTagsReadAt(conn, t2);
 
     // Album 3 (Complete fields, but has needs_online title issue)

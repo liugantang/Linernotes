@@ -156,15 +156,11 @@ ai::TokenUsage AlbumInfoJobHandler::estimate(
         promptTokens = (totalTracks * 50) + 300;
     }
 
-    int totalTracks = 0;
-    for (const auto &a : albums) {
-        totalTracks += static_cast<int>(a.tracks.size());
-    }
-
-    constexpr int kFixedReasoningTokensPerBatch = 5000;
-    constexpr int kCompletionTokensPerTrack = 100;
+    // 实测（deepseek-v4.1-flash，含思考）：4 张专辑约 6.2k、16 张约 20.7k 输出 token
+    constexpr int kCompletionTokensPerBatch = 2000;
+    constexpr int kCompletionTokensPerAlbum = 1100;
     const int completionTokens
-        = kFixedReasoningTokensPerBatch + (totalTracks * kCompletionTokensPerTrack);
+        = kCompletionTokensPerBatch + (static_cast<int>(albums.size()) * kCompletionTokensPerAlbum);
 
     return ai::TokenUsage {
         .promptTokens = promptTokens,
