@@ -12,6 +12,17 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME butler_DuplicateFinder
+    SOURCES
+        tst_DuplicateFinder.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::audio
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
     NAME butler_Mojibake
     SOURCES
         tst_Mojibake.cpp
