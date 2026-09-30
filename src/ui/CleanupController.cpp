@@ -17,6 +17,7 @@
 #include <ai/PromptLibrary.h>
 #include <butler/ArtistCreditSource.h>
 #include <butler/ArtistMergeSource.h>
+#include <butler/CoverArtSource.h>
 #include <butler/MbMatchSource.h>
 #include <butler/MojibakeSource.h>
 #include <core/Clock.h>
@@ -88,6 +89,13 @@ QStringList collectStepItems(library::Database &db, CleanupController::Step step
                 items.append(QString::number(id));
             }
         }
+    } else if (step == Step::CoverArt) {
+        const butler::CoverArtSource src(db);
+        if (auto r = src.pendingAlbums(); r.ok()) {
+            for (const qint64 id : r.value()) {
+                items.append(QString::number(id));
+            }
+        }
     }
     return items;
 }
@@ -151,6 +159,11 @@ int CleanupController::mergeClusters() const
 int CleanupController::mbMatchAlbums() const
 {
     return m_mbMatchAlbums;
+}
+
+int CleanupController::coverArtAlbums() const
+{
+    return m_coverArtAlbums;
 }
 
 int CleanupController::mojibakeTokens() const
@@ -282,6 +295,14 @@ void CleanupController::checkHealth()
             report.mbMatchAlbums = static_cast<int>(report.mbMatchItems.size());
         }
 
+        const butler::CoverArtSource coverArtSource(db);
+        if (auto res = coverArtSource.pendingAlbums(); res.ok()) {
+            for (const qint64 id : res.value()) {
+                report.coverArtItems.append(QString::number(id));
+            }
+            report.coverArtAlbums = static_cast<int>(report.coverArtItems.size());
+        }
+
         return report;
     });
 
@@ -295,6 +316,7 @@ void CleanupController::onHealthCheckFinished()
     m_creditValues = data.creditValues;
     m_mergeClusters = data.mergeClusters;
     m_mbMatchAlbums = data.mbMatchAlbums;
+    m_coverArtAlbums = data.coverArtAlbums;
 
     if (auto est = m_jobs.estimate(QStringLiteral("butler.mojibake"), data.mojibakeItems);
         est.ok()) {
@@ -341,6 +363,7 @@ void CleanupController::run(bool mojibake, bool credit, bool merge, bool mbMatch
     }
     if (mbMatch) {
         m_pendingSteps.append(Step::MbMatch);
+        m_pendingSteps.append(Step::CoverArt);
     }
 
     if (m_pendingSteps.isEmpty()) {
@@ -443,6 +466,10 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
         jobKind = QStringLiteral("butler.mb_match");
         title = QStringLiteral("Fill in from MusicBrainz");
         batchKind = library::CorrectionKind::MbMatch;
+        break;
+    case Step::CoverArt:
+        jobKind = QStringLiteral("butler.cover_art");
+        title = QStringLiteral("Download covers");
         break;
     case Step::None:
     default:

@@ -338,7 +338,7 @@
 | ✅ 7.4 | 专辑级 MB 文本匹配：以 albums 为单位用“专辑名+艺人”词项搜索 release，按标题+时长+编号整体打分选 release（歧义只记录不补） |
 | 7.4b | LLM 协助判别歧义候选（mb_album_matches 中 status = ambiguous 的专辑） |
 | ✅ 7.5 | 补全字段（只补空字段，生成修正提议）：年份/原始发行年份、专辑艺人、音轨号/碟号、音轨总数/碟总数、无法修复的乱码标题；厂牌与 release/recording MBID 记入匹配表 |
-| 7.5b | 封面（Cover Art Archive），只为无封面的专辑获取 |
+| ✅ 7.5b | 封面（Cover Art Archive），只为无封面的已匹配专辑获取（release 无则回退 release-group）；重扫时保留在线封面 |
 | ✅ 7.5c | 曲库整理页接入 MusicBrainz 补全：体检显示待补全专辑数与联网耗时估计，作为最后一步运行，不依赖 LLM 配置 |
 | 7.6 | **版本识别**：标题后缀解析（`(Live)`、`- 2011 Remaster`、`[Acoustic]`、`（现场版）`、`伴奏`、`Inst.`…）+ MB 的 recording/work 关系 + 时长/指纹差异；LLM 处理不规则写法；写入 `works` 与 `version_type` |
 | 7.7 | 版本 UI：作品视图下展示所有版本；播放/歌单中可选“偏好版本” |

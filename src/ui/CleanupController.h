@@ -39,6 +39,7 @@ public:
         Credit,
         Merge,
         MbMatch,
+        CoverArt,
     };
     Q_ENUM(Step)
 
@@ -49,6 +50,7 @@ public:
     Q_PROPERTY(int creditValues READ creditValues NOTIFY healthChanged)
     Q_PROPERTY(int mergeClusters READ mergeClusters NOTIFY healthChanged)
     Q_PROPERTY(int mbMatchAlbums READ mbMatchAlbums NOTIFY healthChanged)
+    Q_PROPERTY(int coverArtAlbums READ coverArtAlbums NOTIFY healthChanged)
     Q_PROPERTY(int mojibakeTokens READ mojibakeTokens NOTIFY healthChanged)
     Q_PROPERTY(int creditTokens READ creditTokens NOTIFY healthChanged)
     Q_PROPERTY(int mergeTokens READ mergeTokens NOTIFY healthChanged)
@@ -78,6 +80,7 @@ public:
     [[nodiscard]] int creditValues() const;
     [[nodiscard]] int mergeClusters() const;
     [[nodiscard]] int mbMatchAlbums() const;
+    [[nodiscard]] int coverArtAlbums() const;
     [[nodiscard]] int mojibakeTokens() const;
     [[nodiscard]] int creditTokens() const;
     [[nodiscard]] int mergeTokens() const;
@@ -122,6 +125,8 @@ private:
         QStringList mergeItems;
         int mbMatchAlbums = 0;
         QStringList mbMatchItems;
+        int coverArtAlbums = 0;
+        QStringList coverArtItems;
     };
 
     struct StepItemData {
@@ -150,6 +155,7 @@ private:
     int m_creditValues = 0;
     int m_mergeClusters = 0;
     int m_mbMatchAlbums = 0;
+    int m_coverArtAlbums = 0;
     int m_mojibakeTokens = 0;
     int m_creditTokens = 0;
     int m_mergeTokens = 0;

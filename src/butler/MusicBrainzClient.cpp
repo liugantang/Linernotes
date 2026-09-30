@@ -212,10 +212,7 @@ void MusicBrainzClient::sendNetworkRequest(const QUrl &url)
     m_lastSentMs = m_clock.nowMs();
 
     QNetworkRequest netReq(url);
-    const QString userAgent
-        = QStringLiteral("Linernotes/%1 ( https://github.com/linernotes/linernotes )")
-              .arg(core::versionString());
-    netReq.setRawHeader("User-Agent", userAgent.toUtf8());
+    netReq.setRawHeader("User-Agent", userAgent().toUtf8());
     netReq.setRawHeader("Accept", "application/json");
     netReq.setTransferTimeout(kTransferTimeoutMs);
 

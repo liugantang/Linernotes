@@ -22,15 +22,18 @@
 #include <butler/ArtistCreditJobHandler.h>
 #include <butler/ArtistCreditStore.h>
 #include <butler/ArtistMergeJobHandler.h>
+#include <butler/CoverArtJobHandler.h>
 #include <butler/MbMatchJobHandler.h>
 #include <butler/MbMatchSource.h>
 #include <butler/MojibakeJobHandler.h>
 #include <butler/MusicBrainz.h>
 #include <butler/MusicBrainzClient.h>
 #include <common/ManualClock.h>
+#include <common/TestSupport.h>
 #include <core/Settings.h>
 #include <library/ArtistAliasCorrections.h>
 #include <library/CorrectionStore.h>
+#include <library/CoverStore.h>
 #include <library/Database.h>
 #include <library/EntityLinker.h>
 #include <library/LibraryEnums.h>
@@ -53,6 +56,7 @@ using linernotes::butler::ArtistCredit;
 using linernotes::butler::ArtistCreditJobHandler;
 using linernotes::butler::ArtistCreditStore;
 using linernotes::butler::ArtistMergeJobHandler;
+using linernotes::butler::CoverArtJobHandler;
 using linernotes::butler::CreditPerformer;
 using linernotes::butler::MbMatchJobHandler;
 using linernotes::butler::MbMatchSource;
@@ -62,9 +66,11 @@ using linernotes::core::Settings;
 using linernotes::library::CorrectionKind;
 using linernotes::library::CorrectionStatus;
 using linernotes::library::CorrectionStore;
+using linernotes::library::CoverStore;
 using linernotes::library::Database;
 using linernotes::library::EntityLinker;
 using linernotes::library::Migrator;
+using linernotes::test::fixturePath;
 using linernotes::test::ManualClock;
 using linernotes::ui::CleanupController;
 
@@ -464,8 +470,14 @@ void TstCleanupController::mbMatchStepRunsWithoutLlm()
     QNetworkAccessManager network;
     MusicBrainzClient mbClient(network, db, clock);
 
+    const QTemporaryDir coverCacheDir;
+    QVERIFY(coverCacheDir.isValid());
+    CoverStore coverStore(coverCacheDir.path());
+
     JobQueue jobs(db, clock);
     jobs.registerHandler(std::make_unique<MbMatchJobHandler>(db, mbClient, clock));
+    jobs.registerHandler(std::make_unique<CoverArtJobHandler>(db, network, coverStore, clock,
+        QUrl::fromLocalFile(fixturePath(QStringLiteral("coverart")))));
 
     const MbMatchSource mbSource(db);
     const auto pendingRes = mbSource.pendingAlbums();

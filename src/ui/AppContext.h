@@ -138,6 +138,7 @@ private:
     Options m_options;
     core::SystemClock m_clock;
     library::Database m_db;
+    library::CoverStore m_coverStore;
     AiContext m_ai;
     CleanupController m_cleanup;
     library::PlayStats m_playStats;
@@ -148,7 +149,6 @@ private:
     player::Player m_player;
     PlayEventRecorder m_recorder;
     SettingsController m_settingsController;
-    library::CoverStore m_coverStore;
     std::unique_ptr<player::PlaybackStateStore> m_stateStore;
     NowPlaying m_nowPlaying;
     QueueModel m_queueModel;

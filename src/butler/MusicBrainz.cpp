@@ -11,6 +11,7 @@
 #include <QUrlQuery>
 
 #include <butler/Errors.h>
+#include <core/Version.h>
 
 #include <algorithm>
 #include <utility>
@@ -441,6 +442,12 @@ QUrl recordingSearchUrl(const QString &title, const QString &artist, int limit)
     query.addQueryItem(QStringLiteral("limit"), QString::number(limit));
     url.setQuery(query);
     return url;
+}
+
+QString userAgent()
+{
+    return QStringLiteral("Linernotes/%1 ( https://github.com/linernotes/linernotes )")
+        .arg(core::versionString());
 }
 
 } // namespace linernotes::butler

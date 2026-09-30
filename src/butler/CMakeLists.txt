@@ -32,6 +32,10 @@ add_library(linernotes_butler STATIC
     ButlerLogging.h
     CharFrequency.cpp
     CharFrequency.h
+    CoverArtJobHandler.cpp
+    CoverArtJobHandler.h
+    CoverArtSource.cpp
+    CoverArtSource.h
     EncodingScore.cpp
     EncodingScore.h
     Errors.h

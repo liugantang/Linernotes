@@ -94,4 +94,7 @@ QUrl releaseUrl(const QString &releaseId);
 /// recording 搜索：query = recording:(<title>)，artist 非空时追加 AND artist:(<artist>)。
 QUrl recordingSearchUrl(const QString &title, const QString &artist, int limit = 10);
 
+/// 共用的 MusicBrainz / Cover Art Archive User-Agent
+QString userAgent();
+
 } // namespace linernotes::butler

@@ -57,4 +57,6 @@
 | `musicbrainz/release_flowerflower_takaramono.json` | JSON / MusicBrainz 响应 | ~6 KB | 2026-09-30 从 musicbrainz.org/ws/2 录制，CC0 | 其中 `11ade0fa-...` 的详情，5 首，`label-info[0].label` 为 null |
 | `musicbrainz/release_kalafina_best_3cd.json` | JSON / MusicBrainz 响应 | ~31 KB | 2026-09-30 从 musicbrainz.org/ws/2 录制，CC0 | `Kalafina All Time Best 2008–2018` 3CD 版详情（3 张碟各 12 首，厂牌 SACRA MUSIC） |
 | `musicbrainz/recording_search_daoko.json` | JSON / MusicBrainz 响应 | ~12 KB | 2026-09-30 从 musicbrainz.org/ws/2 录制，CC0 | recording 搜索 `拝啓グッバイさようなら` / `DAOKO` |
+| `coverart/release/11ade0fa-.../front-500` | JPEG 300×300 | ~2 KB | 自制（ImageMagick 渐变图），CC0 | 按 Cover Art Archive 的路径布局，作为 `file://` 基址下 FLOWER FLOWER「宝物」release 的正面封面。真实服务：`https://coverartarchive.org/release/<mbid>/front-500` 307 重定向到 archive.org 后 200；无封面时 404 |
+| `coverart/release-group/ffb76de5-.../front-500` | JPEG 300×300 | ~4 KB | 自制，CC0 | 同上，release-group 级正面封面（release 没有封面时的回退） |
 

@@ -103,7 +103,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="218"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="221"/>
         <source>%n album(s) with missing info</source>
         <translation>
             <numerusform>%n album with missing info</numerusform>
@@ -111,7 +111,15 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="221"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="223"/>
+        <source> · %n cover(s) to download</source>
+        <translation>
+            <numerusform> · %n cover to download</numerusform>
+            <numerusform> · %n covers to download</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="226"/>
         <source> · about %n min online</source>
         <translation>
             <numerusform> · about %n min online</numerusform>

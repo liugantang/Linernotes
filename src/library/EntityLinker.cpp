@@ -64,14 +64,15 @@ EntityLinker::EntityLinker(const QSqlDatabase &db, std::function<qint64()> nowMs
         "UPDATE albums SET year = (SELECT MIN(em.year) FROM tracks t JOIN effective_metadata em ON "
         "t.id = em.track_id WHERE t.album_id = ? AND em.year IS NOT NULL) WHERE id = ?"));
     m_updateAlbumCoverStmt.prepare(QStringLiteral(
-        "UPDATE albums SET cover_id = ("
+        "UPDATE albums SET cover_id = COALESCE(("
         "SELECT f.cover_id FROM tracks t "
         "JOIN files f ON t.file_id = f.id "
         "LEFT JOIN effective_metadata em ON t.id = em.track_id "
         "WHERE t.album_id = ? AND f.cover_id IS NOT NULL "
         "ORDER BY em.disc_number ASC NULLS LAST, em.track_number ASC NULLS LAST, f.path ASC "
         "LIMIT 1"
-        ") WHERE id = ?"));
+        "), (SELECT c.id FROM covers c WHERE c.id = albums.cover_id AND c.source = 'online')) "
+        "WHERE id = ?"));
     m_deleteAlbumArtistsStmt.prepare(
         QStringLiteral("DELETE FROM album_artists WHERE album_id = ?"));
     m_insertAlbumArtistStmt.prepare(QStringLiteral(

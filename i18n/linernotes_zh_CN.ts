@@ -407,6 +407,11 @@
     </message>
     <message>
         <location filename="../qml/CleanupHealthPanel.qml" line="45"/>
+        <source>Downloading covers...</source>
+        <translation>正在下载封面…</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="46"/>
         <source>Cleaning up library...</source>
         <translation>正在整理曲库…</translation>
     </message>
@@ -504,14 +509,21 @@
         <translation>从 MusicBrainz 补全</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="218"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="221"/>
         <source>%n album(s) with missing info</source>
         <translation>
             <numerusform>%n 张专辑缺少信息</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="221"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="223"/>
+        <source> · %n cover(s) to download</source>
+        <translation>
+            <numerusform> · 可下载 %n 张封面</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="226"/>
         <source> · about %n min online</source>
         <translation>
             <numerusform> · 联网约 %n 分钟</numerusform>

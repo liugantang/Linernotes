@@ -42,6 +42,7 @@ Rectangle {
         if (step === CleanupController.Credit) return qsTr("Normalizing artist credits...")
         if (step === CleanupController.Merge) return qsTr("Merging duplicate artists...")
         if (step === CleanupController.MbMatch) return qsTr("Looking up MusicBrainz...")
+        if (step === CleanupController.CoverArt) return qsTr("Downloading covers...")
         return qsTr("Cleaning up library...")
     }
 
@@ -217,12 +218,14 @@ Rectangle {
                     text: {
                         if (!hasCleanup) return ""
                         const count = AppContext.cleanup.mbMatchAlbums
+                        const coverCount = AppContext.cleanup.coverArtAlbums
                         const base = qsTr("%n album(s) with missing info", "", count)
+                        const coverSuffix = coverCount > 0 ? qsTr(" · %n cover(s) to download", "", coverCount) : ""
                         if (count > 0) {
                             const minutes = Math.max(1, Math.ceil(count * 4 / 60))
-                            return base + qsTr(" · about %n min online", "", minutes)
+                            return base + coverSuffix + qsTr(" · about %n min online", "", minutes)
                         }
-                        return base
+                        return base + coverSuffix
                     }
                     font.pixelSize: Theme.fontSizeNormal
                     color: Theme.textSecondary
