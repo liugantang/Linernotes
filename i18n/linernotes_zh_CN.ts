@@ -648,6 +648,11 @@
     </message>
     <message>
         <location filename="../qml/CorrectionBatchList.qml" line="27"/>
+        <source>MusicBrainz Match</source>
+        <translation>MusicBrainz 补全</translation>
+    </message>
+    <message>
+        <location filename="../qml/CorrectionBatchList.qml" line="28"/>
         <source>Manual Fix</source>
         <translation>手动修正</translation>
     </message>

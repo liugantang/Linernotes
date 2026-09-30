@@ -17,6 +17,7 @@
 #include <ai/PrivacyGuard.h>
 #include <ai/PromptLibrary.h>
 #include <ai/UsageStore.h>
+#include <butler/MusicBrainzClient.h>
 #include <core/Clock.h>
 #include <library/Database.h>
 #include <ui/AiSettingsController.h>
@@ -52,6 +53,7 @@ public:
 private:
     // 声明顺序即依赖顺序
     QNetworkAccessManager m_network;
+    butler::MusicBrainzClient m_musicBrainz;
     ai::AiConfig m_config;
     ai::KeychainSecretStore m_secrets;
     ai::LlmClient m_client;

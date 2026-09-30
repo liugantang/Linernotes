@@ -23,6 +23,7 @@ struct LocalTrack {
     qint64 durationMs = 0; // 0 = 未知
     std::optional<int> discNumber = std::nullopt;
     std::optional<int> trackNumber = std::nullopt;
+    bool titleUnknown = false; // 标题不可用，只按时长与编号匹配
     bool operator==(const LocalTrack &) const = default;
 };
 
@@ -64,6 +65,8 @@ double durationScore(qint64 aMs, qint64 bMs);
 
 /// 一对曲目的得分：0.6 * titleSimilarity + 0.4 * durationScore；
 /// 若本地有 disc/track 编号且与 MB 的 (disc, position) 相同，再 +0.1，封顶 1。
+/// local.titleUnknown 时为 0.7 * durationScore + 0.3 * (本地 disc/track 编号与 MB 的 (disc,
+/// position) 相同 ? 1 : 0)； 此时若本地时长为 0（未知）→ 返回 0。
 double pairScore(const LocalTrack &local, const MbTrack &mb);
 
 /// 本地专辑 vs 一个 release：

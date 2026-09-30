@@ -37,6 +37,12 @@ add_library(linernotes_butler STATIC
     Errors.h
     FingerprintJobHandler.cpp
     FingerprintJobHandler.h
+    MbMatchJobHandler.cpp
+    MbMatchJobHandler.h
+    MbMatchPlanner.cpp
+    MbMatchPlanner.h
+    MbMatchSource.cpp
+    MbMatchSource.h
     Mojibake.cpp
     Mojibake.h
     MojibakeAnalysis.cpp

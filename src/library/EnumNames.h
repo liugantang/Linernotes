@@ -79,6 +79,8 @@ inline QString correctionKindToString(CorrectionKind kind)
         return QStringLiteral("artist_merge");
     case CorrectionKind::ArtistCredit:
         return QStringLiteral("artist_credit");
+    case CorrectionKind::MbMatch:
+        return QStringLiteral("mb_match");
     }
     return { };
 }

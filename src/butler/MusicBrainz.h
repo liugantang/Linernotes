@@ -87,11 +87,11 @@ std::optional<int> yearFromDate(const QString &date);
 QString luceneEscape(const QString &text);
 
 /// 构造请求 URL（fmt=json；base 为 https://musicbrainz.org/ws/2/）
-/// release 搜索：query = release:"<title>"，artist 非空时追加 AND artist:"<artist>"；limit 参数。
+/// release 搜索：query = release:(<title>)，artist 非空时追加 AND artist:(<artist>)；limit 参数。
 QUrl releaseSearchUrl(const QString &title, const QString &artist, int limit = 10);
 /// release 详情：inc=recordings+artist-credits+labels+release-groups
 QUrl releaseUrl(const QString &releaseId);
-/// recording 搜索：query = recording:"<title>"，artist 非空时追加 AND artist:"<artist>"。
+/// recording 搜索：query = recording:(<title>)，artist 非空时追加 AND artist:(<artist>)。
 QUrl recordingSearchUrl(const QString &title, const QString &artist, int limit = 10);
 
 } // namespace linernotes::butler

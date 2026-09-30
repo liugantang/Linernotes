@@ -406,9 +406,9 @@ QUrl releaseSearchUrl(const QString &title, const QString &artist, int limit)
 {
     QUrl url(QStringLiteral("https://musicbrainz.org/ws/2/release"));
     QUrlQuery query;
-    QString queryStr = QStringLiteral("release:\"%1\"").arg(luceneEscape(title));
+    QString queryStr = QStringLiteral("release:(%1)").arg(luceneEscape(title));
     if (!artist.isEmpty()) {
-        queryStr += QStringLiteral(" AND artist:\"%1\"").arg(luceneEscape(artist));
+        queryStr += QStringLiteral(" AND artist:(%1)").arg(luceneEscape(artist));
     }
     query.addQueryItem(QStringLiteral("query"), queryStr);
     query.addQueryItem(QStringLiteral("fmt"), QStringLiteral("json"));
@@ -432,9 +432,9 @@ QUrl recordingSearchUrl(const QString &title, const QString &artist, int limit)
 {
     QUrl url(QStringLiteral("https://musicbrainz.org/ws/2/recording"));
     QUrlQuery query;
-    QString queryStr = QStringLiteral("recording:\"%1\"").arg(luceneEscape(title));
+    QString queryStr = QStringLiteral("recording:(%1)").arg(luceneEscape(title));
     if (!artist.isEmpty()) {
-        queryStr += QStringLiteral(" AND artist:\"%1\"").arg(luceneEscape(artist));
+        queryStr += QStringLiteral(" AND artist:(%1)").arg(luceneEscape(artist));
     }
     query.addQueryItem(QStringLiteral("query"), queryStr);
     query.addQueryItem(QStringLiteral("fmt"), QStringLiteral("json"));

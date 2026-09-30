@@ -47,6 +47,7 @@ private slots:
     void upgradesTo0011AddsButlerTables();
     void upgradesTo0012AddsCorrectionLocale();
     void upgradesTo0015AddsFingerprintsTable();
+    void upgradesTo0016AddsMbMatches();
 };
 
 void TstMigrator::appliesMigrationsInOrder()
@@ -648,6 +649,58 @@ void TstMigrator::upgradesTo0015AddsFingerprintsTable()
     // Verify fingerprints table exists and can be queried
     QSqlQuery q(conn);
     QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM fingerprints;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 0);
+}
+
+void TstMigrator::upgradesTo0016AddsMbMatches()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 16);
+
+    // Write migrations 1..15
+    for (int i = 0; i < 15; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 15);
+
+    // Add migration 16
+    const auto &m16 = allMigrations.at(15);
+    const QString fileName16
+        = QStringLiteral("%1_%2.sql").arg(m16.version, 4, 10, QLatin1Char('0')).arg(m16.name);
+    writeSqlFile(migDir.path(), fileName16, m16.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 16);
+
+    // Verify mb_album_matches and mb_track_matches tables exist and can be queried
+    QSqlQuery q(conn);
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM mb_album_matches;")));
+    QVERIFY(q.next());
+    QCOMPARE(q.value(0).toInt(), 0);
+
+    QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM mb_track_matches;")));
     QVERIFY(q.next());
     QCOMPARE(q.value(0).toInt(), 0);
 }

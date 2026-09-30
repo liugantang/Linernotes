@@ -113,5 +113,16 @@ linernotes_add_test(
         Qt6::Network
 )
 
+linernotes_add_test(
+    NAME butler_MbMatchPlanner
+    SOURCES
+        tst_MbMatchPlanner.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
 
 

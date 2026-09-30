@@ -269,7 +269,7 @@ void TstMusicBrainz::urlBuilders()
         QCOMPARE(query.queryItemValue(QStringLiteral("fmt")), QStringLiteral("json"));
         QCOMPARE(query.queryItemValue(QStringLiteral("limit")), QStringLiteral("10"));
         QCOMPARE(query.queryItemValue(QStringLiteral("query")),
-            QStringLiteral("release:\"宝物\" AND artist:\"FLOWER FLOWER\""));
+            QStringLiteral("release:(宝物) AND artist:(FLOWER FLOWER)"));
     }
 
     // releaseSearchUrl 不含 artist
@@ -278,7 +278,7 @@ void TstMusicBrainz::urlBuilders()
         QUrlQuery query(url);
         QCOMPARE(query.queryItemValue(QStringLiteral("fmt")), QStringLiteral("json"));
         QCOMPARE(query.queryItemValue(QStringLiteral("limit")), QStringLiteral("5"));
-        QCOMPARE(query.queryItemValue(QStringLiteral("query")), QStringLiteral("release:\"宝物\""));
+        QCOMPARE(query.queryItemValue(QStringLiteral("query")), QStringLiteral("release:(宝物)"));
         QVERIFY(!query.queryItemValue(QStringLiteral("query")).contains(QStringLiteral("AND")));
     }
 
@@ -298,13 +298,13 @@ void TstMusicBrainz::urlBuilders()
             QStringLiteral("拝啓グッバイさようなら"), QStringLiteral("DAOKO"), 10);
         QUrlQuery query(url);
         QCOMPARE(query.queryItemValue(QStringLiteral("query")),
-            QStringLiteral("recording:\"拝啓グッバイさようなら\" AND artist:\"DAOKO\""));
+            QStringLiteral("recording:(拝啓グッバイさようなら) AND artist:(DAOKO)"));
 
         const QUrl noArt
             = recordingSearchUrl(QStringLiteral("拝啓グッバイさようなら"), QString(), 10);
         QUrlQuery qNoArt(noArt);
         QCOMPARE(qNoArt.queryItemValue(QStringLiteral("query")),
-            QStringLiteral("recording:\"拝啓グッバイさようなら\""));
+            QStringLiteral("recording:(拝啓グッバイさようなら)"));
         QVERIFY(!qNoArt.queryItemValue(QStringLiteral("query")).contains(QStringLiteral("AND")));
     }
 }

@@ -69,3 +69,21 @@ linernotes_add_test(
     TIMEOUT
         60
 )
+
+linernotes_add_test(
+    NAME integration_MbMatchJob
+    SOURCES
+        tst_MbMatchJob.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::ai
+        Linernotes::TestSupport
+        Qt6::Network
+        Qt6::Sql
+    LABELS
+        integration
+    TIMEOUT
+        60
+)

@@ -100,7 +100,7 @@ void TstSchema::migratesFreshDatabaseToLatest()
     QVERIFY(db.open(Migrator()).ok());
     const auto conn = db.connection().value();
 
-    QCOMPARE(Migrator::currentVersion(conn).value(), 15);
+    QCOMPARE(Migrator::currentVersion(conn).value(), 16);
 
     // Verify core tables exist
     QSqlQuery q(conn);
@@ -118,6 +118,8 @@ void TstSchema::migratesFreshDatabaseToLatest()
     QVERIFY(tables.contains(QStringLiteral("track_issues")));
     QVERIFY(tables.contains(QStringLiteral("mb_cache")));
     QVERIFY(tables.contains(QStringLiteral("fingerprints")));
+    QVERIFY(tables.contains(QStringLiteral("mb_album_matches")));
+    QVERIFY(tables.contains(QStringLiteral("mb_track_matches")));
 
     // Integrity check
     QVERIFY(q.exec(QStringLiteral("PRAGMA integrity_check;")));

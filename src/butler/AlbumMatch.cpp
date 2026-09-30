@@ -153,12 +153,21 @@ double durationScore(qint64 aMs, qint64 bMs)
 
 double pairScore(const LocalTrack &local, const MbTrack &mb)
 {
+    const bool numberMatch = local.trackNumber.has_value() && (*local.trackNumber == mb.position)
+        && (local.discNumber.value_or(1) == mb.disc);
+
+    if (local.titleUnknown) {
+        if (local.durationMs <= 0) {
+            return 0.0;
+        }
+        const double durScore = durationScore(local.durationMs, mb.lengthMs);
+        const double score = (0.7 * durScore) + (0.3 * (numberMatch ? 1.0 : 0.0));
+        return std::min(1.0, score);
+    }
+
     const double titleSim = titleSimilarity(local.title, mb.title);
     const double durScore = durationScore(local.durationMs, mb.lengthMs);
     double score = (0.6 * titleSim) + (0.4 * durScore);
-
-    const bool numberMatch = local.trackNumber.has_value() && (*local.trackNumber == mb.position)
-        && (local.discNumber.value_or(1) == mb.disc);
 
     if (numberMatch) {
         score += 0.1;

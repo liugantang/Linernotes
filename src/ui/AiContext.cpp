@@ -10,6 +10,7 @@
 #include <butler/ArtistCreditJobHandler.h>
 #include <butler/ArtistMergeJobHandler.h>
 #include <butler/FingerprintJobHandler.h>
+#include <butler/MbMatchJobHandler.h>
 #include <butler/MojibakeJobHandler.h>
 
 #include <memory>
@@ -31,6 +32,7 @@ QStringList buildPromptDirs(const QString &promptsDir)
 AiContext::AiContext(core::Settings &settings, library::Database &db, const core::Clock &clock,
     const QString &promptsDir, QObject *parent)
     : QObject(parent)
+    , m_musicBrainz(m_network, db, clock)
     , m_config(settings)
     , m_client(m_network)
     , m_cache(db, clock)
@@ -51,6 +53,7 @@ AiContext::AiContext(core::Settings &settings, library::Database &db, const core
     m_jobs.registerHandler(
         std::make_unique<butler::ArtistMergeJobHandler>(db, m_llm, m_prompts, clock));
     m_jobs.registerHandler(std::make_unique<butler::FingerprintJobHandler>(db, clock));
+    m_jobs.registerHandler(std::make_unique<butler::MbMatchJobHandler>(db, m_musicBrainz, clock));
 }
 
 void AiContext::onDatabaseReady()

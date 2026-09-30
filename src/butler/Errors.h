@@ -34,5 +34,7 @@ inline constexpr QLatin1StringView kMbRateLimited { "mb.rate_limited" };
 inline constexpr QLatin1StringView kMbNetwork { "mb.network" };
 inline constexpr QLatin1StringView kMbNotFound { "mb.not_found" };
 inline constexpr QLatin1StringView kFingerprintInvalidKey { "fingerprint.invalid_key" };
+inline constexpr QLatin1StringView kMbMatchInvalidKey { "mb_match.invalid_key" };
+inline constexpr QLatin1StringView kMbMatchAlbumNotFound { "mb_match.album_not_found" };
 
 } // namespace linernotes::butler::errc

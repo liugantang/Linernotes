@@ -25,6 +25,8 @@ using linernotes::butler::kMinPairScore;
 using linernotes::butler::LocalAlbum;
 using linernotes::butler::LocalTrack;
 using linernotes::butler::MbRelease;
+using linernotes::butler::MbTrack;
+using linernotes::butler::pairScore;
 using linernotes::butler::parseRelease;
 using linernotes::butler::scoreRelease;
 using linernotes::butler::titleSimilarity;
@@ -45,6 +47,7 @@ class TstAlbumMatch : public QObject {
 private slots:
     void testTitleSimilarity();
     void testDurationScore();
+    void testTitleUnknownPairScore();
     void testFlowerflowerFullMatch();
     void testFlowerflowerPartialAlbum();
     void testFlowerflowerUnrelatedTracks();
@@ -111,6 +114,41 @@ void TstAlbumMatch::testDurationScore()
     QCOMPARE(durationScore(0, 200000), 0.5);
     QCOMPARE(durationScore(200000, 0), 0.5);
     QCOMPARE(durationScore(0, 0), 0.5);
+}
+
+void TstAlbumMatch::testTitleUnknownPairScore()
+{
+    const MbTrack mbTrack {
+        .disc = 1,
+        .position = 1,
+        .number = QStringLiteral("1"),
+        .title = QStringLiteral("宝物"),
+        .artist = QStringLiteral("FLOWER FLOWER"),
+        .lengthMs = 292000,
+        .recordingId = QStringLiteral("rec-1"),
+    };
+
+    // titleUnknown 的曲目时长与 MB 第 1 首一致 → pairScore ≥ kMinPairScore
+    const LocalTrack matchTrack {
+        .trackId = 1,
+        .title = QStringLiteral("###DAMAGED###"),
+        .durationMs = 292000,
+        .discNumber = std::nullopt,
+        .trackNumber = std::nullopt,
+        .titleUnknown = true,
+    };
+    QVERIFY(pairScore(matchTrack, mbTrack) >= kMinPairScore);
+
+    // 时长为 0 → 0
+    const LocalTrack zeroDurationTrack {
+        .trackId = 2,
+        .title = QStringLiteral("###DAMAGED###"),
+        .durationMs = 0,
+        .discNumber = std::nullopt,
+        .trackNumber = std::nullopt,
+        .titleUnknown = true,
+    };
+    QCOMPARE(pairScore(zeroDurationTrack, mbTrack), 0.0);
 }
 
 void TstAlbumMatch::testFlowerflowerFullMatch()

@@ -89,7 +89,8 @@ enum class CorrectionKind : std::uint8_t {
     Mojibake,
     ArtistSplit,
     ArtistMerge,
-    ArtistCredit
+    ArtistCredit,
+    MbMatch
 };
 Q_ENUM_NS(CorrectionKind)
 
