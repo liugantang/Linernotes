@@ -17,6 +17,7 @@
 #include <ai/PromptLibrary.h>
 #include <butler/ArtistCreditSource.h>
 #include <butler/ArtistMergeSource.h>
+#include <butler/MbMatchSource.h>
 #include <butler/MojibakeSource.h>
 #include <core/Clock.h>
 #include <core/Settings.h>
@@ -61,22 +62,34 @@ int countMergeClusters(const QStringList &items)
     return count;
 }
 
-int queryMissingAlbumTracks(library::Database &db)
+QStringList collectStepItems(library::Database &db, CleanupController::Step step, int promptVersion)
 {
-    auto connRes = db.connection();
-    if (!connRes.ok()) {
-        return 0;
+    using Step = CleanupController::Step;
+    QStringList items;
+    if (step == Step::Mojibake) {
+        const butler::MojibakeSource src(db);
+        if (auto r = src.findGroups(); r.ok()) {
+            items = r.value();
+        }
+    } else if (step == Step::Credit) {
+        const butler::ArtistCreditSource src(db);
+        if (auto r = src.findItems(promptVersion); r.ok()) {
+            items = r.value();
+        }
+    } else if (step == Step::Merge) {
+        const butler::ArtistMergeSource src(db);
+        if (auto r = src.findItems(); r.ok()) {
+            items = r.value();
+        }
+    } else if (step == Step::MbMatch) {
+        const butler::MbMatchSource src(db);
+        if (auto r = src.pendingAlbums(); r.ok()) {
+            for (const qint64 id : r.value()) {
+                items.append(QString::number(id));
+            }
+        }
     }
-    QSqlQuery q(connRes.value());
-    const QString sql = QStringLiteral("SELECT COUNT(*) FROM tracks t "
-                                       "JOIN files f ON t.file_id = f.id "
-                                       "LEFT JOIN effective_metadata em ON t.id = em.track_id "
-                                       "WHERE f.missing_since IS NULL "
-                                       "AND (em.album IS NULL OR trim(em.album) = '')");
-    if (q.exec(sql) && q.next()) {
-        return q.value(0).toInt();
-    }
-    return 0;
+    return items;
 }
 
 } // namespace
@@ -135,9 +148,9 @@ int CleanupController::mergeClusters() const
     return m_mergeClusters;
 }
 
-int CleanupController::missingAlbumTracks() const
+int CleanupController::mbMatchAlbums() const
 {
-    return m_missingAlbumTracks;
+    return m_mbMatchAlbums;
 }
 
 int CleanupController::mojibakeTokens() const
@@ -261,7 +274,14 @@ void CleanupController::checkHealth()
             report.mergeClusters = countMergeClusters(report.mergeItems);
         }
 
-        report.missingAlbumTracks = queryMissingAlbumTracks(db);
+        const butler::MbMatchSource mbMatchSource(db);
+        if (auto res = mbMatchSource.pendingAlbums(); res.ok()) {
+            for (const qint64 id : res.value()) {
+                report.mbMatchItems.append(QString::number(id));
+            }
+            report.mbMatchAlbums = static_cast<int>(report.mbMatchItems.size());
+        }
+
         return report;
     });
 
@@ -274,7 +294,7 @@ void CleanupController::onHealthCheckFinished()
     m_mojibakeGroups = data.mojibakeGroups;
     m_creditValues = data.creditValues;
     m_mergeClusters = data.mergeClusters;
-    m_missingAlbumTracks = data.missingAlbumTracks;
+    m_mbMatchAlbums = data.mbMatchAlbums;
 
     if (auto est = m_jobs.estimate(QStringLiteral("butler.mojibake"), data.mojibakeItems);
         est.ok()) {
@@ -303,7 +323,7 @@ void CleanupController::onHealthCheckFinished()
     emit healthChanged();
 }
 
-void CleanupController::run(bool mojibake, bool credit, bool merge)
+void CleanupController::run(bool mojibake, bool credit, bool merge, bool mbMatch)
 {
     if (m_running) {
         return;
@@ -318,6 +338,9 @@ void CleanupController::run(bool mojibake, bool credit, bool merge)
     }
     if (merge) {
         m_pendingSteps.append(Step::Merge);
+    }
+    if (mbMatch) {
+        m_pendingSteps.append(Step::MbMatch);
     }
 
     if (m_pendingSteps.isEmpty()) {
@@ -370,25 +393,7 @@ void CleanupController::startNextStep()
     }
 
     auto future = QtConcurrent::run([&db = m_db, step, promptVersion]() -> StepItemData {
-        StepItemData res;
-        res.step = step;
-        if (step == Step::Mojibake) {
-            const butler::MojibakeSource src(db);
-            if (auto r = src.findGroups(); r.ok()) {
-                res.items = r.value();
-            }
-        } else if (step == Step::Credit) {
-            const butler::ArtistCreditSource src(db);
-            if (auto r = src.findItems(promptVersion); r.ok()) {
-                res.items = r.value();
-            }
-        } else if (step == Step::Merge) {
-            const butler::ArtistMergeSource src(db);
-            if (auto r = src.findItems(); r.ok()) {
-                res.items = r.value();
-            }
-        }
-        return res;
+        return StepItemData { .step = step, .items = collectStepItems(db, step, promptVersion) };
     });
 
     m_stepWatcher.setFuture(future);
@@ -418,19 +423,29 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
     QString title;
     std::optional<library::CorrectionKind> batchKind;
 
-    if (step == Step::Mojibake) {
+    switch (step) {
+    case Step::Mojibake:
         jobKind = QStringLiteral("butler.mojibake");
         title = QStringLiteral("Fix garbled tags");
         batchKind = library::CorrectionKind::Mojibake;
-    } else if (step == Step::Credit) {
+        break;
+    case Step::Credit:
         jobKind = QStringLiteral("butler.artist_credit");
         title = QStringLiteral("Normalize artist credits");
         batchKind = library::CorrectionKind::ArtistCredit;
-    } else if (step == Step::Merge) {
+        break;
+    case Step::Merge:
         jobKind = QStringLiteral("butler.artist_merge");
         title = QStringLiteral("Merge duplicate artists");
         batchKind = library::CorrectionKind::ArtistMerge;
-    } else {
+        break;
+    case Step::MbMatch:
+        jobKind = QStringLiteral("butler.mb_match");
+        title = QStringLiteral("Fill in from MusicBrainz");
+        batchKind = library::CorrectionKind::MbMatch;
+        break;
+    case Step::None:
+    default:
         startNextStep();
         return;
     }

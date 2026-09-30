@@ -396,6 +396,11 @@
         <translation type="vanished">正在拆分多艺人署名…</translation>
     </message>
     <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="43"/>
+        <source>Looking up MusicBrainz...</source>
+        <translation>正在查询 MusicBrainz…</translation>
+    </message>
+    <message>
         <location filename="../qml/CleanupHealthPanel.qml" line="44"/>
         <source>Merging duplicate artists...</source>
         <translation>正在合并重复艺人…</translation>
@@ -493,11 +498,23 @@
             <numerusform>%n 组疑似重复艺人</numerusform>
         </translation>
     </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="213"/>
+        <source>Fill in from MusicBrainz</source>
+        <translation>从 MusicBrainz 补全</translation>
+    </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="227"/>
-        <source>Missing album metadata: %n track(s) (online lookup comes later)</source>
+        <location filename="../qml/CleanupHealthPanel.qml" line="218"/>
+        <source>%n album(s) with missing info</source>
         <translation>
-            <numerusform>缺少专辑信息：%n 首（在线补全将在后续版本提供）</numerusform>
+            <numerusform>%n 张专辑缺少信息</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="221"/>
+        <source> · about %n min online</source>
+        <translation>
+            <numerusform> · 联网约 %n 分钟</numerusform>
         </translation>
     </message>
     <message>

@@ -38,6 +38,7 @@ public:
         Mojibake,
         Credit,
         Merge,
+        MbMatch,
     };
     Q_ENUM(Step)
 
@@ -47,7 +48,7 @@ public:
     Q_PROPERTY(int mojibakeGroups READ mojibakeGroups NOTIFY healthChanged)
     Q_PROPERTY(int creditValues READ creditValues NOTIFY healthChanged)
     Q_PROPERTY(int mergeClusters READ mergeClusters NOTIFY healthChanged)
-    Q_PROPERTY(int missingAlbumTracks READ missingAlbumTracks NOTIFY healthChanged)
+    Q_PROPERTY(int mbMatchAlbums READ mbMatchAlbums NOTIFY healthChanged)
     Q_PROPERTY(int mojibakeTokens READ mojibakeTokens NOTIFY healthChanged)
     Q_PROPERTY(int creditTokens READ creditTokens NOTIFY healthChanged)
     Q_PROPERTY(int mergeTokens READ mergeTokens NOTIFY healthChanged)
@@ -76,7 +77,7 @@ public:
     [[nodiscard]] int mojibakeGroups() const;
     [[nodiscard]] int creditValues() const;
     [[nodiscard]] int mergeClusters() const;
-    [[nodiscard]] int missingAlbumTracks() const;
+    [[nodiscard]] int mbMatchAlbums() const;
     [[nodiscard]] int mojibakeTokens() const;
     [[nodiscard]] int creditTokens() const;
     [[nodiscard]] int mergeTokens() const;
@@ -94,7 +95,7 @@ public:
     [[nodiscard]] bool isLlmConfigured() const;
 
     Q_INVOKABLE void checkHealth();
-    Q_INVOKABLE void run(bool mojibake, bool credit, bool merge);
+    Q_INVOKABLE void run(bool mojibake, bool credit, bool merge, bool mbMatch);
     Q_INVOKABLE void pause();
     Q_INVOKABLE void resume();
     Q_INVOKABLE void cancel();
@@ -119,7 +120,8 @@ private:
         QStringList creditItems;
         int mergeClusters = 0;
         QStringList mergeItems;
-        int missingAlbumTracks = 0;
+        int mbMatchAlbums = 0;
+        QStringList mbMatchItems;
     };
 
     struct StepItemData {
@@ -147,7 +149,7 @@ private:
     int m_mojibakeGroups = 0;
     int m_creditValues = 0;
     int m_mergeClusters = 0;
-    int m_missingAlbumTracks = 0;
+    int m_mbMatchAlbums = 0;
     int m_mojibakeTokens = 0;
     int m_creditTokens = 0;
     int m_mergeTokens = 0;

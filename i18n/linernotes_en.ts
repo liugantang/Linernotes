@@ -103,11 +103,19 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="227"/>
-        <source>Missing album metadata: %n track(s) (online lookup comes later)</source>
+        <location filename="../qml/CleanupHealthPanel.qml" line="218"/>
+        <source>%n album(s) with missing info</source>
         <translation>
-            <numerusform>Missing album metadata: %n track (online lookup comes later)</numerusform>
-            <numerusform>Missing album metadata: %n tracks (online lookup comes later)</numerusform>
+            <numerusform>%n album with missing info</numerusform>
+            <numerusform>%n albums with missing info</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="221"/>
+        <source> · about %n min online</source>
+        <translation>
+            <numerusform> · about %n min online</numerusform>
+            <numerusform> · about %n mins online</numerusform>
         </translation>
     </message>
 </context>

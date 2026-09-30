@@ -14,7 +14,7 @@ Rectangle {
     property bool collapsed: false
 
     readonly property bool hasCleanup: typeof AppContext !== "undefined" && AppContext && AppContext.cleanup
-    readonly property bool hasSelectedTasks: mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked
+    readonly property bool hasSelectedTasks: mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || mbMatchCheck.checked
 
     color: Theme.surface
     border.color: Theme.divider
@@ -41,6 +41,7 @@ Rectangle {
         if (step === CleanupController.Mojibake) return qsTr("Fixing garbled tags...")
         if (step === CleanupController.Credit) return qsTr("Normalizing artist credits...")
         if (step === CleanupController.Merge) return qsTr("Merging duplicate artists...")
+        if (step === CleanupController.MbMatch) return qsTr("Looking up MusicBrainz...")
         return qsTr("Cleaning up library...")
     }
 
@@ -50,6 +51,7 @@ Rectangle {
             mojibakeCheck.checked = AppContext.cleanup.mojibakeGroups > 0
             creditCheck.checked = AppContext.cleanup.creditValues > 0
             mergeCheck.checked = AppContext.cleanup.mergeClusters > 0
+            mbMatchCheck.checked = AppContext.cleanup.mbMatchAlbums > 0
         }
     }
 
@@ -60,6 +62,7 @@ Rectangle {
                 mojibakeCheck.checked = AppContext.cleanup.mojibakeGroups > 0
                 creditCheck.checked = AppContext.cleanup.creditValues > 0
                 mergeCheck.checked = AppContext.cleanup.mergeClusters > 0
+                mbMatchCheck.checked = AppContext.cleanup.mbMatchAlbums > 0
             }
         }
         function onAutoAcceptThresholdChanged() {
@@ -201,15 +204,30 @@ Rectangle {
                 Item { Layout.fillWidth: true }
             }
 
-            // Task 4: Missing album metadata
+            // Task 4: MusicBrainz
             RowLayout {
                 Layout.fillWidth: true
-                Layout.leftMargin: 28
+                spacing: Theme.spacingSmall
+                Controls.AppCheckBox {
+                    id: mbMatchCheck
+                    text: qsTr("Fill in from MusicBrainz")
+                    enabled: hasCleanup && !AppContext.cleanup.running
+                }
                 Label {
-                    text: hasCleanup ? qsTr("Missing album metadata: %n track(s) (online lookup comes later)", "", AppContext.cleanup.missingAlbumTracks) : ""
-                    font.pixelSize: Theme.fontSizeSmall
+                    text: {
+                        if (!hasCleanup) return ""
+                        const count = AppContext.cleanup.mbMatchAlbums
+                        const base = qsTr("%n album(s) with missing info", "", count)
+                        if (count > 0) {
+                            const minutes = Math.max(1, Math.ceil(count * 4 / 60))
+                            return base + qsTr(" · about %n min online", "", minutes)
+                        }
+                        return base
+                    }
+                    font.pixelSize: Theme.fontSizeNormal
                     color: Theme.textSecondary
                 }
+                Item { Layout.fillWidth: true }
             }
 
             Rectangle {
@@ -252,8 +270,9 @@ Rectangle {
                     primary: true
                     text: qsTr("Run")
                     visible: hasCleanup && !AppContext.cleanup.running
-                    enabled: root.hasSelectedTasks && hasCleanup && AppContext.cleanup.llmConfigured && !AppContext.cleanup.checking
-                    onClicked: if (hasCleanup) AppContext.cleanup.run(mojibakeCheck.checked, creditCheck.checked, mergeCheck.checked)
+                    enabled: root.hasSelectedTasks && hasCleanup && !AppContext.cleanup.checking
+                        && (!(mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked) || AppContext.cleanup.llmConfigured)
+                    onClicked: if (hasCleanup) AppContext.cleanup.run(mojibakeCheck.checked, creditCheck.checked, mergeCheck.checked, mbMatchCheck.checked)
                 }
 
                 // Progress controls
