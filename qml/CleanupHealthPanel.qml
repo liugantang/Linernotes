@@ -14,7 +14,7 @@ Rectangle {
     property bool collapsed: false
 
     readonly property bool hasCleanup: typeof AppContext !== "undefined" && AppContext && AppContext.cleanup
-    readonly property bool hasSelectedTasks: mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || mbMatchCheck.checked || versionsCheck.checked
+    readonly property bool hasSelectedTasks: mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || mbMatchCheck.checked || versionsCheck.checked || duplicatesCheck.checked
 
     color: Theme.surface
     border.color: Theme.divider
@@ -45,6 +45,8 @@ Rectangle {
         if (step === CleanupController.CoverArt) return qsTr("Downloading covers...")
         if (step === CleanupController.VersionSuffix) return qsTr("Classifying title suffixes...")
         if (step === CleanupController.VersionLink) return qsTr("Grouping song versions...")
+        if (step === CleanupController.Fingerprint) return qsTr("Computing audio fingerprints...")
+        if (step === CleanupController.Duplicates) return qsTr("Finding duplicates...")
         return qsTr("Cleaning up library...")
     }
 
@@ -56,6 +58,7 @@ Rectangle {
             mergeCheck.checked = AppContext.cleanup.mergeClusters > 0
             mbMatchCheck.checked = AppContext.cleanup.mbMatchAlbums > 0
             versionsCheck.checked = AppContext.cleanup.versionTracks > 0
+            duplicatesCheck.checked = AppContext.cleanup.duplicateCandidates > 0
         }
     }
 
@@ -68,6 +71,7 @@ Rectangle {
                 mergeCheck.checked = AppContext.cleanup.mergeClusters > 0
                 mbMatchCheck.checked = AppContext.cleanup.mbMatchAlbums > 0
                 versionsCheck.checked = AppContext.cleanup.versionTracks > 0
+                duplicatesCheck.checked = AppContext.cleanup.duplicateCandidates > 0
             }
         }
         function onAutoAcceptThresholdChanged() {
@@ -267,6 +271,40 @@ Rectangle {
                 Item { Layout.fillWidth: true }
             }
 
+            // Task 6: Duplicates
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Theme.spacingSmall
+                Controls.AppCheckBox {
+                    id: duplicatesCheck
+                    text: qsTr("Find duplicate songs")
+                    enabled: hasCleanup && !AppContext.cleanup.running
+                }
+                Label {
+                    text: {
+                        if (!hasCleanup) return ""
+                        const candidates = AppContext.cleanup.duplicateCandidates
+                        const fpPending = AppContext.cleanup.fingerprintPending
+                        const groups = AppContext.cleanup.duplicateGroups
+                        const versionPending = AppContext.cleanup.versionTracks
+                        let desc = qsTr("%n candidate track(s)", "", candidates)
+                        if (fpPending > 0) {
+                            desc += qsTr(" · %n audio fingerprint(s) to compute", "", fpPending)
+                        }
+                        if (groups > 0) {
+                            desc += qsTr(" · %n group(s) found last time", "", groups)
+                        }
+                        if (versionPending > 0) {
+                            desc += qsTr(" · run version identification first")
+                        }
+                        return desc
+                    }
+                    font.pixelSize: Theme.fontSizeNormal
+                    color: Theme.textSecondary
+                }
+                Item { Layout.fillWidth: true }
+            }
+
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
@@ -309,7 +347,7 @@ Rectangle {
                     visible: hasCleanup && !AppContext.cleanup.running
                     enabled: root.hasSelectedTasks && hasCleanup && !AppContext.cleanup.checking
                         && (!(mojibakeCheck.checked || creditCheck.checked || mergeCheck.checked || (versionsCheck.checked && AppContext.cleanup.versionSuffixes > 0)) || AppContext.cleanup.llmConfigured)
-                    onClicked: if (hasCleanup) AppContext.cleanup.run(mojibakeCheck.checked, creditCheck.checked, mergeCheck.checked, mbMatchCheck.checked, versionsCheck.checked)
+                    onClicked: if (hasCleanup) AppContext.cleanup.run(mojibakeCheck.checked, creditCheck.checked, mergeCheck.checked, mbMatchCheck.checked, versionsCheck.checked, duplicatesCheck.checked)
                 }
 
                 // Progress controls

@@ -42,6 +42,8 @@ public:
         CoverArt,
         VersionSuffix,
         VersionLink,
+        Fingerprint,
+        Duplicates,
     };
     Q_ENUM(Step)
 
@@ -55,6 +57,9 @@ public:
     Q_PROPERTY(int coverArtAlbums READ coverArtAlbums NOTIFY healthChanged)
     Q_PROPERTY(int versionTracks READ versionTracks NOTIFY healthChanged)
     Q_PROPERTY(int versionSuffixes READ versionSuffixes NOTIFY healthChanged)
+    Q_PROPERTY(int duplicateCandidates READ duplicateCandidates NOTIFY healthChanged)
+    Q_PROPERTY(int fingerprintPending READ fingerprintPending NOTIFY healthChanged)
+    Q_PROPERTY(int duplicateGroups READ duplicateGroups NOTIFY healthChanged)
     Q_PROPERTY(int mojibakeTokens READ mojibakeTokens NOTIFY healthChanged)
     Q_PROPERTY(int creditTokens READ creditTokens NOTIFY healthChanged)
     Q_PROPERTY(int mergeTokens READ mergeTokens NOTIFY healthChanged)
@@ -74,6 +79,25 @@ public:
             NOTIFY autoAcceptThresholdChanged)
     Q_PROPERTY(bool llmConfigured READ isLlmConfigured NOTIFY llmConfiguredChanged)
 
+    struct HealthReportData {
+        int mojibakeGroups = 0;
+        QStringList mojibakeItems;
+        int creditValues = 0;
+        QStringList creditItems;
+        int mergeClusters = 0;
+        QStringList mergeItems;
+        int mbMatchAlbums = 0;
+        QStringList mbMatchItems;
+        int coverArtAlbums = 0;
+        QStringList coverArtItems;
+        int versionTracks = 0;
+        int versionSuffixes = 0;
+        QStringList versionSuffixItems;
+        int duplicateCandidates = 0;
+        int fingerprintPending = 0;
+        int duplicateGroups = 0;
+    };
+
     CleanupController(library::Database &db, const core::Clock &clock, ai::JobQueue &jobs,
         const ai::PromptLibrary &prompts, const ai::AiConfig &aiConfig, core::Settings &settings,
         QObject *parent = nullptr);
@@ -88,6 +112,9 @@ public:
     [[nodiscard]] int coverArtAlbums() const;
     [[nodiscard]] int versionTracks() const;
     [[nodiscard]] int versionSuffixes() const;
+    [[nodiscard]] int duplicateCandidates() const;
+    [[nodiscard]] int fingerprintPending() const;
+    [[nodiscard]] int duplicateGroups() const;
     [[nodiscard]] int mojibakeTokens() const;
     [[nodiscard]] int creditTokens() const;
     [[nodiscard]] int mergeTokens() const;
@@ -106,7 +133,8 @@ public:
     [[nodiscard]] bool isLlmConfigured() const;
 
     Q_INVOKABLE void checkHealth();
-    Q_INVOKABLE void run(bool mojibake, bool credit, bool merge, bool mbMatch, bool versions);
+    Q_INVOKABLE void run(bool mojibake, bool credit, bool merge, bool mbMatch, bool versions,
+        bool duplicates = false);
     Q_INVOKABLE void pause();
     Q_INVOKABLE void resume();
     Q_INVOKABLE void cancel();
@@ -124,22 +152,6 @@ signals:
     void batchesChanged();
 
 private:
-    struct HealthReportData {
-        int mojibakeGroups = 0;
-        QStringList mojibakeItems;
-        int creditValues = 0;
-        QStringList creditItems;
-        int mergeClusters = 0;
-        QStringList mergeItems;
-        int mbMatchAlbums = 0;
-        QStringList mbMatchItems;
-        int coverArtAlbums = 0;
-        QStringList coverArtItems;
-        int versionTracks = 0;
-        int versionSuffixes = 0;
-        QStringList versionSuffixItems;
-    };
-
     struct StepItemData {
         Step step = Step::None;
         QStringList items;
@@ -169,6 +181,9 @@ private:
     int m_coverArtAlbums = 0;
     int m_versionTracks = 0;
     int m_versionSuffixes = 0;
+    int m_duplicateCandidates = 0;
+    int m_fingerprintPending = 0;
+    int m_duplicateGroups = 0;
     int m_mojibakeTokens = 0;
     int m_creditTokens = 0;
     int m_mergeTokens = 0;

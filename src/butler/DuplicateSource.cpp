@@ -64,7 +64,7 @@ DuplicateSource::DuplicateSource(library::Database &db, const core::Clock &clock
 {
 }
 
-core::Result<QList<DupTrack>> DuplicateSource::loadTracks() const
+core::Result<QList<DupTrack>> DuplicateSource::loadTracks(bool withFingerprints) const
 {
     auto connRes = m_db.connection();
     if (!connRes.ok()) {
@@ -72,19 +72,21 @@ core::Result<QList<DupTrack>> DuplicateSource::loadTracks() const
     }
     const auto &conn = connRes.value();
 
-    const library::FingerprintStore fpStore(m_db, m_clock);
-    const auto fpRes = fpStore.loadAll();
-    if (!fpRes.ok()) {
-        return fpRes.error();
-    }
-
     QHash<qint64, audio::RawFingerprint> fpMap;
-    for (const auto &sfp : fpRes.value()) {
-        fpMap.insert(sfp.fileId,
-            audio::RawFingerprint {
-                .algorithm = sfp.algorithm,
-                .items = sfp.items,
-            });
+    if (withFingerprints) {
+        const library::FingerprintStore fpStore(m_db, m_clock);
+        const auto fpRes = fpStore.loadAll();
+        if (!fpRes.ok()) {
+            return fpRes.error();
+        }
+
+        for (const auto &sfp : fpRes.value()) {
+            fpMap.insert(sfp.fileId,
+                audio::RawFingerprint {
+                    .algorithm = sfp.algorithm,
+                    .items = sfp.items,
+                });
+        }
     }
 
     QSqlQuery q(conn);
@@ -144,8 +146,10 @@ core::Result<QList<DupTrack>> DuplicateSource::loadTracks() const
         dt.contentHash = contentHash;
         dt.keepScore = keepScore(factors);
 
-        if (const auto it = fpMap.constFind(fileId); it != fpMap.constEnd()) {
-            dt.fingerprint = it.value();
+        if (withFingerprints) {
+            if (const auto it = fpMap.constFind(fileId); it != fpMap.constEnd()) {
+                dt.fingerprint = it.value();
+            }
         }
 
         results.append(dt);
@@ -156,7 +160,7 @@ core::Result<QList<DupTrack>> DuplicateSource::loadTracks() const
 
 core::Result<QList<qint64>> DuplicateSource::fingerprintCandidates() const
 {
-    const auto tracksRes = loadTracks();
+    const auto tracksRes = loadTracks(false);
     if (!tracksRes.ok()) {
         return tracksRes.error();
     }

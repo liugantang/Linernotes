@@ -10,6 +10,7 @@
 #include <butler/ArtistCreditJobHandler.h>
 #include <butler/ArtistMergeJobHandler.h>
 #include <butler/CoverArtJobHandler.h>
+#include <butler/DuplicateJobHandler.h>
 #include <butler/FingerprintJobHandler.h>
 #include <butler/MbMatchJobHandler.h>
 #include <butler/MojibakeJobHandler.h>
@@ -59,6 +60,7 @@ AiContext::AiContext(core::Settings &settings, library::Database &db, library::C
     m_jobs.registerHandler(
         std::make_unique<butler::ArtistMergeJobHandler>(db, m_llm, m_prompts, clock));
     m_jobs.registerHandler(std::make_unique<butler::FingerprintJobHandler>(db, clock));
+    m_jobs.registerHandler(std::make_unique<butler::DuplicateJobHandler>(db, clock));
     m_jobs.registerHandler(std::make_unique<butler::MbMatchJobHandler>(db, m_musicBrainz, clock));
     m_jobs.registerHandler(
         std::make_unique<butler::CoverArtJobHandler>(db, m_network, covers, clock,

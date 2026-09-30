@@ -422,6 +422,16 @@
     </message>
     <message>
         <location filename="../qml/CleanupHealthPanel.qml" line="48"/>
+        <source>Computing audio fingerprints...</source>
+        <translation>正在计算声学指纹…</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="49"/>
+        <source>Finding duplicates...</source>
+        <translation>正在查找重复…</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="50"/>
         <source>Cleaning up library...</source>
         <translation>正在整理曲库…</translation>
     </message>
@@ -557,6 +567,37 @@
         <translation>
             <numerusform> · %n 种后缀需 AI 判断</numerusform>
         </translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="280"/>
+        <source>Find duplicate songs</source>
+        <translation>查找重复歌曲</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="290"/>
+        <source>%n candidate track(s)</source>
+        <translation>
+            <numerusform>%n 首候选</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="292"/>
+        <source> · %n audio fingerprint(s) to compute</source>
+        <translation>
+            <numerusform> · 需计算 %n 个声学指纹</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="295"/>
+        <source> · %n group(s) found last time</source>
+        <translation>
+            <numerusform> · 上次找到 %n 组</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="298"/>
+        <source> · run version identification first</source>
+        <translation> · 请先识别歌曲版本</translation>
     </message>
     <message>
         <location filename="../qml/CleanupHealthPanel.qml" line="279"/>

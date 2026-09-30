@@ -18,6 +18,8 @@
 #include <butler/ArtistCreditSource.h>
 #include <butler/ArtistMergeSource.h>
 #include <butler/CoverArtSource.h>
+#include <butler/DuplicateFinder.h>
+#include <butler/DuplicateSource.h>
 #include <butler/MbMatchSource.h>
 #include <butler/MojibakeSource.h>
 #include <butler/VersionLinker.h>
@@ -31,6 +33,8 @@
 namespace linernotes::ui {
 
 namespace {
+
+using HealthReportData = CleanupController::HealthReportData;
 
 int countCreditValues(const QStringList &items)
 {
@@ -65,46 +69,169 @@ int countMergeClusters(const QStringList &items)
     return count;
 }
 
-QStringList collectStepItems(library::Database &db, CleanupController::Step step, int promptVersion)
+void collectMojibake(library::Database &db, HealthReportData &report)
+{
+    const butler::MojibakeSource mojibakeSource(db);
+    if (auto res = mojibakeSource.findGroups(); res.ok()) {
+        report.mojibakeItems = res.value();
+        report.mojibakeGroups = static_cast<int>(report.mojibakeItems.size());
+    }
+}
+
+void collectCredit(library::Database &db, int promptVersion, HealthReportData &report)
+{
+    const butler::ArtistCreditSource creditSource(db);
+    if (auto res = creditSource.findItems(promptVersion); res.ok()) {
+        report.creditItems = res.value();
+        report.creditValues = countCreditValues(report.creditItems);
+    }
+}
+
+void collectMerge(library::Database &db, HealthReportData &report)
+{
+    const butler::ArtistMergeSource mergeSource(db);
+    if (auto res = mergeSource.findItems(); res.ok()) {
+        report.mergeItems = res.value();
+        report.mergeClusters = countMergeClusters(report.mergeItems);
+    }
+}
+
+void collectMbMatch(library::Database &db, HealthReportData &report)
+{
+    const butler::MbMatchSource mbMatchSource(db);
+    if (auto res = mbMatchSource.pendingAlbums(); res.ok()) {
+        for (const qint64 id : res.value()) {
+            report.mbMatchItems.append(QString::number(id));
+        }
+        report.mbMatchAlbums = static_cast<int>(report.mbMatchItems.size());
+    }
+}
+
+void collectCoverArt(library::Database &db, HealthReportData &report)
+{
+    const butler::CoverArtSource coverArtSource(db);
+    if (auto res = coverArtSource.pendingAlbums(); res.ok()) {
+        for (const qint64 id : res.value()) {
+            report.coverArtItems.append(QString::number(id));
+        }
+        report.coverArtAlbums = static_cast<int>(report.coverArtItems.size());
+    }
+}
+
+void collectVersions(
+    library::Database &db, const core::Clock &clock, int promptVersion, HealthReportData &report)
+{
+    const butler::VersionLinker versionLinker(db, clock);
+    if (auto res = versionLinker.countPending(); res.ok()) {
+        report.versionTracks = res.value();
+    }
+
+    const butler::VersionSuffixSource versionSuffixSource(db);
+    if (auto res = versionSuffixSource.findItems(promptVersion); res.ok()) {
+        report.versionSuffixItems = res.value();
+    }
+    if (auto res = versionSuffixSource.countPending(promptVersion); res.ok()) {
+        report.versionSuffixes = res.value();
+    }
+}
+
+void collectDuplicates(library::Database &db, const core::Clock &clock, HealthReportData &report)
+{
+    const butler::DuplicateSource dupSource(db, clock);
+    if (auto tracksRes = dupSource.loadTracks(false); tracksRes.ok()) {
+        const auto clusters = butler::candidateClusters(tracksRes.value());
+        for (const auto &cluster : clusters) {
+            report.duplicateCandidates += static_cast<int>(cluster.size());
+        }
+    }
+    if (auto fpCandRes = dupSource.fingerprintCandidates(); fpCandRes.ok()) {
+        report.fingerprintPending = static_cast<int>(fpCandRes.value().size());
+    }
+    if (auto grpRes = dupSource.countGroups(); grpRes.ok()) {
+        for (const int count : grpRes.value()) {
+            report.duplicateGroups += count;
+        }
+    }
+}
+
+int estimateTokens(ai::JobQueue &jobs, const QString &kind, const QStringList &items)
+{
+    if (auto est = jobs.estimate(kind, items); est.ok()) {
+        return est.value().promptTokens + est.value().completionTokens;
+    }
+    return 0;
+}
+
+QStringList collectStepItems(library::Database &db, const core::Clock &clock,
+    CleanupController::Step step, int promptVersion)
 {
     using Step = CleanupController::Step;
     QStringList items;
-    if (step == Step::Mojibake) {
+    switch (step) {
+    case Step::Mojibake: {
         const butler::MojibakeSource src(db);
         if (auto r = src.findGroups(); r.ok()) {
             items = r.value();
         }
-    } else if (step == Step::Credit) {
+        break;
+    }
+    case Step::Credit: {
         const butler::ArtistCreditSource src(db);
         if (auto r = src.findItems(promptVersion); r.ok()) {
             items = r.value();
         }
-    } else if (step == Step::Merge) {
+        break;
+    }
+    case Step::Merge: {
         const butler::ArtistMergeSource src(db);
         if (auto r = src.findItems(); r.ok()) {
             items = r.value();
         }
-    } else if (step == Step::MbMatch) {
+        break;
+    }
+    case Step::MbMatch: {
         const butler::MbMatchSource src(db);
         if (auto r = src.pendingAlbums(); r.ok()) {
             for (const qint64 id : r.value()) {
                 items.append(QString::number(id));
             }
         }
-    } else if (step == Step::CoverArt) {
+        break;
+    }
+    case Step::CoverArt: {
         const butler::CoverArtSource src(db);
         if (auto r = src.pendingAlbums(); r.ok()) {
             for (const qint64 id : r.value()) {
                 items.append(QString::number(id));
             }
         }
-    } else if (step == Step::VersionSuffix) {
+        break;
+    }
+    case Step::VersionSuffix: {
         const butler::VersionSuffixSource src(db);
         if (auto r = src.findItems(promptVersion); r.ok()) {
             items = r.value();
         }
-    } else if (step == Step::VersionLink) {
+        break;
+    }
+    case Step::VersionLink:
         items = QStringList { QStringLiteral("all") };
+        break;
+    case Step::Fingerprint: {
+        const butler::DuplicateSource src(db, clock);
+        if (auto r = src.fingerprintCandidates(); r.ok()) {
+            for (const qint64 id : r.value()) {
+                items.append(QString::number(id));
+            }
+        }
+        break;
+    }
+    case Step::Duplicates:
+        items = QStringList { QStringLiteral("all") };
+        break;
+    case Step::None:
+    default:
+        break;
     }
     return items;
 }
@@ -194,6 +321,21 @@ int CleanupController::versionTracks() const
 int CleanupController::versionSuffixes() const
 {
     return m_versionSuffixes;
+}
+
+int CleanupController::duplicateCandidates() const
+{
+    return m_duplicateCandidates;
+}
+
+int CleanupController::fingerprintPending() const
+{
+    return m_fingerprintPending;
+}
+
+int CleanupController::duplicateGroups() const
+{
+    return m_duplicateGroups;
 }
 
 int CleanupController::mojibakeTokens() const
@@ -300,54 +442,13 @@ void CleanupController::checkHealth()
     auto future = QtConcurrent::run([&db = m_db, &clock = m_clock, creditPromptVersion,
                                         versionPromptVersion]() -> HealthReportData {
         HealthReportData report;
-
-        const butler::MojibakeSource mojibakeSource(db);
-        if (auto res = mojibakeSource.findGroups(); res.ok()) {
-            report.mojibakeItems = res.value();
-            report.mojibakeGroups = static_cast<int>(report.mojibakeItems.size());
-        }
-
-        const butler::ArtistCreditSource creditSource(db);
-        if (auto res = creditSource.findItems(creditPromptVersion); res.ok()) {
-            report.creditItems = res.value();
-            report.creditValues = countCreditValues(report.creditItems);
-        }
-
-        const butler::ArtistMergeSource mergeSource(db);
-        if (auto res = mergeSource.findItems(); res.ok()) {
-            report.mergeItems = res.value();
-            report.mergeClusters = countMergeClusters(report.mergeItems);
-        }
-
-        const butler::MbMatchSource mbMatchSource(db);
-        if (auto res = mbMatchSource.pendingAlbums(); res.ok()) {
-            for (const qint64 id : res.value()) {
-                report.mbMatchItems.append(QString::number(id));
-            }
-            report.mbMatchAlbums = static_cast<int>(report.mbMatchItems.size());
-        }
-
-        const butler::CoverArtSource coverArtSource(db);
-        if (auto res = coverArtSource.pendingAlbums(); res.ok()) {
-            for (const qint64 id : res.value()) {
-                report.coverArtItems.append(QString::number(id));
-            }
-            report.coverArtAlbums = static_cast<int>(report.coverArtItems.size());
-        }
-
-        const butler::VersionLinker versionLinker(db, clock);
-        if (auto res = versionLinker.countPending(); res.ok()) {
-            report.versionTracks = res.value();
-        }
-
-        const butler::VersionSuffixSource versionSuffixSource(db);
-        if (auto res = versionSuffixSource.findItems(versionPromptVersion); res.ok()) {
-            report.versionSuffixItems = res.value();
-        }
-        if (auto res = versionSuffixSource.countPending(versionPromptVersion); res.ok()) {
-            report.versionSuffixes = res.value();
-        }
-
+        collectMojibake(db, report);
+        collectCredit(db, creditPromptVersion, report);
+        collectMerge(db, report);
+        collectMbMatch(db, report);
+        collectCoverArt(db, report);
+        collectVersions(db, clock, versionPromptVersion, report);
+        collectDuplicates(db, clock, report);
         return report;
     });
 
@@ -364,35 +465,17 @@ void CleanupController::onHealthCheckFinished()
     m_coverArtAlbums = data.coverArtAlbums;
     m_versionTracks = data.versionTracks;
     m_versionSuffixes = data.versionSuffixes;
+    m_duplicateCandidates = data.duplicateCandidates;
+    m_fingerprintPending = data.fingerprintPending;
+    m_duplicateGroups = data.duplicateGroups;
 
-    if (auto est = m_jobs.estimate(QStringLiteral("butler.mojibake"), data.mojibakeItems);
-        est.ok()) {
-        m_mojibakeTokens = est.value().promptTokens + est.value().completionTokens;
-    } else {
-        m_mojibakeTokens = 0;
-    }
-
-    if (auto est = m_jobs.estimate(QStringLiteral("butler.artist_credit"), data.creditItems);
-        est.ok()) {
-        m_creditTokens = est.value().promptTokens + est.value().completionTokens;
-    } else {
-        m_creditTokens = 0;
-    }
-
-    if (auto est = m_jobs.estimate(QStringLiteral("butler.artist_merge"), data.mergeItems);
-        est.ok()) {
-        m_mergeTokens = est.value().promptTokens + est.value().completionTokens;
-    } else {
-        m_mergeTokens = 0;
-    }
-
-    if (auto est
-        = m_jobs.estimate(QStringLiteral("butler.version_suffix"), data.versionSuffixItems);
-        est.ok()) {
-        m_versionTokens = est.value().promptTokens + est.value().completionTokens;
-    } else {
-        m_versionTokens = 0;
-    }
+    m_mojibakeTokens
+        = estimateTokens(m_jobs, QStringLiteral("butler.mojibake"), data.mojibakeItems);
+    m_creditTokens
+        = estimateTokens(m_jobs, QStringLiteral("butler.artist_credit"), data.creditItems);
+    m_mergeTokens = estimateTokens(m_jobs, QStringLiteral("butler.artist_merge"), data.mergeItems);
+    m_versionTokens
+        = estimateTokens(m_jobs, QStringLiteral("butler.version_suffix"), data.versionSuffixItems);
 
     m_healthReady = true;
     m_checking = false;
@@ -400,7 +483,8 @@ void CleanupController::onHealthCheckFinished()
     emit healthChanged();
 }
 
-void CleanupController::run(bool mojibake, bool credit, bool merge, bool mbMatch, bool versions)
+void CleanupController::run(
+    bool mojibake, bool credit, bool merge, bool mbMatch, bool versions, bool duplicates)
 {
     if (m_running) {
         return;
@@ -423,6 +507,10 @@ void CleanupController::run(bool mojibake, bool credit, bool merge, bool mbMatch
     if (versions) {
         m_pendingSteps.append(Step::VersionSuffix);
         m_pendingSteps.append(Step::VersionLink);
+    }
+    if (duplicates) {
+        m_pendingSteps.append(Step::Fingerprint);
+        m_pendingSteps.append(Step::Duplicates);
     }
 
     if (m_pendingSteps.isEmpty()) {
@@ -483,9 +571,13 @@ void CleanupController::startNextStep()
         }
     }
 
-    auto future = QtConcurrent::run([&db = m_db, step, promptVersion]() -> StepItemData {
-        return StepItemData { .step = step, .items = collectStepItems(db, step, promptVersion) };
-    });
+    auto future
+        = QtConcurrent::run([&db = m_db, &clock = m_clock, step, promptVersion]() -> StepItemData {
+              return StepItemData {
+                  .step = step,
+                  .items = collectStepItems(db, clock, step, promptVersion),
+              };
+          });
 
     m_stepWatcher.setFuture(future);
 }
@@ -546,6 +638,14 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
     case Step::VersionLink:
         jobKind = QStringLiteral("butler.version_link");
         title = QStringLiteral("Group song versions");
+        break;
+    case Step::Fingerprint:
+        jobKind = QStringLiteral("butler.fingerprint");
+        title = QStringLiteral("Compute audio fingerprints");
+        break;
+    case Step::Duplicates:
+        jobKind = QStringLiteral("butler.duplicates");
+        title = QStringLiteral("Find duplicate songs");
         break;
     case Step::None:
     default:

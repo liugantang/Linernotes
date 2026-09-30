@@ -40,5 +40,6 @@ inline constexpr QLatin1StringView kMbMatchAlbumNotFound { "mb_match.album_not_f
 inline constexpr QLatin1StringView kVersionSuffixInvalidKey { "version_suffix.invalid_key" };
 inline constexpr QLatin1StringView kVersionSuffixInvalidResult { "version_suffix.invalid_result" };
 inline constexpr QLatin1StringView kVersionLinkInvalidKey { "version_link.invalid_key" };
+inline constexpr QLatin1StringView kDuplicatesInvalidKey { "duplicates.invalid_key" };
 
 } // namespace linernotes::butler::errc

@@ -38,6 +38,8 @@ add_library(linernotes_butler STATIC
     CoverArtSource.h
     DuplicateFinder.cpp
     DuplicateFinder.h
+    DuplicateJobHandler.cpp
+    DuplicateJobHandler.h
     DuplicateSource.cpp
     DuplicateSource.h
     EncodingScore.cpp

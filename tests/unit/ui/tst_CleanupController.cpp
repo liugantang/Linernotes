@@ -23,6 +23,10 @@
 #include <butler/ArtistCreditStore.h>
 #include <butler/ArtistMergeJobHandler.h>
 #include <butler/CoverArtJobHandler.h>
+#include <butler/DuplicateFinder.h>
+#include <butler/DuplicateJobHandler.h>
+#include <butler/DuplicateSource.h>
+#include <butler/FingerprintJobHandler.h>
 #include <butler/MbMatchJobHandler.h>
 #include <butler/MbMatchSource.h>
 #include <butler/MojibakeJobHandler.h>
@@ -36,6 +40,7 @@
 #include <library/CoverStore.h>
 #include <library/Database.h>
 #include <library/EntityLinker.h>
+#include <library/FingerprintStore.h>
 #include <library/LibraryEnums.h>
 #include <library/Migrator.h>
 #include <ui/CleanupController.h>
@@ -58,6 +63,10 @@ using linernotes::butler::ArtistCreditStore;
 using linernotes::butler::ArtistMergeJobHandler;
 using linernotes::butler::CoverArtJobHandler;
 using linernotes::butler::CreditPerformer;
+using linernotes::butler::DuplicateJobHandler;
+using linernotes::butler::DuplicateKind;
+using linernotes::butler::DuplicateSource;
+using linernotes::butler::FingerprintJobHandler;
 using linernotes::butler::MbMatchJobHandler;
 using linernotes::butler::MbMatchSource;
 using linernotes::butler::MojibakeJobHandler;
@@ -69,6 +78,7 @@ using linernotes::library::CorrectionStore;
 using linernotes::library::CoverStore;
 using linernotes::library::Database;
 using linernotes::library::EntityLinker;
+using linernotes::library::FingerprintStore;
 using linernotes::library::Migrator;
 using linernotes::test::fixturePath;
 using linernotes::test::ManualClock;
@@ -95,6 +105,39 @@ struct TestDbHelper {
         return q.exec() ? q.lastInsertId().toLongLong() : -1;
     }
 
+    static qint64 insertFileWithDetails(const QSqlDatabase &db, qint64 rootId, const QString &path,
+        const QString &contentHash, qint64 durationMs,
+        const QString &codec = QStringLiteral("flac"), int sampleRate = 44100, int bitDepth = 16,
+        int bitrate = 0)
+    {
+        QSqlQuery q(db);
+        q.prepare(QStringLiteral(
+            "INSERT INTO files (root_id, path, size, mtime, content_hash, codec, sample_rate, "
+            "bit_depth, bitrate, duration_ms, first_seen_at, scanned_at) "
+            "VALUES (?, ?, 1048576, 2000, ?, ?, ?, ?, ?, ?, 2000, 2000);"));
+        q.addBindValue(rootId);
+        q.addBindValue(path);
+        q.addBindValue(contentHash);
+        q.addBindValue(codec);
+        q.addBindValue(sampleRate);
+        q.addBindValue(bitDepth);
+        q.addBindValue(bitrate);
+        q.addBindValue(durationMs);
+        return q.exec() ? q.lastInsertId().toLongLong() : -1;
+    }
+
+    static bool insertWork(
+        const QSqlDatabase &db, qint64 workId, const QString &groupingKey, const QString &title)
+    {
+        QSqlQuery q(db);
+        q.prepare(QStringLiteral(
+            "INSERT INTO works (id, grouping_key, title, created_at) VALUES (?, ?, ?, 1000);"));
+        q.addBindValue(workId);
+        q.addBindValue(groupingKey);
+        q.addBindValue(title);
+        return q.exec();
+    }
+
     static qint64 insertTrack(const QSqlDatabase &db, qint64 fileId)
     {
         QSqlQuery q(db);
@@ -103,6 +146,31 @@ struct TestDbHelper {
             "VALUES (?, NULL, NULL, 0, 3000);"));
         q.addBindValue(fileId);
         return q.exec() ? q.lastInsertId().toLongLong() : -1;
+    }
+
+    static qint64 insertTrackWithWork(const QSqlDatabase &db, qint64 fileId, qint64 workId)
+    {
+        QSqlQuery q(db);
+        q.prepare(QStringLiteral(
+            "INSERT INTO tracks (file_id, cue_index, album_id, work_id, tags_read_at, created_at) "
+            "VALUES (?, NULL, NULL, ?, 1000, 3000);"));
+        q.addBindValue(fileId);
+        q.addBindValue(workId);
+        return q.exec() ? q.lastInsertId().toLongLong() : -1;
+    }
+
+    static bool insertTrackVersion(const QSqlDatabase &db, qint64 trackId, const QString &baseTitle,
+        const QString &versionType = QStringLiteral("studio"))
+    {
+        QSqlQuery q(db);
+        q.prepare(QStringLiteral(
+            "INSERT INTO track_versions (track_id, base_title, version_type, unresolved, "
+            "updated_at) "
+            "VALUES (?, ?, ?, 0, 1000);"));
+        q.addBindValue(trackId);
+        q.addBindValue(baseTitle);
+        q.addBindValue(versionType);
+        return q.exec();
     }
 
     static bool insertRawTag(const QSqlDatabase &db, qint64 trackId, const QString &key,
@@ -210,6 +278,7 @@ private slots:
     void runExecutesStepsInOrder();
     void autoAcceptAppliesThreshold();
     void mbMatchStepRunsWithoutLlm();
+    void duplicatesStepRuns();
 };
 
 void TstCleanupController::healthCountsMatchLibrary()
@@ -325,7 +394,7 @@ void TstCleanupController::runExecutesStepsInOrder()
 
     CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
 
-    cleanup.run(true, true, true, false, false);
+    cleanup.run(true, true, true, false, false, false);
     QCOMPARE(cleanup.isRunning(), true);
 
     QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
@@ -435,7 +504,7 @@ void TstCleanupController::autoAcceptAppliesThreshold()
     CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
     cleanup.setAutoAcceptThreshold(0.9);
 
-    cleanup.run(false, false, true, false, false);
+    cleanup.run(false, false, true, false, false, false);
     QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
 
     CorrectionStore store(db, clock);
@@ -505,7 +574,7 @@ void TstCleanupController::mbMatchStepRunsWithoutLlm()
     CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
     QCOMPARE(cleanup.isLlmConfigured(), false);
 
-    cleanup.run(false, false, false, true, false);
+    cleanup.run(false, false, false, true, false, false);
     QCOMPARE(cleanup.isRunning(), true);
 
     QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
@@ -524,6 +593,79 @@ void TstCleanupController::mbMatchStepRunsWithoutLlm()
         QStringLiteral("SELECT COUNT(*) FROM correction_batches WHERE kind = 'mb_match';")));
     QVERIFY(batchQ.next());
     QCOMPARE(batchQ.value(0).toInt(), 0);
+}
+
+void TstCleanupController::duplicatesStepRuns()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    Database db(tempDir.filePath(QStringLiteral("test_dup_step.db")));
+    QVERIFY(db.open(Migrator()).ok());
+    const auto conn = db.connection().value();
+
+    const qint64 rootId = TestDbHelper::insertRoot(conn);
+
+    const qint64 f1 = TestDbHelper::insertFileWithDetails(
+        conn, rootId, QStringLiteral("/music/dup/1.flac"), QStringLiteral("hash1"), 200000);
+    const qint64 f2 = TestDbHelper::insertFileWithDetails(
+        conn, rootId, QStringLiteral("/music/dup/2.flac"), QStringLiteral("hash2"), 200500);
+
+    QVERIFY(f1 > 0);
+    QVERIFY(f2 > 0);
+
+    const qint64 workId = 1;
+    QVERIFY(TestDbHelper::insertWork(
+        conn, workId, QStringLiteral("work_song_a"), QStringLiteral("Song A")));
+
+    const qint64 t1 = TestDbHelper::insertTrackWithWork(conn, f1, workId);
+    const qint64 t2 = TestDbHelper::insertTrackWithWork(conn, f2, workId);
+
+    QVERIFY(t1 > 0);
+    QVERIFY(t2 > 0);
+
+    QVERIFY(TestDbHelper::insertTrackVersion(
+        conn, t1, QStringLiteral("Song A"), QStringLiteral("studio")));
+    QVERIFY(TestDbHelper::insertTrackVersion(
+        conn, t2, QStringLiteral("Song A"), QStringLiteral("studio")));
+
+    const ManualClock clock(1000);
+    FingerprintStore fpStore(db, clock);
+
+    QList<quint32> fpItems;
+    fpItems.reserve(50);
+    for (quint32 i = 0; i < 50; ++i) {
+        fpItems.append(0x12345678U ^ (i * 0x9e3779b9U));
+    }
+
+    QVERIFY(fpStore.save(f1, 1, fpItems).ok());
+    QVERIFY(fpStore.save(f2, 1, fpItems).ok());
+
+    const QTemporaryDir settingsDir;
+    QVERIFY(settingsDir.isValid());
+    Settings settings(settingsDir.filePath(QStringLiteral("settings.ini")));
+    AiConfig aiConfig(settings);
+    PromptLibrary prompts({ QStringLiteral(":/prompts") });
+
+    JobQueue jobs(db, clock);
+    jobs.registerHandler(std::make_unique<FingerprintJobHandler>(db, clock));
+    jobs.registerHandler(std::make_unique<DuplicateJobHandler>(db, clock));
+
+    CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
+
+    cleanup.checkHealth();
+    QTRY_VERIFY_WITH_TIMEOUT(cleanup.isHealthReady(), 5000);
+    QCOMPARE(cleanup.duplicateCandidates(), 2);
+    QCOMPARE(cleanup.fingerprintPending(), 0);
+
+    cleanup.run(false, false, false, false, false, true);
+    QCOMPARE(cleanup.isRunning(), true);
+
+    QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
+
+    const DuplicateSource source(db, clock);
+    const auto countRes = source.countGroups();
+    QVERIFY(countRes.ok());
+    QCOMPARE(countRes.value().value(DuplicateKind::SameRecording), 1);
 }
 
 } // namespace

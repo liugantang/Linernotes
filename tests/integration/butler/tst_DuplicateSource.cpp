@@ -156,10 +156,21 @@ void TstDuplicateSource::detectsDuplicatesAndSavesGroups()
     QCOMPARE(candRes.value(), (QList<qint64> { f3 }));
 
     // 2. loadTracks
-    const auto tracksRes = source.loadTracks();
+    const auto tracksRes = source.loadTracks(true);
     QVERIFY(tracksRes.ok());
     const auto &tracks = tracksRes.value();
     QCOMPARE(tracks.size(), 3);
+    QVERIFY(tracks.at(0).fingerprint.has_value());
+    QVERIFY(tracks.at(1).fingerprint.has_value());
+    QVERIFY(!tracks.at(2).fingerprint.has_value());
+
+    const auto tracksWithoutFpRes = source.loadTracks(false);
+    QVERIFY(tracksWithoutFpRes.ok());
+    const auto &tracksWithoutFp = tracksWithoutFpRes.value();
+    QCOMPARE(tracksWithoutFp.size(), 3);
+    QVERIFY(!tracksWithoutFp.at(0).fingerprint.has_value());
+    QVERIFY(!tracksWithoutFp.at(1).fingerprint.has_value());
+    QVERIFY(!tracksWithoutFp.at(2).fingerprint.has_value());
 
     // 3. findDuplicates
     const auto groups = findDuplicates(tracks);

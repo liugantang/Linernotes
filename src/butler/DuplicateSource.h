@@ -28,9 +28,9 @@ public:
     /// track_id、work_id、track_versions.version_type、files.duration_ms、content_hash、codec/sample_rate/bit_depth/bitrate、
     /// 标签完整度（effective_metadata 中
     /// title、artist、album、album_artist、year、track_number、genre 非空的个数）、
-    /// 是否有封面（files.cover_id 或所属 album 的 cover_id 非空），并附上
-    /// FingerprintStore::loadAll() 的指纹，keepScore 算好。
-    core::Result<QList<DupTrack>> loadTracks() const;
+    /// 是否有封面（files.cover_id 或所属 album 的 cover_id 非空），
+    /// withFingerprints 为 true 时附上 FingerprintStore::loadAll() 的指纹，keepScore 算好。
+    core::Result<QList<DupTrack>> loadTracks(bool withFingerprints = true) const;
 
     /// 需要计算声学指纹的文件：属于某个候选簇（candidateClusters）的曲目所在文件中，FingerprintStore::pendingFileIds()
     /// 里有的。升序。
