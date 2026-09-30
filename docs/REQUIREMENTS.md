@@ -57,7 +57,7 @@
 | F-LIB-01 | 添加多个曲库根目录，递归扫描，支持排除规则 | P0 |
 | F-LIB-02 | 增量扫描：基于 mtime+size 判断变化；文件系统监听（QFileSystemWatcher/inotify）自动更新 | P0 |
 | F-LIB-03 | 读取标签（TagLib）：标题、艺人、专辑艺人、专辑、年份、音轨号、碟号、流派、作曲、歌词、封面、ReplayGain、MusicBrainz ID | P0 |
-| F-LIB-04 | 封面：内嵌 → 目录内 cover/folder 图片 → 在线获取（P1），缓存缩略图 | P0 |
+| F-LIB-04 | 封面：内嵌 → 目录内 cover/folder 图片 → 用户按需在线查找（iTunes，P1），缓存缩略图 | P0 |
 | F-LIB-05 | 浏览视图：歌曲 / 专辑 / 艺人 / 流派 / 文件夹；排序与筛选 | P0 |
 | F-LIB-06 | 关键词搜索（SQLite FTS5，支持拼音首字母与简繁互通） | P0 |
 | F-LIB-07 | 收藏（喜欢）、评分、歌单（手动歌单 + 智能歌单规则） | P0 |
@@ -71,7 +71,7 @@
 | F-BUT-01 | **乱码修复**：检测 GBK/Big5/Shift-JIS/EUC-KR 被误读为 Latin-1 的 mojibake，自动给出修复候选；规则优先，疑难项交给 LLM | P0 |
 | F-BUT-02 | **艺人归一**：把「周杰伦 / Jay Chou / 周杰倫」合并为同一艺人实体，保留别名；可选择显示名（原文/中文/英文/简体） | P0 |
 | F-BUT-03 | 多艺人拆分：识别 `A feat. B`、`A & B`、`A、B`、`A / B` 等并拆分为多值，但不误拆「Simon & Garfunkel」这类组合名 | P1 |
-| F-BUT-04 | **元数据补全**：以专辑为单位用 MusicBrainz 文本搜索匹配 release，补全年份、专辑艺人、音轨号/碟号、厂牌、MBID、封面（Cover Art Archive）等；只补空字段（阶段 7 不接 AcoustID，见 decisions/0004） | P0 |
+| F-BUT-04 | **元数据补全**：以专辑为单位由 LLM 根据目录名、文件名与现有标签补全年份、专辑艺人、音轨号/碟号、总数等；来自模型知识的值需审核；只补空字段（不依赖 MusicBrainz，见 decisions/0005） | P0 |
 | F-BUT-05 | **版本识别**：识别录音室版、Live、Remaster、Acoustic、Remix、Demo、Instrumental、伴奏、单曲版/专辑版，并归入同一「作品」 | P1 |
 | F-BUT-06 | **重复识别**：完全重复（相同 hash）、同录音不同编码（指纹相同）、疑似重复；给出保留建议（按音质、标签完整度） | P1 |
 | F-BUT-07 | **翻译**：外文歌名/专辑名翻译为用户语言，作为附加字段显示，不覆盖原名 | P1 |
@@ -196,7 +196,7 @@
 | 标签 | TagLib 2.x | 读写 |
 | 编码检测 | uchardet + ICU（转码、简繁、拼音辅助） | |
 | 数据库 | SQLite（QtSql 或直接 sqlite3）、FTS5；向量先用内存暴力检索，规模大时再上 sqlite-vec | 10 万 × 512 维 float ≈ 200 MB，可用 float16/int8 量化 |
-| 指纹 | Chromaprint（本地重复识别）；元数据来自 MusicBrainz API + Cover Art Archive（AcoustID 暂不接入） | |
+| 指纹 | Chromaprint（本地重复识别）；元数据补全由 LLM 完成，封面按需查 iTunes Search（不接 MusicBrainz / AcoustID，见 decisions/0005） | |
 | 音频分析 | FFmpeg（解码/重采样）、libebur128（响度）、BPM/调性算法（自实现或 Essentia/aubio） | |
 | 音频理解 | 待阶段 9 评测决定。候选：CLAP 类文本-音频模型；Essentia 预训练分类模型（乐器/情绪/流派）；传统特征（响度/BPM/频谱）。推理倾向 ONNX Runtime | 备选：Python sidecar 进程 |
 | LLM | 自研轻量 OpenAI 兼容客户端（QNetworkAccessManager + SSE） | 不引入重型 SDK |
