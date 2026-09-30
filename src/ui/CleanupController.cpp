@@ -17,10 +17,8 @@
 #include <ai/PromptLibrary.h>
 #include <butler/ArtistCreditSource.h>
 #include <butler/ArtistMergeSource.h>
-#include <butler/CoverArtSource.h>
 #include <butler/DuplicateFinder.h>
 #include <butler/DuplicateSource.h>
-#include <butler/MbMatchSource.h>
 #include <butler/MojibakeSource.h>
 #include <butler/TranslationSource.h>
 #include <butler/VersionLinker.h>
@@ -94,28 +92,6 @@ void collectMerge(library::Database &db, HealthReportData &report)
     if (auto res = mergeSource.findItems(); res.ok()) {
         report.mergeItems = res.value();
         report.mergeClusters = countMergeClusters(report.mergeItems);
-    }
-}
-
-void collectMbMatch(library::Database &db, HealthReportData &report)
-{
-    const butler::MbMatchSource mbMatchSource(db);
-    if (auto res = mbMatchSource.pendingAlbums(); res.ok()) {
-        for (const qint64 id : res.value()) {
-            report.mbMatchItems.append(QString::number(id));
-        }
-        report.mbMatchAlbums = static_cast<int>(report.mbMatchItems.size());
-    }
-}
-
-void collectCoverArt(library::Database &db, HealthReportData &report)
-{
-    const butler::CoverArtSource coverArtSource(db);
-    if (auto res = coverArtSource.pendingAlbums(); res.ok()) {
-        for (const qint64 id : res.value()) {
-            report.coverArtItems.append(QString::number(id));
-        }
-        report.coverArtAlbums = static_cast<int>(report.coverArtItems.size());
     }
 }
 
@@ -221,10 +197,6 @@ QStringList collectStepItems(library::Database &db, const core::Clock &clock,
         return creditItems(db, promptVersion, automatic);
     case Step::Merge:
         return valueOrEmpty(butler::ArtistMergeSource(db).findItems());
-    case Step::MbMatch:
-        return idsOrEmpty(butler::MbMatchSource(db).pendingAlbums());
-    case Step::CoverArt:
-        return idsOrEmpty(butler::CoverArtSource(db).pendingAlbums());
     case Step::VersionSuffix:
         return valueOrEmpty(butler::VersionSuffixSource(db).findItems(promptVersion));
     case Step::Translate:
@@ -305,16 +277,6 @@ int CleanupController::creditValues() const
 int CleanupController::mergeClusters() const
 {
     return m_mergeClusters;
-}
-
-int CleanupController::mbMatchAlbums() const
-{
-    return m_mbMatchAlbums;
-}
-
-int CleanupController::coverArtAlbums() const
-{
-    return m_coverArtAlbums;
 }
 
 int CleanupController::versionTracks() const
@@ -467,8 +429,6 @@ void CleanupController::checkHealth()
             collectMojibake(db, report);
             collectCredit(db, creditPromptVersion, report);
             collectMerge(db, report);
-            collectMbMatch(db, report);
-            collectCoverArt(db, report);
             collectVersions(db, clock, versionPromptVersion, report);
             collectTranslations(db, translatePromptVersion, report);
             collectDuplicates(db, clock, report);
@@ -484,8 +444,6 @@ void CleanupController::onHealthCheckFinished()
     m_mojibakeGroups = data.mojibakeGroups;
     m_creditValues = data.creditValues;
     m_mergeClusters = data.mergeClusters;
-    m_mbMatchAlbums = data.mbMatchAlbums;
-    m_coverArtAlbums = data.coverArtAlbums;
     m_versionTracks = data.versionTracks;
     m_versionSuffixes = data.versionSuffixes;
     m_translateTexts = data.translateTexts;
@@ -509,8 +467,8 @@ void CleanupController::onHealthCheckFinished()
     emit healthChanged();
 }
 
-void CleanupController::run(bool mojibake, bool credit, bool merge, bool mbMatch, bool versions,
-    bool translate, bool duplicates)
+void CleanupController::run(
+    bool mojibake, bool credit, bool merge, bool versions, bool translate, bool duplicates)
 {
     if (m_running) {
         return;
@@ -525,10 +483,6 @@ void CleanupController::run(bool mojibake, bool credit, bool merge, bool mbMatch
     }
     if (merge) {
         m_pendingSteps.append(Step::Merge);
-    }
-    if (mbMatch) {
-        m_pendingSteps.append(Step::MbMatch);
-        m_pendingSteps.append(Step::CoverArt);
     }
     if (versions) {
         m_pendingSteps.append(Step::VersionSuffix);
@@ -678,15 +632,6 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
         jobKind = QStringLiteral("butler.artist_merge");
         title = QStringLiteral("Merge duplicate artists");
         batchKind = library::CorrectionKind::ArtistMerge;
-        break;
-    case Step::MbMatch:
-        jobKind = QStringLiteral("butler.mb_match");
-        title = QStringLiteral("Fill in from MusicBrainz");
-        batchKind = library::CorrectionKind::MbMatch;
-        break;
-    case Step::CoverArt:
-        jobKind = QStringLiteral("butler.cover_art");
-        title = QStringLiteral("Download covers");
         break;
     case Step::VersionSuffix:
         jobKind = QStringLiteral("butler.version_suffix");

@@ -38,8 +38,6 @@ public:
         Mojibake,
         Credit,
         Merge,
-        MbMatch,
-        CoverArt,
         VersionSuffix,
         VersionLink,
         Translate,
@@ -54,8 +52,6 @@ public:
     Q_PROPERTY(int mojibakeGroups READ mojibakeGroups NOTIFY healthChanged)
     Q_PROPERTY(int creditValues READ creditValues NOTIFY healthChanged)
     Q_PROPERTY(int mergeClusters READ mergeClusters NOTIFY healthChanged)
-    Q_PROPERTY(int mbMatchAlbums READ mbMatchAlbums NOTIFY healthChanged)
-    Q_PROPERTY(int coverArtAlbums READ coverArtAlbums NOTIFY healthChanged)
     Q_PROPERTY(int versionTracks READ versionTracks NOTIFY healthChanged)
     Q_PROPERTY(int versionSuffixes READ versionSuffixes NOTIFY healthChanged)
     Q_PROPERTY(int translateTexts READ translateTexts NOTIFY healthChanged)
@@ -90,10 +86,6 @@ public:
         QStringList creditItems;
         int mergeClusters = 0;
         QStringList mergeItems;
-        int mbMatchAlbums = 0;
-        QStringList mbMatchItems;
-        int coverArtAlbums = 0;
-        QStringList coverArtItems;
         int versionTracks = 0;
         int versionSuffixes = 0;
         QStringList versionSuffixItems;
@@ -114,8 +106,6 @@ public:
     [[nodiscard]] int mojibakeGroups() const;
     [[nodiscard]] int creditValues() const;
     [[nodiscard]] int mergeClusters() const;
-    [[nodiscard]] int mbMatchAlbums() const;
-    [[nodiscard]] int coverArtAlbums() const;
     [[nodiscard]] int versionTracks() const;
     [[nodiscard]] int versionSuffixes() const;
     [[nodiscard]] int translateTexts() const;
@@ -142,7 +132,7 @@ public:
     [[nodiscard]] bool isLlmConfigured() const;
 
     Q_INVOKABLE void checkHealth();
-    Q_INVOKABLE void run(bool mojibake, bool credit, bool merge, bool mbMatch, bool versions,
+    Q_INVOKABLE void run(bool mojibake, bool credit, bool merge, bool versions,
         bool translate = false, bool duplicates = false);
     Q_INVOKABLE void runAutomatic();
     Q_INVOKABLE void pause();
@@ -187,8 +177,6 @@ private:
     int m_mojibakeGroups = 0;
     int m_creditValues = 0;
     int m_mergeClusters = 0;
-    int m_mbMatchAlbums = 0;
-    int m_coverArtAlbums = 0;
     int m_versionTracks = 0;
     int m_versionSuffixes = 0;
     int m_translateTexts = 0;

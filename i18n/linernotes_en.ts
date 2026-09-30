@@ -4,7 +4,7 @@
 <context>
     <name>AlbumDetail</name>
     <message numerus="yes">
-        <location filename="../qml/AlbumDetail.qml" line="78"/>
+        <location filename="../qml/AlbumDetail.qml" line="92"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n track</numerusform>
@@ -72,7 +72,7 @@
 <context>
     <name>CleanupHealthPanel</name>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="161"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="175"/>
         <source>%n folder(s) with garbled tags</source>
         <translation>
             <numerusform>%n folder with garbled tags</numerusform>
@@ -87,7 +87,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="179"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="193"/>
         <source>%n artist credit(s) to check</source>
         <translation>
             <numerusform>%n artist credit to check</numerusform>
@@ -95,7 +95,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="201"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="211"/>
         <source>%n possible duplicate artist(s)</source>
         <translation>
             <numerusform>%n possible duplicate artist</numerusform>
@@ -103,34 +103,90 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="221"/>
         <source>%n album(s) with missing info</source>
-        <translation>
+        <translation type="vanished">
             <numerusform>%n album with missing info</numerusform>
             <numerusform>%n albums with missing info</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="223"/>
         <source> · %n cover(s) to download</source>
-        <translation>
+        <translation type="vanished">
             <numerusform> · %n cover to download</numerusform>
             <numerusform> · %n covers to download</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="226"/>
         <source> · about %n min online</source>
-        <translation>
+        <translation type="vanished">
             <numerusform> · about %n min online</numerusform>
             <numerusform> · about %n mins online</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="234"/>
+        <source>%n track(s) to check</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="236"/>
+        <source> · %n suffix(es) for AI</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="263"/>
+        <source>%n title(s) to translate</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="291"/>
+        <source>%n candidate track(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="293"/>
+        <source> · %n audio fingerprint(s) to compute</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="296"/>
+        <source> · %n group(s) found last time</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>CorrectionActionBar</name>
+    <message numerus="yes">
+        <location filename="../qml/CorrectionActionBar.qml" line="326"/>
+        <source>Write the accepted changes of this batch into %n file(s)? Original tags are backed up and can be restored.</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
 </context>
 <context>
     <name>CorrectionBatchList</name>
     <message numerus="yes">
-        <location filename="../qml/CorrectionBatchList.qml" line="55"/>
+        <location filename="../qml/CorrectionBatchList.qml" line="56"/>
         <source>%n batch(es)</source>
         <translation>
             <numerusform>%n batch</numerusform>
@@ -154,6 +210,36 @@
         <translation>
             <numerusform>%n item</numerusform>
             <numerusform>%n items</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>CoverSearchDialog</name>
+    <message numerus="yes">
+        <location filename="../qml/CoverSearchDialog.qml" line="71"/>
+        <source>%n track(s)</source>
+        <translation type="unfinished">
+            <numerusform>%n track</numerusform>
+            <numerusform>%n tracks</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>DuplicatePanel</name>
+    <message numerus="yes">
+        <location filename="../qml/DuplicatePanel.qml" line="453"/>
+        <source>Move %n extra file(s) to the trash?</source>
+        <translation>
+            <numerusform>Move %n extra file to the trash?</numerusform>
+            <numerusform>Move %n extra files to the trash?</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/DuplicatePanel.qml" line="181"/>
+        <source>%n duplicate(s)</source>
+        <translation>
+            <numerusform>%n duplicate</numerusform>
+            <numerusform>%n duplicates</numerusform>
         </translation>
     </message>
 </context>
@@ -246,29 +332,10 @@
     </message>
 </context>
 <context>
-    <name>DuplicatePanel</name>
-    <message numerus="yes">
-        <location filename="../qml/DuplicatePanel.qml" line="398"/>
-        <source>Move %n extra file(s) to the trash?</source>
-        <translation>
-            <numerusform>Move %n extra file to the trash?</numerusform>
-            <numerusform>Move %n extra files to the trash?</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <location filename="../qml/DuplicatePanel.qml" line="162"/>
-        <source>%n duplicate(s)</source>
-        <translation>
-            <numerusform>%n duplicate</numerusform>
-            <numerusform>%n duplicates</numerusform>
-        </translation>
-    </message>
-</context>
-<context>
     <name>linernotes::ui::CorrectionReviewController</name>
     <message numerus="yes">
-        <location filename="../src/ui/CorrectionReviewController.cpp" line="114"/>
-        <location filename="../src/ui/CorrectionReviewController.cpp" line="180"/>
+        <location filename="../src/ui/CorrectionReviewController.cpp" line="116"/>
+        <location filename="../src/ui/CorrectionReviewController.cpp" line="182"/>
         <source>Accepted %n correction(s).</source>
         <translation>
             <numerusform>Accepted %n correction.</numerusform>
@@ -276,8 +343,8 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ui/CorrectionReviewController.cpp" line="115"/>
-        <location filename="../src/ui/CorrectionReviewController.cpp" line="181"/>
+        <location filename="../src/ui/CorrectionReviewController.cpp" line="117"/>
+        <location filename="../src/ui/CorrectionReviewController.cpp" line="183"/>
         <source>%n skipped because the artist or track no longer exists.</source>
         <translation>
             <numerusform>%n skipped because the artist or track no longer exists.</numerusform>
@@ -288,7 +355,7 @@
 <context>
     <name>linernotes::ui::DuplicateController</name>
     <message numerus="yes">
-        <location filename="../src/ui/DuplicateController.cpp" line="489"/>
+        <location filename="../src/ui/DuplicateController.cpp" line="720"/>
         <source>%n file(s) could not be moved to the trash</source>
         <translation>
             <numerusform>%n file could not be moved to the trash</numerusform>

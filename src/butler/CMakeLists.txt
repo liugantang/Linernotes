@@ -4,8 +4,6 @@
 file(GLOB SCHEMA_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/schemas/*/*.json")
 
 add_library(linernotes_butler STATIC
-    AlbumMatch.cpp
-    AlbumMatch.h
     ArtistCredit.cpp
     ArtistCredit.h
     ArtistCreditJobHandler.cpp
@@ -32,10 +30,6 @@ add_library(linernotes_butler STATIC
     ButlerLogging.h
     CharFrequency.cpp
     CharFrequency.h
-    CoverArtJobHandler.cpp
-    CoverArtJobHandler.h
-    CoverArtSource.cpp
-    CoverArtSource.h
     DuplicateFinder.cpp
     DuplicateFinder.h
     DuplicateJobHandler.cpp
@@ -49,12 +43,8 @@ add_library(linernotes_butler STATIC
     Errors.h
     FingerprintJobHandler.cpp
     FingerprintJobHandler.h
-    MbMatchJobHandler.cpp
-    MbMatchJobHandler.h
-    MbMatchPlanner.cpp
-    MbMatchPlanner.h
-    MbMatchSource.cpp
-    MbMatchSource.h
+    ItunesSearch.cpp
+    ItunesSearch.h
     Mojibake.cpp
     Mojibake.h
     MojibakeAnalysis.cpp
@@ -65,10 +55,6 @@ add_library(linernotes_butler STATIC
     MojibakeLlm.h
     MojibakeSource.cpp
     MojibakeSource.h
-    MusicBrainz.cpp
-    MusicBrainz.h
-    MusicBrainzClient.cpp
-    MusicBrainzClient.h
     TitleVersion.cpp
     TitleVersion.h
     TrackFieldTarget.h

@@ -17,21 +17,15 @@
 #include <ai/PrivacyGuard.h>
 #include <ai/PromptLibrary.h>
 #include <ai/SecretStore.h>
-#include <ai/UsageStore.h>
 #include <butler/ArtistCredit.h>
 #include <butler/ArtistCreditJobHandler.h>
 #include <butler/ArtistCreditStore.h>
 #include <butler/ArtistMergeJobHandler.h>
-#include <butler/CoverArtJobHandler.h>
 #include <butler/DuplicateFinder.h>
 #include <butler/DuplicateJobHandler.h>
 #include <butler/DuplicateSource.h>
 #include <butler/FingerprintJobHandler.h>
-#include <butler/MbMatchJobHandler.h>
-#include <butler/MbMatchSource.h>
 #include <butler/MojibakeJobHandler.h>
-#include <butler/MusicBrainz.h>
-#include <butler/MusicBrainzClient.h>
 #include <butler/VersionLinkJobHandler.h>
 #include <common/ManualClock.h>
 #include <common/TestSupport.h>
@@ -62,27 +56,21 @@ using linernotes::butler::ArtistCredit;
 using linernotes::butler::ArtistCreditJobHandler;
 using linernotes::butler::ArtistCreditStore;
 using linernotes::butler::ArtistMergeJobHandler;
-using linernotes::butler::CoverArtJobHandler;
 using linernotes::butler::CreditPerformer;
 using linernotes::butler::DuplicateJobHandler;
 using linernotes::butler::DuplicateKind;
 using linernotes::butler::DuplicateSource;
 using linernotes::butler::FingerprintJobHandler;
-using linernotes::butler::MbMatchJobHandler;
-using linernotes::butler::MbMatchSource;
 using linernotes::butler::MojibakeJobHandler;
-using linernotes::butler::MusicBrainzClient;
 using linernotes::butler::VersionLinkJobHandler;
 using linernotes::core::Settings;
 using linernotes::library::CorrectionKind;
 using linernotes::library::CorrectionStatus;
 using linernotes::library::CorrectionStore;
-using linernotes::library::CoverStore;
 using linernotes::library::Database;
 using linernotes::library::EntityLinker;
 using linernotes::library::FingerprintStore;
 using linernotes::library::Migrator;
-using linernotes::test::fixturePath;
 using linernotes::test::ManualClock;
 using linernotes::ui::CleanupController;
 
@@ -279,7 +267,6 @@ private slots:
     void healthCountsMatchLibrary();
     void runExecutesStepsInOrder();
     void autoAcceptAppliesThreshold();
-    void mbMatchStepRunsWithoutLlm();
     void duplicatesStepRuns();
     void automaticRunsRuleStepsOnly();
 };
@@ -330,7 +317,6 @@ void TstCleanupController::healthCountsMatchLibrary()
     QVERIFY(cleanup.mojibakeGroups() >= 1);
     QVERIFY(cleanup.creditValues() >= 1);
     QVERIFY(cleanup.mergeClusters() >= 1);
-    QCOMPARE(cleanup.mbMatchAlbums(), 3);
 }
 
 void TstCleanupController::runExecutesStepsInOrder()
@@ -397,7 +383,7 @@ void TstCleanupController::runExecutesStepsInOrder()
 
     CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
 
-    cleanup.run(true, true, true, false, false, false, false);
+    cleanup.run(true, true, true, false, false, false);
     QCOMPARE(cleanup.isRunning(), true);
 
     QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
@@ -507,7 +493,7 @@ void TstCleanupController::autoAcceptAppliesThreshold()
     CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
     cleanup.setAutoAcceptThreshold(0.9);
 
-    cleanup.run(false, false, true, false, false, false, false);
+    cleanup.run(false, false, true, false, false, false);
     QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
 
     CorrectionStore store(db, clock);
@@ -522,80 +508,6 @@ void TstCleanupController::autoAcceptAppliesThreshold()
     const auto &corrections = correctionsRes.value();
     QCOMPARE(corrections.size(), 1);
     QCOMPARE(corrections.first().status, CorrectionStatus::Accepted);
-}
-
-void TstCleanupController::mbMatchStepRunsWithoutLlm()
-{
-    const QTemporaryDir tempDir;
-    QVERIFY(tempDir.isValid());
-    Database db(tempDir.filePath(QStringLiteral("test_mb_match.db")));
-    QVERIFY(db.open(Migrator()).ok());
-    const auto conn = db.connection().value();
-    populateTestLibrary(conn);
-
-    const QTemporaryDir settingsDir;
-    QVERIFY(settingsDir.isValid());
-    Settings settings(settingsDir.filePath(QStringLiteral("settings.ini")));
-    ManualClock clock(1000);
-    AiConfig aiConfig(settings);
-    PromptLibrary prompts({ QStringLiteral(":/prompts") });
-    QNetworkAccessManager network;
-    MusicBrainzClient mbClient(network, db, clock);
-
-    const QTemporaryDir coverCacheDir;
-    QVERIFY(coverCacheDir.isValid());
-    CoverStore coverStore(coverCacheDir.path());
-
-    JobQueue jobs(db, clock);
-    jobs.registerHandler(std::make_unique<MbMatchJobHandler>(db, mbClient, clock));
-    jobs.registerHandler(std::make_unique<CoverArtJobHandler>(db, network, coverStore, clock,
-        QUrl::fromLocalFile(fixturePath(QStringLiteral("coverart")))));
-
-    const MbMatchSource mbSource(db);
-    const auto pendingRes = mbSource.pendingAlbums();
-    QVERIFY(pendingRes.ok());
-    const auto &pendingAlbums = pendingRes.value();
-    QCOMPARE(pendingAlbums.size(), 3);
-
-    const QByteArray emptySearchJson = "{\"created\":\"2026-09-30T00:00:00.000Z\",\"count\":0,"
-                                       "\"offset\":0,\"releases\":[]}";
-    for (const qint64 albumId : pendingAlbums) {
-        const auto loadRes = mbSource.load(albumId);
-        QVERIFY(loadRes.ok());
-        const auto &input = loadRes.value();
-        const QUrl url
-            = linernotes::butler::releaseSearchUrl(input.searchTitle, input.searchArtist, 10);
-        QSqlQuery q(conn);
-        q.prepare(QStringLiteral(
-            "INSERT OR REPLACE INTO mb_cache (url, body, fetched_at) VALUES (?, ?, ?);"));
-        q.addBindValue(url.toString());
-        q.addBindValue(QString::fromUtf8(emptySearchJson));
-        q.addBindValue(clock.nowMs());
-        QVERIFY(q.exec());
-    }
-
-    CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
-    QCOMPARE(cleanup.isLlmConfigured(), false);
-
-    cleanup.run(false, false, false, true, false, false, false);
-    QCOMPARE(cleanup.isRunning(), true);
-
-    QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
-
-    QSqlQuery matchQ(conn);
-    QVERIFY(matchQ.exec(QStringLiteral("SELECT status FROM mb_album_matches;")));
-    int matchCount = 0;
-    while (matchQ.next()) {
-        QCOMPARE(matchQ.value(0).toString(), QStringLiteral("no_match"));
-        ++matchCount;
-    }
-    QCOMPARE(matchCount, 3);
-
-    QSqlQuery batchQ(conn);
-    QVERIFY(batchQ.exec(
-        QStringLiteral("SELECT COUNT(*) FROM correction_batches WHERE kind = 'mb_match';")));
-    QVERIFY(batchQ.next());
-    QCOMPARE(batchQ.value(0).toInt(), 0);
 }
 
 void TstCleanupController::duplicatesStepRuns()
@@ -660,7 +572,7 @@ void TstCleanupController::duplicatesStepRuns()
     QCOMPARE(cleanup.duplicateCandidates(), 2);
     QCOMPARE(cleanup.fingerprintPending(), 0);
 
-    cleanup.run(false, false, false, false, false, false, true);
+    cleanup.run(false, false, false, false, false, true);
     QCOMPARE(cleanup.isRunning(), true);
 
     QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);

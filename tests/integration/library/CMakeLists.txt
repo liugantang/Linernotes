@@ -2,6 +2,21 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 linernotes_add_test(
+    NAME library_AlbumCovers
+    SOURCES
+        tst_AlbumCovers.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+    LABELS
+        integration
+    TIMEOUT
+        60
+)
+
+linernotes_add_test(
     NAME library_Scanner
     SOURCES
         tst_Scanner.cpp

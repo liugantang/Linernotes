@@ -25,6 +25,8 @@ add_library(linernotes_ui STATIC
     CoverAccent.h
     CoverImageProvider.cpp
     CoverImageProvider.h
+    CoverSearchController.cpp
+    CoverSearchController.h
     DuplicateController.cpp
     DuplicateController.h
     ErrorText.cpp
@@ -112,6 +114,7 @@ target_link_libraries(linernotes_ui
         Linernotes::player
         Qt6::Core
         Qt6::Gui
+        Qt6::Network
         Qt6::Quick # Required by CoverImageProvider (QQuickImageProvider)
         Qt6::Concurrent
 )

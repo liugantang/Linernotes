@@ -34,6 +34,13 @@ Item {
         }
     }
 
+    Connections {
+        target: AppContext
+        function onLibraryChanged() {
+            root.infoRevision++
+        }
+    }
+
     Shortcut {
         sequence: "Esc"
         onActivated: root.backRequested()
@@ -215,6 +222,15 @@ Item {
                         onClicked: root.playAlbum(true)
                     }
 
+                    Controls.AppButton {
+                        visible: !(root.info && root.info.coverHash)
+                        text: qsTr("Find cover online")
+                        icon.source: "icons/search.svg"
+                        onClicked: {
+                            coverSearchDialog.openDialog(root.albumId)
+                        }
+                    }
+
                     Controls.FavoriteButton {
                         favorite: (root.info && root.info.favorite) ? true : false
                         onFavoriteToggled: {
@@ -318,5 +334,9 @@ Item {
                 trailingInset: listView.ScrollBar.vertical.visible ? listView.ScrollBar.vertical.width : 0
             }
         }
+    }
+
+    CoverSearchDialog {
+        id: coverSearchDialog
     }
 }
