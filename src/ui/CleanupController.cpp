@@ -154,6 +154,15 @@ void collectDuplicates(library::Database &db, const core::Clock &clock, HealthRe
     }
 }
 
+bool isCachedCreditItem(const QString &itemKey)
+{
+    const auto doc = QJsonDocument::fromJson(itemKey.toUtf8());
+    if (!doc.isObject()) {
+        return false;
+    }
+    return doc.object().value(QStringLiteral("type")).toString() == QLatin1StringView("cached");
+}
+
 int estimateTokens(ai::JobQueue &jobs, const QString &kind, const QStringList &items)
 {
     if (auto est = jobs.estimate(kind, items); est.ok()) {
@@ -162,78 +171,59 @@ int estimateTokens(ai::JobQueue &jobs, const QString &kind, const QStringList &i
     return 0;
 }
 
-QStringList collectStepItems(library::Database &db, const core::Clock &clock,
-    CleanupController::Step step, int promptVersion)
+/// 结果或空列表（查询失败时记日志由各 Source 负责）。
+QStringList valueOrEmpty(core::Result<QStringList> res)
 {
-    using Step = CleanupController::Step;
+    return res.ok() ? std::move(res).value() : QStringList { };
+}
+
+QStringList idsOrEmpty(const core::Result<QList<qint64>> &res)
+{
     QStringList items;
-    switch (step) {
-    case Step::Mojibake: {
-        const butler::MojibakeSource src(db);
-        if (auto r = src.findGroups(); r.ok()) {
-            items = r.value();
+    if (res.ok()) {
+        for (const qint64 id : res.value()) {
+            items.append(QString::number(id));
         }
-        break;
-    }
-    case Step::Credit: {
-        const butler::ArtistCreditSource src(db);
-        if (auto r = src.findItems(promptVersion); r.ok()) {
-            items = r.value();
-        }
-        break;
-    }
-    case Step::Merge: {
-        const butler::ArtistMergeSource src(db);
-        if (auto r = src.findItems(); r.ok()) {
-            items = r.value();
-        }
-        break;
-    }
-    case Step::MbMatch: {
-        const butler::MbMatchSource src(db);
-        if (auto r = src.pendingAlbums(); r.ok()) {
-            for (const qint64 id : r.value()) {
-                items.append(QString::number(id));
-            }
-        }
-        break;
-    }
-    case Step::CoverArt: {
-        const butler::CoverArtSource src(db);
-        if (auto r = src.pendingAlbums(); r.ok()) {
-            for (const qint64 id : r.value()) {
-                items.append(QString::number(id));
-            }
-        }
-        break;
-    }
-    case Step::VersionSuffix: {
-        const butler::VersionSuffixSource src(db);
-        if (auto r = src.findItems(promptVersion); r.ok()) {
-            items = r.value();
-        }
-        break;
-    }
-    case Step::VersionLink:
-        items = QStringList { QStringLiteral("all") };
-        break;
-    case Step::Fingerprint: {
-        const butler::DuplicateSource src(db, clock);
-        if (auto r = src.fingerprintCandidates(); r.ok()) {
-            for (const qint64 id : r.value()) {
-                items.append(QString::number(id));
-            }
-        }
-        break;
-    }
-    case Step::Duplicates:
-        items = QStringList { QStringLiteral("all") };
-        break;
-    case Step::None:
-    default:
-        break;
     }
     return items;
+}
+
+/// 自动整理只处理已有 LLM 缓存的署名，不触发新的 LLM 调用。
+QStringList creditItems(library::Database &db, int promptVersion, bool automatic)
+{
+    QStringList items = valueOrEmpty(butler::ArtistCreditSource(db).findItems(promptVersion));
+    if (automatic) {
+        items.removeIf([](const QString &item) { return !isCachedCreditItem(item); });
+    }
+    return items;
+}
+
+QStringList collectStepItems(library::Database &db, const core::Clock &clock,
+    CleanupController::Step step, int promptVersion, bool automatic = false)
+{
+    using Step = CleanupController::Step;
+    switch (step) {
+    case Step::Mojibake:
+        return valueOrEmpty(butler::MojibakeSource(db).findGroups());
+    case Step::Credit:
+        return creditItems(db, promptVersion, automatic);
+    case Step::Merge:
+        return valueOrEmpty(butler::ArtistMergeSource(db).findItems());
+    case Step::MbMatch:
+        return idsOrEmpty(butler::MbMatchSource(db).pendingAlbums());
+    case Step::CoverArt:
+        return idsOrEmpty(butler::CoverArtSource(db).pendingAlbums());
+    case Step::VersionSuffix:
+        return valueOrEmpty(butler::VersionSuffixSource(db).findItems(promptVersion));
+    case Step::Fingerprint:
+        return idsOrEmpty(butler::DuplicateSource(db, clock).fingerprintCandidates());
+    case Step::VersionLink:
+    case Step::Duplicates:
+        return QStringList { QStringLiteral("all") };
+    case Step::None:
+        break;
+    }
+    return { };
 }
 
 int loadPromptVersion(const ai::PromptLibrary &prompts, const QString &name)
@@ -361,6 +351,11 @@ int CleanupController::versionTokens() const
 bool CleanupController::isRunning() const
 {
     return m_running;
+}
+
+bool CleanupController::isAutomatic() const
+{
+    return m_automatic;
 }
 
 CleanupController::Step CleanupController::currentStep() const
@@ -517,6 +512,24 @@ void CleanupController::run(
         return;
     }
 
+    m_automatic = false;
+    m_running = true;
+    emit runningChanged();
+    startNextStep();
+}
+
+void CleanupController::runAutomatic()
+{
+    if (m_running) {
+        return;
+    }
+
+    m_pendingSteps.clear();
+    m_pendingSteps.append(Step::Mojibake);
+    m_pendingSteps.append(Step::Credit);
+    m_pendingSteps.append(Step::VersionLink);
+
+    m_automatic = true;
     m_running = true;
     emit runningChanged();
     startNextStep();
@@ -526,6 +539,7 @@ void CleanupController::startNextStep()
 {
     if (m_pendingSteps.isEmpty()) {
         m_running = false;
+        m_automatic = false;
         m_currentStep = Step::None;
         m_currentJobId = 0;
         m_stepDone = 0;
@@ -571,13 +585,14 @@ void CleanupController::startNextStep()
         }
     }
 
-    auto future
-        = QtConcurrent::run([&db = m_db, &clock = m_clock, step, promptVersion]() -> StepItemData {
-              return StepItemData {
-                  .step = step,
-                  .items = collectStepItems(db, clock, step, promptVersion),
-              };
-          });
+    const bool automatic = m_automatic;
+    auto future = QtConcurrent::run(
+        [&db = m_db, &clock = m_clock, step, promptVersion, automatic]() -> StepItemData {
+            return StepItemData {
+                .step = step,
+                .items = collectStepItems(db, clock, step, promptVersion, automatic),
+            };
+        });
 
     m_stepWatcher.setFuture(future);
 }
@@ -653,7 +668,15 @@ void CleanupController::executeStepWithItems(Step step, const QStringList &items
         return;
     }
 
+    if (m_automatic) {
+        title = QStringLiteral("Automatic: ") + title;
+    }
+
     QJsonObject params;
+    if (m_automatic && step == Step::Mojibake) {
+        params.insert(QStringLiteral("useLlm"), false);
+    }
+
     if (batchKind.has_value()) {
         library::CorrectionStore store(m_db, m_clock);
         auto batchRes = store.createBatch(batchKind.value(), title);
@@ -725,6 +748,7 @@ void CleanupController::onJobChanged(qint64 jobId)
         cleanupCurrentBatchIfEmpty();
         m_pendingSteps.clear();
         m_running = false;
+        m_automatic = false;
         m_currentStep = Step::None;
         m_currentJobId = 0;
         emit runningChanged();
@@ -772,6 +796,7 @@ void CleanupController::cancel()
     }
     cleanupCurrentBatchIfEmpty();
     m_running = false;
+    m_automatic = false;
     m_currentStep = Step::None;
     m_currentJobId = 0;
     emit runningChanged();

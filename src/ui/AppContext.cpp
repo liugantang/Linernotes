@@ -146,6 +146,10 @@ void AppContext::connectScannerSignals()
             if (hasChanges) {
                 emit libraryChanged();
             }
+            if ((stats.added > 0 || stats.updated > 0 || stats.restored > 0)
+                && m_settings.value(kButlerAutoCleanup) && m_libraryReady) {
+                m_cleanup.runAutomatic();
+            }
         }
     });
     connect(&m_scanner, &library::Scanner::progress, this, [this](const library::ScanProgress &) {

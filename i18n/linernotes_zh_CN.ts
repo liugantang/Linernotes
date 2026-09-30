@@ -436,6 +436,11 @@
         <translation>正在整理曲库…</translation>
     </message>
     <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="53"/>
+        <source>Automatic cleanup: </source>
+        <translation>自动整理：</translation>
+    </message>
+    <message>
         <location filename="../qml/CleanupHealthPanel.qml" line="104"/>
         <source>Library Health &amp; Cleanup</source>
         <translation>曲库健康与整理</translation>
@@ -2290,6 +2295,16 @@
         <location filename="../qml/SettingsLibrarySection.qml" line="276"/>
         <source>Uses names found by the library butler; falls back to the original name.</source>
         <translation>使用曲库管家找到的对应名称；没有时显示原名。</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="287"/>
+        <source>Clean up new files automatically</source>
+        <translation>新文件自动整理</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="297"/>
+        <source>After new files are scanned, fix garbled tags with rules, apply known artist credits and group song versions. AI and online steps still run only when you start them.</source>
+        <translation>新文件扫描入库后，用规则修复乱码、套用已知的艺人署名并归并歌曲版本。AI 与联网步骤仍需手动运行。</translation>
     </message>
 </context>
 <context>

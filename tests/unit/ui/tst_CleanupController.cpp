@@ -32,6 +32,7 @@
 #include <butler/MojibakeJobHandler.h>
 #include <butler/MusicBrainz.h>
 #include <butler/MusicBrainzClient.h>
+#include <butler/VersionLinkJobHandler.h>
 #include <common/ManualClock.h>
 #include <common/TestSupport.h>
 #include <core/Settings.h>
@@ -71,6 +72,7 @@ using linernotes::butler::MbMatchJobHandler;
 using linernotes::butler::MbMatchSource;
 using linernotes::butler::MojibakeJobHandler;
 using linernotes::butler::MusicBrainzClient;
+using linernotes::butler::VersionLinkJobHandler;
 using linernotes::core::Settings;
 using linernotes::library::CorrectionKind;
 using linernotes::library::CorrectionStatus;
@@ -279,6 +281,7 @@ private slots:
     void autoAcceptAppliesThreshold();
     void mbMatchStepRunsWithoutLlm();
     void duplicatesStepRuns();
+    void automaticRunsRuleStepsOnly();
 };
 
 void TstCleanupController::healthCountsMatchLibrary()
@@ -666,6 +669,152 @@ void TstCleanupController::duplicatesStepRuns()
     const auto countRes = source.countGroups();
     QVERIFY(countRes.ok());
     QCOMPARE(countRes.value().value(DuplicateKind::SameRecording), 1);
+}
+
+void TstCleanupController::automaticRunsRuleStepsOnly()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    Database db(tempDir.filePath(QStringLiteral("test_auto_cleanup.db")));
+    QVERIFY(db.open(Migrator()).ok());
+    const auto conn = db.connection().value();
+
+    const qint64 rootId = TestDbHelper::insertRoot(conn);
+
+    // 1. Mojibake track (solvable by rules, GBK encoded tags)
+    const qint64 f1 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/gbk/1.mp3"));
+    const qint64 f2 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/gbk/2.mp3"));
+    const qint64 t1 = TestDbHelper::insertTrack(conn, f1);
+    const qint64 t2 = TestDbHelper::insertTrack(conn, f2);
+    TestDbHelper::insertRawTag(conn, t1, QStringLiteral("TITLE"),
+        QString::fromLatin1("\xC7\xE7\xCC\xEC"), QByteArray("\xC7\xE7\xCC\xEC"));
+    TestDbHelper::insertRawTag(conn, t1, QStringLiteral("ARTIST"),
+        QString::fromLatin1("\xD6\xDC\xBD\xDC\xC2\xD7"), QByteArray("\xD6\xDC\xBD\xDC\xC2\xD7"));
+    TestDbHelper::insertRawTag(conn, t1, QStringLiteral("ALBUM"),
+        QString::fromLatin1("\xD2\xB4\xBB\xDD"), QByteArray("\xD2\xB4\xBB\xDD"));
+    TestDbHelper::updateTagsReadAt(conn, t1);
+
+    TestDbHelper::insertRawTag(conn, t2, QStringLiteral("TITLE"),
+        QString::fromLatin1("\xB9\xEC\xBC\xA3"), QByteArray("\xB9\xEC\xBC\xA3"));
+    TestDbHelper::insertRawTag(conn, t2, QStringLiteral("ARTIST"),
+        QString::fromLatin1("\xD6\xDC\xBD\xDC\xC2\xD7"), QByteArray("\xD6\xDC\xBD\xDC\xC2\xD7"));
+    TestDbHelper::insertRawTag(conn, t2, QStringLiteral("ALBUM"),
+        QString::fromLatin1("\xD2\xB4\xBB\xDD"), QByteArray("\xD2\xB4\xBB\xDD"));
+    TestDbHelper::updateTagsReadAt(conn, t2);
+
+    // 2. Cached artist credit (will produce correction)
+    const qint64 f3 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/feat/3.mp3"));
+    const qint64 t3 = TestDbHelper::insertTrack(conn, f3);
+    TestDbHelper::insertRawTag(conn, t3, QStringLiteral("TITLE"), QStringLiteral("Song 3"));
+    TestDbHelper::insertRawTag(
+        conn, t3, QStringLiteral("ARTIST"), QStringLiteral("Artist A feat. Artist B"));
+    TestDbHelper::insertRawTag(conn, t3, QStringLiteral("ALBUM"), QStringLiteral("Album 1"));
+    TestDbHelper::updateTagsReadAt(conn, t3);
+
+    // 3. Uncached artist credit value
+    const qint64 f4 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/other/4.mp3"));
+    const qint64 t4 = TestDbHelper::insertTrack(conn, f4);
+    TestDbHelper::insertRawTag(conn, t4, QStringLiteral("TITLE"), QStringLiteral("Song 4"));
+    TestDbHelper::insertRawTag(
+        conn, t4, QStringLiteral("ARTIST"), QStringLiteral("Uncached Artist X & Artist Y"));
+    TestDbHelper::insertRawTag(conn, t4, QStringLiteral("ALBUM"), QStringLiteral("Album 2"));
+    TestDbHelper::updateTagsReadAt(conn, t4);
+
+    {
+        // 限定作用域：EntityLinker 的预编译查询活着时主线程连接会一直持有读快照，
+        // 工作线程提交后主线程再写就会 SQLITE_BUSY_SNAPSHOT（database is locked）
+        EntityLinker linker(conn);
+        Q_UNUSED(linker.linkTrack(t1));
+        Q_UNUSED(linker.linkTrack(t2));
+        Q_UNUSED(linker.linkTrack(t3));
+        Q_UNUSED(linker.linkTrack(t4));
+    }
+
+    const QTemporaryDir settingsDir;
+    QVERIFY(settingsDir.isValid());
+    Settings settings(settingsDir.filePath(QStringLiteral("settings.ini")));
+    ManualClock clock(1000);
+    AiConfig aiConfig(settings); // Unconfigured LLM
+    MemorySecretStore secrets;
+    QNetworkAccessManager network;
+    LlmClient client(network);
+    LlmCache cache(db, clock);
+    UsageStore usage(db);
+    PrivacyGuard privacy(settings);
+    PromptLibrary prompts({ QStringLiteral(":/prompts") });
+    LlmDebugLog debugLog(settings);
+    LlmService llm(aiConfig, secrets, client, cache, usage, privacy, debugLog, clock);
+
+    const auto promptRes = prompts.load(QStringLiteral("cleanup/artist_credit"));
+    QVERIFY(promptRes.ok());
+    const int promptVersion = promptRes.value().version;
+
+    ArtistCreditStore creditStore(db, clock);
+    QHash<QString, ArtistCredit> savedCredits;
+    savedCredits.insert(QStringLiteral("Artist A feat. Artist B"),
+        ArtistCredit {
+            .performers = {
+                CreditPerformer { .name = QStringLiteral("Artist A"), .aka = { } },
+                CreditPerformer { .name = QStringLiteral("Artist B"), .aka = { } },
+            },
+            .roles = { },
+            .confidence = 0.95,
+            .reason = QStringLiteral("Multi-artist split"),
+        });
+    QVERIFY(creditStore.save(savedCredits, QStringLiteral("test-model"), promptVersion).ok());
+
+    JobQueue jobs(db, clock);
+    jobs.registerHandler(std::make_unique<MojibakeJobHandler>(db, llm, prompts, clock));
+    jobs.registerHandler(std::make_unique<ArtistCreditJobHandler>(db, llm, prompts, clock));
+    jobs.registerHandler(std::make_unique<VersionLinkJobHandler>(db, prompts, clock));
+
+    CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
+    QCOMPARE(cleanup.isLlmConfigured(), false);
+
+    cleanup.runAutomatic();
+    QCOMPARE(cleanup.isRunning(), true);
+    QCOMPARE(cleanup.isAutomatic(), true);
+
+    QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
+    QCOMPARE(cleanup.isAutomatic(), false);
+    QCOMPARE(cleanup.stepFailed(), 0);
+
+    CorrectionStore store(db, clock);
+    const auto batchesRes = store.batches();
+    QVERIFY(batchesRes.ok());
+    const auto &batches = batchesRes.value();
+
+    bool hasMojibakeBatch = false;
+    bool hasCreditBatch = false;
+    for (const auto &b : batches) {
+        if (b.kind == CorrectionKind::Mojibake) {
+            hasMojibakeBatch = true;
+            QVERIFY(b.pending > 0 || b.accepted > 0);
+            QCOMPARE(b.description, QStringLiteral("Automatic: Fix garbled tags"));
+        } else if (b.kind == CorrectionKind::ArtistCredit) {
+            hasCreditBatch = true;
+            QVERIFY(b.pending > 0 || b.accepted > 0);
+            QCOMPARE(b.description, QStringLiteral("Automatic: Normalize artist credits"));
+            const auto corrsRes = store.corrections(b.id);
+            QVERIFY(corrsRes.ok());
+            for (const auto &corr : corrsRes.value()) {
+                QCOMPARE(corr.oldValue, QStringLiteral("Artist A feat. Artist B"));
+            }
+        }
+    }
+    QVERIFY(hasMojibakeBatch);
+    QVERIFY(hasCreditBatch);
+
+    QSqlQuery uncachedCheckQ(conn);
+    QVERIFY(uncachedCheckQ.exec(QStringLiteral("SELECT COUNT(*) FROM artist_credits WHERE "
+                                               "value = 'Uncached Artist X & Artist Y';")));
+    QVERIFY(uncachedCheckQ.next());
+    QCOMPARE(uncachedCheckQ.value(0).toInt(), 0);
+
+    QSqlQuery tvQ(conn);
+    QVERIFY(tvQ.exec(QStringLiteral("SELECT COUNT(*) FROM track_versions;")));
+    QVERIFY(tvQ.next());
+    QVERIFY(tvQ.value(0).toInt() > 0);
 }
 
 } // namespace

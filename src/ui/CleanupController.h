@@ -67,6 +67,7 @@ public:
 
     // Run / Progress
     Q_PROPERTY(bool running READ isRunning NOTIFY runningChanged)
+    Q_PROPERTY(bool automatic READ isAutomatic NOTIFY runningChanged)
     Q_PROPERTY(Step currentStep READ currentStep NOTIFY currentStepChanged)
     Q_PROPERTY(int stepDone READ stepDone NOTIFY progressChanged)
     Q_PROPERTY(int stepTotal READ stepTotal NOTIFY progressChanged)
@@ -121,6 +122,7 @@ public:
     [[nodiscard]] int versionTokens() const;
 
     [[nodiscard]] bool isRunning() const;
+    [[nodiscard]] bool isAutomatic() const;
     [[nodiscard]] Step currentStep() const;
     [[nodiscard]] int stepDone() const;
     [[nodiscard]] int stepTotal() const;
@@ -135,6 +137,7 @@ public:
     Q_INVOKABLE void checkHealth();
     Q_INVOKABLE void run(bool mojibake, bool credit, bool merge, bool mbMatch, bool versions,
         bool duplicates = false);
+    Q_INVOKABLE void runAutomatic();
     Q_INVOKABLE void pause();
     Q_INVOKABLE void resume();
     Q_INVOKABLE void cancel();
@@ -191,6 +194,7 @@ private:
     QFutureWatcher<HealthReportData> m_healthWatcher;
 
     bool m_running = false;
+    bool m_automatic = false;
     Step m_currentStep = Step::None;
     qint64 m_currentJobId = 0;
     qint64 m_currentBatchId = 0;

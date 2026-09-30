@@ -280,4 +280,39 @@ ColumnLayout {
             Layout.fillWidth: true
         }
     }
+
+    // Automatic cleanup
+    ColumnLayout {
+        Layout.fillWidth: true
+        Layout.topMargin: Theme.spacingMedium
+        spacing: Theme.spacingTiny
+
+        Controls.AppCheckBox {
+            id: autoCleanupCheck
+            text: qsTr("Clean up new files automatically")
+            checked: AppContext.settings ? AppContext.settings.autoCleanup : true
+            onToggled: {
+                if (AppContext.settings) {
+                    AppContext.settings.autoCleanup = checked
+                }
+            }
+
+            Connections {
+                target: AppContext.settings
+                function onAutoCleanupChanged() {
+                    if (AppContext.settings) {
+                        autoCleanupCheck.checked = AppContext.settings.autoCleanup
+                    }
+                }
+            }
+        }
+
+        Label {
+            text: qsTr("After new files are scanned, fix garbled tags with rules, apply known artist credits and group song versions. AI and online steps still run only when you start them.")
+            font.pixelSize: Theme.fontSizeSmall
+            color: Theme.textSecondary
+            wrapMode: Text.Wrap
+            Layout.fillWidth: true
+        }
+    }
 }

@@ -38,16 +38,22 @@ Rectangle {
 
     function stepTitle(step) {
         if (hasCleanup && AppContext.cleanup.paused) return qsTr("Paused")
-        if (step === CleanupController.Mojibake) return qsTr("Fixing garbled tags...")
-        if (step === CleanupController.Credit) return qsTr("Normalizing artist credits...")
-        if (step === CleanupController.Merge) return qsTr("Merging duplicate artists...")
-        if (step === CleanupController.MbMatch) return qsTr("Looking up MusicBrainz...")
-        if (step === CleanupController.CoverArt) return qsTr("Downloading covers...")
-        if (step === CleanupController.VersionSuffix) return qsTr("Classifying title suffixes...")
-        if (step === CleanupController.VersionLink) return qsTr("Grouping song versions...")
-        if (step === CleanupController.Fingerprint) return qsTr("Computing audio fingerprints...")
-        if (step === CleanupController.Duplicates) return qsTr("Finding duplicates...")
-        return qsTr("Cleaning up library...")
+        let title = ""
+        if (step === CleanupController.Mojibake) title = qsTr("Fixing garbled tags...")
+        else if (step === CleanupController.Credit) title = qsTr("Normalizing artist credits...")
+        else if (step === CleanupController.Merge) title = qsTr("Merging duplicate artists...")
+        else if (step === CleanupController.MbMatch) title = qsTr("Looking up MusicBrainz...")
+        else if (step === CleanupController.CoverArt) title = qsTr("Downloading covers...")
+        else if (step === CleanupController.VersionSuffix) title = qsTr("Classifying title suffixes...")
+        else if (step === CleanupController.VersionLink) title = qsTr("Grouping song versions...")
+        else if (step === CleanupController.Fingerprint) title = qsTr("Computing audio fingerprints...")
+        else if (step === CleanupController.Duplicates) title = qsTr("Finding duplicates...")
+        else title = qsTr("Cleaning up library...")
+
+        if (hasCleanup && AppContext.cleanup.automatic) {
+            return qsTr("Automatic cleanup: ") + title
+        }
+        return title
     }
 
     Component.onCompleted: {
