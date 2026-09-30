@@ -61,6 +61,7 @@ public:
         AddedAtRole,
         PlayCountRole,
         LastPlayedAtRole,
+        VersionTypeRole,
     };
     Q_ENUM(Role)
 

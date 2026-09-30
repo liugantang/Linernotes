@@ -2559,6 +2559,46 @@
         <source>Edit Tags...</source>
         <translation>编辑标签…</translation>
     </message>
+    <message>
+        <source>Other Versions</source>
+        <translation>其他版本</translation>
+    </message>
+    <message>
+        <source>Live</source>
+        <translation>现场</translation>
+    </message>
+    <message>
+        <source>Remaster</source>
+        <translation>重制</translation>
+    </message>
+    <message>
+        <source>Acoustic</source>
+        <translation>原声</translation>
+    </message>
+    <message>
+        <source>Remix</source>
+        <translation>混音</translation>
+    </message>
+    <message>
+        <source>Demo</source>
+        <translation>小样</translation>
+    </message>
+    <message>
+        <source>Instrumental</source>
+        <translation>伴奏</translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation>剪辑版</translation>
+    </message>
+    <message>
+        <source>Alt. version</source>
+        <translation>其他版本</translation>
+    </message>
+    <message>
+        <source>Unknown Title</source>
+        <translation>未知标题</translation>
+    </message>
 </context>
 <context>
     <name>TrackTable</name>
@@ -2735,6 +2775,41 @@
         <location filename="../qml/TrayIcon.qml" line="84"/>
         <source>Quit</source>
         <translation>退出</translation>
+    </message>
+</context>
+<context>
+    <name>VersionBadge</name>
+    <message>
+        <source>Live</source>
+        <translation>现场</translation>
+    </message>
+    <message>
+        <source>Remaster</source>
+        <translation>重制</translation>
+    </message>
+    <message>
+        <source>Acoustic</source>
+        <translation>原声</translation>
+    </message>
+    <message>
+        <source>Remix</source>
+        <translation>混音</translation>
+    </message>
+    <message>
+        <source>Demo</source>
+        <translation>小样</translation>
+    </message>
+    <message>
+        <source>Instrumental</source>
+        <translation>伴奏</translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <translation>剪辑版</translation>
+    </message>
+    <message>
+        <source>Alt. version</source>
+        <translation>其他版本</translation>
     </message>
 </context>
 <context>

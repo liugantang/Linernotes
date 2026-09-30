@@ -208,6 +208,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS TrackTableRow.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/VersionBadge.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS VersionBadge.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/TrackTable.qml
     PROPERTIES
         QT_RESOURCE_ALIAS TrackTable.qml
@@ -608,6 +613,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/TrackContextMenu.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackTableHeader.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackTableRow.qml
+        ${CMAKE_SOURCE_DIR}/qml/VersionBadge.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackTable.qml
         ${CMAKE_SOURCE_DIR}/qml/TrackTableReorder.qml
         ${CMAKE_SOURCE_DIR}/qml/CorrectionBatchList.qml

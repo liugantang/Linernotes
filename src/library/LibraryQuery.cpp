@@ -249,6 +249,55 @@ core::Result<QList<TrackRow>> LibraryQuery::tracksByIds(const QList<qint64> &ids
         detail::trackSelectSql(), detail::parseTrackRow, QStringLiteral("tracksByIds"));
 }
 
+core::Result<QList<TrackRow>> LibraryQuery::otherVersions(qint64 trackId) const
+{
+    if (!m_db.isOpen()) {
+        return core::Error {
+            .code = QString(errc::kDbOpen),
+            .message = QStringLiteral("Database is not open"),
+            .detail = QString(),
+        };
+    }
+
+    if (trackId <= 0) {
+        return QList<TrackRow> { };
+    }
+
+    const QString sql
+        = QStringLiteral("%1 "
+                         "WHERE t.work_id IS NOT NULL "
+                         "  AND t.work_id = (SELECT work_id FROM tracks WHERE id = ?) "
+                         "  AND t.id != ? "
+                         "  AND f.missing_since IS NULL "
+                         "ORDER BY "
+                         "  CASE WHEN tv.version_type = 'studio' THEN 0 ELSE 1 END ASC, "
+                         "  em.year IS NULL, em.year ASC, "
+                         "  em.album IS NULL, em.album ASC, "
+                         "  t.id ASC "
+                         "LIMIT 50;")
+              .arg(detail::trackSelectSql());
+
+    QSqlQuery q(m_db);
+    q.prepare(sql);
+    q.bindValue(0, trackId);
+    q.bindValue(1, trackId);
+
+    if (!q.exec()) {
+        return core::Error {
+            .code = QString(errc::kDbQuery),
+            .message = QStringLiteral("otherVersions query failed"),
+            .detail = q.lastError().text(),
+        };
+    }
+
+    QList<TrackRow> rows;
+    while (q.next()) {
+        rows.append(detail::parseTrackRow(q));
+    }
+
+    return rows;
+}
+
 core::Result<QHash<QString, qint64>> LibraryQuery::trackIdsByPaths(const QStringList &paths) const
 {
     if (!m_db.isOpen()) {

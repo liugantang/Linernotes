@@ -51,6 +51,10 @@ public:
     [[nodiscard]] Q_INVOKABLE QVariantMap albumInfo(qint64 albumId) const;
     [[nodiscard]] Q_INVOKABLE QVariantMap artistInfo(qint64 artistId) const;
 
+    /// 同一作品的其他版本。每项：trackId、title、artist、album、durationText、versionType（int，同上，-1
+    /// 表示未知）。
+    [[nodiscard]] Q_INVOKABLE QVariantList otherVersions(qint64 trackId) const;
+
     /// 在系统文件管理器中打开该曲目所在目录。
     Q_INVOKABLE void showInFileManager(qint64 trackId) const;
 

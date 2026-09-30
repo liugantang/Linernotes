@@ -17,6 +17,7 @@ Rectangle {
     required property string durationText
     required property var albumDetail
     required property var contextMenu
+    required property int versionType
     property real trailingInset: 0
 
     width: ListView.view ? ListView.view.width : parent.width
@@ -51,12 +52,29 @@ Rectangle {
             Layout.fillWidth: true
             spacing: 2
 
-            Label {
-                text: trackDelegate.title || qsTr("Unknown Title")
-                font.pixelSize: Theme.fontSizeNormal
-                color: Theme.text
-                elide: Text.ElideRight
+            RowLayout {
                 Layout.fillWidth: true
+                spacing: Theme.spacingTiny
+
+                Label {
+                    Layout.fillWidth: true
+                    Layout.maximumWidth: implicitWidth
+                    verticalAlignment: Text.AlignVCenter
+                    text: trackDelegate.title || qsTr("Unknown Title")
+                    textFormat: Text.PlainText
+                    elide: Text.ElideRight
+                    color: Theme.text
+                    font.pixelSize: Theme.fontSizeNormal
+                }
+
+                VersionBadge {
+                    versionType: trackDelegate.versionType
+                    Layout.alignment: Qt.AlignVCenter
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
             }
 
             Label {

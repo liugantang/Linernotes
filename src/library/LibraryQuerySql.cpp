@@ -7,6 +7,8 @@
 #include <QStringList>
 #include <QVariant>
 
+#include <library/EnumNames.h>
+
 namespace linernotes::library::detail {
 
 TrackRow parseTrackRow(const QSqlQuery &q)
@@ -45,6 +47,9 @@ TrackRow parseTrackRow(const QSqlQuery &q)
     row.playCount = q.value(22).toInt();
     if (!q.value(23).isNull()) {
         row.lastPlayedAtMs = q.value(23).toLongLong();
+    }
+    if (!q.value(24).isNull()) {
+        row.versionType = versionTypeFromString(q.value(24).toString());
     }
     return row;
 }
@@ -366,14 +371,16 @@ QString trackSelectSql(const QString &fromSource)
         "COALESCE(r.rating, 0) AS rating, "
         "f.first_seen_at, "
         "COALESCE(tps.play_count, 0) AS play_count, "
-        "tps.last_played_at "
+        "tps.last_played_at, "
+        "tv.version_type "
         "FROM %1 "
         "JOIN files f ON t.file_id = f.id "
         "LEFT JOIN effective_metadata em ON t.id = em.track_id "
         "LEFT JOIN covers c ON f.cover_id = c.id "
         "LEFT JOIN favorites fav ON fav.entity_type = 'track' AND fav.entity_id = t.id "
         "LEFT JOIN ratings r ON r.track_id = t.id "
-        "LEFT JOIN track_play_stats tps ON tps.track_id = t.id")
+        "LEFT JOIN track_play_stats tps ON tps.track_id = t.id "
+        "LEFT JOIN track_versions tv ON tv.track_id = t.id")
         .arg(fromSource);
 }
 

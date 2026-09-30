@@ -3,6 +3,7 @@
 
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import Linernotes
 import "controls" as Controls
 import "TrackColumns.js" as TrackColumns
@@ -34,6 +35,7 @@ Rectangle {
     required property var addedAt
     required property int playCount
     required property var lastPlayedAt
+    required property int versionType
 
     readonly property bool isCurrent: rootRow.table.currentIndex === rootRow.index && rootRow.table.activeFocus
     readonly property bool isSelectedRow: rootRow.selection.revision >= 0 && rootRow.selection.isSelected(rootRow.index)
@@ -125,8 +127,36 @@ Rectangle {
                     }
                 }
 
+                RowLayout {
+                    visible: modelData.key === "title"
+                    anchors.fill: parent
+                    anchors.leftMargin: Theme.spacingSmall
+                    anchors.rightMargin: Theme.spacingSmall
+                    spacing: Theme.spacingTiny
+
+                    Label {
+                        Layout.fillWidth: true
+                        Layout.maximumWidth: implicitWidth
+                        verticalAlignment: Text.AlignVCenter
+                        text: rootRow.cellText("title")
+                        textFormat: Text.PlainText
+                        elide: Text.ElideRight
+                        color: rootRow.isSelectedRow ? Theme.text : Theme.text
+                        font.pixelSize: Theme.fontSizeNormal
+                    }
+
+                    VersionBadge {
+                        versionType: rootRow.versionType
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                    }
+                }
+
                 Label {
-                    visible: modelData.key !== "favorite" && modelData.key !== "rating"
+                    visible: modelData.key !== "title" && modelData.key !== "favorite" && modelData.key !== "rating"
                     anchors.fill: parent
                     anchors.leftMargin: Theme.spacingSmall
                     anchors.rightMargin: Theme.spacingSmall

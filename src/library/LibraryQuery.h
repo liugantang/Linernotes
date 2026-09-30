@@ -81,6 +81,7 @@ struct TrackRow {
     qint64 addedAt = 0; ///< files.first_seen_at
     int playCount = 0;
     std::optional<qint64> lastPlayedAtMs;
+    std::optional<VersionType> versionType;
 
     bool operator==(const TrackRow &) const = default;
 };
@@ -136,6 +137,10 @@ public:
 
     /// 按给定顺序返回存在的曲目（不存在或文件缺失的 id 跳过），供搜索结果、播放队列使用。
     core::Result<QList<TrackRow>> tracksByIds(const QList<qint64> &ids) const;
+
+    /// 查询同一作品的其他曲目（不含自身；无 work_id 返回空列表）。
+    /// 排序：Studio 版本优先，然后按 专辑年份、专辑名、track_id 升序。最多返回 50 条。
+    core::Result<QList<TrackRow>> otherVersions(qint64 trackId) const;
 
     /// 根据文件路径批量查询曲目 ID（只返回找到且未缺失的 files.path → tracks.id 映射）。
     core::Result<QHash<QString, qint64>> trackIdsByPaths(const QStringList &paths) const;
