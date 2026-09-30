@@ -45,6 +45,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_writeback(m_db, m_clock, m_ai.jobs(), m_scanner)
     , m_cleanup(m_db, m_clock, m_ai.jobs(), m_ai.prompts(), m_ai.config(), m_settings)
     , m_duplicates(m_db, m_clock, m_trash)
+    , m_coverSearch(m_db, m_ai.network(), m_coverStore, m_clock)
     , m_playStats(m_db)
     , m_tagEditor(m_db)
     , m_review(m_db, m_clock)
@@ -67,6 +68,8 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     connect(&m_writeback, &WritebackController::libraryModified, this, &AppContext::libraryChanged);
     connect(
         &m_duplicates, &DuplicateController::libraryModified, this, &AppContext::libraryChanged);
+    connect(
+        &m_coverSearch, &CoverSearchController::coverChanged, this, &AppContext::libraryChanged);
     connect(&m_cleanup, &CleanupController::batchesChanged, &m_review,
         &CorrectionReviewController::refresh);
     connect(&m_cleanup, &CleanupController::batchesChanged, this, &AppContext::libraryChanged);
@@ -324,6 +327,11 @@ CleanupController *AppContext::cleanup()
 DuplicateController *AppContext::duplicates()
 {
     return &m_duplicates;
+}
+
+CoverSearchController *AppContext::coverSearch()
+{
+    return &m_coverSearch;
 }
 
 library::Database &AppContext::database()

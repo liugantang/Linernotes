@@ -23,6 +23,7 @@
 #include <ui/AiSettingsController.h>
 #include <ui/CleanupController.h>
 #include <ui/CorrectionReviewController.h>
+#include <ui/CoverSearchController.h>
 #include <ui/DuplicateController.h>
 #include <ui/LibraryActions.h>
 #include <ui/LibraryRootsModel.h>
@@ -76,6 +77,7 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::WritebackController *writeback READ writeback CONSTANT)
     Q_PROPERTY(linernotes::ui::CleanupController *cleanup READ cleanup CONSTANT)
     Q_PROPERTY(linernotes::ui::DuplicateController *duplicates READ duplicates CONSTANT)
+    Q_PROPERTY(linernotes::ui::CoverSearchController *coverSearch READ coverSearch CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
     Q_PROPERTY(QString startupError READ startupError NOTIFY startupErrorChanged)
     Q_PROPERTY(bool scanning READ isScanning NOTIFY scanningChanged)
@@ -122,6 +124,7 @@ public:
     [[nodiscard]] WritebackController *writeback();
     [[nodiscard]] CleanupController *cleanup();
     [[nodiscard]] DuplicateController *duplicates();
+    [[nodiscard]] CoverSearchController *coverSearch();
     [[nodiscard]] library::Database &database();
     [[nodiscard]] const library::Database &database() const;
     [[nodiscard]] library::CoverStore *coverStore();
@@ -154,6 +157,7 @@ private:
     CleanupController m_cleanup;
     butler::SystemFileTrash m_trash;
     DuplicateController m_duplicates;
+    CoverSearchController m_coverSearch;
     library::PlayStats m_playStats;
     TagEditorModel m_tagEditor;
     CorrectionReviewController m_review;

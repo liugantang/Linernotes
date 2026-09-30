@@ -118,4 +118,9 @@ const ai::AiConfig &AiContext::config() const
     return m_config;
 }
 
+QNetworkAccessManager &AiContext::network()
+{
+    return m_network;
+}
+
 } // namespace linernotes::ui

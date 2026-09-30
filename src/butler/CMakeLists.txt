@@ -49,6 +49,8 @@ add_library(linernotes_butler STATIC
     Errors.h
     FingerprintJobHandler.cpp
     FingerprintJobHandler.h
+    ItunesSearch.cpp
+    ItunesSearch.h
     Mojibake.cpp
     Mojibake.h
     MojibakeAnalysis.cpp

@@ -47,4 +47,7 @@ inline constexpr QLatin1StringView kAlbumInfoPromptRenderFailed {
     "album_info.prompt_render_failed"
 };
 
+inline constexpr QLatin1StringView kItunesParseFailed { "itunes.parse_failed" };
+inline constexpr QLatin1StringView kItunesInvalidResult { "itunes.invalid_result" };
+
 } // namespace linernotes::butler::errc

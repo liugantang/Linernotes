@@ -15,45 +15,50 @@
 <context>
     <name>AlbumDetail</name>
     <message numerus="yes">
-        <location filename="../qml/AlbumDetail.qml" line="85"/>
+        <location filename="../qml/AlbumDetail.qml" line="92"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n 首</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="106"/>
+        <location filename="../qml/AlbumDetail.qml" line="113"/>
         <source>Back</source>
         <translation>返回</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="167"/>
+        <location filename="../qml/AlbumDetail.qml" line="174"/>
         <source>Unknown Album</source>
         <translation>未知专辑</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="185"/>
+        <location filename="../qml/AlbumDetail.qml" line="192"/>
         <source>Unknown Artist</source>
         <translation>未知艺人</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="206"/>
+        <location filename="../qml/AlbumDetail.qml" line="213"/>
         <source>Play</source>
         <translation>播放</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="213"/>
+        <location filename="../qml/AlbumDetail.qml" line="220"/>
         <source>Shuffle</source>
         <translation>随机播放</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="255"/>
+        <location filename="../qml/AlbumDetail.qml" line="227"/>
+        <source>Find cover online</source>
+        <translation>在线查找封面</translation>
+    </message>
+    <message>
+        <location filename="../qml/AlbumDetail.qml" line="271"/>
         <source>Title</source>
         <extracomment>Track title header</extracomment>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="263"/>
+        <location filename="../qml/AlbumDetail.qml" line="279"/>
         <source>Duration</source>
         <extracomment>Track duration header</extracomment>
         <translation>时长</translation>
@@ -1024,6 +1029,47 @@
         <location filename="../qml/CorrectionRowItem.qml" line="201"/>
         <source>Cancel</source>
         <translation>取消</translation>
+    </message>
+</context>
+<context>
+    <name>CoverSearchDialog</name>
+    <message numerus="yes">
+        <location filename="../qml/CoverSearchDialog.qml" line="71"/>
+        <source>%n track(s)</source>
+        <translation>
+            <numerusform>%n 首</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../qml/CoverSearchDialog.qml" line="89"/>
+        <source>Find Cover Online</source>
+        <translation>在线查找封面</translation>
+    </message>
+    <message>
+        <location filename="../qml/CoverSearchDialog.qml" line="98"/>
+        <location filename="../qml/CoverSearchDialog.qml" line="124"/>
+        <source>Searching iTunes…</source>
+        <translation>正在搜索 iTunes…</translation>
+    </message>
+    <message>
+        <location filename="../qml/CoverSearchDialog.qml" line="126"/>
+        <source>No covers found</source>
+        <translation>没有找到封面</translation>
+    </message>
+    <message>
+        <location filename="../qml/CoverSearchDialog.qml" line="278"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../qml/CoverSearchDialog.qml" line="289"/>
+        <source>Downloading…</source>
+        <translation>正在下载…</translation>
+    </message>
+    <message>
+        <location filename="../qml/CoverSearchDialog.qml" line="289"/>
+        <source>Set as Cover</source>
+        <translation>设为封面</translation>
     </message>
 </context>
 <context>
@@ -3317,6 +3363,44 @@
         <translation>
             <numerusform>%n 条因艺人或曲目已不存在而跳过。</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>linernotes::ui::CoverSearchController</name>
+    <message>
+        <location filename="../src/ui/CoverSearchController.cpp" line="105"/>
+        <source>Database error: %1</source>
+        <translation>数据库错误：%1</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/CoverSearchController.cpp" line="115"/>
+        <source>Album not found</source>
+        <translation>找不到专辑</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/CoverSearchController.cpp" line="125"/>
+        <source>No search terms available</source>
+        <translation>缺少专辑名与艺人，无法搜索</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/CoverSearchController.cpp" line="154"/>
+        <source>Network request failed</source>
+        <translation>网络请求失败</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/CoverSearchController.cpp" line="282"/>
+        <source>Failed to download cover image</source>
+        <translation>封面下载失败</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/CoverSearchController.cpp" line="291"/>
+        <source>Failed to decode cover image</source>
+        <translation>无法解析封面图片</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/CoverSearchController.cpp" line="301"/>
+        <source>Failed to save cover to database</source>
+        <translation>封面保存失败</translation>
     </message>
 </context>
 <context>

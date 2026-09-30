@@ -53,4 +53,6 @@
 | `mojibake/latin_legit.txt` | 文本 / 合法带重音拉丁字母名字 | 300+ 行 | 自行编写，CC0 | 乱码检测防误报测试语料（合法拉丁字符） |
 | `artists/same_artist_rule.txt` | 文本 / 55 簇同一艺人的不同写法 | 57 行 | 开发者真实曲库中的公开艺名 / 审查者编写 | 艺人名规则层归一测试素材（日文姓名顺序颠倒、长音罗马字、全半角、标点等） |
 | `artists/distinct_artists.txt` | 文本 / 30 组不同艺人 | 32 行 | 开发者真实曲库中的公开艺名 / 审查者编写 | 艺人名防误合并测试素材（共享词、相似拼写等不同艺人） |
+| `itunes/search_album_tw.json` | JSON / iTunes Search API 响应 | ~13 KB | iTunes Search API 真实录制（2026-10-01），CC0 | 台湾区（tw）搜索“周杰伦 范特西”的真实响应，含 10 条专辑结果 |
+| `itunes/search_album_empty.json` | JSON / iTunes Search API 响应 | 44 B | iTunes Search API 真实录制（2026-10-01），CC0 | 中国大陆区（cn）搜索返回 0 条结果的真实空响应 |
 

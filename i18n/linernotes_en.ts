@@ -4,7 +4,7 @@
 <context>
     <name>AlbumDetail</name>
     <message numerus="yes">
-        <location filename="../qml/AlbumDetail.qml" line="85"/>
+        <location filename="../qml/AlbumDetail.qml" line="92"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n track</numerusform>
@@ -211,6 +211,17 @@
         <translation>
             <numerusform>%n item</numerusform>
             <numerusform>%n items</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>CoverSearchDialog</name>
+    <message numerus="yes">
+        <location filename="../qml/CoverSearchDialog.qml" line="71"/>
+        <source>%n track(s)</source>
+        <translation type="unfinished">
+            <numerusform>%n track</numerusform>
+            <numerusform>%n tracks</numerusform>
         </translation>
     </message>
 </context>

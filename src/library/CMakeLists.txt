@@ -4,6 +4,8 @@
 file(GLOB MIGRATION_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/migrations/*.sql")
 
 add_library(linernotes_library STATIC
+    AlbumCovers.cpp
+    AlbumCovers.h
     ArtistAliasCorrections.cpp
     ArtistAliasCorrections.h
     ArtistNamePreference.h

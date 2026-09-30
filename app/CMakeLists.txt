@@ -42,6 +42,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS AlbumDetail.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/CoverSearchDialog.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS CoverSearchDialog.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/ArtistDetail.qml
     PROPERTIES
         QT_RESOURCE_ALIAS ArtistDetail.qml
@@ -592,6 +597,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/TagEditorDialog.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumGrid.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumDetail.qml
+        ${CMAKE_SOURCE_DIR}/qml/CoverSearchDialog.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumTrackRow.qml
         ${CMAKE_SOURCE_DIR}/qml/ArtistDetail.qml
         ${CMAKE_SOURCE_DIR}/qml/SearchBox.qml

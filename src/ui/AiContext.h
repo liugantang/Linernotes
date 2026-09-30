@@ -51,6 +51,7 @@ public:
     [[nodiscard]] ai::JobQueue &jobs();
     [[nodiscard]] ai::PromptLibrary &prompts();
     [[nodiscard]] const ai::AiConfig &config() const;
+    [[nodiscard]] QNetworkAccessManager &network();
 
 private:
     // 声明顺序即依赖顺序

@@ -12,6 +12,17 @@ linernotes_add_test(
         Linernotes::TestSupport
 )
 
+linernotes_add_test(
+    NAME butler_ItunesSearch
+    SOURCES
+        tst_ItunesSearch.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::core
+        Linernotes::TestSupport
+        Linernotes::Deps::ICU
+)
+
 
 
 linernotes_add_test(
