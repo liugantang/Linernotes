@@ -139,6 +139,7 @@ private slots:
     void failuresAndConfigErrors();
     void cancelAbortsInFlight();
     void estimateSumsAndRoughTokenCount();
+    void concurrentWritesDoNotBlockJob();
 };
 
 void TstJobQueue::runsAllItems()
@@ -508,6 +509,64 @@ void TstJobQueue::estimateSumsAndRoughTokenCount()
     // Total: prompt = 4, completion = 20
     QCOMPARE(res.value().promptTokens, 4);
     QCOMPARE(res.value().completionTokens, 20);
+}
+
+void TstJobQueue::concurrentWritesDoNotBlockJob()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+
+    const QString dbPath = tempDir.filePath(QStringLiteral("test_concurrent.db"));
+    Database db1(dbPath);
+    Database db2(dbPath);
+    const Migrator migrator;
+    QVERIFY(db1.open(migrator).ok());
+    QVERIFY(db2.open(migrator).ok());
+
+    ManualClock clock(1000);
+    JobQueue queue(db1, clock);
+
+    // JobQueue 在一次读写之间发出 jobChanged；在槽里用另一连接提交写入，
+    // 模拟后台扫描恰好在此刻提交（曾导致 database is locked 后任务永久停住）。
+    int writes = 0;
+    QObject::connect(&queue, &JobQueue::jobChanged, &queue, [&db2, &writes] {
+        const auto conn2Res = db2.connection();
+        QVERIFY(conn2Res.ok());
+        QSqlQuery q2(conn2Res.value());
+        q2.prepare(QStringLiteral("INSERT INTO library_roots (path, added_at) VALUES (?, 1000)"));
+        q2.addBindValue(QStringLiteral("/root/%1").arg(++writes));
+        QVERIFY(q2.exec());
+    });
+
+    auto handler = std::make_unique<FakeHandler>(QStringLiteral("test.fake"), 1);
+    queue.registerHandler(std::move(handler));
+
+    const QStringList items = {
+        QStringLiteral("item1"),
+        QStringLiteral("item2"),
+        QStringLiteral("item3"),
+        QStringLiteral("item4"),
+        QStringLiteral("item5"),
+    };
+
+    const auto enqueueRes
+        = queue.enqueue(QStringLiteral("test.fake"), QStringLiteral("Concurrent Test"), items);
+    QVERIFY(enqueueRes.ok());
+    const qint64 jobId = enqueueRes.value();
+
+    QTRY_COMPARE_WITH_TIMEOUT(
+        queue.job(jobId).value_or(JobInfo { }).state, JobState::Completed, 5000);
+
+    const auto jobOpt = queue.job(jobId);
+    QVERIFY(jobOpt.has_value());
+    if (!jobOpt.has_value()) {
+        return;
+    }
+
+    QCOMPARE(jobOpt->state, JobState::Completed);
+    QCOMPARE(jobOpt->total, 5);
+    QCOMPARE(jobOpt->done, 5);
+    QCOMPARE(jobOpt->failed, 0);
 }
 
 } // namespace

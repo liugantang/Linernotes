@@ -52,6 +52,21 @@ std::optional<QList<float>> deserializeVector(const QByteArray &blob)
     return vec;
 }
 
+constexpr const char *kPendingTracksFromAndWhereSql = R"(
+FROM tracks t
+JOIN files f ON f.id = t.file_id
+LEFT JOIN audio_embeddings ae ON ae.track_id = t.id
+WHERE f.missing_since IS NULL
+  AND f.scan_error IS NULL
+  AND (
+      ae.track_id IS NULL
+      OR ae.model != ?
+      OR f.content_hash IS NULL
+      OR ae.content_hash IS NULL
+      OR ae.content_hash != f.content_hash
+  )
+)";
+
 } // namespace
 
 EmbeddingStore::EmbeddingStore(Database &db, const core::Clock &clock)
@@ -69,20 +84,8 @@ core::Result<QList<qint64>> EmbeddingStore::pendingTrackIds(const QString &model
     const auto &conn = connRes.value();
 
     QSqlQuery q(conn);
-    q.prepare(QStringLiteral("SELECT t.id "
-                             "FROM tracks t "
-                             "JOIN files f ON f.id = t.file_id "
-                             "LEFT JOIN audio_embeddings ae ON ae.track_id = t.id "
-                             "WHERE f.missing_since IS NULL "
-                             "  AND f.scan_error IS NULL "
-                             "  AND ( "
-                             "      ae.track_id IS NULL "
-                             "      OR ae.model != ? "
-                             "      OR f.content_hash IS NULL "
-                             "      OR ae.content_hash IS NULL "
-                             "      OR ae.content_hash != f.content_hash "
-                             "  ) "
-                             "ORDER BY t.id ASC;"));
+    q.prepare(QStringLiteral("SELECT t.id ") + QString::fromUtf8(kPendingTracksFromAndWhereSql)
+        + QStringLiteral(" ORDER BY t.id ASC;"));
     q.addBindValue(model);
 
     if (!q.exec()) {
@@ -97,7 +100,38 @@ core::Result<QList<qint64>> EmbeddingStore::pendingTrackIds(const QString &model
     while (q.next()) {
         trackIds.append(q.value(0).toLongLong());
     }
+    q.finish();
     return trackIds;
+}
+
+core::Result<int> EmbeddingStore::pendingCount(const QString &model) const
+{
+    auto connRes = m_db.connection();
+    if (!connRes.ok()) {
+        return connRes.error();
+    }
+    const auto &conn = connRes.value();
+
+    QSqlQuery q(conn);
+    q.prepare(QStringLiteral("SELECT COUNT(*) ") + QString::fromUtf8(kPendingTracksFromAndWhereSql)
+        + QStringLiteral(";"));
+    q.addBindValue(model);
+
+    if (!q.exec()) {
+        return core::Error {
+            .code = QString(errc::kDbQuery),
+            .message = q.lastError().text(),
+            .detail = QString(),
+        };
+    }
+
+    if (q.next()) {
+        const int count = q.value(0).toInt();
+        q.finish();
+        return count;
+    }
+    q.finish();
+    return 0;
 }
 
 core::Result<EmbedSource> EmbeddingStore::source(qint64 trackId) const

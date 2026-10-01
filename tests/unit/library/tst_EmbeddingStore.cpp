@@ -106,6 +106,9 @@ void TstEmbeddingStore::pendingTrackIdsTransitions()
     auto pendingRes = store.pendingTrackIds(model1);
     QVERIFY(pendingRes.ok());
     QCOMPARE(pendingRes.value(), (QList<qint64> { t1, t2 }));
+    auto pendingCountRes = store.pendingCount(model1);
+    QVERIFY(pendingCountRes.ok());
+    QCOMPARE(pendingCountRes.value(), 2);
     auto analyzedRes = store.analyzedCount(model1);
     QVERIFY(analyzedRes.ok());
     QCOMPARE(analyzedRes.value(), 0);
@@ -118,6 +121,9 @@ void TstEmbeddingStore::pendingTrackIdsTransitions()
     pendingRes = store.pendingTrackIds(model1);
     QVERIFY(pendingRes.ok());
     QCOMPARE(pendingRes.value(), (QList<qint64> { t2 }));
+    pendingCountRes = store.pendingCount(model1);
+    QVERIFY(pendingCountRes.ok());
+    QCOMPARE(pendingCountRes.value(), 1);
     analyzedRes = store.analyzedCount(model1);
     QVERIFY(analyzedRes.ok());
     QCOMPARE(analyzedRes.value(), 1);
@@ -126,6 +132,9 @@ void TstEmbeddingStore::pendingTrackIdsTransitions()
     auto pendingModel2 = store.pendingTrackIds(model2);
     QVERIFY(pendingModel2.ok());
     QCOMPARE(pendingModel2.value(), (QList<qint64> { t1, t2 }));
+    auto pendingCountModel2 = store.pendingCount(model2);
+    QVERIFY(pendingCountModel2.ok());
+    QCOMPARE(pendingCountModel2.value(), 2);
     auto analyzedModel2 = store.analyzedCount(model2);
     QVERIFY(analyzedModel2.ok());
     QCOMPARE(analyzedModel2.value(), 0);
@@ -136,6 +145,9 @@ void TstEmbeddingStore::pendingTrackIdsTransitions()
     pendingRes = store.pendingTrackIds(model1);
     QVERIFY(pendingRes.ok());
     QVERIFY(pendingRes.value().isEmpty());
+    pendingCountRes = store.pendingCount(model1);
+    QVERIFY(pendingCountRes.ok());
+    QCOMPARE(pendingCountRes.value(), 0);
     analyzedRes = store.analyzedCount(model1);
     QVERIFY(analyzedRes.ok());
     QCOMPARE(analyzedRes.value(), 1);
@@ -149,6 +161,9 @@ void TstEmbeddingStore::pendingTrackIdsTransitions()
     pendingRes = store.pendingTrackIds(model1);
     QVERIFY(pendingRes.ok());
     QCOMPARE(pendingRes.value(), (QList<qint64> { t1 }));
+    pendingCountRes = store.pendingCount(model1);
+    QVERIFY(pendingCountRes.ok());
+    QCOMPARE(pendingCountRes.value(), 1);
     analyzedRes = store.analyzedCount(model1);
     QVERIFY(analyzedRes.ok());
     QCOMPARE(analyzedRes.value(), 0);

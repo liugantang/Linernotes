@@ -33,6 +33,9 @@ public:
     // content_hash 不同（NULL 视为不同）。按 track_id 升序。
     [[nodiscard]] core::Result<QList<qint64>> pendingTrackIds(const QString &model) const;
 
+    // 需要计算的曲目数
+    [[nodiscard]] core::Result<int> pendingCount(const QString &model) const;
+
     // 路径与时长：CUE 分轨用 tracks.start_ms / end_ms（end_ms 为空时用 files.duration_ms -
     // start_ms），普通文件 start 0、files.duration_ms
     [[nodiscard]] core::Result<EmbedSource> source(qint64 trackId) const;

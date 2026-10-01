@@ -100,8 +100,8 @@ void AudioAnalysisController::refresh()
         newAnalyzed = res.value();
     }
     int newPending = 0;
-    if (const auto res = store.pendingTrackIds(modelId); res.ok()) {
-        newPending = static_cast<int>(res.value().size());
+    if (const auto res = store.pendingCount(modelId); res.ok()) {
+        newPending = res.value();
     }
 
     if (newAnalyzed != m_analyzedCount || newPending != m_pendingCount) {
@@ -210,6 +210,10 @@ void AudioAnalysisController::onJobChanged(qint64 jobId)
         m_running = false;
         m_paused = false;
         emit stateChanged();
+    }
+
+    if (m_done != oldDone || m_total != oldTotal || jobInfo->state == ai::JobState::Completed
+        || jobInfo->state == ai::JobState::Cancelled) {
         refresh();
     }
 }
