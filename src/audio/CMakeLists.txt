@@ -4,6 +4,8 @@
 add_library(linernotes_audio STATIC
     AudioDecoder.cpp
     AudioDecoder.h
+    AudioEmbedder.cpp
+    AudioEmbedder.h
     AudioLogging.cpp
     AudioLogging.h
     Errors.h
@@ -26,6 +28,7 @@ target_link_libraries(linernotes_audio
     PRIVATE
         Linernotes::Deps::Chromaprint
         Linernotes::Deps::FFmpeg
+        Linernotes::Deps::OnnxRuntime
 )
 
 linernotes_set_target_options(linernotes_audio)

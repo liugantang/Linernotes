@@ -23,6 +23,7 @@ depends=(
   'libebur128'
   'sqlite'
   'json-schema-validator'
+  'onnxruntime'
 )
 makedepends=(
   'git'

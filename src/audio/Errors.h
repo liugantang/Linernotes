@@ -11,5 +11,8 @@ inline constexpr QLatin1StringView kAudioOpenFailed { "audio.open_failed" };
 inline constexpr QLatin1StringView kAudioNoAudioStream { "audio.no_audio_stream" };
 inline constexpr QLatin1StringView kAudioDecodeFailed { "audio.decode_failed" };
 inline constexpr QLatin1StringView kAudioFingerprintFailed { "audio.fingerprint_failed" };
+inline constexpr QLatin1StringView kAudioModelNotFound { "audio.model_not_found" };
+inline constexpr QLatin1StringView kAudioModelInvalid { "audio.model_invalid" };
+inline constexpr QLatin1StringView kAudioEmbedFailed { "audio.embed_failed" };
 
 } // namespace linernotes::audio::errc
