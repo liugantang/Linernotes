@@ -10,6 +10,8 @@ add_executable(linernotes-eval
     EvalHarness.h
     NlqAskEval.cpp
     NlqAskEval.h
+    NlqEval.cpp
+    NlqEval.h
     main.cpp
 )
 
@@ -17,6 +19,7 @@ target_compile_definitions(linernotes-eval
     PRIVATE
         DEFAULT_ARTIST_MERGE_CORPUS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/artist_merge.json"
         DEFAULT_ARTIST_CREDIT_CORPUS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/artist_credit.json"
+        DEFAULT_NLQ_CORPUS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/data/nlq.json"
 )
 
 target_link_libraries(linernotes-eval

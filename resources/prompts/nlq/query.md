@@ -32,7 +32,7 @@ schema: schemas/nlq/query.json
   - `artist`：曲目艺人
   - `album`：专辑名
   - `albumArtist`：专辑艺人
-  - `genre`：流派风格
+  - `genre`：流派风格（标签写法五花八门，如 `J-Pop`、`Pop/Rock`、`JPOP`，一律用 `contains` 加简短的英文关键词，如 `pop`、`rock`、`jazz`）
   - `codec`：音频格式编码（如 FLAC, MP3）
 - 数值字段（允许运算符：`equals`, `notEquals`, `greater`, `less`, `between`；value 为数值，between 时 value 为下界、value2 为上界）：
   - `year`：发行年份（整数，如 2005）

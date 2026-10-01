@@ -154,8 +154,6 @@ void NlqAskEval::onInterpreterFinished()
     std::cout << "  Completion Tokens: " << usage.completionTokens << "\n";
     std::cout << "  Total Tokens:      " << (usage.promptTokens + usage.completionTokens) << "\n";
 
-    m_harness.printLlmUsage();
-
     QCoreApplication::exit(0);
 }
 

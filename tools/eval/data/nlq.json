@@ -1,0 +1,2624 @@
+{
+  "today": "2026-10-01",
+  "timeZone": "Asia/Shanghai",
+  "items": [
+    {
+      "question": "我去年冬天循环最多的那几首",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2025-12-01",
+          "playedTo": "2026-02-28",
+          "conditions": [
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 20
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2025-12-01",
+          "playedTo": "2026-02-28",
+          "conditions": [],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 20
+        }
+      ]
+    },
+    {
+      "question": "上个月常听的歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2026-09-01",
+          "playedTo": "2026-09-30",
+          "conditions": [
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2026-09-01",
+          "playedTo": "2026-09-30",
+          "conditions": [],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "今年夏天听得最多的20首歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2026-06-01",
+          "playedTo": "2026-08-31",
+          "conditions": [
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 20
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2026-06-01",
+          "playedTo": "2026-08-31",
+          "conditions": [],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 20
+        }
+      ]
+    },
+    {
+      "question": "今年春天播放最多的歌曲",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2026-03-01",
+          "playedTo": "2026-05-31",
+          "conditions": [
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2026-03-01",
+          "playedTo": "2026-05-31",
+          "conditions": [],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "我2025年循环最多的那些歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2025-01-01",
+          "playedTo": "2025-12-31",
+          "conditions": [
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 20
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2025-01-01",
+          "playedTo": "2025-12-31",
+          "conditions": [],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 20
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2025-01-01",
+          "playedTo": "2025-12-31",
+          "conditions": [
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "最近一周听过的歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "lastPlayed",
+              "op": "inLastDays",
+              "value": 7
+            }
+          ],
+          "sort": "lastPlayed",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "lastPlayed",
+              "op": "inLastDays",
+              "value": 7
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2026-09-24",
+          "playedTo": "2026-10-01",
+          "conditions": [
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "lastPlayed",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "最近30天常听的歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2026-09-01",
+          "playedTo": "2026-10-01",
+          "conditions": [
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "lastPlayed",
+              "op": "inLastDays",
+              "value": 30
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2026-09-01",
+          "playedTo": "2026-10-01",
+          "conditions": [],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "昨天听过的歌曲",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2026-09-30",
+          "playedTo": "2026-09-30",
+          "conditions": [
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "lastPlayed",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "lastPlayed",
+              "op": "between",
+              "value": "2026-09-30",
+              "value2": "2026-09-30"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "lastPlayed",
+              "op": "inLastDays",
+              "value": 1
+            }
+          ],
+          "sort": "lastPlayed",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "lastPlayed",
+              "op": "between",
+              "value": "2026-09-30",
+              "value2": "2026-09-30"
+            }
+          ],
+          "sort": "lastPlayed",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "曲库里播放次数最多的50首歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "最近添加到曲库的歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [],
+          "sort": "dateAdded",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "评分最高的那几首",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "rating",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "rating",
+          "order": "desc",
+          "limit": 20
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [],
+          "sort": "rating",
+          "order": "desc",
+          "limit": 20
+        }
+      ]
+    },
+    {
+      "question": "随机挑20首歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [],
+          "sort": "random",
+          "order": "desc",
+          "limit": 20
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [],
+          "sort": "random",
+          "order": "asc",
+          "limit": 20
+        }
+      ]
+    },
+    {
+      "question": "最长的10首歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [],
+          "sort": "duration",
+          "order": "desc",
+          "limit": 10
+        }
+      ]
+    },
+    {
+      "question": "所有我收藏的歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "favorite",
+              "op": "isTrue"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 500
+        }
+      ]
+    },
+    {
+      "question": "没收藏但经常听的歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "favorite",
+              "op": "isFalse"
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "favorite",
+              "op": "isFalse"
+            },
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "评分五颗星的摇滚歌曲",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "rating",
+              "op": "equals",
+              "value": 5
+            },
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "rock"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "rating",
+              "op": "equals",
+              "value": 5
+            },
+            {
+              "field": "genre",
+              "op": "is",
+              "value": "rock"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "收藏的专辑",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "albumFavorite",
+              "op": "isTrue"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "我喜欢的歌手的所有歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artistFavorite",
+              "op": "isTrue"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 500
+        }
+      ]
+    },
+    {
+      "question": "收藏了但从没听完过的专辑",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "albumFavorite",
+              "op": "isTrue"
+            },
+            {
+              "field": "albumCompletion",
+              "op": "less",
+              "value": 100
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "经常被我跳过的歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "skipCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "skipCount",
+              "op": "greater",
+              "value": 3
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "skipCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "听完次数最多的歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "completedCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "completedCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "从没完整听完过的歌曲",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "completedCount",
+              "op": "equals",
+              "value": 0
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "completedCount",
+              "op": "equals",
+              "value": 0
+            },
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "半年没听过的歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "lastPlayed",
+              "op": "notInLastDays",
+              "value": 180
+            }
+          ],
+          "sort": "lastPlayed",
+          "order": "asc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "lastPlayed",
+              "op": "notInLastDays",
+              "value": 180
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "一年以上没听过的老歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "lastPlayed",
+              "op": "notInLastDays",
+              "value": 365
+            }
+          ],
+          "sort": "lastPlayed",
+          "order": "asc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "lastPlayed",
+              "op": "notInLastDays",
+              "value": 365
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "超过三个月没播放过的曲目",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "lastPlayed",
+              "op": "notInLastDays",
+              "value": 90
+            }
+          ],
+          "sort": "lastPlayed",
+          "order": "asc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "lastPlayed",
+              "op": "notInLastDays",
+              "value": 90
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "至少三个月没听过的收藏歌曲",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "favorite",
+              "op": "isTrue"
+            },
+            {
+              "field": "lastPlayed",
+              "op": "notInLastDays",
+              "value": 90
+            }
+          ],
+          "sort": "lastPlayed",
+          "order": "asc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "favorite",
+              "op": "isTrue"
+            },
+            {
+              "field": "lastPlayed",
+              "op": "notInLastDays",
+              "value": 90
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "所有日语歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "language",
+              "op": "is",
+              "value": "ja"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 500
+        }
+      ]
+    },
+    {
+      "question": "中文流行歌曲",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "language",
+              "op": "is",
+              "value": "zh"
+            },
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "pop"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "language",
+              "op": "is",
+              "value": "zh"
+            },
+            {
+              "field": "genre",
+              "op": "is",
+              "value": "pop"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "欧美摇滚歌曲",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "language",
+              "op": "is",
+              "value": "western"
+            },
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "rock"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "language",
+              "op": "is",
+              "value": "western"
+            },
+            {
+              "field": "genre",
+              "op": "is",
+              "value": "rock"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "所有韩语歌曲",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "language",
+              "op": "is",
+              "value": "ko"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 500
+        }
+      ]
+    },
+    {
+      "question": "不是中文的歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "language",
+              "op": "isNot",
+              "value": "zh"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "所有现场版的歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "versionType",
+              "op": "is",
+              "value": "live"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 500
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "versionType",
+              "op": "is",
+              "value": "live"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "不插电原声版歌曲",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "versionType",
+              "op": "is",
+              "value": "acoustic"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "纯音乐和伴奏",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "versionType",
+              "op": "is",
+              "value": "instrumental"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "混音版歌曲",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "versionType",
+              "op": "is",
+              "value": "remix"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "重置母带版的专辑",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "versionType",
+              "op": "is",
+              "value": "remaster"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "Demo小样",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "versionType",
+              "op": "is",
+              "value": "demo"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "90年代的经典歌曲",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "year",
+              "op": "between",
+              "value": 1990,
+              "value2": 1999
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "year",
+              "op": "between",
+              "value": 1990,
+              "value2": 1999
+            }
+          ],
+          "sort": "year",
+          "order": "asc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "80年代发行的专辑",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "year",
+              "op": "between",
+              "value": 1980,
+              "value2": 1989
+            }
+          ],
+          "sort": "year",
+          "order": "asc",
+          "limit": 50
+        },
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "year",
+              "op": "between",
+              "value": 1980,
+              "value2": 1989
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "2000年到2005年的流行音乐",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "year",
+              "op": "between",
+              "value": 2000,
+              "value2": 2005
+            },
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "pop"
+            }
+          ],
+          "sort": "year",
+          "order": "asc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "year",
+              "op": "between",
+              "value": 2000,
+              "value2": 2005
+            },
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "pop"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "2024年发布的歌曲",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "year",
+              "op": "equals",
+              "value": 2024
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "year",
+              "op": "equals",
+              "value": 2024
+            }
+          ],
+          "sort": "dateAdded",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "2020年之后的新歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "year",
+              "op": "greater",
+              "value": 2020
+            }
+          ],
+          "sort": "year",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "year",
+              "op": "greater",
+              "value": 2020
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "所有爵士乐",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "jazz"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 500
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "is",
+              "value": "jazz"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 500
+        }
+      ]
+    },
+    {
+      "question": "古典音乐专辑",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "classical"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "is",
+              "value": "classical"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "电子音乐",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "electronic"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "is",
+              "value": "electronic"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "ACG动画歌曲",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "ACG"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "is",
+              "value": "ACG"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "超过6分钟的长歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "durationSec",
+              "op": "greater",
+              "value": 360
+            }
+          ],
+          "sort": "duration",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "durationSec",
+              "op": "greater",
+              "value": 360
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "3分钟以下的短歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "durationSec",
+              "op": "less",
+              "value": 180
+            }
+          ],
+          "sort": "duration",
+          "order": "asc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "durationSec",
+              "op": "less",
+              "value": 180
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "时长在4到5分钟之间的歌曲",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "durationSec",
+              "op": "between",
+              "value": 240,
+              "value2": 300
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "周董 2000 年代的专辑",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "周杰伦"
+            },
+            {
+              "field": "year",
+              "op": "between",
+              "value": 2000,
+              "value2": 2009
+            }
+          ],
+          "sort": "year",
+          "order": "asc",
+          "limit": 50
+        },
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "周杰伦"
+            },
+            {
+              "field": "year",
+              "op": "between",
+              "value": 2000,
+              "value2": 2009
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "Eason播放量最高的歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "陈奕迅"
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "陈奕迅"
+            },
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "霉霉的所有歌曲",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "Taylor Swift"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 500
+        }
+      ]
+    },
+    {
+      "question": "八爷米津玄师的歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "米津玄師"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "米津玄师"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "林俊杰评分最高的那些歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "林俊杰"
+            }
+          ],
+          "sort": "rating",
+          "order": "desc",
+          "limit": 20
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "林俊傑"
+            }
+          ],
+          "sort": "rating",
+          "order": "desc",
+          "limit": 20
+        }
+      ]
+    },
+    {
+      "question": "甲壳虫乐队的所有专辑",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "The Beatles"
+            }
+          ],
+          "sort": "year",
+          "order": "asc",
+          "limit": 500
+        },
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "The Beatles"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 500
+        },
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "披头士"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 500
+        }
+      ]
+    },
+    {
+      "question": "曲库里我最常听的歌手",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "artist",
+          "match": "all",
+          "conditions": [],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "artist",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "评分最高的专辑",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [],
+          "sort": "rating",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "rating",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "rating",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "所有收藏的艺人",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "artist",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artistFavorite",
+              "op": "isTrue"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 500
+        },
+        {
+          "entity": "artist",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "favorite",
+              "op": "isTrue"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 500
+        }
+      ]
+    },
+    {
+      "question": "my most played songs last month",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2026-09-01",
+          "playedTo": "2026-09-30",
+          "conditions": [
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2026-09-01",
+          "playedTo": "2026-09-30",
+          "conditions": [],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "favorite rock albums from the 90s",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "albumFavorite",
+              "op": "isTrue"
+            },
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "rock"
+            },
+            {
+              "field": "year",
+              "op": "between",
+              "value": 1990,
+              "value2": 1999
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "albumFavorite",
+              "op": "isTrue"
+            },
+            {
+              "field": "genre",
+              "op": "is",
+              "value": "rock"
+            },
+            {
+              "field": "year",
+              "op": "between",
+              "value": 1990,
+              "value2": 1999
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "songs I haven't listened to in 6 months",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "lastPlayed",
+              "op": "notInLastDays",
+              "value": 180
+            }
+          ],
+          "sort": "lastPlayed",
+          "order": "asc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "lastPlayed",
+              "op": "notInLastDays",
+              "value": 180
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "all Japanese songs",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "language",
+              "op": "is",
+              "value": "ja"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 500
+        }
+      ]
+    },
+    {
+      "question": "live versions of Coldplay songs",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "Coldplay"
+            },
+            {
+              "field": "versionType",
+              "op": "is",
+              "value": "live"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "Taylor Swift songs over 5 minutes",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "Taylor Swift"
+            },
+            {
+              "field": "durationSec",
+              "op": "greater",
+              "value": 300
+            }
+          ],
+          "sort": "duration",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "Taylor Swift"
+            },
+            {
+              "field": "durationSec",
+              "op": "greater",
+              "value": 300
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "recently added classical albums",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "classical"
+            }
+          ],
+          "sort": "dateAdded",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "is",
+              "value": "classical"
+            }
+          ],
+          "sort": "dateAdded",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "acoustic tracks with 5 star rating",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "versionType",
+              "op": "is",
+              "value": "acoustic"
+            },
+            {
+              "field": "rating",
+              "op": "equals",
+              "value": 5
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "albums released in 2025",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "year",
+              "op": "equals",
+              "value": 2025
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "year",
+              "op": "equals",
+              "value": 2025
+            }
+          ],
+          "sort": "year",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "random electronic music",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "electronic"
+            }
+          ],
+          "sort": "random",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "is",
+              "value": "electronic"
+            }
+          ],
+          "sort": "random",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "electronic"
+            }
+          ],
+          "sort": "random",
+          "order": "asc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "只要现场版",
+      "previous": {
+        "entity": "track",
+        "match": "all",
+        "conditions": [
+          {
+            "field": "language",
+            "op": "is",
+            "value": "ja"
+          }
+        ],
+        "sort": "default",
+        "order": "desc",
+        "limit": 500
+      },
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "language",
+              "op": "is",
+              "value": "ja"
+            },
+            {
+              "field": "versionType",
+              "op": "is",
+              "value": "live"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 500
+        }
+      ]
+    },
+    {
+      "question": "再少一点摇滚",
+      "previous": {
+        "entity": "track",
+        "match": "all",
+        "conditions": [
+          {
+            "field": "genre",
+            "op": "contains",
+            "value": "pop"
+          }
+        ],
+        "sort": "default",
+        "order": "desc",
+        "limit": 50
+      },
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "pop"
+            },
+            {
+              "field": "genre",
+              "op": "notContains",
+              "value": "rock"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "pop"
+            },
+            {
+              "field": "genre",
+              "op": "isNot",
+              "value": "rock"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "换成专辑",
+      "previous": {
+        "entity": "track",
+        "match": "all",
+        "conditions": [
+          {
+            "field": "artist",
+            "op": "is",
+            "value": "周杰伦"
+          }
+        ],
+        "sort": "default",
+        "order": "desc",
+        "limit": 50
+      },
+      "expected": [
+        {
+          "entity": "album",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "周杰伦"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "多来点",
+      "previous": {
+        "entity": "track",
+        "match": "all",
+        "playedFrom": "2025-12-01",
+        "playedTo": "2026-02-28",
+        "conditions": [
+          {
+            "field": "playCount",
+            "op": "greater",
+            "value": 0
+          }
+        ],
+        "sort": "playCount",
+        "order": "desc",
+        "limit": 20
+      },
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2025-12-01",
+          "playedTo": "2026-02-28",
+          "conditions": [
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2025-12-01",
+          "playedTo": "2026-02-28",
+          "conditions": [
+            {
+              "field": "playCount",
+              "op": "greater",
+              "value": 0
+            }
+          ],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 100
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "playedFrom": "2025-12-01",
+          "playedTo": "2026-02-28",
+          "conditions": [],
+          "sort": "playCount",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "去掉收藏这个条件",
+      "previous": {
+        "entity": "track",
+        "match": "all",
+        "conditions": [
+          {
+            "field": "favorite",
+            "op": "isTrue"
+          },
+          {
+            "field": "year",
+            "op": "between",
+            "value": 1990,
+            "value2": 1999
+          }
+        ],
+        "sort": "default",
+        "order": "desc",
+        "limit": 50
+      },
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "year",
+              "op": "between",
+              "value": 1990,
+              "value2": 1999
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "只要五星的",
+      "previous": {
+        "entity": "track",
+        "match": "all",
+        "conditions": [
+          {
+            "field": "genre",
+            "op": "contains",
+            "value": "rock"
+          },
+          {
+            "field": "year",
+            "op": "between",
+            "value": 2000,
+            "value2": 2009
+          }
+        ],
+        "sort": "default",
+        "order": "desc",
+        "limit": 50
+      },
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "rock"
+            },
+            {
+              "field": "year",
+              "op": "between",
+              "value": 2000,
+              "value2": 2009
+            },
+            {
+              "field": "rating",
+              "op": "equals",
+              "value": 5
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "is",
+              "value": "rock"
+            },
+            {
+              "field": "year",
+              "op": "between",
+              "value": 2000,
+              "value2": 2009
+            },
+            {
+              "field": "rating",
+              "op": "equals",
+              "value": 5
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "按发行年份升序排列",
+      "previous": {
+        "entity": "track",
+        "match": "all",
+        "conditions": [
+          {
+            "field": "artist",
+            "op": "is",
+            "value": "Taylor Swift"
+          }
+        ],
+        "sort": "default",
+        "order": "desc",
+        "limit": 50
+      },
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "artist",
+              "op": "is",
+              "value": "Taylor Swift"
+            }
+          ],
+          "sort": "year",
+          "order": "asc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "只看无损FLAC格式的",
+      "previous": {
+        "entity": "track",
+        "match": "all",
+        "conditions": [
+          {
+            "field": "genre",
+            "op": "contains",
+            "value": "jazz"
+          }
+        ],
+        "sort": "default",
+        "order": "desc",
+        "limit": 50
+      },
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "jazz"
+            },
+            {
+              "field": "codec",
+              "op": "is",
+              "value": "FLAC"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        },
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "genre",
+              "op": "contains",
+              "value": "jazz"
+            },
+            {
+              "field": "codec",
+              "op": "contains",
+              "value": "FLAC"
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    }
+  ]
+}

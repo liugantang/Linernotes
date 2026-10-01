@@ -5,6 +5,7 @@
 #include "ArtistMergeEval.h"
 #include "EvalHarness.h"
 #include "NlqAskEval.h"
+#include "NlqEval.h"
 
 #include <QCommandLineOption>
 #include <QCommandLineParser>
@@ -22,6 +23,10 @@
 
 #ifndef DEFAULT_ARTIST_CREDIT_CORPUS_PATH
 #define DEFAULT_ARTIST_CREDIT_CORPUS_PATH ""
+#endif
+
+#ifndef DEFAULT_NLQ_CORPUS_PATH
+#define DEFAULT_NLQ_CORPUS_PATH ""
 #endif
 
 namespace {
@@ -69,7 +74,7 @@ void setupParser(QCommandLineParser &parser, const CliOptions &opts)
     parser.addHelpOption();
     parser.addVersionOption();
     parser.addPositionalArgument(QStringLiteral("subcommand"),
-        QStringLiteral("Evaluation subcommand to run (artist-merge, artist-credit, nlq-ask)."),
+        QStringLiteral("Evaluation subcommand to run (artist-merge, artist-credit, nlq-ask, nlq)."),
         QStringLiteral("<subcommand>"));
     parser.addOption(opts.baseUrlOption);
     parser.addOption(opts.modelOption);
@@ -99,7 +104,7 @@ std::optional<QString> extractSubcommand(const QCommandLineParser &parser, int &
     const QStringList positionalArgs = parser.positionalArguments();
     if (positionalArgs.isEmpty()) {
         std::cerr << "Error: Missing subcommand. Available subcommands: artist-merge, "
-                     "artist-credit, nlq-ask\n\n";
+                     "artist-credit, nlq-ask, nlq\n\n";
         std::cerr << qPrintable(parser.helpText());
         exitCode = 2;
         return std::nullopt;
@@ -107,10 +112,10 @@ std::optional<QString> extractSubcommand(const QCommandLineParser &parser, int &
 
     const QString &subcommand = positionalArgs.at(0);
     if (subcommand != QStringLiteral("artist-merge")
-        && subcommand != QStringLiteral("artist-credit")
-        && subcommand != QStringLiteral("nlq-ask")) {
+        && subcommand != QStringLiteral("artist-credit") && subcommand != QStringLiteral("nlq-ask")
+        && subcommand != QStringLiteral("nlq")) {
         std::cerr << "Error: Unknown subcommand: " << qPrintable(subcommand)
-                  << ". Available subcommands: artist-merge, artist-credit, nlq-ask\n\n";
+                  << ". Available subcommands: artist-merge, artist-credit, nlq-ask, nlq\n\n";
         std::cerr << qPrintable(parser.helpText());
         exitCode = 2;
         return std::nullopt;
@@ -241,6 +246,24 @@ bool resolveNlqAskPaths(const QCommandLineParser &parser, const CliOptions &opts
     return true;
 }
 
+bool resolveNlqCorpus(
+    const QCommandLineParser &parser, const CliOptions &opts, QString &corpusPath, int &exitCode)
+{
+    if (parser.isSet(opts.libraryOption)) {
+        std::cerr << "Error: --library option is not supported for nlq subcommand.\n";
+        exitCode = 2;
+        return false;
+    }
+    corpusPath = parser.isSet(opts.corpusOption) ? parser.value(opts.corpusOption)
+                                                 : QStringLiteral(DEFAULT_NLQ_CORPUS_PATH);
+    if (corpusPath.isEmpty()) {
+        std::cerr << "Error: --corpus path is not specified and default path is not set.\n";
+        exitCode = 2;
+        return false;
+    }
+    return true;
+}
+
 bool resolveSubcommandPaths(const QString &subcommand, const QCommandLineParser &parser,
     const CliOptions &opts, QString &corpusPath, QString &libraryPath, QString &question,
     QString &previous, int &exitCode)
@@ -265,6 +288,15 @@ bool resolveSubcommandPaths(const QString &subcommand, const QCommandLineParser 
     }
     if (subcommand == QStringLiteral("nlq-ask")) {
         return resolveNlqAskPaths(parser, opts, libraryPath, question, previous, exitCode);
+    }
+    if (subcommand == QStringLiteral("nlq")) {
+        if (parser.isSet(opts.questionOption) || parser.isSet(opts.previousOption)) {
+            std::cerr
+                << "Error: --question and --previous options are only supported for nlq-ask.\n";
+            exitCode = 2;
+            return false;
+        }
+        return resolveNlqCorpus(parser, opts, corpusPath, exitCode);
     }
     return false;
 }
@@ -398,6 +430,15 @@ int main(int argc, char *argv[])
                 return 2;
             }
             QTimer::singleShot(0, &eval, &linernotes::eval::NlqAskEval::start);
+            return QCoreApplication::exec();
+        }
+
+        if (parsedArgs.subcommand == QStringLiteral("nlq")) {
+            linernotes::eval::NlqEval eval(parsedArgs.config);
+            if (!eval.init()) {
+                return 2;
+            }
+            QTimer::singleShot(0, &eval, &linernotes::eval::NlqEval::start);
             return QCoreApplication::exec();
         }
 
