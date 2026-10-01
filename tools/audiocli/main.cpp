@@ -32,7 +32,7 @@ namespace {
 struct CliConfig {
     QString command;
     QString modelPath;
-    bool preferGpu = true;
+    bool preferGpu = false;
     int threads = 4;
     std::optional<QString> refPath;
     QStringList files;
@@ -43,8 +43,8 @@ struct CliOptions {
     QCommandLineOption modelOption { QStringLiteral("model"),
         QStringLiteral("Path to MS-CLAP ONNX model file (required for embed)."),
         QStringLiteral("path") };
-    QCommandLineOption cpuOption { QStringLiteral("cpu"),
-        QStringLiteral("Force CPU inference instead of GPU.") };
+    QCommandLineOption gpuOption { QStringLiteral("gpu"),
+        QStringLiteral("Try the CUDA execution provider (falls back to CPU).") };
     QCommandLineOption threadsOption { QStringLiteral("threads"),
         QStringLiteral("Number of intra-op threads for inference (default: 4)."),
         QStringLiteral("N"), QStringLiteral("4") };
@@ -62,7 +62,7 @@ void setupParser(QCommandLineParser &parser, const CliOptions &opts)
     parser.addHelpOption();
     parser.addVersionOption();
     parser.addOption(opts.modelOption);
-    parser.addOption(opts.cpuOption);
+    parser.addOption(opts.gpuOption);
     parser.addOption(opts.threadsOption);
     parser.addOption(opts.refOption);
     parser.addOption(opts.verboseOption);
@@ -139,7 +139,7 @@ std::optional<CliConfig> parseArgs(
     return CliConfig {
         .command = command,
         .modelPath = parser.value(opts.modelOption),
-        .preferGpu = !parser.isSet(opts.cpuOption),
+        .preferGpu = parser.isSet(opts.gpuOption),
         .threads = threads,
         .refPath = refPath,
         .files = files,

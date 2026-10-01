@@ -16,7 +16,7 @@ namespace linernotes::audio {
 
 struct EmbedderOptions {
     int intraOpThreads = 4; // ONNX Runtime 推理线程数
-    bool preferGpu = true; // 有 CUDA 执行器就用，失败回退 CPU
+    bool preferGpu = false; // 尝试 CUDA 执行器，失败回退 CPU；CPU 推理已远快于解码，默认不用
 };
 
 class AudioEmbedder {
