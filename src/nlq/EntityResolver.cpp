@@ -9,6 +9,7 @@
 #include <QVariant>
 
 #include <library/Errors.h>
+#include <library/SmartRule.h>
 #include <library/SmartRuleSql.h>
 
 #include <iterator>
@@ -158,6 +159,9 @@ core::Result<Resolution> resolveArtists(library::Database &db, const Query &quer
             continue;
         }
         if (cond.op != library::SmartOp::Is && cond.op != library::SmartOp::Contains) {
+            continue;
+        }
+        if (library::isSmartTextList(cond.value)) {
             continue;
         }
 

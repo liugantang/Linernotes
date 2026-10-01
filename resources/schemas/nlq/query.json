@@ -47,7 +47,8 @@
                   "language",
                   "albumFavorite",
                   "artistFavorite",
-                  "albumCompletion"
+                  "albumCompletion",
+                  "keyword"
                 ]
               },
               "op": {
@@ -70,7 +71,15 @@
                 ]
               },
               "value": {
-                "type": ["string", "number"]
+                "anyOf": [
+                  { "type": "string" },
+                  { "type": "number" },
+                  {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "minItems": 1
+                  }
+                ]
               },
               "value2": {
                 "type": ["string", "number"]

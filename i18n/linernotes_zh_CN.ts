@@ -4035,6 +4035,11 @@
         <translation>专辑完成度（%）</translation>
     </message>
     <message>
+        <location filename="../src/ui/SmartLabels.cpp" line="59"/>
+        <source>Keyword</source>
+        <translation>关键词</translation>
+    </message>
+    <message>
         <location filename="../src/ui/SmartLabels.cpp" line="66"/>
         <source>Contains</source>
         <translation>包含</translation>

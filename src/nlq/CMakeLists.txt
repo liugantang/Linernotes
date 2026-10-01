@@ -21,6 +21,8 @@ add_library(linernotes_nlq STATIC
     QueryRunner.h
     Relaxation.cpp
     Relaxation.h
+    VariantPruning.cpp
+    VariantPruning.h
 )
 add_library(Linernotes::nlq ALIAS linernotes_nlq)
 

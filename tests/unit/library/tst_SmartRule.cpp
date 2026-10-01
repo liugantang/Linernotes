@@ -192,6 +192,7 @@ private slots:
     void sqlLanguage();
     void sqlAlbumFavoriteAndCompletion();
     void sqlArtistEntityMatching();
+    void sqlKeywordAndVariantArray();
 };
 
 void TstSmartRule::inferLanguage_data()
@@ -298,6 +299,12 @@ void TstSmartRule::roundtrip()
             .value = QStringLiteral("2026-01-01"),
             .value2 = QStringLiteral("2026-12-31"),
         },
+        SmartCondition {
+            .field = SmartField::Keyword,
+            .op = SmartOp::Contains,
+            .value = QStringList { QStringLiteral("EVA"), QStringLiteral("Evangelion") },
+            .value2 = { },
+        },
     };
     rule.sortKey = TrackSortKey::Year;
     rule.sortOrder = Qt::DescendingOrder;
@@ -360,6 +367,10 @@ void TstSmartRule::rejectInvalid_data()
         R"({"version": 1, "match": "all", "conditions": [{"field": "dateAdded", "op": "between", "value": "2026-12-31", "value2": "2026-01-01"}]})");
     QTest::newRow("window_from_greater_than_to") << QStringLiteral(
         R"({"version": 1, "match": "all", "conditions": [], "playedFrom": "2026-12-31", "playedTo": "2026-01-01"})");
+    QTest::newRow("number_with_array_value") << QStringLiteral(
+        R"({"version": 1, "match": "all", "conditions": [{"field": "year", "op": "equals", "value": ["2020", "2021"]}]})");
+    QTest::newRow("empty_text_array_value") << QStringLiteral(
+        R"({"version": 1, "match": "all", "conditions": [{"field": "title", "op": "contains", "value": []}]})");
 }
 
 void TstSmartRule::validateInvalid()
@@ -380,6 +391,26 @@ void TstSmartRule::validateInvalid()
         SmartRule rule;
         rule.playedFrom = QDate(2026, 12, 31);
         rule.playedTo = QDate(2026, 1, 1);
+        auto res = rule.validate();
+        QVERIFY(!res.ok());
+    }
+    {
+        SmartRule rule;
+        SmartCondition cond;
+        cond.field = SmartField::Year;
+        cond.op = SmartOp::Equals;
+        cond.value = QStringList { QStringLiteral("2020"), QStringLiteral("2021") };
+        rule.conditions.append(cond);
+        auto res = rule.validate();
+        QVERIFY(!res.ok());
+    }
+    {
+        SmartRule rule;
+        SmartCondition cond;
+        cond.field = SmartField::Title;
+        cond.op = SmartOp::Contains;
+        cond.value = QStringList { };
+        rule.conditions.append(cond);
         auto res = rule.validate();
         QVERIFY(!res.ok());
     }
@@ -853,6 +884,106 @@ void TstSmartRule::sqlArtistEntityMatching()
             = query.tracks(filter, TrackSortKey::Title, Qt::AscendingOrder, 0, 10).value();
         QCOMPARE(rows.size(), 1);
         QCOMPARE(rows.at(0).trackId, t2);
+    }
+}
+
+void TstSmartRule::sqlKeywordAndVariantArray()
+{
+    const QTemporaryDir dir;
+    QVERIFY(dir.isValid());
+    Database db(dir.filePath(QStringLiteral("test_sr_kw.db")));
+    QVERIFY(db.open(Migrator()).ok());
+    const auto qDb = db.connection().value();
+
+    const qint64 r = DbHelper::insertRoot(qDb);
+
+    // Track 1: Album contains "ラブライブ", Artist is "μ's"
+    const qint64 a1 = DbHelper::insertAlbum(qDb, QStringLiteral("ラブライブ！Solo Live! from μ's"));
+    const qint64 art1 = DbHelper::insertArtist(qDb, QStringLiteral("μ's"));
+    const qint64 f1 = DbHelper::insertFile(qDb, r, QStringLiteral("1.mp3"));
+    const qint64 t1 = DbHelper::insertTrack(qDb, f1, a1);
+    DbHelper::setMeta(qDb, t1, QStringLiteral("Snow halation"), QStringLiteral("μ's"),
+        QStringLiteral("ラブライブ！Solo Live! from μ's"));
+    DbHelper::addTrackArtist(qDb, t1, art1, QStringLiteral("artist"));
+
+    // Track 2: Album is "Water Blue New World", Artist is "Aqours"
+    const qint64 a2 = DbHelper::insertAlbum(qDb, QStringLiteral("Water Blue New World"));
+    const qint64 art2 = DbHelper::insertArtist(qDb, QStringLiteral("Aqours"));
+    const qint64 f2 = DbHelper::insertFile(qDb, r, QStringLiteral("2.mp3"));
+    const qint64 t2 = DbHelper::insertTrack(qDb, f2, a2);
+    DbHelper::setMeta(qDb, t2, QStringLiteral("Water Blue New World"), QStringLiteral("Aqours"),
+        QStringLiteral("Water Blue New World"));
+    DbHelper::addTrackArtist(qDb, t2, art2, QStringLiteral("artist"));
+
+    // Track 3: Album is "范特西", Artist is "周杰伦"
+    const qint64 a3 = DbHelper::insertAlbum(qDb, QStringLiteral("范特西"));
+    const qint64 art3 = DbHelper::insertArtist(qDb, QStringLiteral("周杰伦"));
+    const qint64 f3 = DbHelper::insertFile(qDb, r, QStringLiteral("3.mp3"));
+    const qint64 t3 = DbHelper::insertTrack(qDb, f3, a3);
+    DbHelper::setMeta(
+        qDb, t3, QStringLiteral("简单爱"), QStringLiteral("周杰伦"), QStringLiteral("范特西"));
+    DbHelper::addTrackArtist(qDb, t3, art3, QStringLiteral("artist"));
+
+    LibraryQuery query(qDb);
+
+    // 1. keyword contains ["ラブライブ", "Aqours"]: matches t1 (album has ラブライブ) and t2
+    // (artist is Aqours)
+    {
+        SmartRule rule;
+        rule.conditions = {
+            SmartCondition {
+                .field = SmartField::Keyword,
+                .op = SmartOp::Contains,
+                .value = QStringList { QStringLiteral("ラブライブ"), QStringLiteral("Aqours") },
+                .value2 = { },
+            },
+        };
+        TrackFilter filter;
+        filter.smartRule = rule;
+        const auto rows
+            = query.tracks(filter, TrackSortKey::Title, Qt::AscendingOrder, 0, 10).value();
+        QCOMPARE(rows.size(), 2);
+        QCOMPARE(rows.at(0).trackId, t1);
+        QCOMPARE(rows.at(1).trackId, t2);
+    }
+
+    // 2. keyword notContains ["ラブライブ", "Aqours"]: excludes t1 and t2, matches t3
+    {
+        SmartRule rule;
+        rule.conditions = {
+            SmartCondition {
+                .field = SmartField::Keyword,
+                .op = SmartOp::NotContains,
+                .value = QStringList { QStringLiteral("ラブライブ"), QStringLiteral("Aqours") },
+                .value2 = { },
+            },
+        };
+        TrackFilter filter;
+        filter.smartRule = rule;
+        const auto rows
+            = query.tracks(filter, TrackSortKey::Title, Qt::AscendingOrder, 0, 10).value();
+        QCOMPARE(rows.size(), 1);
+        QCOMPARE(rows.at(0).trackId, t3);
+    }
+
+    // 3. title contains ["Snow", "简单爱"]: matches t1 and t3
+    {
+        SmartRule rule;
+        rule.conditions = {
+            SmartCondition {
+                .field = SmartField::Title,
+                .op = SmartOp::Contains,
+                .value = QStringList { QStringLiteral("Snow"), QStringLiteral("简单爱") },
+                .value2 = { },
+            },
+        };
+        TrackFilter filter;
+        filter.smartRule = rule;
+        const auto rows
+            = query.tracks(filter, TrackSortKey::Title, Qt::AscendingOrder, 0, 10).value();
+        QCOMPARE(rows.size(), 2);
+        QCOMPARE(rows.at(0).trackId, t1);
+        QCOMPARE(rows.at(1).trackId, t3);
     }
 }
 

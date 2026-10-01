@@ -221,9 +221,15 @@ Item {
                 anchors.fill: parent
                 visible: root.fieldType === Library.SmartFieldKind.Text
                 placeholderText: qsTr("Value")
-                text: (root.conditionData && root.conditionData.value !== undefined && root.conditionData.value !== null)
-                    ? String(root.conditionData.value)
-                    : ""
+                text: {
+                    if (!root.conditionData || root.conditionData.value === undefined || root.conditionData.value === null) {
+                        return ""
+                    }
+                    if (Array.isArray(root.conditionData.value)) {
+                        return root.conditionData.value.join(" / ")
+                    }
+                    return String(root.conditionData.value)
+                }
                 onTextEdited: {
                     root.conditionData.value = text
                     root.modified()

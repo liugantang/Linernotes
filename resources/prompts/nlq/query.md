@@ -1,5 +1,5 @@
 ---
-version: 1
+version: 2
 description: 把自然语言问句翻译为曲库查询 DSL
 schema: schemas/nlq/query.json
 ---
@@ -12,28 +12,30 @@ schema: schemas/nlq/query.json
    - 问“歌曲”、“曲目”、“歌”、“首”或未明确指明实体时：`track`（默认）。
    - 问“专辑”、“唱片”、“大碟”时：`album`。
    - 问“艺人”、“歌手”、“乐队”、“音乐人”时：`artist`。
-3. 艺人名与专辑名：艺人名优先使用 `is`（精确的实体名或别名），只有用户明确说“名字里带 xx 的艺人”才用 `contains`；专辑名使用 `contains`。常见简称、昵称或别名请转换为标准正式名（如“周董”→“周杰伦”）；切勿凭记忆编造或补充年份、曲目等事实。
-4. 匹配模式 match：默认 `all`（满足全部条件），仅在用户明确表达“或者/任一”时使用 `any`。
-5. 排序 sort、order 与数量 limit：
+3. 艺人名与专辑名：艺人名优先使用 `is`（精确的实体名或别名），只有用户明确说“名字里带 xx 的艺人”才用 `contains`；专辑名使用 `contains`。常见简称、昵称或别名请转换为标准正式名（如“周董”→“周杰伦”）；切勿凭记忆编造或补充年份、曲目等事实。多写法同样可用于 artist is。
+4. 名称多写法与原文验证：曲库里的名称常用原文书写（日文假名/汉字、英文原名），用户可能用译名、罗马字、英文或简称。对名称类条件，`value` 给出字符串数组，包含：用户原词、原文正式写法、常见别称/译名；问作品/系列/企划时，再加上明确属于它的主要团体或艺人名。只写你确信的名字；程序会在曲库中逐一验证，不存在的写法会被丢弃。不要编造年份、曲目等事实。
+5. 匹配模式 match：默认 `all`（满足全部条件），仅在用户明确表达“或者/任一”时使用 `any`。
+6. 排序 sort、order 与数量 limit：
    - `sort` 候选值：`default`, `playCount`, `lastPlayed`, `rating`, `year`, `dateAdded`, `duration`, `random`。
    - `order` 候选值：`asc`（升序）, `desc`（降序，默认）。
    - “最多”、“最常”、“循环最多”对应 `sort: "playCount"`, `order: "desc"`。
    - 数量 `limit`：问句明确给出数字时使用该数字；问句出现“那几首/那几张”时取 `20`；出现“所有/全部”时取 `500`；其他情况默认取 `50`。
-6. 播放统计时间窗口 playedFrom / playedTo：
+7. 播放统计时间窗口 playedFrom / playedTo：
    - 当问句包含“某段时间里听的/常听的/循环的”等时间范围时设置 `playedFrom` 与 `playedTo`（格式 `yyyy-MM-dd`）。
    - 该时间窗口只影响 `playCount`、`skipCount`、`completedCount` 以及按 `playCount` 排序的统计范围；`lastPlayed`（最后播放时间）不受该窗口影响。
    - 相对时间与季节：依据曲库概况中的“今天”及季节说明换算为绝对日期。
-7. 多轮追问：当提供了上一条查询（`previous_query` 不为 `(none)`）时，必须在上一条查询的基础上根据用户新的一句话进行修改，输出修改后的完整查询（而不是差量）。
-8. explanation：用一句简洁的中文复述你对用户意图的理解。
+8. 多轮追问：当提供了上一条查询（`previous_query` 不为 `(none)`）时，必须在上一条查询的基础上根据用户新的一句话进行修改，输出修改后的完整查询（而不是差量）。
+9. explanation：用一句简洁的中文复述你对用户意图的理解。
 
 【字段与运算符完整白名单（严禁遗漏或自造字段/运算符）】
-- 文本字段（允许运算符：`contains`, `notContains`, `is`, `isNot`, `startsWith`；value 为字符串）：
+- 文本字段（允许运算符：`contains`, `notContains`, `is`, `isNot`, `startsWith`；value 为字符串或字符串数组）：
   - `title`：歌曲标题
   - `artist`：曲目艺人
   - `album`：专辑名
   - `albumArtist`：专辑艺人
   - `genre`：流派风格（标签写法五花八门，如 `J-Pop`、`Pop/Rock`、`JPOP`，一律用 `contains` 加简短的英文关键词，如 `pop`、`rock`、`jazz`）
   - `codec`：音频格式编码（如 FLAC, MP3）
+  - `keyword`：在标题/艺人/专辑/专辑艺人中任一匹配，用于“和 X 相关”“X 系列”“X 的歌（X 不确定是艺人还是作品）”
 - 数值字段（允许运算符：`equals`, `notEquals`, `greater`, `less`, `between`；value 为数值，between 时 value 为下界、value2 为上界）：
   - `year`：发行年份（整数，如 2005）
   - `rating`：评分（1-5 整数）
@@ -202,6 +204,27 @@ schema: schemas/nlq/query.json
     "limit": 500
   },
   "explanation": "在上一条日语歌查询基础上，筛选现场版（Live）曲目"
+}
+
+示例 7：
+用户问句：和 EVA 相关的歌
+输出：
+{
+  "query": {
+    "entity": "track",
+    "match": "all",
+    "conditions": [
+      {
+        "field": "keyword",
+        "op": "contains",
+        "value": ["EVA", "エヴァンゲリオン", "Evangelion", "新世纪福音战士"]
+      }
+    ],
+    "sort": "default",
+    "order": "desc",
+    "limit": 50
+  },
+  "explanation": "与《新世纪福音战士》（EVA）相关的曲目"
 }
 
 === user ===

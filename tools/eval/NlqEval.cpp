@@ -15,6 +15,7 @@
 #include <library/SmartRule.h>
 #include <nlq/LibrarySummary.h>
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <utility>
@@ -24,36 +25,59 @@ namespace linernotes::eval {
 
 namespace {
 
-bool conditionValueEquivalent(const library::SmartCondition &a, const library::SmartCondition &b)
+bool numericConditionValueEquivalent(
+    const library::SmartCondition &a, const library::SmartCondition &b)
 {
-    if (a.op == library::SmartOp::IsTrue || a.op == library::SmartOp::IsFalse) {
-        return true;
-    }
-
-    if (a.op == library::SmartOp::InLastDays || a.op == library::SmartOp::NotInLastDays
-        || library::smartFieldKind(a.field) == library::SmartFieldKind::Number) {
-        bool ok1 = false;
-        bool ok2 = false;
-        const double v1 = a.value.toDouble(&ok1);
-        const double v2 = b.value.toDouble(&ok2);
-        if (!ok1 || !ok2 || std::abs(v1 - v2) > 1e-4) {
-            return false;
-        }
-        if (a.op == library::SmartOp::Between) {
-            const double v1Second = a.value2.toDouble(&ok1);
-            const double v2Second = b.value2.toDouble(&ok2);
-            if (!ok1 || !ok2 || std::abs(v1Second - v2Second) > 1e-4) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    const QString s1 = a.value.toString().trimmed();
-    const QString s2 = b.value.toString().trimmed();
-    if (s1.compare(s2, Qt::CaseInsensitive) != 0) {
+    bool ok1 = false;
+    bool ok2 = false;
+    const double v1 = a.value.toDouble(&ok1);
+    const double v2 = b.value.toDouble(&ok2);
+    if (!ok1 || !ok2 || std::abs(v1 - v2) > 1e-4) {
         return false;
     }
+    if (a.op == library::SmartOp::Between) {
+        const double v1Second = a.value2.toDouble(&ok1);
+        const double v2Second = b.value2.toDouble(&ok2);
+        if (!ok1 || !ok2 || std::abs(v1Second - v2Second) > 1e-4) {
+            return false;
+        }
+    }
+    return true;
+}
+
+QStringList extractTrimmedList(const QVariant &v)
+{
+    const QStringList list = library::smartTextValues(v);
+    QStringList res;
+    res.reserve(list.size());
+    for (const auto &item : list) {
+        res.append(item.trimmed());
+    }
+    return res;
+}
+
+bool stringListEquivalent(const QStringList &actualList, const QStringList &expectedList)
+{
+    for (const auto &exp : expectedList) {
+        const bool found = std::ranges::any_of(actualList,
+            [&exp](const QString &act) { return act.compare(exp, Qt::CaseInsensitive) == 0; });
+        if (!found) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool textConditionValueEquivalent(
+    const library::SmartCondition &a, const library::SmartCondition &b)
+{
+    const QStringList actualList = extractTrimmedList(a.value);
+    const QStringList expectedList = extractTrimmedList(b.value);
+
+    if (!stringListEquivalent(actualList, expectedList)) {
+        return false;
+    }
+
     if (a.op == library::SmartOp::Between) {
         const QString s1Second = a.value2.toString().trimmed();
         const QString s2Second = b.value2.toString().trimmed();
@@ -62,6 +86,20 @@ bool conditionValueEquivalent(const library::SmartCondition &a, const library::S
         }
     }
     return true;
+}
+
+bool conditionValueEquivalent(const library::SmartCondition &a, const library::SmartCondition &b)
+{
+    if (a.op == library::SmartOp::IsTrue || a.op == library::SmartOp::IsFalse) {
+        return true;
+    }
+
+    if (a.op == library::SmartOp::InLastDays || a.op == library::SmartOp::NotInLastDays
+        || library::smartFieldKind(a.field) == library::SmartFieldKind::Number) {
+        return numericConditionValueEquivalent(a, b);
+    }
+
+    return textConditionValueEquivalent(a, b);
 }
 
 bool conditionEquivalent(const library::SmartCondition &a, const library::SmartCondition &b)
