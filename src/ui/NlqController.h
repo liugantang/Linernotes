@@ -51,6 +51,7 @@ public:
 
     enum class ChipKind : std::uint8_t {
         Entity,
+        Match,
         Condition,
         PlayWindow,
         Sort,
@@ -64,6 +65,7 @@ public:
     Q_PROPERTY(QString explanation READ explanation NOTIFY explanationChanged)
     Q_PROPERTY(QString errorText READ errorText NOTIFY errorTextChanged)
     Q_PROPERTY(linernotes::nlq::Entity entity READ entity NOTIFY entityChanged)
+    Q_PROPERTY(linernotes::library::SmartMatch match READ match NOTIFY matchChanged)
     Q_PROPERTY(QVariantList rows READ rows NOTIFY rowsChanged)
     Q_PROPERTY(QVariantList chips READ chips NOTIFY chipsChanged)
     Q_PROPERTY(QVariantMap clarification READ clarification NOTIFY clarificationChanged)
@@ -82,6 +84,7 @@ public:
     [[nodiscard]] QString explanation() const;
     [[nodiscard]] QString errorText() const;
     [[nodiscard]] nlq::Entity entity() const;
+    [[nodiscard]] library::SmartMatch match() const;
     [[nodiscard]] QVariantList rows() const;
     [[nodiscard]] QVariantList chips() const;
     [[nodiscard]] QVariantMap clarification() const;
@@ -100,6 +103,7 @@ public:
     Q_INVOKABLE void setSort(linernotes::nlq::SortKey key, Qt::SortOrder order);
     Q_INVOKABLE void setLimit(int limit);
     Q_INVOKABLE void setEntity(linernotes::nlq::Entity entity);
+    Q_INVOKABLE void setMatch(linernotes::library::SmartMatch match);
     Q_INVOKABLE void applyRelaxation(int index);
 
     Q_INVOKABLE void playAll();
@@ -116,6 +120,7 @@ signals:
     void explanationChanged();
     void errorTextChanged();
     void entityChanged();
+    void matchChanged();
     void rowsChanged();
     void chipsChanged();
     void clarificationChanged();

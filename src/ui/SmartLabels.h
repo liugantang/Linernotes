@@ -27,6 +27,7 @@ namespace linernotes::ui {
 
 enum class NlqChipKind : std::uint8_t {
     Entity,
+    Match,
     Condition,
     PlayWindow,
     Sort,

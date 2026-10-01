@@ -49,13 +49,15 @@ Popup {
     function openChipEditor(chipData) {
         if (!chipData) return
         const kind = chipData.kind
-        if (kind === NlqController.Condition || kind === 1) {
+        if (kind === NlqController.Match || kind === 1) {
+            matchEditPopup.openDialog()
+        } else if (kind === NlqController.Condition || kind === 2) {
             conditionEditPopup.openForCondition(chipData.index)
-        } else if (kind === NlqController.PlayWindow || kind === 2) {
+        } else if (kind === NlqController.PlayWindow || kind === 3) {
             playWindowEditPopup.openDialog()
-        } else if (kind === NlqController.Sort || kind === 3) {
+        } else if (kind === NlqController.Sort || kind === 4) {
             sortEditPopup.openDialog()
-        } else if (kind === NlqController.Limit || kind === 4) {
+        } else if (kind === NlqController.Limit || kind === 5) {
             limitEditPopup.openDialog()
         } else if (kind === NlqController.Entity || kind === 0) {
             entityEditPopup.openDialog()
@@ -388,6 +390,67 @@ Popup {
     }
 
     Popup {
+        id: matchEditPopup
+        modal: true
+        focus: true
+        dim: true
+        parent: Overlay.overlay
+        anchors.centerIn: Overlay.overlay
+        width: Math.min(360, Overlay.overlay ? Overlay.overlay.width - 40 : 360)
+        padding: Theme.spacingMedium
+        background: Rectangle {
+            color: Theme.surface
+            border.color: Theme.divider
+            border.width: 1
+            radius: Theme.cardBorderRadius
+        }
+
+        function openDialog() {
+            open()
+        }
+
+        contentItem: ColumnLayout {
+            spacing: Theme.spacingMedium
+
+            Label {
+                text: qsTr("Match Conditions")
+                font.pixelSize: Theme.fontSizeLarge
+                font.bold: true
+                color: Theme.text
+            }
+
+            RowLayout {
+                spacing: Theme.spacingSmall
+                Layout.fillWidth: true
+
+                Controls.AppButton {
+                    Layout.fillWidth: true
+                    text: qsTr("All conditions")
+                    primary: AppContext.nlq && (AppContext.nlq.match === Library.SmartMatch.All || AppContext.nlq.match === 0)
+                    onClicked: {
+                        matchEditPopup.close()
+                        if (AppContext.nlq) {
+                            AppContext.nlq.setMatch(Library.SmartMatch.All)
+                        }
+                    }
+                }
+
+                Controls.AppButton {
+                    Layout.fillWidth: true
+                    text: qsTr("Any condition")
+                    primary: AppContext.nlq && (AppContext.nlq.match === Library.SmartMatch.Any || AppContext.nlq.match === 1)
+                    onClicked: {
+                        matchEditPopup.close()
+                        if (AppContext.nlq) {
+                            AppContext.nlq.setMatch(Library.SmartMatch.Any)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Popup {
         id: entityEditPopup
         modal: true
         focus: true
@@ -656,9 +719,9 @@ Popup {
                         Label {
                             visible: chipDelegate.modelData && (
                                 chipDelegate.modelData.kind === NlqController.Condition
-                                || chipDelegate.modelData.kind === 1
-                                || chipDelegate.modelData.kind === NlqController.PlayWindow
                                 || chipDelegate.modelData.kind === 2
+                                || chipDelegate.modelData.kind === NlqController.PlayWindow
+                                || chipDelegate.modelData.kind === 3
                             )
                             text: "×"
                             font.pixelSize: 14
@@ -673,9 +736,9 @@ Popup {
                                 onClicked: (event) => {
                                     event.accepted = true
                                     if (AppContext.nlq) {
-                                        if (chipDelegate.modelData.kind === NlqController.Condition || chipDelegate.modelData.kind === 1) {
+                                        if (chipDelegate.modelData.kind === NlqController.Condition || chipDelegate.modelData.kind === 2) {
                                             AppContext.nlq.removeChip(chipDelegate.modelData.index)
-                                        } else if (chipDelegate.modelData.kind === NlqController.PlayWindow || chipDelegate.modelData.kind === 2) {
+                                        } else if (chipDelegate.modelData.kind === NlqController.PlayWindow || chipDelegate.modelData.kind === 3) {
                                             AppContext.nlq.setPlayWindow("", "")
                                         }
                                     }

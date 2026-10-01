@@ -158,6 +158,11 @@ nlq::Entity NlqController::entity() const
     return m_entity;
 }
 
+library::SmartMatch NlqController::match() const
+{
+    return m_currentQuery.has_value() ? m_currentQuery->rule.match : library::SmartMatch::All;
+}
+
 QVariantList NlqController::rows() const
 {
     return m_rows;
@@ -362,6 +367,7 @@ void NlqController::handleOfflineKeywordSearch(const QString &text)
     emit rowsChanged();
     emit chipsChanged();
     emit entityChanged();
+    emit matchChanged();
     emit hasConversationChanged();
     emit emptyHintChanged();
     emit relaxationsChanged();
@@ -489,6 +495,8 @@ void NlqController::newConversation()
     emit rowsChanged();
     emit chipsChanged();
     emit clarificationChanged();
+    emit entityChanged();
+    emit matchChanged();
     emit hasConversationChanged();
     emit emptyHintChanged();
     emit relaxationsChanged();
@@ -576,6 +584,15 @@ void NlqController::setEntity(nlq::Entity entity)
     executeQuery(m_currentQuery.value());
 }
 
+void NlqController::setMatch(library::SmartMatch match)
+{
+    if (!m_currentQuery.has_value()) {
+        m_currentQuery = nlq::Query { };
+    }
+    m_currentQuery->rule.match = match;
+    executeQuery(m_currentQuery.value());
+}
+
 void NlqController::applyRelaxation(int index)
 {
     if (!m_currentQuery.has_value() || index < 0 || index >= m_lastRelaxations.size()) {
@@ -615,6 +632,7 @@ void NlqController::failWith(const core::Error &error)
     emit rowsChanged();
     emit chipsChanged();
     emit entityChanged();
+    emit matchChanged();
     emit hasConversationChanged();
     emit emptyHintChanged();
     emit relaxationsChanged();
@@ -740,6 +758,7 @@ void NlqController::executeQuery(const nlq::Query &query)
     emit rowsChanged();
     emit chipsChanged();
     emit entityChanged();
+    emit matchChanged();
     emit hasConversationChanged();
     emit emptyHintChanged();
     emit relaxationsChanged();

@@ -254,7 +254,19 @@ QList<NlqChip> nlqChips(const nlq::Query &query)
         .text = nlqEntityLabel(query.entity),
     });
 
-    // 2. Conditions
+    // 2. Match (only if conditions count >= 2)
+    if (query.rule.conditions.size() >= 2) {
+        const QString matchText = (query.rule.match == library::SmartMatch::Any)
+            ? QCoreApplication::translate("linernotes::ui::Nlq", "Match: any condition")
+            : QCoreApplication::translate("linernotes::ui::Nlq", "Match: all conditions");
+        chips.append(NlqChip {
+            .kind = NlqChipKind::Match,
+            .index = 0,
+            .text = matchText,
+        });
+    }
+
+    // 3. Conditions
     for (int i = 0; i < query.rule.conditions.size(); ++i) {
         const auto &c = query.rule.conditions.at(i);
         chips.append(NlqChip {

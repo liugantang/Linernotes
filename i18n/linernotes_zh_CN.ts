@@ -730,159 +730,174 @@
 <context>
     <name>CommandPalette</name>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="67"/>
+        <location filename="../qml/CommandPalette.qml" line="69"/>
         <source>Save as Playlist</source>
         <translation>存为歌单</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="108"/>
+        <location filename="../qml/CommandPalette.qml" line="110"/>
         <source>Edit Condition</source>
         <translation>编辑条件</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="134"/>
-        <location filename="../qml/CommandPalette.qml" line="222"/>
-        <location filename="../qml/CommandPalette.qml" line="306"/>
-        <location filename="../qml/CommandPalette.qml" line="371"/>
-        <location filename="../qml/CommandPalette.qml" line="549"/>
+        <location filename="../qml/CommandPalette.qml" line="136"/>
+        <location filename="../qml/CommandPalette.qml" line="224"/>
+        <location filename="../qml/CommandPalette.qml" line="308"/>
+        <location filename="../qml/CommandPalette.qml" line="373"/>
+        <location filename="../qml/CommandPalette.qml" line="612"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="140"/>
-        <location filename="../qml/CommandPalette.qml" line="228"/>
-        <location filename="../qml/CommandPalette.qml" line="312"/>
-        <location filename="../qml/CommandPalette.qml" line="377"/>
+        <location filename="../qml/CommandPalette.qml" line="142"/>
+        <location filename="../qml/CommandPalette.qml" line="230"/>
+        <location filename="../qml/CommandPalette.qml" line="314"/>
+        <location filename="../qml/CommandPalette.qml" line="379"/>
         <source>Apply</source>
         <translation>应用</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="176"/>
+        <location filename="../qml/CommandPalette.qml" line="178"/>
         <source>Edit Play Period</source>
         <translation>编辑播放统计区间</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="189"/>
+        <location filename="../qml/CommandPalette.qml" line="191"/>
         <source>From (yyyy-MM-dd)</source>
         <translation>起（yyyy-MM-dd）</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="193"/>
+        <location filename="../qml/CommandPalette.qml" line="195"/>
         <source>to</source>
         <translation>至</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="200"/>
+        <location filename="../qml/CommandPalette.qml" line="202"/>
         <source>To (yyyy-MM-dd)</source>
         <translation>止（yyyy-MM-dd）</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="210"/>
+        <location filename="../qml/CommandPalette.qml" line="212"/>
         <source>Clear</source>
         <translation>清除</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="264"/>
+        <location filename="../qml/CommandPalette.qml" line="266"/>
         <source>Edit Sort</source>
         <translation>编辑排序</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="276"/>
+        <location filename="../qml/CommandPalette.qml" line="278"/>
         <source>Default</source>
         <translation>默认</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="277"/>
+        <location filename="../qml/CommandPalette.qml" line="279"/>
         <source>Play count</source>
         <translation>播放次数</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="278"/>
+        <location filename="../qml/CommandPalette.qml" line="280"/>
         <source>Last played</source>
         <translation>最后播放</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="279"/>
+        <location filename="../qml/CommandPalette.qml" line="281"/>
         <source>Rating</source>
         <translation>评分</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="280"/>
+        <location filename="../qml/CommandPalette.qml" line="282"/>
         <source>Year</source>
         <translation>年份</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="281"/>
+        <location filename="../qml/CommandPalette.qml" line="283"/>
         <source>Date added</source>
         <translation>添加日期</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="282"/>
+        <location filename="../qml/CommandPalette.qml" line="284"/>
         <source>Duration</source>
         <translation>时长</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="283"/>
+        <location filename="../qml/CommandPalette.qml" line="285"/>
         <source>Random</source>
         <translation>随机</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="293"/>
+        <location filename="../qml/CommandPalette.qml" line="295"/>
         <source>Descending (↓)</source>
         <translation>降序（↓）</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="294"/>
+        <location filename="../qml/CommandPalette.qml" line="296"/>
         <source>Ascending (↑)</source>
         <translation>升序（↑）</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="350"/>
+        <location filename="../qml/CommandPalette.qml" line="352"/>
         <source>Edit Limit</source>
         <translation>编辑数量</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="414"/>
+        <location filename="../qml/CommandPalette.qml" line="416"/>
+        <source>Match Conditions</source>
+        <translation>匹配方式</translation>
+    </message>
+    <message>
+        <location filename="../qml/CommandPalette.qml" line="428"/>
+        <source>All conditions</source>
+        <translation>全部条件</translation>
+    </message>
+    <message>
+        <location filename="../qml/CommandPalette.qml" line="440"/>
+        <source>Any condition</source>
+        <translation>任一条件</translation>
+    </message>
+    <message>
+        <location filename="../qml/CommandPalette.qml" line="477"/>
         <source>Result Type</source>
         <translation>结果类型</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="426"/>
+        <location filename="../qml/CommandPalette.qml" line="489"/>
         <source>Tracks</source>
         <translation>歌曲</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="438"/>
+        <location filename="../qml/CommandPalette.qml" line="501"/>
         <source>Albums</source>
         <translation>专辑</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="450"/>
+        <location filename="../qml/CommandPalette.qml" line="513"/>
         <source>Artists</source>
         <translation>艺人</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="478"/>
+        <location filename="../qml/CommandPalette.qml" line="541"/>
         <source>Refine the results…</source>
         <translation>继续追问，如“只要现场版”…</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="479"/>
+        <location filename="../qml/CommandPalette.qml" line="542"/>
         <source>Ask about your library…</source>
         <translation>问问你的曲库，如“去年冬天循环最多的歌”…</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="513"/>
+        <location filename="../qml/CommandPalette.qml" line="576"/>
         <source>New</source>
         <translation>新查询</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="541"/>
+        <location filename="../qml/CommandPalette.qml" line="604"/>
         <source>Understanding…</source>
         <translation>理解中…</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="568"/>
+        <location filename="../qml/CommandPalette.qml" line="631"/>
         <source>Offline mode — AI service not configured; using simple keyword rules.</source>
         <translation>离线模式——未配置 AI 服务，使用简单关键词规则。</translation>
     </message>
@@ -891,63 +906,63 @@
         <translation type="vanished">未配置 AI 服务</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="594"/>
+        <location filename="../qml/CommandPalette.qml" line="657"/>
         <source>Which &quot;%1&quot; did you mean?</source>
         <translation>你说的“%1”是指？</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CommandPalette.qml" line="611"/>
+        <location filename="../qml/CommandPalette.qml" line="674"/>
         <source>%1 · %n track(s)</source>
         <translation>
             <numerusform>%1 · %n 首</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="730"/>
+        <location filename="../qml/CommandPalette.qml" line="793"/>
         <source>No results</source>
         <translation>没有结果</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="848"/>
+        <location filename="../qml/CommandPalette.qml" line="911"/>
         <source>Unknown Title</source>
         <translation>未知标题</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="859"/>
-        <location filename="../qml/CommandPalette.qml" line="919"/>
-        <location filename="../qml/CommandPalette.qml" line="962"/>
+        <location filename="../qml/CommandPalette.qml" line="922"/>
+        <location filename="../qml/CommandPalette.qml" line="982"/>
+        <location filename="../qml/CommandPalette.qml" line="1025"/>
         <source>Unknown Artist</source>
         <translation>未知艺人</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="910"/>
+        <location filename="../qml/CommandPalette.qml" line="973"/>
         <source>Unknown Album</source>
         <translation>未知专辑</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CommandPalette.qml" line="970"/>
+        <location filename="../qml/CommandPalette.qml" line="1033"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n 首</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="1003"/>
+        <location filename="../qml/CommandPalette.qml" line="1066"/>
         <source>Play all</source>
         <translation>全部播放</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="1013"/>
+        <location filename="../qml/CommandPalette.qml" line="1076"/>
         <source>Add to queue</source>
         <translation>加入队列</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="1022"/>
+        <location filename="../qml/CommandPalette.qml" line="1085"/>
         <source>Save as playlist…</source>
         <translation>存为歌单…</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="1026"/>
+        <location filename="../qml/CommandPalette.qml" line="1089"/>
         <source>Query Result</source>
         <translation>查询结果</translation>
     </message>
@@ -3884,17 +3899,27 @@
         <translation>播放统计：截至 %1</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="282"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="260"/>
+        <source>Match: any condition</source>
+        <translation>匹配：任一条件</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SmartLabels.cpp" line="261"/>
+        <source>Match: all conditions</source>
+        <translation>匹配：全部条件</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SmartLabels.cpp" line="294"/>
         <source>Sort: %1</source>
         <translation>排序：%1</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="284"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="296"/>
         <source>Sort: %1 %2</source>
         <translation>排序：%1 %2</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="297"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="309"/>
         <source>Limit: %1</source>
         <translation>数量：%1</translation>
     </message>
@@ -3916,36 +3941,36 @@
         <translation>按简单关键词规则理解；未识别“%1”。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="347"/>
+        <location filename="../src/ui/NlqController.cpp" line="352"/>
         <source>Keyword search: %1</source>
         <translation>关键词搜索：%1</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ui/NlqController.cpp" line="656"/>
+        <location filename="../src/ui/NlqController.cpp" line="674"/>
         <source>Remove &quot;%1&quot; → %n result(s)</source>
         <translation>
             <numerusform>去掉“%1”→ %n 条结果</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="666"/>
+        <location filename="../src/ui/NlqController.cpp" line="684"/>
         <source>Play history starts on %1, so there are no plays in the selected period.</source>
         <translation>播放记录从 %1 开始，所选区间内没有播放。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="670"/>
+        <location filename="../src/ui/NlqController.cpp" line="688"/>
         <source>No play history yet.</source>
         <translation>还没有播放记录。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="673"/>
+        <location filename="../src/ui/NlqController.cpp" line="691"/>
         <source>No results match all conditions.</source>
         <translation>没有同时满足全部条件的结果。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="352"/>
-        <location filename="../src/ui/NlqController.cpp" line="675"/>
-        <location filename="../src/ui/NlqController.cpp" line="684"/>
+        <location filename="../src/ui/NlqController.cpp" line="357"/>
+        <location filename="../src/ui/NlqController.cpp" line="693"/>
+        <location filename="../src/ui/NlqController.cpp" line="702"/>
         <source>Nothing in your library matches.</source>
         <translation>曲库中没有符合的内容。</translation>
     </message>
