@@ -2577,32 +2577,33 @@
 <context>
     <name>SmartConditionRow</name>
     <message>
-        <location filename="../qml/SmartConditionRow.qml" line="163"/>
+        <location filename="../qml/SmartConditionRow.qml" line="223"/>
         <source>Value</source>
         <translation>值</translation>
     </message>
     <message>
-        <location filename="../qml/SmartConditionRow.qml" line="196"/>
+        <location filename="../qml/SmartConditionRow.qml" line="256"/>
         <source>Min</source>
         <translation>最小值</translation>
     </message>
     <message>
-        <location filename="../qml/SmartConditionRow.qml" line="208"/>
+        <location filename="../qml/SmartConditionRow.qml" line="268"/>
+        <location filename="../qml/SmartConditionRow.qml" line="332"/>
         <source>and</source>
         <translation>至</translation>
     </message>
     <message>
-        <location filename="../qml/SmartConditionRow.qml" line="215"/>
+        <location filename="../qml/SmartConditionRow.qml" line="275"/>
         <source>Max</source>
         <translation>最大值</translation>
     </message>
     <message>
-        <location filename="../qml/SmartConditionRow.qml" line="247"/>
+        <location filename="../qml/SmartConditionRow.qml" line="307"/>
         <source>days</source>
         <translation>天</translation>
     </message>
     <message>
-        <location filename="../qml/SmartConditionRow.qml" line="256"/>
+        <location filename="../qml/SmartConditionRow.qml" line="380"/>
         <source>Remove Condition</source>
         <translation>移除条件</translation>
     </message>
@@ -2622,67 +2623,82 @@
         <translation>任一</translation>
     </message>
     <message>
-        <location filename="../qml/SmartRuleDialog.qml" line="125"/>
+        <location filename="../qml/SmartRuleDialog.qml" line="133"/>
         <source>Please enter a playlist name</source>
         <translation>请输入歌单名称</translation>
     </message>
     <message>
-        <location filename="../qml/SmartRuleDialog.qml" line="135"/>
+        <location filename="../qml/SmartRuleDialog.qml" line="143"/>
         <source>Failed to create smart playlist. Please check your rules.</source>
         <translation>创建智能歌单失败。请检查您的规则。</translation>
     </message>
     <message>
-        <location filename="../qml/SmartRuleDialog.qml" line="144"/>
+        <location filename="../qml/SmartRuleDialog.qml" line="152"/>
         <source>Failed to update smart playlist rules.</source>
         <translation>更新智能歌单规则失败。</translation>
     </message>
     <message>
-        <location filename="../qml/SmartRuleDialog.qml" line="170"/>
+        <location filename="../qml/SmartRuleDialog.qml" line="178"/>
         <source>New Smart Playlist</source>
         <translation>新建智能歌单</translation>
     </message>
     <message>
-        <location filename="../qml/SmartRuleDialog.qml" line="171"/>
+        <location filename="../qml/SmartRuleDialog.qml" line="179"/>
         <source>Edit Smart Playlist Rules</source>
         <translation>编辑智能歌单规则</translation>
     </message>
     <message>
-        <location filename="../qml/SmartRuleDialog.qml" line="184"/>
+        <location filename="../qml/SmartRuleDialog.qml" line="192"/>
         <source>Name:</source>
         <translation>名称：</translation>
     </message>
     <message>
-        <location filename="../qml/SmartRuleDialog.qml" line="193"/>
+        <location filename="../qml/SmartRuleDialog.qml" line="201"/>
         <source>Playlist Name</source>
         <translation>歌单名称</translation>
     </message>
     <message>
-        <location filename="../qml/SmartRuleDialog.qml" line="212"/>
+        <location filename="../qml/SmartRuleDialog.qml" line="220"/>
         <source>Match</source>
         <translation>符合</translation>
     </message>
     <message>
-        <location filename="../qml/SmartRuleDialog.qml" line="242"/>
+        <location filename="../qml/SmartRuleDialog.qml" line="250"/>
         <source>of the following conditions:</source>
         <translation>以下条件：</translation>
     </message>
     <message>
-        <location filename="../qml/SmartRuleDialog.qml" line="269"/>
+        <location filename="../qml/SmartRuleDialog.qml" line="277"/>
         <source>Add Condition</source>
         <translation>添加条件</translation>
     </message>
     <message>
-        <location filename="../qml/SmartRuleDialog.qml" line="340"/>
+        <location filename="../qml/SmartRuleDialog.qml" line="297"/>
+        <source>Play count period:</source>
+        <translation>播放次数统计区间：</translation>
+    </message>
+    <message>
+        <location filename="../qml/SmartRuleDialog.qml" line="315"/>
+        <source>to</source>
+        <translation>至</translation>
+    </message>
+    <message>
+        <location filename="../qml/SmartRuleDialog.qml" line="333"/>
+        <source>Only affects play/skip/completed counts</source>
+        <translation>仅影响播放/跳过/听完次数</translation>
+    </message>
+    <message>
+        <location filename="../qml/SmartRuleDialog.qml" line="404"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../qml/SmartRuleDialog.qml" line="348"/>
+        <location filename="../qml/SmartRuleDialog.qml" line="412"/>
         <source>Create</source>
         <translation>创建</translation>
     </message>
     <message>
-        <location filename="../qml/SmartRuleDialog.qml" line="348"/>
+        <location filename="../qml/SmartRuleDialog.qml" line="412"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
@@ -3548,8 +3564,8 @@
 <context>
     <name>linernotes::ui::PlaylistController</name>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="233"/>
-        <location filename="../src/ui/PlaylistController.cpp" line="311"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="262"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="367"/>
         <source>Title</source>
         <extracomment>Smart playlist condition field: Track title
 ----------
@@ -3557,8 +3573,8 @@ Sort by track title</extracomment>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="236"/>
-        <location filename="../src/ui/PlaylistController.cpp" line="314"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="265"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="370"/>
         <source>Artist</source>
         <extracomment>Smart playlist condition field: Track artist
 ----------
@@ -3566,8 +3582,8 @@ Sort by track artist</extracomment>
         <translation>艺人</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="239"/>
-        <location filename="../src/ui/PlaylistController.cpp" line="317"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="268"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="373"/>
         <source>Album</source>
         <extracomment>Smart playlist condition field: Album name
 ----------
@@ -3575,20 +3591,20 @@ Sort by album name</extracomment>
         <translation>专辑</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="242"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="271"/>
         <source>Album Artist</source>
         <extracomment>Smart playlist condition field: Album artist</extracomment>
         <translation>专辑艺人</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="245"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="274"/>
         <source>Genre</source>
         <extracomment>Smart playlist condition field: Music genre</extracomment>
         <translation>流派</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="248"/>
-        <location filename="../src/ui/PlaylistController.cpp" line="320"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="277"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="376"/>
         <source>Year</source>
         <extracomment>Smart playlist condition field: Release year
 ----------
@@ -3596,26 +3612,26 @@ Sort by release year</extracomment>
         <translation>年份</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="251"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="280"/>
         <source>Codec</source>
         <extracomment>Smart playlist condition field: Audio codec</extracomment>
         <translation>编码</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="254"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="283"/>
         <source>Rating</source>
         <extracomment>Smart playlist condition field: Track rating</extracomment>
         <translation>评分</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="257"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="286"/>
         <source>Favorite</source>
         <extracomment>Smart playlist condition field: Favorite / loved status</extracomment>
         <translation>收藏</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="260"/>
-        <location filename="../src/ui/PlaylistController.cpp" line="326"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="289"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="382"/>
         <source>Date Added</source>
         <extracomment>Smart playlist condition field: Date added to library
 ----------
@@ -3623,8 +3639,8 @@ Sort by date added</extracomment>
         <translation>添加日期</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="263"/>
-        <location filename="../src/ui/PlaylistController.cpp" line="323"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="292"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="379"/>
         <source>Duration</source>
         <extracomment>Smart playlist condition field: Track duration
 ----------
@@ -3632,86 +3648,224 @@ Sort by track duration</extracomment>
         <translation>时长</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="272"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="295"/>
+        <source>Play count</source>
+        <extracomment>Smart playlist condition field: Play count</extracomment>
+        <translation>播放次数</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="298"/>
+        <source>Skip count</source>
+        <extracomment>Smart playlist condition field: Skip count</extracomment>
+        <translation>跳过次数</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="301"/>
+        <source>Times completed</source>
+        <extracomment>Smart playlist condition field: Times completed</extracomment>
+        <translation>听完次数</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="304"/>
+        <source>Last played</source>
+        <extracomment>Smart playlist condition field: Last played</extracomment>
+        <translation>最后播放</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="307"/>
+        <source>Version</source>
+        <extracomment>Smart playlist condition field: Version</extracomment>
+        <translation>版本</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="310"/>
+        <source>Language</source>
+        <extracomment>Smart playlist condition field: Language</extracomment>
+        <translation>语言</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="313"/>
+        <source>Album is favorite</source>
+        <extracomment>Smart playlist condition field: Album is favorite</extracomment>
+        <translation>专辑已收藏</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="316"/>
+        <source>Artist is favorite</source>
+        <extracomment>Smart playlist condition field: Artist is favorite</extracomment>
+        <translation>艺人已收藏</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="319"/>
+        <source>Album completion (%)</source>
+        <extracomment>Smart playlist condition field: Album completion (%)</extracomment>
+        <translation>专辑完成度（%）</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="328"/>
         <source>Contains</source>
         <translation>包含</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="274"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="330"/>
         <source>Does Not Contain</source>
         <translation>不包含</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="276"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="332"/>
         <source>Is</source>
         <translation>是</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="278"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="334"/>
         <source>Is Not</source>
         <translation>不是</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="280"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="336"/>
         <source>Starts With</source>
         <translation>开头是</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="282"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="338"/>
         <source>Equals</source>
         <translation>等于</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="284"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="340"/>
         <source>Does Not Equal</source>
         <translation>不等于</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="286"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="342"/>
         <source>Greater Than</source>
         <translation>大于</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="288"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="344"/>
         <source>Less Than</source>
         <translation>小于</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="290"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="346"/>
         <source>Between</source>
         <translation>介于</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="292"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="348"/>
         <source>Is True</source>
         <translation>为真</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="294"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="350"/>
         <source>Is False</source>
         <translation>为假</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="296"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="352"/>
         <source>In the Last (Days)</source>
         <translation>在过去（天）内</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="298"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="354"/>
         <source>Not in the Last (Days)</source>
         <translation>不在过去（天）内</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="308"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="364"/>
         <source>Default</source>
         <extracomment>Default track sorting order</extracomment>
         <translation>默认</translation>
     </message>
     <message>
-        <location filename="../src/ui/PlaylistController.cpp" line="329"/>
+        <location filename="../src/ui/PlaylistController.cpp" line="385"/>
         <source>Playlist Order</source>
         <extracomment>Sort by custom playlist order</extracomment>
         <translation>歌单顺序</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="395"/>
+        <source>Studio</source>
+        <extracomment>Track version type: Studio / Original version</extracomment>
+        <translation>录音室</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="398"/>
+        <source>Live</source>
+        <extracomment>Track version type: Live performance recording</extracomment>
+        <translation>现场</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="401"/>
+        <source>Remaster</source>
+        <extracomment>Track version type: Remastered edition</extracomment>
+        <translation>重制</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="404"/>
+        <source>Acoustic</source>
+        <extracomment>Track version type: Acoustic / Unplugged version</extracomment>
+        <translation>原声</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="407"/>
+        <source>Remix</source>
+        <extracomment>Track version type: Remix / Extended mix</extracomment>
+        <translation>混音</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="410"/>
+        <source>Demo</source>
+        <extracomment>Track version type: Demo recording</extracomment>
+        <translation>小样</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="413"/>
+        <source>Instrumental</source>
+        <extracomment>Track version type: Instrumental / Karaoke / Off vocal</extracomment>
+        <translation>伴奏</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="416"/>
+        <source>Edit</source>
+        <extracomment>Track version type: Radio edit / TV size / Short ver.</extracomment>
+        <translation>剪辑版</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="419"/>
+        <source>Alt. version</source>
+        <extracomment>Track version type: Alternate version</extracomment>
+        <translation>其他版本</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="429"/>
+        <source>Chinese</source>
+        <extracomment>Track language: Chinese</extracomment>
+        <translation>中文</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="432"/>
+        <source>Japanese</source>
+        <extracomment>Track language: Japanese</extracomment>
+        <translation>日语</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="435"/>
+        <source>Korean</source>
+        <extracomment>Track language: Korean</extracomment>
+        <translation>韩语</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="438"/>
+        <source>Western</source>
+        <extracomment>Track language: Western languages (English, European, etc.)</extracomment>
+        <translation>西文</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/PlaylistController.cpp" line="441"/>
+        <source>Other</source>
+        <extracomment>Track language: Other languages</extracomment>
+        <translation>其他</translation>
     </message>
 </context>
 <context>

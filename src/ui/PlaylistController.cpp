@@ -3,8 +3,10 @@
 
 #include <QMetaEnum>
 #include <QVariant>
+#include <QVariantMap>
 
 #include <library/Database.h>
+#include <library/EnumNames.h>
 #include <library/LibraryQuery.h>
 #include <library/SmartRule.h>
 #include <player/PlayQueue.h>
@@ -225,6 +227,33 @@ QVariantList PlaylistController::smartSortKeys() const
     return list;
 }
 
+QVariantList PlaylistController::smartEnumValues(library::SmartField field) const
+{
+    QVariantList list;
+    if (field == library::SmartField::VersionType) {
+        const auto metaEnum = QMetaEnum::fromType<library::VersionType>();
+        list.reserve(metaEnum.keyCount());
+        for (int i = 0; i < metaEnum.keyCount(); ++i) {
+            const auto vt = static_cast<library::VersionType>(metaEnum.value(i));
+            QVariantMap item;
+            item.insert(QStringLiteral("text"), versionLabel(vt));
+            item.insert(QStringLiteral("value"), library::versionTypeToString(vt));
+            list.append(item);
+        }
+    } else if (field == library::SmartField::Language) {
+        const auto metaEnum = QMetaEnum::fromType<library::TrackLanguage>();
+        list.reserve(metaEnum.keyCount());
+        for (int i = 0; i < metaEnum.keyCount(); ++i) {
+            const auto lang = static_cast<library::TrackLanguage>(metaEnum.value(i));
+            QVariantMap item;
+            item.insert(QStringLiteral("text"), languageLabel(lang));
+            item.insert(QStringLiteral("value"), library::trackLanguageToString(lang));
+            list.append(item);
+        }
+    }
+    return list;
+}
+
 QString PlaylistController::fieldLabel(library::SmartField field) const
 {
     switch (field) {
@@ -354,6 +383,62 @@ QString PlaylistController::sortKeyLabel(library::TrackSortKey key) const
     case library::TrackSortKey::PlaylistOrder:
         //: Sort by custom playlist order
         return tr("Playlist Order");
+    }
+    Q_UNREACHABLE_RETURN(QString());
+}
+
+QString PlaylistController::versionLabel(library::VersionType type) const
+{
+    switch (type) {
+    case library::VersionType::Studio:
+        //: Track version type: Studio / Original version
+        return tr("Studio");
+    case library::VersionType::Live:
+        //: Track version type: Live performance recording
+        return tr("Live");
+    case library::VersionType::Remaster:
+        //: Track version type: Remastered edition
+        return tr("Remaster");
+    case library::VersionType::Acoustic:
+        //: Track version type: Acoustic / Unplugged version
+        return tr("Acoustic");
+    case library::VersionType::Remix:
+        //: Track version type: Remix / Extended mix
+        return tr("Remix");
+    case library::VersionType::Demo:
+        //: Track version type: Demo recording
+        return tr("Demo");
+    case library::VersionType::Instrumental:
+        //: Track version type: Instrumental / Karaoke / Off vocal
+        return tr("Instrumental");
+    case library::VersionType::Edit:
+        //: Track version type: Radio edit / TV size / Short ver.
+        return tr("Edit");
+    case library::VersionType::Alternate:
+        //: Track version type: Alternate version
+        return tr("Alt. version");
+    }
+    Q_UNREACHABLE_RETURN(QString());
+}
+
+QString PlaylistController::languageLabel(library::TrackLanguage lang) const
+{
+    switch (lang) {
+    case library::TrackLanguage::Chinese:
+        //: Track language: Chinese
+        return tr("Chinese");
+    case library::TrackLanguage::Japanese:
+        //: Track language: Japanese
+        return tr("Japanese");
+    case library::TrackLanguage::Korean:
+        //: Track language: Korean
+        return tr("Korean");
+    case library::TrackLanguage::Western:
+        //: Track language: Western languages (English, European, etc.)
+        return tr("Western");
+    case library::TrackLanguage::Other:
+        //: Track language: Other languages
+        return tr("Other");
     }
     Q_UNREACHABLE_RETURN(QString());
 }
