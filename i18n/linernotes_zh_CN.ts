@@ -424,73 +424,79 @@
         <translation>正在归并歌曲版本…</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="48"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="47"/>
+        <source>Matching titles across scripts...</source>
+        <translation>正在对照不同文字写法的标题…</translation>
+    </message>
+    <message>
+        <location filename="../qml/CleanupHealthPanel.qml" line="49"/>
         <source>Computing audio fingerprints...</source>
         <translation>正在计算声学指纹…</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="49"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="50"/>
         <source>Finding duplicates...</source>
         <translation>正在查找重复…</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="50"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="51"/>
         <source>Cleaning up library...</source>
         <translation>正在整理曲库…</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="53"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="54"/>
         <source>Automatic cleanup: </source>
         <translation>自动整理：</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="107"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="108"/>
         <source>Library Health &amp; Cleanup</source>
         <translation>曲库健康与整理</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="114"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="115"/>
         <source>Checking...</source>
         <translation>正在检查…</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="123"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="124"/>
         <source>Check again</source>
         <translation>重新检查</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="130"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="131"/>
         <source>Show</source>
         <translation>展开</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="130"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="131"/>
         <source>Hide</source>
         <translation>收起</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="156"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="157"/>
         <source>No AI service is set up for cleanup. Configure one in Settings to run these tasks.</source>
         <translation>尚未为曲库整理配置 AI 服务。请先在设置中配置，才能运行这些任务。</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="171"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="172"/>
         <source>Fix garbled tags</source>
         <translation>修复乱码标签</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="175"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="176"/>
         <source>%n folder(s) with garbled tags</source>
         <translation>
             <numerusform>%n 个文件夹存在乱码标签</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="176"/>
-        <location filename="../qml/CleanupHealthPanel.qml" line="194"/>
-        <location filename="../qml/CleanupHealthPanel.qml" line="212"/>
-        <location filename="../qml/CleanupHealthPanel.qml" line="238"/>
-        <location filename="../qml/CleanupHealthPanel.qml" line="265"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="177"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="195"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="213"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="239"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="266"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="298"/>
         <source> · ≈ %1 tokens</source>
         <translation> · 约 %1 token</translation>
     </message>
@@ -514,29 +520,29 @@
         <translation type="vanished">正在补全专辑信息…</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="47"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="48"/>
         <source>Translating titles...</source>
         <translation>正在翻译标题…</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="189"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="190"/>
         <source>Normalize artist credits</source>
         <translation>规范艺人署名</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="193"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="194"/>
         <source>%n artist credit(s) to check</source>
         <translation>
             <numerusform>%n 个署名待检查</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="207"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="208"/>
         <source>Merge duplicate artists</source>
         <translation>合并重复艺人</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="211"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="212"/>
         <source>%n possible duplicate artist(s)</source>
         <translation>
             <numerusform>%n 组疑似重复艺人</numerusform>
@@ -569,114 +575,121 @@
         <translation type="vanished">补全专辑信息</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="225"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="226"/>
         <source>Identify song versions</source>
         <translation>识别歌曲版本</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="234"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="235"/>
         <source>%n track(s) to check</source>
         <translation>
             <numerusform>%n 首歌曲待识别</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="236"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="237"/>
         <source> · %n suffix(es) for AI</source>
         <translation>
             <numerusform> · %n 种后缀需 AI 判断</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="255"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="256"/>
         <source>Translate foreign titles</source>
         <translation>翻译外文标题</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="263"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="264"/>
         <source>%n title(s) to translate</source>
         <translation>
             <numerusform>%n 个标题待翻译</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="281"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="282"/>
         <source>Find duplicate songs</source>
         <translation>查找重复歌曲</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="291"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="294"/>
         <source>%n candidate track(s)</source>
         <translation>
             <numerusform>%n 首候选</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="293"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="296"/>
+        <source> · %n title pair(s) to check with AI</source>
+        <translation>
+            <numerusform> · %n 对标题待 AI 对照</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CleanupHealthPanel.qml" line="302"/>
         <source> · %n audio fingerprint(s) to compute</source>
         <translation>
             <numerusform> · 需计算 %n 个声学指纹</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CleanupHealthPanel.qml" line="296"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="305"/>
         <source> · %n group(s) found last time</source>
         <translation>
             <numerusform> · 上次找到 %n 组</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="299"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="308"/>
         <source> · run version identification first</source>
         <translation> · 请先识别歌曲版本</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="325"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="334"/>
         <source>Auto-accept:</source>
         <translation>自动接受：</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="332"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="341"/>
         <source>Off</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="332"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="341"/>
         <source>≥ 0.95</source>
         <translation>≥ 0.95</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="332"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="341"/>
         <source>≥ 0.90</source>
         <translation>≥ 0.90</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="347"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="356"/>
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="383"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="392"/>
         <source>%1 / %2</source>
         <translation>%1 / %2</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="389"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="398"/>
         <source>(%1 failed)</source>
         <translation>（%1 项失败）</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="396"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="405"/>
         <source>Resume</source>
         <translation>继续</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="396"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="405"/>
         <source>Pause</source>
         <translation>暂停</translation>
     </message>
     <message>
-        <location filename="../qml/CleanupHealthPanel.qml" line="401"/>
+        <location filename="../qml/CleanupHealthPanel.qml" line="410"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>

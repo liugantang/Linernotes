@@ -268,6 +268,7 @@ private slots:
     void runExecutesStepsInOrder();
     void autoAcceptAppliesThreshold();
     void duplicatesStepRuns();
+    void duplicatesWithoutLlmSkipsTitleMatch();
     void automaticRunsRuleStepsOnly();
 };
 
@@ -581,6 +582,86 @@ void TstCleanupController::duplicatesStepRuns()
     const auto countRes = source.countGroups();
     QVERIFY(countRes.ok());
     QCOMPARE(countRes.value().value(DuplicateKind::SameRecording), 1);
+}
+
+void TstCleanupController::duplicatesWithoutLlmSkipsTitleMatch()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    Database db(tempDir.filePath(QStringLiteral("test_dup_no_llm.db")));
+    QVERIFY(db.open(Migrator()).ok());
+    const auto conn = db.connection().value();
+
+    const qint64 rootId = TestDbHelper::insertRoot(conn);
+
+    const qint64 f1 = TestDbHelper::insertFileWithDetails(
+        conn, rootId, QStringLiteral("/music/dup/1.flac"), QStringLiteral("hash1"), 200000);
+    const qint64 f2 = TestDbHelper::insertFileWithDetails(
+        conn, rootId, QStringLiteral("/music/dup/2.flac"), QStringLiteral("hash2"), 200500);
+
+    QVERIFY(f1 > 0);
+    QVERIFY(f2 > 0);
+
+    const qint64 workId = 1;
+    QVERIFY(TestDbHelper::insertWork(
+        conn, workId, QStringLiteral("work_song_a"), QStringLiteral("Song A")));
+
+    const qint64 t1 = TestDbHelper::insertTrackWithWork(conn, f1, workId);
+    const qint64 t2 = TestDbHelper::insertTrackWithWork(conn, f2, workId);
+
+    QVERIFY(t1 > 0);
+    QVERIFY(t2 > 0);
+
+    QVERIFY(TestDbHelper::insertTrackVersion(
+        conn, t1, QStringLiteral("Song A"), QStringLiteral("studio")));
+    QVERIFY(TestDbHelper::insertTrackVersion(
+        conn, t2, QStringLiteral("Song A"), QStringLiteral("studio")));
+
+    const ManualClock clock(1000);
+    FingerprintStore fpStore(db, clock);
+
+    QList<quint32> fpItems;
+    fpItems.reserve(50);
+    for (quint32 i = 0; i < 50; ++i) {
+        fpItems.append(0x12345678U ^ (i * 0x9e3779b9U));
+    }
+
+    QVERIFY(fpStore.save(f1, 1, fpItems).ok());
+    QVERIFY(fpStore.save(f2, 1, fpItems).ok());
+
+    const QTemporaryDir settingsDir;
+    QVERIFY(settingsDir.isValid());
+    Settings settings(settingsDir.filePath(QStringLiteral("settings.ini")));
+    AiConfig aiConfig(settings);
+    PromptLibrary prompts({ QStringLiteral(":/prompts") });
+
+    JobQueue jobs(db, clock);
+    jobs.registerHandler(std::make_unique<FingerprintJobHandler>(db, clock));
+    jobs.registerHandler(std::make_unique<DuplicateJobHandler>(db, clock));
+
+    CleanupController cleanup(db, clock, jobs, prompts, aiConfig, settings);
+    QCOMPARE(cleanup.isLlmConfigured(), false);
+
+    QList<CleanupController::Step> observedSteps;
+    QObject::connect(
+        &cleanup, &CleanupController::currentStepChanged, &cleanup, [&cleanup, &observedSteps]() {
+            if (cleanup.currentStep() != CleanupController::Step::None) {
+                observedSteps.append(cleanup.currentStep());
+            }
+        });
+
+    cleanup.run(false, false, false, false, false, true);
+    QCOMPARE(cleanup.isRunning(), true);
+
+    QTRY_COMPARE_WITH_TIMEOUT(cleanup.isRunning(), false, 10000);
+
+    QVERIFY(!observedSteps.contains(CleanupController::Step::TitleMatch));
+    QVERIFY(!observedSteps.contains(CleanupController::Step::VersionLink));
+    const QList<CleanupController::Step> expectedSteps = {
+        CleanupController::Step::Fingerprint,
+        CleanupController::Step::Duplicates,
+    };
+    QCOMPARE(observedSteps, expectedSteps);
 }
 
 void TstCleanupController::automaticRunsRuleStepsOnly()
