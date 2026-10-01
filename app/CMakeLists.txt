@@ -713,3 +713,16 @@ linernotes_set_target_options(linernotes)
 install(TARGETS linernotes
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+set(LINERNOTES_AUDIO_MODEL "" CACHE FILEPATH "Path to msclap audio embedding ONNX model")
+if(LINERNOTES_AUDIO_MODEL)
+    add_custom_command(TARGET linernotes POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:linernotes>/models
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${LINERNOTES_AUDIO_MODEL}" $<TARGET_FILE_DIR:linernotes>/models/msclap-2023-audio.onnx
+        COMMENT "Copying audio embedding model to app directory"
+    )
+    install(FILES "${LINERNOTES_AUDIO_MODEL}"
+        DESTINATION ${CMAKE_INSTALL_BINDIR}/models
+        RENAME msclap-2023-audio.onnx
+    )
+endif()

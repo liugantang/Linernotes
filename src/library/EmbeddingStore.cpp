@@ -312,4 +312,39 @@ core::Result<QList<EmbeddingStore::StoredEmbedding>> EmbeddingStore::loadAll(
     return results;
 }
 
+core::Result<int> EmbeddingStore::analyzedCount(const QString &model) const
+{
+    auto connRes = m_db.connection();
+    if (!connRes.ok()) {
+        return connRes.error();
+    }
+    const auto &conn = connRes.value();
+
+    QSqlQuery q(conn);
+    q.prepare(QStringLiteral("SELECT COUNT(*) "
+                             "FROM audio_embeddings ae "
+                             "JOIN tracks t ON t.id = ae.track_id "
+                             "JOIN files f ON f.id = t.file_id "
+                             "WHERE ae.model = ? "
+                             "  AND ae.vector IS NOT NULL "
+                             "  AND ae.error IS NULL "
+                             "  AND ae.content_hash IS NOT NULL "
+                             "  AND f.content_hash IS NOT NULL "
+                             "  AND ae.content_hash = f.content_hash;"));
+    q.addBindValue(model);
+
+    if (!q.exec()) {
+        return core::Error {
+            .code = QString(errc::kDbQuery),
+            .message = q.lastError().text(),
+            .detail = QString(),
+        };
+    }
+
+    if (q.next()) {
+        return q.value(0).toInt();
+    }
+    return 0;
+}
+
 } // namespace linernotes::library

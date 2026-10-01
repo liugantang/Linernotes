@@ -106,29 +106,41 @@ void TstEmbeddingStore::pendingTrackIdsTransitions()
     auto pendingRes = store.pendingTrackIds(model1);
     QVERIFY(pendingRes.ok());
     QCOMPARE(pendingRes.value(), (QList<qint64> { t1, t2 }));
+    auto analyzedRes = store.analyzedCount(model1);
+    QVERIFY(analyzedRes.ok());
+    QCOMPARE(analyzedRes.value(), 0);
 
     // Save t1 with dummy 4-dim vector
     const QList<float> dummyVector { 0.5F, -0.5F, 0.25F, -0.25F };
     QVERIFY(store.save(t1, model1, dummyVector).ok());
 
-    // t1 is no longer pending for model1
+    // t1 is no longer pending for model1, analyzedCount is 1
     pendingRes = store.pendingTrackIds(model1);
     QVERIFY(pendingRes.ok());
     QCOMPARE(pendingRes.value(), (QList<qint64> { t2 }));
+    analyzedRes = store.analyzedCount(model1);
+    QVERIFY(analyzedRes.ok());
+    QCOMPARE(analyzedRes.value(), 1);
 
-    // t1 IS pending for model2 (different model)
+    // t1 IS pending for model2 (different model), analyzedCount for model2 is 0
     auto pendingModel2 = store.pendingTrackIds(model2);
     QVERIFY(pendingModel2.ok());
     QCOMPARE(pendingModel2.value(), (QList<qint64> { t1, t2 }));
+    auto analyzedModel2 = store.analyzedCount(model2);
+    QVERIFY(analyzedModel2.ok());
+    QCOMPARE(analyzedModel2.value(), 0);
 
-    // Save failure for t2 -> t2 is no longer pending for model1
+    // Save failure for t2 -> t2 is no longer pending for model1, analyzedCount remains 1
     QVERIFY(store.saveFailure(t2, model1, QStringLiteral("decode error")).ok());
 
     pendingRes = store.pendingTrackIds(model1);
     QVERIFY(pendingRes.ok());
     QVERIFY(pendingRes.value().isEmpty());
+    analyzedRes = store.analyzedCount(model1);
+    QVERIFY(analyzedRes.ok());
+    QCOMPARE(analyzedRes.value(), 1);
 
-    // Modify files.content_hash for f1 -> t1 becomes pending again
+    // Modify files.content_hash for f1 -> t1 becomes pending again, analyzedCount drops to 0
     QSqlQuery updateQuery(conn);
     QVERIFY(
         updateQuery.exec(QStringLiteral("UPDATE files SET content_hash = 'h1_modified' WHERE id = ")
@@ -137,6 +149,9 @@ void TstEmbeddingStore::pendingTrackIdsTransitions()
     pendingRes = store.pendingTrackIds(model1);
     QVERIFY(pendingRes.ok());
     QCOMPARE(pendingRes.value(), (QList<qint64> { t1 }));
+    analyzedRes = store.analyzedCount(model1);
+    QVERIFY(analyzedRes.ok());
+    QCOMPARE(analyzedRes.value(), 0);
 }
 
 void TstEmbeddingStore::saveAndLoadAllRoundtrip()
@@ -170,16 +185,23 @@ void TstEmbeddingStore::saveAndLoadAllRoundtrip()
     QCOMPARE(storedList.size(), 1);
     QCOMPARE(storedList.first().trackId, t1);
 
+    auto countRes = store.analyzedCount(model);
+    QVERIFY(countRes.ok());
+    QCOMPARE(countRes.value(), 1);
+
     const auto &loadedVec = storedList.first().vector;
     QCOMPARE(loadedVec.size(), vec1.size());
     for (qsizetype i = 0; i < vec1.size(); ++i) {
         QVERIFY(std::abs(loadedVec.at(i) - vec1.at(i)) < 1e-3F);
     }
 
-    // loadAll for different model returns empty
+    // loadAll and analyzedCount for different model return empty / 0
     auto otherLoad = store.loadAll(QStringLiteral("nonexistent-model"));
     QVERIFY(otherLoad.ok());
     QVERIFY(otherLoad.value().isEmpty());
+    auto otherCount = store.analyzedCount(QStringLiteral("nonexistent-model"));
+    QVERIFY(otherCount.ok());
+    QCOMPARE(otherCount.value(), 0);
 
     // Expire t1 by changing content_hash
     QSqlQuery updateQuery(conn);
@@ -189,6 +211,9 @@ void TstEmbeddingStore::saveAndLoadAllRoundtrip()
     loadRes = store.loadAll(model);
     QVERIFY(loadRes.ok());
     QVERIFY(loadRes.value().isEmpty());
+    countRes = store.analyzedCount(model);
+    QVERIFY(countRes.ok());
+    QCOMPARE(countRes.value(), 0);
 }
 
 void TstEmbeddingStore::sourceCueAndNormalTracks()

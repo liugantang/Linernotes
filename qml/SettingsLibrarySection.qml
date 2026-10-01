@@ -315,4 +315,110 @@ ColumnLayout {
             Layout.fillWidth: true
         }
     }
+
+    // Sound analysis
+    ColumnLayout {
+        Layout.fillWidth: true
+        Layout.topMargin: Theme.spacingMedium
+        spacing: Theme.spacingTiny
+
+        Label {
+            text: qsTr("Sound analysis")
+            font.pixelSize: Theme.fontSizeNormal
+            color: Theme.text
+            Layout.fillWidth: true
+        }
+
+        Label {
+            text: qsTr("Analyze the sound of each track for similarity search and recommendations. Everything is processed locally.")
+            font.pixelSize: Theme.fontSizeSmall
+            color: Theme.textSecondary
+            wrapMode: Text.Wrap
+            Layout.fillWidth: true
+        }
+
+        Label {
+            visible: AppContext.audioAnalysis ? !AppContext.audioAnalysis.modelAvailable : false
+            text: qsTr("Audio embedding model not found: %1").arg(AppContext.audioAnalysis ? AppContext.audioAnalysis.modelPath : "")
+            font.pixelSize: Theme.fontSizeSmall
+            color: Theme.errorText
+            wrapMode: Text.Wrap
+            Layout.fillWidth: true
+            Layout.topMargin: Theme.spacingTiny
+        }
+
+        Label {
+            visible: AppContext.audioAnalysis ? AppContext.audioAnalysis.modelAvailable : false
+            text: qsTr("%1 analyzed, %2 pending").arg(AppContext.audioAnalysis ? AppContext.audioAnalysis.analyzedCount : 0).arg(AppContext.audioAnalysis ? AppContext.audioAnalysis.pendingCount : 0)
+            font.pixelSize: Theme.fontSizeSmall
+            color: Theme.textSecondary
+            Layout.fillWidth: true
+            Layout.topMargin: Theme.spacingTiny
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.topMargin: Theme.spacingTiny
+            spacing: Theme.spacingMedium
+            visible: AppContext.audioAnalysis ? (AppContext.audioAnalysis.running || AppContext.audioAnalysis.paused) : false
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 8
+                color: Theme.divider
+                radius: 4
+
+                Rectangle {
+                    height: parent.height
+                    radius: 4
+                    color: Theme.accent
+                    width: (AppContext.audioAnalysis && AppContext.audioAnalysis.total > 0)
+                        ? Math.min(parent.width, Math.max(0, (AppContext.audioAnalysis.done / AppContext.audioAnalysis.total) * parent.width))
+                        : 0
+                }
+            }
+
+            Label {
+                text: AppContext.audioAnalysis ? qsTr("%1 / %2").arg(AppContext.audioAnalysis.done).arg(AppContext.audioAnalysis.total) : ""
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.textSecondary
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.topMargin: Theme.spacingSmall
+            spacing: Theme.spacingSmall
+
+            Controls.AppButton {
+                id: audioAnalysisButton
+                text: {
+                    if (!AppContext.audioAnalysis) return qsTr("Start Analysis")
+                    if (AppContext.audioAnalysis.running) return qsTr("Pause")
+                    if (AppContext.audioAnalysis.paused) return qsTr("Resume")
+                    return qsTr("Start Analysis")
+                }
+                primary: AppContext.audioAnalysis ? !AppContext.audioAnalysis.running : true
+                enabled: {
+                    if (!AppContext.audioAnalysis) return false
+                    if (!AppContext.audioAnalysis.modelAvailable) return false
+                    if (AppContext.audioAnalysis.running || AppContext.audioAnalysis.paused) return true
+                    return AppContext.audioAnalysis.pendingCount > 0
+                }
+                onClicked: {
+                    if (!AppContext.audioAnalysis) return
+                    if (AppContext.audioAnalysis.running) {
+                        AppContext.audioAnalysis.pause()
+                    } else {
+                        AppContext.audioAnalysis.start()
+                    }
+                }
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+        }
+    }
 }
+

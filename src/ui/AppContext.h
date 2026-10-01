@@ -21,6 +21,7 @@
 #include <player/Player.h>
 #include <ui/AiContext.h>
 #include <ui/AiSettingsController.h>
+#include <ui/AudioAnalysisController.h>
 #include <ui/CleanupController.h>
 #include <ui/CorrectionReviewController.h>
 #include <ui/CoverSearchController.h>
@@ -78,6 +79,7 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::CorrectionReviewController *review READ review CONSTANT)
     Q_PROPERTY(linernotes::ui::WritebackController *writeback READ writeback CONSTANT)
     Q_PROPERTY(linernotes::ui::CleanupController *cleanup READ cleanup CONSTANT)
+    Q_PROPERTY(linernotes::ui::AudioAnalysisController *audioAnalysis READ audioAnalysis CONSTANT)
     Q_PROPERTY(linernotes::ui::DuplicateController *duplicates READ duplicates CONSTANT)
     Q_PROPERTY(linernotes::ui::CoverSearchController *coverSearch READ coverSearch CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
@@ -126,6 +128,7 @@ public:
     [[nodiscard]] CorrectionReviewController *review();
     [[nodiscard]] WritebackController *writeback();
     [[nodiscard]] CleanupController *cleanup();
+    [[nodiscard]] AudioAnalysisController *audioAnalysis();
     [[nodiscard]] DuplicateController *duplicates();
     [[nodiscard]] CoverSearchController *coverSearch();
     [[nodiscard]] library::Database &database();
@@ -158,6 +161,7 @@ private:
     AiContext m_ai;
     WritebackController m_writeback;
     CleanupController m_cleanup;
+    AudioAnalysisController m_audioAnalysis;
     butler::SystemFileTrash m_trash;
     DuplicateController m_duplicates;
     CoverSearchController m_coverSearch;

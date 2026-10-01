@@ -3,6 +3,8 @@
 
 #include "TrackEmbedding.h"
 
+#include <QCoreApplication>
+
 #include <audio/AudioDecoder.h>
 #include <audio/AudioEmbedder.h>
 #include <audio/Errors.h>
@@ -13,6 +15,12 @@
 #include <vector>
 
 namespace linernotes::audio {
+
+QString defaultEmbeddingModelPath()
+{
+    return QCoreApplication::applicationDirPath() + QStringLiteral("/models/")
+        + QString::fromLatin1(kEmbeddingModelFileName.data(), kEmbeddingModelFileName.size());
+}
 
 QList<qint64> embedWindowStartsMs(qint64 durationMs)
 {

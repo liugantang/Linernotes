@@ -9,6 +9,7 @@
 #include <QTimer>
 #include <QtConcurrent/QtConcurrent>
 
+#include <audio/TrackEmbedding.h>
 #include <core/Settings.h>
 #include <library/CoverStore.h>
 #include <library/Database.h>
@@ -44,6 +45,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_ai(m_settings, m_db, m_clock, m_options.promptsDir)
     , m_writeback(m_db, m_clock, m_ai.jobs(), m_scanner)
     , m_cleanup(m_db, m_clock, m_ai.jobs(), m_ai.prompts(), m_ai.config(), m_settings)
+    , m_audioAnalysis(m_db, m_clock, m_ai.jobs(), audio::defaultEmbeddingModelPath())
     , m_duplicates(m_db, m_clock, m_trash)
     , m_coverSearch(m_db, m_ai.network(), m_coverStore, m_clock)
     , m_playStats(m_db)
@@ -78,6 +80,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     connect(this, &AppContext::libraryChanged, &m_queueModel, &QueueModel::refresh);
     connect(this, &AppContext::libraryChanged, &m_search, &SearchController::refresh);
     connect(this, &AppContext::libraryChanged, &m_playlists, &PlaylistController::refresh);
+    connect(this, &AppContext::libraryChanged, &m_audioAnalysis, &AudioAnalysisController::refresh);
     connect(this, &AppContext::libraryChanged, &m_nlq, &NlqController::invalidateSummaryCache);
     connectScannerSignals();
     connect(&m_recorder, &PlayEventRecorder::playEventFinished, this, [this](qint64 trackId) {
@@ -215,6 +218,7 @@ core::Result<void> AppContext::start()
     m_playlists.refresh();
     m_roots.refresh();
     m_duplicates.refresh();
+    m_audioAnalysis.refresh();
 
     m_watcher = std::make_unique<library::LibraryWatcher>(
         m_db, m_scanner, library::LibraryWatcher::Options { });
@@ -330,6 +334,11 @@ WritebackController *AppContext::writeback()
 CleanupController *AppContext::cleanup()
 {
     return &m_cleanup;
+}
+
+AudioAnalysisController *AppContext::audioAnalysis()
+{
+    return &m_audioAnalysis;
 }
 
 DuplicateController *AppContext::duplicates()

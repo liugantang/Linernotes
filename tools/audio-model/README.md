@@ -37,6 +37,16 @@ MS-CLAP 2023 包含音频编码器（约 3300 万参数）和文本编码器。L
     --ref /tmp/msclap_ref.json
 ```
 
+## 在 Linernotes 中使用
+
+导出 ONNX 模型后，可以在配置 CMake 时传入模型路径：
+
+```bash
+cmake -B build -DLINERNOTES_AUDIO_MODEL=/path/to/models/msclap_audio.onnx
+```
+
+配置后，构建时会将模型文件复制到程序输出目录的 `models/msclap-2023-audio.onnx` 下，安装时也会一同安装至 `${CMAKE_INSTALL_BINDIR}/models/msclap-2023-audio.onnx`。
+
 ## 模型许可证
 
 - MS-CLAP 模型遵循 **MIT License**。

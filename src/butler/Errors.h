@@ -30,6 +30,7 @@ inline constexpr QLatin1StringView kArtistMergePromptRenderFailed {
 };
 
 inline constexpr QLatin1StringView kFingerprintInvalidKey { "fingerprint.invalid_key" };
+inline constexpr QLatin1StringView kEmbeddingInvalidKey { "audio_embed.invalid_key" };
 
 inline constexpr QLatin1StringView kVersionSuffixInvalidKey { "version_suffix.invalid_key" };
 inline constexpr QLatin1StringView kVersionSuffixInvalidResult { "version_suffix.invalid_result" };

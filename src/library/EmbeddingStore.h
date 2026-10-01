@@ -51,6 +51,9 @@ public:
     };
     [[nodiscard]] core::Result<QList<StoredEmbedding>> loadAll(const QString &model) const;
 
+    // 当前 model 下成功且未过期的曲目数
+    [[nodiscard]] core::Result<int> analyzedCount(const QString &model) const;
+
 private:
     Database &m_db;
     const core::Clock &m_clock;
