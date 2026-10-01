@@ -22,6 +22,8 @@ namespace linernotes::ui {
 [[nodiscard]] QString trackLanguageLabel(library::TrackLanguage lang);
 [[nodiscard]] QString nlqSortKeyLabel(nlq::SortKey key);
 [[nodiscard]] QString nlqEntityLabel(nlq::Entity entity);
+[[nodiscard]] QString smartConditionLabel(const library::SmartCondition &cond);
+[[nodiscard]] QString smartPlayWindowLabel(const library::SmartRule &rule);
 
 enum class NlqChipKind : std::uint8_t {
     Entity,

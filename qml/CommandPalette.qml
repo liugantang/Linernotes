@@ -714,18 +714,54 @@ Popup {
             visible: AppContext.nlq && AppContext.nlq.state === NlqController.Ready
 
             // Empty state
-            Label {
+            ColumnLayout {
                 anchors.centerIn: parent
+                width: Math.min(parent.width - Theme.spacingLarge * 2, 520)
+                spacing: Theme.spacingMedium
                 visible: AppContext.nlq && AppContext.nlq.rows.length === 0
-                text: qsTr("No results")
-                font.pixelSize: Theme.fontSizeLarge
-                color: Theme.textSecondary
+
+                Label {
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignHCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.Wrap
+                    text: (AppContext.nlq && AppContext.nlq.emptyHint.length > 0)
+                        ? AppContext.nlq.emptyHint
+                        : qsTr("No results")
+                    font.pixelSize: Theme.fontSizeLarge
+                    color: Theme.textSecondary
+                }
+
+                ColumnLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: Theme.spacingSmall
+                    visible: AppContext.nlq && AppContext.nlq.relaxations.length > 0
+
+                    Repeater {
+                        model: (AppContext.nlq && AppContext.nlq.relaxations)
+                            ? AppContext.nlq.relaxations.slice(0, 3) : []
+
+                        delegate: Controls.AppButton {
+                            required property int index
+                            required property var modelData
+                            Layout.alignment: Qt.AlignHCenter
+                            text: modelData ? (modelData.text || "") : ""
+                            onClicked: {
+                                if (AppContext.nlq) {
+                                    AppContext.nlq.applyRelaxation(index)
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             // Results List
             ListView {
                 id: resultListView
                 anchors.fill: parent
+                // 无结果时隐藏，否则会盖住空结果提示并吞掉放宽建议按钮的点击
+                visible: count > 0
                 clip: true
                 boundsBehavior: Flickable.StopAtBounds
                 focus: true

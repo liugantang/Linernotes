@@ -69,6 +69,22 @@ QVariantList populateArtistRows(const QList<library::ArtistRow> &artists)
     return rows;
 }
 
+bool queryUsesPlayStats(const nlq::Query &query)
+{
+    if (query.rule.playedFrom.has_value() || query.rule.playedTo.has_value()) {
+        return true;
+    }
+    for (const auto &cond : query.rule.conditions) {
+        if (cond.field == library::SmartField::PlayCount
+            || cond.field == library::SmartField::SkipCount
+            || cond.field == library::SmartField::CompletedCount
+            || cond.field == library::SmartField::LastPlayed) {
+            return true;
+        }
+    }
+    return query.sortKey == nlq::SortKey::PlayCount || query.sortKey == nlq::SortKey::LastPlayed;
+}
+
 } // namespace
 
 NlqController::NlqController(library::Database &db, ai::LlmService &llm, ai::PromptLibrary &prompts,
@@ -142,6 +158,16 @@ bool NlqController::hasConversation() const
     return m_currentQuery.has_value();
 }
 
+QString NlqController::emptyHint() const
+{
+    return m_emptyHint;
+}
+
+QVariantList NlqController::relaxations() const
+{
+    return m_relaxations;
+}
+
 void NlqController::submit(const QString &text)
 {
     const QString trimmed = text.trimmed();
@@ -161,10 +187,15 @@ void NlqController::submit(const QString &text)
     m_pendingClarifications.clear();
     m_clarification.clear();
     m_errorText.clear();
+    m_emptyHint.clear();
+    m_relaxations.clear();
+    m_lastRelaxations.clear();
     m_state = State::Interpreting;
     emit stateChanged();
     emit errorTextChanged();
     emit clarificationChanged();
+    emit emptyHintChanged();
+    emit relaxationsChanged();
 
     const QDate today = QDate::currentDate();
     const QString timeZoneId = QString::fromUtf8(QTimeZone::systemTimeZoneId());
@@ -291,6 +322,9 @@ void NlqController::newConversation()
     m_errorText.clear();
     m_rows.clear();
     m_chips.clear();
+    m_emptyHint.clear();
+    m_relaxations.clear();
+    m_lastRelaxations.clear();
     m_state = State::Idle;
 
     emit stateChanged();
@@ -300,6 +334,8 @@ void NlqController::newConversation()
     emit chipsChanged();
     emit clarificationChanged();
     emit hasConversationChanged();
+    emit emptyHintChanged();
+    emit relaxationsChanged();
 }
 
 void NlqController::cancel()
@@ -384,10 +420,129 @@ void NlqController::setEntity(nlq::Entity entity)
     executeQuery(m_currentQuery.value());
 }
 
+void NlqController::applyRelaxation(int index)
+{
+    if (!m_currentQuery.has_value() || index < 0 || index >= m_lastRelaxations.size()) {
+        return;
+    }
+
+    const auto &rel = m_lastRelaxations.at(index);
+    if (rel.kind == nlq::RelaxKind::RemoveCondition) {
+        if (rel.conditionIndex >= 0
+            && rel.conditionIndex < m_currentQuery->rule.conditions.size()) {
+            m_currentQuery->rule.conditions.removeAt(rel.conditionIndex);
+            executeQuery(m_currentQuery.value());
+        }
+    } else if (rel.kind == nlq::RelaxKind::RemovePlayWindow) {
+        m_currentQuery->rule.playedFrom = std::nullopt;
+        m_currentQuery->rule.playedTo = std::nullopt;
+        executeQuery(m_currentQuery.value());
+    }
+}
+
 void NlqController::invalidateSummaryCache()
 {
     m_cachedSummaryDate.reset();
     m_cachedSummaryText.clear();
+}
+
+void NlqController::failWith(const core::Error &error)
+{
+    m_state = State::Failed;
+    m_errorText = userErrorText(error);
+    m_rows.clear();
+    m_emptyHint.clear();
+    m_relaxations.clear();
+    m_lastRelaxations.clear();
+    emit stateChanged();
+    emit errorTextChanged();
+    emit rowsChanged();
+    emit chipsChanged();
+    emit entityChanged();
+    emit hasConversationChanged();
+    emit emptyHintChanged();
+    emit relaxationsChanged();
+}
+
+QVariantList NlqController::loadRows(const QList<qint64> &ids, nlq::Entity entity) const
+{
+    const auto connRes = m_db.connection();
+    if (!connRes.ok()) {
+        return { };
+    }
+
+    const library::LibraryQuery lq(connRes.value());
+    if (entity == nlq::Entity::Track) {
+        const auto tracksRes = lq.tracksByIds(ids);
+        return tracksRes.ok() ? populateTrackRows(tracksRes.value()) : QVariantList { };
+    }
+    if (entity == nlq::Entity::Album) {
+        const auto albumsRes = lq.albumsByIds(ids);
+        return albumsRes.ok() ? populateAlbumRows(albumsRes.value()) : QVariantList { };
+    }
+    if (entity == nlq::Entity::Artist) {
+        const auto artistsRes = lq.artistsByIds(ids);
+        return artistsRes.ok() ? populateArtistRows(artistsRes.value()) : QVariantList { };
+    }
+    return { };
+}
+
+QString NlqController::relaxationText(const nlq::Relaxation &rel, const nlq::Query &query) const
+{
+    QString label;
+    if (rel.kind == nlq::RelaxKind::RemoveCondition) {
+        if (rel.conditionIndex >= 0 && rel.conditionIndex < query.rule.conditions.size()) {
+            label = smartConditionLabel(query.rule.conditions.at(rel.conditionIndex));
+        }
+    } else if (rel.kind == nlq::RelaxKind::RemovePlayWindow) {
+        label = smartPlayWindowLabel(query.rule);
+    }
+    return tr("Remove \"%1\" \u2192 %n result(s)", "", rel.resultCount).arg(label);
+}
+
+QString NlqController::chooseEmptyHint(
+    const nlq::EmptyResultAnalysis &analysis, const nlq::Query &query) const
+{
+    if (analysis.windowBeforeHistory) {
+        const QString dateStr = analysis.firstPlayed.has_value()
+            ? analysis.firstPlayed->toString(Qt::ISODate)
+            : QString();
+        return tr("Play history starts on %1, so there are no plays in the selected period.")
+            .arg(dateStr);
+    }
+    if (!analysis.firstPlayed.has_value() && queryUsesPlayStats(query)) {
+        return tr("No play history yet.");
+    }
+    if (!analysis.relaxations.isEmpty()) {
+        return tr("No results match all conditions.");
+    }
+    return tr("Nothing in your library matches.");
+}
+
+void NlqController::updateEmptyAnalysis(const nlq::QueryRunner &runner, const nlq::Query &query)
+{
+    const auto analysisRes = nlq::analyzeEmptyResult(m_db, runner, query);
+    if (!analysisRes.ok()) {
+        m_lastRelaxations.clear();
+        m_relaxations.clear();
+        m_emptyHint = tr("Nothing in your library matches.");
+        return;
+    }
+
+    const auto &analysis = analysisRes.value();
+    m_lastRelaxations = analysis.relaxations;
+    m_relaxations.clear();
+    m_relaxations.reserve(analysis.relaxations.size());
+    for (const auto &rel : analysis.relaxations) {
+        QVariantMap map;
+        map.insert(QStringLiteral("kind"), static_cast<int>(rel.kind));
+        map.insert(QStringLiteral("conditionIndex"), rel.conditionIndex);
+        map.insert(QStringLiteral("count"), rel.resultCount);
+        map.insert(QStringLiteral("text"), relaxationText(rel, query));
+        m_relaxations.append(map);
+    }
+
+    m_emptyHint = chooseEmptyHint(analysis, query);
 }
 
 void NlqController::executeQuery(const nlq::Query &query)
@@ -401,43 +556,24 @@ void NlqController::executeQuery(const nlq::Query &query)
     m_chips = nlqChipsToVariantList(nlqChips(query));
 
     if (!runRes.ok()) {
-        m_state = State::Failed;
-        m_errorText = userErrorText(runRes.error());
-        m_rows.clear();
-        emit stateChanged();
-        emit errorTextChanged();
-        emit rowsChanged();
-        emit chipsChanged();
-        emit entityChanged();
-        emit hasConversationChanged();
+        failWith(runRes.error());
         return;
     }
 
-    const QList<qint64> &ids = runRes.value();
     const auto connRes = m_db.connection();
     if (!connRes.ok()) {
-        m_state = State::Failed;
-        m_errorText = userErrorText(connRes.error());
-        m_rows.clear();
-        emit stateChanged();
-        emit errorTextChanged();
-        emit rowsChanged();
-        emit chipsChanged();
-        emit entityChanged();
-        emit hasConversationChanged();
+        failWith(connRes.error());
         return;
     }
 
-    const library::LibraryQuery lq(connRes.value());
-    if (query.entity == nlq::Entity::Track) {
-        const auto tracksRes = lq.tracksByIds(ids);
-        m_rows = tracksRes.ok() ? populateTrackRows(tracksRes.value()) : QVariantList { };
-    } else if (query.entity == nlq::Entity::Album) {
-        const auto albumsRes = lq.albumsByIds(ids);
-        m_rows = albumsRes.ok() ? populateAlbumRows(albumsRes.value()) : QVariantList { };
-    } else if (query.entity == nlq::Entity::Artist) {
-        const auto artistsRes = lq.artistsByIds(ids);
-        m_rows = artistsRes.ok() ? populateArtistRows(artistsRes.value()) : QVariantList { };
+    m_rows = loadRows(runRes.value(), query.entity);
+
+    if (m_rows.isEmpty()) {
+        updateEmptyAnalysis(runner, query);
+    } else {
+        m_emptyHint.clear();
+        m_relaxations.clear();
+        m_lastRelaxations.clear();
     }
 
     m_state = State::Ready;
@@ -449,6 +585,8 @@ void NlqController::executeQuery(const nlq::Query &query)
     emit chipsChanged();
     emit entityChanged();
     emit hasConversationChanged();
+    emit emptyHintChanged();
+    emit relaxationsChanged();
 }
 
 QList<qint64> NlqController::collectAllTrackIds() const

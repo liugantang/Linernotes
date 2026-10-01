@@ -199,9 +199,7 @@ QString nlqEntityLabel(nlq::Entity entity)
     Q_UNREACHABLE_RETURN(QString());
 }
 
-namespace {
-
-QString formatConditionText(const library::SmartCondition &c)
+QString smartConditionLabel(const library::SmartCondition &c)
 {
     const QString fieldStr = smartFieldLabel(c.field);
     const QString opStr = smartOpLabel(c.op);
@@ -228,7 +226,22 @@ QString formatConditionText(const library::SmartCondition &c)
     return QStringLiteral("%1 %2 %3").arg(fieldStr, opStr, c.value.toString());
 }
 
-} // namespace
+QString smartPlayWindowLabel(const library::SmartRule &rule)
+{
+    if (rule.playedFrom.has_value() && rule.playedTo.has_value()) {
+        return QCoreApplication::translate("linernotes::ui::Nlq", "Play period: %1 \u2013 %2")
+            .arg(rule.playedFrom->toString(Qt::ISODate), rule.playedTo->toString(Qt::ISODate));
+    }
+    if (rule.playedFrom.has_value()) {
+        return QCoreApplication::translate("linernotes::ui::Nlq", "Play period: from %1")
+            .arg(rule.playedFrom->toString(Qt::ISODate));
+    }
+    if (rule.playedTo.has_value()) {
+        return QCoreApplication::translate("linernotes::ui::Nlq", "Play period: until %1")
+            .arg(rule.playedTo->toString(Qt::ISODate));
+    }
+    return { };
+}
 
 QList<NlqChip> nlqChips(const nlq::Query &query)
 {
@@ -247,29 +260,16 @@ QList<NlqChip> nlqChips(const nlq::Query &query)
         chips.append(NlqChip {
             .kind = NlqChipKind::Condition,
             .index = i,
-            .text = formatConditionText(c),
+            .text = smartConditionLabel(c),
         });
     }
 
     // 3. Play period
     if (query.rule.playedFrom.has_value() || query.rule.playedTo.has_value()) {
-        QString periodText;
-        if (query.rule.playedFrom.has_value() && query.rule.playedTo.has_value()) {
-            periodText
-                = QCoreApplication::translate("linernotes::ui::Nlq", "Play period: %1 \u2013 %2")
-                      .arg(query.rule.playedFrom->toString(Qt::ISODate),
-                          query.rule.playedTo->toString(Qt::ISODate));
-        } else if (query.rule.playedFrom.has_value()) {
-            periodText = QCoreApplication::translate("linernotes::ui::Nlq", "Play period: from %1")
-                             .arg(query.rule.playedFrom->toString(Qt::ISODate));
-        } else {
-            periodText = QCoreApplication::translate("linernotes::ui::Nlq", "Play period: until %1")
-                             .arg(query.rule.playedTo->toString(Qt::ISODate));
-        }
         chips.append(NlqChip {
             .kind = NlqChipKind::PlayWindow,
             .index = 0,
-            .text = periodText,
+            .text = smartPlayWindowLabel(query.rule),
         });
     }
 

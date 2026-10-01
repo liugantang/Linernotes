@@ -20,12 +20,17 @@
 #include <nlq/EntityResolver.h>
 #include <nlq/Interpreter.h>
 #include <nlq/NlqQuery.h>
+#include <nlq/Relaxation.h>
 #include <ui/LibraryActions.h>
 #include <ui/PlaylistController.h>
 #include <ui/SettingsController.h>
 
 #include <cstdint>
 #include <optional>
+
+namespace linernotes::nlq {
+class QueryRunner;
+} // namespace linernotes::nlq
 
 namespace linernotes::ui {
 
@@ -61,6 +66,8 @@ public:
     Q_PROPERTY(QVariantList chips READ chips NOTIFY chipsChanged)
     Q_PROPERTY(QVariantMap clarification READ clarification NOTIFY clarificationChanged)
     Q_PROPERTY(bool hasConversation READ hasConversation NOTIFY hasConversationChanged)
+    Q_PROPERTY(QString emptyHint READ emptyHint NOTIFY emptyHintChanged)
+    Q_PROPERTY(QVariantList relaxations READ relaxations NOTIFY relaxationsChanged)
 
     NlqController(library::Database &db, ai::LlmService &llm, ai::PromptLibrary &prompts,
         const ai::AiConfig &aiConfig, LibraryActions &actions, PlaylistController &playlists,
@@ -76,6 +83,8 @@ public:
     [[nodiscard]] QVariantList chips() const;
     [[nodiscard]] QVariantMap clarification() const;
     [[nodiscard]] bool hasConversation() const;
+    [[nodiscard]] QString emptyHint() const;
+    [[nodiscard]] QVariantList relaxations() const;
 
     Q_INVOKABLE void submit(const QString &text);
     Q_INVOKABLE void chooseCandidate(int index);
@@ -88,6 +97,7 @@ public:
     Q_INVOKABLE void setSort(linernotes::nlq::SortKey key, Qt::SortOrder order);
     Q_INVOKABLE void setLimit(int limit);
     Q_INVOKABLE void setEntity(linernotes::nlq::Entity entity);
+    Q_INVOKABLE void applyRelaxation(int index);
 
     Q_INVOKABLE void playAll();
     Q_INVOKABLE void enqueueAll();
@@ -106,6 +116,8 @@ signals:
     void chipsChanged();
     void clarificationChanged();
     void hasConversationChanged();
+    void emptyHintChanged();
+    void relaxationsChanged();
 
 public slots:
     void refreshLlmConfigured();
@@ -115,6 +127,12 @@ private slots:
 
 private:
     void executeQuery(const nlq::Query &query);
+    void failWith(const core::Error &error);
+    [[nodiscard]] QVariantList loadRows(const QList<qint64> &ids, nlq::Entity entity) const;
+    void updateEmptyAnalysis(const nlq::QueryRunner &runner, const nlq::Query &query);
+    [[nodiscard]] QString relaxationText(const nlq::Relaxation &rel, const nlq::Query &query) const;
+    [[nodiscard]] QString chooseEmptyHint(
+        const nlq::EmptyResultAnalysis &analysis, const nlq::Query &query) const;
     void updateClarificationProperty();
     [[nodiscard]] QList<qint64> collectAllTrackIds() const;
 
@@ -134,6 +152,9 @@ private:
     QVariantList m_rows;
     QVariantList m_chips;
     QVariantMap m_clarification;
+    QString m_emptyHint;
+    QVariantList m_relaxations;
+    QList<nlq::Relaxation> m_lastRelaxations;
 
     std::optional<nlq::Query> m_currentQuery;
     nlq::Resolution m_resolution;
