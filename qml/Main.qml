@@ -37,6 +37,11 @@ ApplicationWindow {
         sidePanel: sidePanel
         playerBar: playerBar
         shortcutsDialog: shortcutsDialog
+        commandPalette: commandPalette
+    }
+
+    CommandPalette {
+        id: commandPalette
     }
 
     ShortcutsDialog {
@@ -176,6 +181,12 @@ ApplicationWindow {
                                 searchResults.focusTrackList()
                             }
                         }
+                    }
+
+                    Controls.IconButton {
+                        icon.source: "icons/sparkles.svg"
+                        toolTip: qsTr("Ask Library (Ctrl+K)")
+                        onClicked: commandPalette.openPalette()
                     }
 
                     Item {

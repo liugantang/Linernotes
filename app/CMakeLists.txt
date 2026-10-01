@@ -288,6 +288,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS QueuePanel.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/CommandPalette.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS CommandPalette.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/SearchBox.qml
     PROPERTIES
         QT_RESOURCE_ALIAS SearchBox.qml
@@ -600,6 +605,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/CoverSearchDialog.qml
         ${CMAKE_SOURCE_DIR}/qml/AlbumTrackRow.qml
         ${CMAKE_SOURCE_DIR}/qml/ArtistDetail.qml
+        ${CMAKE_SOURCE_DIR}/qml/CommandPalette.qml
         ${CMAKE_SOURCE_DIR}/qml/SearchBox.qml
         ${CMAKE_SOURCE_DIR}/qml/SearchResults.qml
         ${CMAKE_SOURCE_DIR}/qml/SearchSectionArtists.qml

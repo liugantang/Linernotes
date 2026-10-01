@@ -12,6 +12,7 @@
 #include <player/PlayQueue.h>
 #include <player/Player.h>
 #include <ui/PlaylistController.h>
+#include <ui/SmartLabels.h>
 #include <ui/UiLogging.h>
 
 namespace linernotes::ui {
@@ -256,191 +257,27 @@ QVariantList PlaylistController::smartEnumValues(library::SmartField field) cons
 
 QString PlaylistController::fieldLabel(library::SmartField field) const
 {
-    switch (field) {
-    case library::SmartField::Title:
-        //: Smart playlist condition field: Track title
-        return tr("Title");
-    case library::SmartField::Artist:
-        //: Smart playlist condition field: Track artist
-        return tr("Artist");
-    case library::SmartField::Album:
-        //: Smart playlist condition field: Album name
-        return tr("Album");
-    case library::SmartField::AlbumArtist:
-        //: Smart playlist condition field: Album artist
-        return tr("Album Artist");
-    case library::SmartField::Genre:
-        //: Smart playlist condition field: Music genre
-        return tr("Genre");
-    case library::SmartField::Year:
-        //: Smart playlist condition field: Release year
-        return tr("Year");
-    case library::SmartField::Codec:
-        //: Smart playlist condition field: Audio codec
-        return tr("Codec");
-    case library::SmartField::Rating:
-        //: Smart playlist condition field: Track rating
-        return tr("Rating");
-    case library::SmartField::Favorite:
-        //: Smart playlist condition field: Favorite / loved status
-        return tr("Favorite");
-    case library::SmartField::DateAdded:
-        //: Smart playlist condition field: Date added to library
-        return tr("Date Added");
-    case library::SmartField::DurationSec:
-        //: Smart playlist condition field: Track duration
-        return tr("Duration");
-    case library::SmartField::PlayCount:
-        //: Smart playlist condition field: Play count
-        return tr("Play count");
-    case library::SmartField::SkipCount:
-        //: Smart playlist condition field: Skip count
-        return tr("Skip count");
-    case library::SmartField::CompletedCount:
-        //: Smart playlist condition field: Times completed
-        return tr("Times completed");
-    case library::SmartField::LastPlayed:
-        //: Smart playlist condition field: Last played
-        return tr("Last played");
-    case library::SmartField::VersionType:
-        //: Smart playlist condition field: Version
-        return tr("Version");
-    case library::SmartField::Language:
-        //: Smart playlist condition field: Language
-        return tr("Language");
-    case library::SmartField::AlbumFavorite:
-        //: Smart playlist condition field: Album is favorite
-        return tr("Album is favorite");
-    case library::SmartField::ArtistFavorite:
-        //: Smart playlist condition field: Artist is favorite
-        return tr("Artist is favorite");
-    case library::SmartField::AlbumCompletion:
-        //: Smart playlist condition field: Album completion (%)
-        return tr("Album completion (%)");
-    }
-    Q_UNREACHABLE_RETURN(QString());
+    return smartFieldLabel(field);
 }
 
 QString PlaylistController::opLabel(library::SmartOp op) const
 {
-    switch (op) {
-    case library::SmartOp::Contains:
-        return tr("Contains");
-    case library::SmartOp::NotContains:
-        return tr("Does Not Contain");
-    case library::SmartOp::Is:
-        return tr("Is");
-    case library::SmartOp::IsNot:
-        return tr("Is Not");
-    case library::SmartOp::StartsWith:
-        return tr("Starts With");
-    case library::SmartOp::Equals:
-        return tr("Equals");
-    case library::SmartOp::NotEquals:
-        return tr("Does Not Equal");
-    case library::SmartOp::Greater:
-        return tr("Greater Than");
-    case library::SmartOp::Less:
-        return tr("Less Than");
-    case library::SmartOp::Between:
-        return tr("Between");
-    case library::SmartOp::IsTrue:
-        return tr("Is True");
-    case library::SmartOp::IsFalse:
-        return tr("Is False");
-    case library::SmartOp::InLastDays:
-        return tr("In the Last (Days)");
-    case library::SmartOp::NotInLastDays:
-        return tr("Not in the Last (Days)");
-    }
-    Q_UNREACHABLE_RETURN(QString());
+    return smartOpLabel(op);
 }
 
 QString PlaylistController::sortKeyLabel(library::TrackSortKey key) const
 {
-    switch (key) {
-    case library::TrackSortKey::Default:
-        //: Default track sorting order
-        return tr("Default");
-    case library::TrackSortKey::Title:
-        //: Sort by track title
-        return tr("Title");
-    case library::TrackSortKey::Artist:
-        //: Sort by track artist
-        return tr("Artist");
-    case library::TrackSortKey::Album:
-        //: Sort by album name
-        return tr("Album");
-    case library::TrackSortKey::Year:
-        //: Sort by release year
-        return tr("Year");
-    case library::TrackSortKey::Duration:
-        //: Sort by track duration
-        return tr("Duration");
-    case library::TrackSortKey::DateAdded:
-        //: Sort by date added
-        return tr("Date Added");
-    case library::TrackSortKey::PlaylistOrder:
-        //: Sort by custom playlist order
-        return tr("Playlist Order");
-    }
-    Q_UNREACHABLE_RETURN(QString());
+    return trackSortKeyLabel(key);
 }
 
 QString PlaylistController::versionLabel(library::VersionType type) const
 {
-    switch (type) {
-    case library::VersionType::Studio:
-        //: Track version type: Studio / Original version
-        return tr("Studio");
-    case library::VersionType::Live:
-        //: Track version type: Live performance recording
-        return tr("Live");
-    case library::VersionType::Remaster:
-        //: Track version type: Remastered edition
-        return tr("Remaster");
-    case library::VersionType::Acoustic:
-        //: Track version type: Acoustic / Unplugged version
-        return tr("Acoustic");
-    case library::VersionType::Remix:
-        //: Track version type: Remix / Extended mix
-        return tr("Remix");
-    case library::VersionType::Demo:
-        //: Track version type: Demo recording
-        return tr("Demo");
-    case library::VersionType::Instrumental:
-        //: Track version type: Instrumental / Karaoke / Off vocal
-        return tr("Instrumental");
-    case library::VersionType::Edit:
-        //: Track version type: Radio edit / TV size / Short ver.
-        return tr("Edit");
-    case library::VersionType::Alternate:
-        //: Track version type: Alternate version
-        return tr("Alt. version");
-    }
-    Q_UNREACHABLE_RETURN(QString());
+    return versionTypeLabel(type);
 }
 
 QString PlaylistController::languageLabel(library::TrackLanguage lang) const
 {
-    switch (lang) {
-    case library::TrackLanguage::Chinese:
-        //: Track language: Chinese
-        return tr("Chinese");
-    case library::TrackLanguage::Japanese:
-        //: Track language: Japanese
-        return tr("Japanese");
-    case library::TrackLanguage::Korean:
-        //: Track language: Korean
-        return tr("Korean");
-    case library::TrackLanguage::Western:
-        //: Track language: Western languages (English, European, etc.)
-        return tr("Western");
-    case library::TrackLanguage::Other:
-        //: Track language: Other languages
-        return tr("Other");
-    }
-    Q_UNREACHABLE_RETURN(QString());
+    return trackLanguageLabel(lang);
 }
 
 std::optional<library::PlaylistInfo> PlaylistController::info(qint64 id) const

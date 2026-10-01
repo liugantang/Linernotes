@@ -113,6 +113,19 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME ui_NlqController
+    SOURCES
+        tst_NlqController.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::nlq
+        Linernotes::library
+        Linernotes::player
+        Linernotes::TestSupport
+        Qt6::Sql
+)
+
+linernotes_add_test(
     NAME ui_CoverAccent
     SOURCES
         tst_CoverAccent.cpp
