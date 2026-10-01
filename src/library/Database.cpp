@@ -7,17 +7,22 @@
 #include "LibraryLogging.h"
 #include "Migrator.h"
 
+#include <QByteArrayView>
 #include <QDir>
 #include <QFileInfo>
 #include <QLatin1String>
+#include <QSqlDriver>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QThread>
 
+#include <library/EnumNames.h>
+#include <library/TrackLanguage.h>
 #include <sqlite3.h>
 
 #include <algorithm>
 #include <array>
+#include <span>
 #include <vector>
 
 namespace linernotes::library {
@@ -169,6 +174,71 @@ core::Result<void> applyPragmas(const QSqlDatabase &db, const QString &filePath)
     return { };
 }
 
+QString extractSqliteValueString(sqlite3_value *val)
+{
+    if (val == nullptr) {
+        return { };
+    }
+    const auto *ptr = sqlite3_value_text(val);
+    if (ptr == nullptr) {
+        return { };
+    }
+    return QString::fromUtf8(QByteArrayView(ptr, sqlite3_value_bytes(val)));
+}
+
+void linernotesLangScalarFunc(sqlite3_context *ctx, int argc, sqlite3_value **argv)
+{
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic) -- C API boundary: wrapping
+    // argv in span
+    const std::span<sqlite3_value *> args(argv, static_cast<std::size_t>(argc));
+    auto it = args.begin();
+    const QString title = extractSqliteValueString(*it);
+    ++it;
+    const QString album = extractSqliteValueString(*it);
+    ++it;
+    const QString artist = extractSqliteValueString(*it);
+
+    const TrackLanguage lang = inferTrackLanguage(title, album, artist);
+    const QString langStr = trackLanguageToString(lang);
+    const QByteArray utf8 = langStr.toUtf8();
+    sqlite3_result_text(ctx, utf8.constData(), static_cast<int>(utf8.size()), SQLITE_TRANSIENT);
+}
+
+core::Result<void> registerCustomFunctions(const QSqlDatabase &db, const QString &filePath)
+{
+    const QVariant handleVariant = db.driver()->handle();
+    if (!handleVariant.isValid() || qstrcmp(handleVariant.typeName(), "sqlite3*") != 0) {
+        return core::Error {
+            .code = errc::kDbOpen,
+            .message = QStringLiteral("Failed to retrieve sqlite3 handle from QSqlDriver"),
+            .detail = filePath,
+        };
+    }
+
+    auto *sqliteHandle = *static_cast<sqlite3 *const *>(handleVariant.constData());
+    if (sqliteHandle == nullptr) {
+        return core::Error {
+            .code = errc::kDbOpen,
+            .message = QStringLiteral("sqlite3 handle is null"),
+            .detail = filePath,
+        };
+    }
+
+    const int rc = sqlite3_create_function(sqliteHandle, "linernotes_lang", 3,
+        SQLITE_UTF8 | SQLITE_DETERMINISTIC, nullptr, &linernotesLangScalarFunc, nullptr, nullptr);
+
+    if (rc != SQLITE_OK) {
+        return core::Error {
+            .code = errc::kDbOpen,
+            .message = QStringLiteral("Failed to register SQLite function linernotes_lang"),
+            .detail
+            = QStringLiteral("%1: sqlite3_create_function returned %2").arg(filePath).arg(rc),
+        };
+    }
+
+    return { };
+}
+
 } // namespace
 
 std::atomic<quint64> Database::s_instanceCounter { 0 };
@@ -262,6 +332,12 @@ core::Result<QSqlDatabase> Database::createConnection(const QString &connName)
         if (!pragmaRes) {
             db.close();
             return pragmaRes.error();
+        }
+
+        const auto customFuncRes = registerCustomFunctions(db, m_filePath);
+        if (!customFuncRes) {
+            db.close();
+            return customFuncRes.error();
         }
 
         return { };

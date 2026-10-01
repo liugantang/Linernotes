@@ -316,7 +316,7 @@ QString buildTrackFilterWhereSql(const TrackFilter &filter, QList<QVariant> &bin
         const auto &rule = filter.smartRule.value();
         if (rule.limit.has_value()) {
             QList<QVariant> innerBinds;
-            const QString innerWhere = buildSmartRuleWhereSql(rule, innerBinds);
+            const QString innerWhere = buildSmartRuleWhereSql(rule, innerBinds, PlayCountRule { });
             const bool innerAsc = (rule.sortOrder == Qt::AscendingOrder);
             const OrderClauses innerOrderClauses = buildTrackOrderClauses(rule.sortKey, innerAsc);
 
@@ -327,7 +327,7 @@ QString buildTrackFilterWhereSql(const TrackFilter &filter, QList<QVariant> &bin
             binds.append(innerBinds);
             binds.append(rule.limit.value());
         } else {
-            whereSql += buildSmartRuleWhereSql(rule, binds);
+            whereSql += buildSmartRuleWhereSql(rule, binds, PlayCountRule { });
         }
     }
 

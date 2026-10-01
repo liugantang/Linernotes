@@ -82,6 +82,8 @@ add_library(linernotes_library STATIC
     TrackCorrections.h
     TrackIssueStore.cpp
     TrackIssueStore.h
+    TrackLanguage.cpp
+    TrackLanguage.h
     TrackMerge.cpp
     TrackMerge.h
     WritebackStore.cpp

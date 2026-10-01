@@ -261,6 +261,33 @@ QString PlaylistController::fieldLabel(library::SmartField field) const
     case library::SmartField::DurationSec:
         //: Smart playlist condition field: Track duration
         return tr("Duration");
+    case library::SmartField::PlayCount:
+        //: Smart playlist condition field: Play count
+        return tr("Play count");
+    case library::SmartField::SkipCount:
+        //: Smart playlist condition field: Skip count
+        return tr("Skip count");
+    case library::SmartField::CompletedCount:
+        //: Smart playlist condition field: Times completed
+        return tr("Times completed");
+    case library::SmartField::LastPlayed:
+        //: Smart playlist condition field: Last played
+        return tr("Last played");
+    case library::SmartField::VersionType:
+        //: Smart playlist condition field: Version
+        return tr("Version");
+    case library::SmartField::Language:
+        //: Smart playlist condition field: Language
+        return tr("Language");
+    case library::SmartField::AlbumFavorite:
+        //: Smart playlist condition field: Album is favorite
+        return tr("Album is favorite");
+    case library::SmartField::ArtistFavorite:
+        //: Smart playlist condition field: Artist is favorite
+        return tr("Artist is favorite");
+    case library::SmartField::AlbumCompletion:
+        //: Smart playlist condition field: Album completion (%)
+        return tr("Album completion (%)");
     }
     Q_UNREACHABLE_RETURN(QString());
 }

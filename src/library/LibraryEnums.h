@@ -56,7 +56,16 @@ enum class SmartField : std::uint8_t {
     Rating,
     DurationSec, // 数值
     Favorite, // 布尔
-    DateAdded // 日期（files.first_seen_at）
+    DateAdded, // 日期（files.first_seen_at）
+    PlayCount,
+    SkipCount,
+    CompletedCount,
+    LastPlayed,
+    VersionType,
+    Language,
+    AlbumFavorite,
+    ArtistFavorite,
+    AlbumCompletion
 };
 Q_ENUM_NS(SmartField)
 
@@ -81,8 +90,11 @@ Q_ENUM_NS(SmartOp)
 enum class SmartMatch : std::uint8_t { All, Any };
 Q_ENUM_NS(SmartMatch)
 
-enum class SmartFieldKind : std::uint8_t { Text, Number, Bool, Date };
+enum class SmartFieldKind : std::uint8_t { Text, Number, Bool, Date, Enum };
 Q_ENUM_NS(SmartFieldKind)
+
+enum class TrackLanguage : std::uint8_t { Chinese, Japanese, Korean, Western, Other };
+Q_ENUM_NS(TrackLanguage)
 
 enum class CorrectionKind : std::uint8_t {
     Manual,

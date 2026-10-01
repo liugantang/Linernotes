@@ -23,6 +23,7 @@ struct PlayCountRule {
     /// 同一规则的 SQL 条件，列名固定为 play_events 的 played_ms / track_duration_ms，
     /// 使用命名参数 :count_min_ms 与 :count_min_percent；配合 bindSql() 绑定。
     /// 4.3 的统计查询复用它，保证 C++ 与 SQL 两处判定一致。
+    /// 注意：SmartRuleSql.cpp 中播放窗口统计实现了位置参数版本的相同逻辑，两处需保持一致。
     [[nodiscard]] static QString sqlCondition();
     void bindSql(QSqlQuery &query) const;
 

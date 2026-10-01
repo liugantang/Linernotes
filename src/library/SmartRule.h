@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <QDate>
 #include <QList>
 #include <QString>
 #include <QVariant>
@@ -43,6 +44,8 @@ public:
     TrackSortKey sortKey = TrackSortKey::Default;
     Qt::SortOrder sortOrder = Qt::AscendingOrder;
     std::optional<int> limit; // 例：“最近添加的 50 首”= DateAdded 降序 + limit 50
+    std::optional<QDate> playedFrom;
+    std::optional<QDate> playedTo;
     bool operator==(const SmartRule &) const = default;
 
     [[nodiscard]] int getLimit() const { return limit.value_or(0); }
