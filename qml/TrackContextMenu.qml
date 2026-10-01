@@ -114,6 +114,16 @@ Controls.AppMenu {
         }
     }
 
+    Controls.AppMenuItem {
+        text: qsTr("Find Similar")
+        enabled: root.trackIds.length === 1
+        onTriggered: {
+            if (AppContext.similar && root.trackIds.length === 1) {
+                AppContext.similar.find(root.trackIds[0])
+            }
+        }
+    }
+
     Controls.AppMenu {
         id: addToPlaylistMenu
         title: qsTr("Add to Playlist")

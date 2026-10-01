@@ -68,6 +68,10 @@ add_library(linernotes_ui STATIC
     ServiceListModel.h
     SettingsController.cpp
     SettingsController.h
+    SimilarController.cpp
+    SimilarController.h
+    SimilarTracks.cpp
+    SimilarTracks.h
     SmartLabels.cpp
     SmartLabels.h
     TagEditorModel.cpp

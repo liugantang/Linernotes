@@ -2991,6 +2991,41 @@
     </message>
 </context>
 <context>
+    <name>SimilarTracksDialog</name>
+    <message>
+        <source>Similar to “%1”</source>
+        <translation>像「%1」的歌</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <source>This track has not been analyzed for audio features yet. Go to Settings → Library → Audio Analysis to run analysis and try again.</source>
+        <translation>这首歌还没有分析声音。到 设置 → 曲库 → 声音分析 运行分析后再试。</translation>
+    </message>
+    <message>
+        <source>No similar tracks found.</source>
+        <translation>没有找到相似的歌。</translation>
+    </message>
+    <message>
+        <source>Unknown Title</source>
+        <translation>未知标题</translation>
+    </message>
+    <message>
+        <source>Unknown Artist</source>
+        <translation>未知艺人</translation>
+    </message>
+    <message>
+        <source>Play All</source>
+        <translation>全部播放</translation>
+    </message>
+    <message>
+        <source>Add to Queue</source>
+        <translation>加入队列</translation>
+    </message>
+</context>
+<context>
     <name>TagEditorDialog</name>
     <message>
         <location filename="../qml/TagEditorDialog.qml" line="59"/>
@@ -3056,6 +3091,10 @@
         <location filename="../qml/TrackContextMenu.qml" line="109"/>
         <source>Add to Queue</source>
         <translation>添加到播放队列</translation>
+    </message>
+    <message>
+        <source>Find Similar</source>
+        <translation>找相似</translation>
     </message>
     <message>
         <location filename="../qml/TrackContextMenu.qml" line="119"/>
@@ -4229,6 +4268,17 @@
         <location filename="../src/ui/SmartLabels.cpp" line="162"/>
         <source>Other</source>
         <translation>其他</translation>
+    </message>
+</context>
+<context>
+    <name>linernotes::ui::SimilarController</name>
+    <message>
+        <source>Unknown Title</source>
+        <translation>未知标题</translation>
+    </message>
+    <message>
+        <source>Unknown Artist</source>
+        <translation>未知艺人</translation>
     </message>
 </context>
 <context>

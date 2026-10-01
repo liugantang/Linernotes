@@ -44,6 +44,10 @@ ApplicationWindow {
         id: commandPalette
     }
 
+    SimilarTracksDialog {
+        id: similarTracksDialog
+    }
+
     ShortcutsDialog {
         id: shortcutsDialog
         shortcuts: appShortcuts

@@ -37,6 +37,8 @@
 #include <ui/QueueModel.h>
 #include <ui/SearchController.h>
 #include <ui/SettingsController.h>
+#include <ui/SimilarController.h>
+#include <ui/SimilarTracks.h>
 #include <ui/TagEditorModel.h>
 #include <ui/WritebackController.h>
 
@@ -69,6 +71,7 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::SearchController *search READ search CONSTANT)
     Q_PROPERTY(linernotes::ui::PlaylistController *playlists READ playlists CONSTANT)
     Q_PROPERTY(linernotes::ui::NlqController *nlq READ nlq CONSTANT)
+    Q_PROPERTY(linernotes::ui::SimilarController *similar READ similar CONSTANT)
     Q_PROPERTY(linernotes::ui::MarksController *marks READ marks CONSTANT)
     Q_PROPERTY(linernotes::ui::LibraryActions *actions READ actions CONSTANT)
     Q_PROPERTY(linernotes::ui::SettingsController *settings READ settings CONSTANT)
@@ -119,6 +122,7 @@ public:
     [[nodiscard]] SearchController *search();
     [[nodiscard]] PlaylistController *playlists();
     [[nodiscard]] NlqController *nlq();
+    [[nodiscard]] SimilarController *similar();
     [[nodiscard]] MarksController *marks();
     [[nodiscard]] SettingsController *settings();
     [[nodiscard]] AiSettingsController *aiSettings();
@@ -180,6 +184,8 @@ private:
     PlaylistController m_playlists;
     LibraryActions m_actions;
     NlqController m_nlq;
+    SimilarTracks m_similarTracks;
+    SimilarController m_similar;
     std::unique_ptr<library::LibraryWatcher> m_watcher;
     QTimer m_saveTimer;
     QTimer m_backupTimer;
