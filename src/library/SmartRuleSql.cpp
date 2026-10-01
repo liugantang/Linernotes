@@ -54,67 +54,101 @@ void appendWindowConditions(const PlayWindow &w, QStringList &clauses, QList<QVa
     }
 }
 
-QString buildTextConditionSql(const SmartCondition &cond, QList<QVariant> &binds)
+QString buildLikePattern(SmartOp op, const QString &rawVal)
 {
-    if (cond.field == SmartField::Artist && (cond.op == SmartOp::Is || cond.op == SmartOp::IsNot)) {
-        const QString rawVal = cond.value.toString();
-        const QString escaped = escapeLikePattern(rawVal);
-        binds.append(rawVal);
-        binds.append(rawVal);
-        binds.append(escaped);
-        QString matchSql
-            = QStringLiteral("(EXISTS (SELECT 1 FROM track_artists ta "
-                             "JOIN artists a ON a.id = ta.artist_id "
-                             "LEFT JOIN artist_aliases aa ON aa.artist_id = a.id "
-                             "WHERE ta.track_id = ts.track_id "
-                             "AND ta.role IN ('artist', 'featured', 'performer') "
-                             "AND (a.name = ? COLLATE NOCASE OR aa.alias = ? COLLATE NOCASE)) "
-                             "OR COALESCE(ts.artist, '') LIKE ? ESCAPE '\\')");
-        if (cond.op == SmartOp::Is) {
-            return matchSql;
-        }
-        return QStringLiteral("NOT (%1)").arg(matchSql);
+    QString escaped = escapeLikePattern(rawVal);
+    switch (op) {
+    case SmartOp::Contains:
+    case SmartOp::NotContains:
+        return QStringLiteral("%%1%").arg(escaped);
+    case SmartOp::StartsWith:
+        return QStringLiteral("%1%").arg(escaped);
+    case SmartOp::Is:
+    case SmartOp::IsNot:
+    default:
+        return escaped;
     }
+}
 
-    QString expr;
-    if (cond.field == SmartField::Title) {
-        expr = QStringLiteral("ts.title");
-    } else if (cond.field == SmartField::Artist) {
-        expr = QStringLiteral("ts.artist");
-    } else if (cond.field == SmartField::Album) {
-        expr = QStringLiteral("ts.album");
-    } else if (cond.field == SmartField::AlbumArtist) {
-        expr = QStringLiteral(
+QString textFieldSqlExpr(SmartField field)
+{
+    switch (field) {
+    case SmartField::Title:
+        return QStringLiteral("ts.title");
+    case SmartField::Artist:
+        return QStringLiteral("ts.artist");
+    case SmartField::Album:
+        return QStringLiteral("ts.album");
+    case SmartField::AlbumArtist:
+        return QStringLiteral(
             "(SELECT em.album_artist FROM effective_metadata em WHERE em.track_id = "
             "ts.track_id)");
-    } else if (cond.field == SmartField::Genre) {
-        expr = QStringLiteral("ts.genre");
-    } else if (cond.field == SmartField::Codec) {
-        expr = QStringLiteral(
+    case SmartField::Genre:
+        return QStringLiteral("ts.genre");
+    case SmartField::Codec:
+        return QStringLiteral(
             "(SELECT f.codec FROM tracks t JOIN files f ON t.file_id = f.id WHERE t.id = "
             "ts.track_id)");
-    }
-
-    const QString escaped = escapeLikePattern(cond.value.toString());
-    switch (cond.op) {
-    case SmartOp::Contains:
-        binds.append(QStringLiteral("%%1%").arg(escaped));
-        return QStringLiteral("COALESCE(%1, '') LIKE ? ESCAPE '\\'").arg(expr);
-    case SmartOp::NotContains:
-        binds.append(QStringLiteral("%%1%").arg(escaped));
-        return QStringLiteral("COALESCE(%1, '') NOT LIKE ? ESCAPE '\\'").arg(expr);
-    case SmartOp::Is:
-        binds.append(escaped);
-        return QStringLiteral("COALESCE(%1, '') LIKE ? ESCAPE '\\'").arg(expr);
-    case SmartOp::IsNot:
-        binds.append(escaped);
-        return QStringLiteral("COALESCE(%1, '') NOT LIKE ? ESCAPE '\\'").arg(expr);
-    case SmartOp::StartsWith:
-        binds.append(QStringLiteral("%1%").arg(escaped));
-        return QStringLiteral("COALESCE(%1, '') LIKE ? ESCAPE '\\'").arg(expr);
     default:
         return { };
     }
+}
+
+QString buildSingleTextMatchSql(
+    const SmartCondition &cond, const QString &variant, QList<QVariant> &binds)
+{
+    if (cond.field == SmartField::Artist && (cond.op == SmartOp::Is || cond.op == SmartOp::IsNot)) {
+        const QString escaped = escapeLikePattern(variant);
+        binds.append(variant);
+        binds.append(variant);
+        binds.append(escaped);
+        return QStringLiteral("(EXISTS (SELECT 1 FROM track_artists ta "
+                              "JOIN artists a ON a.id = ta.artist_id "
+                              "LEFT JOIN artist_aliases aa ON aa.artist_id = a.id "
+                              "WHERE ta.track_id = ts.track_id "
+                              "AND ta.role IN ('artist', 'featured', 'performer') "
+                              "AND (a.name = ? COLLATE NOCASE OR aa.alias = ? COLLATE NOCASE)) "
+                              "OR COALESCE(ts.artist, '') LIKE ? ESCAPE '\\')");
+    }
+
+    const QString pattern = buildLikePattern(cond.op, variant);
+
+    if (cond.field == SmartField::Keyword) {
+        binds.append(pattern);
+        binds.append(pattern);
+        binds.append(pattern);
+        binds.append(pattern);
+        return QStringLiteral(
+            "(COALESCE(ts.title, '') LIKE ? ESCAPE '\\' "
+            "OR COALESCE(ts.artist, '') LIKE ? ESCAPE '\\' "
+            "OR COALESCE(ts.album, '') LIKE ? ESCAPE '\\' "
+            "OR COALESCE((SELECT em.album_artist FROM effective_metadata em WHERE em.track_id = "
+            "ts.track_id), '') LIKE ? ESCAPE '\\')");
+    }
+
+    const QString expr = textFieldSqlExpr(cond.field);
+    binds.append(pattern);
+    return QStringLiteral("COALESCE(%1, '') LIKE ? ESCAPE '\\'").arg(expr);
+}
+
+QString buildTextConditionSql(const SmartCondition &cond, QList<QVariant> &binds)
+{
+    const QStringList variants = smartTextValues(cond.value);
+    if (variants.isEmpty()) {
+        return { };
+    }
+
+    QStringList matchParts;
+    matchParts.reserve(variants.size());
+    for (const auto &v : variants) {
+        matchParts.append(buildSingleTextMatchSql(cond, v, binds));
+    }
+
+    QString positiveSql = QStringLiteral("(%1)").arg(matchParts.join(QStringLiteral(" OR ")));
+    if (cond.op == SmartOp::NotContains || cond.op == SmartOp::IsNot) {
+        return QStringLiteral("NOT (%1)").arg(positiveSql);
+    }
+    return positiveSql;
 }
 
 } // namespace

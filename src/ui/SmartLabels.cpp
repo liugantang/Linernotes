@@ -55,6 +55,8 @@ QString smartFieldLabel(library::SmartField field)
     case library::SmartField::AlbumCompletion:
         return QCoreApplication::translate(
             "linernotes::ui::PlaylistController", "Album completion (%)");
+    case library::SmartField::Keyword:
+        return QCoreApplication::translate("linernotes::ui::PlaylistController", "Keyword");
     }
     Q_UNREACHABLE_RETURN(QString());
 }
@@ -186,7 +188,9 @@ QString smartConditionLabel(const library::SmartCondition &c)
             = lang.has_value() ? trackLanguageLabel(lang.value()) : c.value.toString();
         return QStringLiteral("%1 %2 %3").arg(fieldStr, opStr, valStr);
     }
-    return QStringLiteral("%1 %2 %3").arg(fieldStr, opStr, c.value.toString());
+
+    const QString valStr = library::smartTextValues(c.value).join(QStringLiteral(" / "));
+    return QStringLiteral("%1 %2 %3").arg(fieldStr, opStr, valStr);
 }
 
 QString smartPlayWindowLabel(const library::SmartRule &rule)

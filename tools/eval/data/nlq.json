@@ -2619,6 +2619,46 @@
           "limit": 50
         }
       ]
+    },
+    {
+      "question": "和EVA相关的歌",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "keyword",
+              "op": "contains",
+              "value": ["EVA", "Evangelion"]
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "question": "和东方Project相关的音乐",
+      "previous": null,
+      "expected": [
+        {
+          "entity": "track",
+          "match": "all",
+          "conditions": [
+            {
+              "field": "keyword",
+              "op": "contains",
+              "value": ["东方Project", "Touhou"]
+            }
+          ],
+          "sort": "default",
+          "order": "desc",
+          "limit": 50
+        }
+      ]
     }
   ]
 }

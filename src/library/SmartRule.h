@@ -97,4 +97,10 @@ QList<SmartOp> smartOpsFor(SmartField field);
 /// 返回指定字段的类型，用于 UI 根据类型渲染不同输入控件
 SmartFieldKind smartFieldKind(SmartField field);
 
+/// 文本条件的值：单个字符串返回一个元素；字符串数组（QStringList/QVariantList）返回全部写法
+QStringList smartTextValues(const QVariant &value);
+
+/// 值是否为多写法数组
+bool isSmartTextList(const QVariant &value);
+
 } // namespace linernotes::library

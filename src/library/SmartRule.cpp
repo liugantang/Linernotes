@@ -70,6 +70,8 @@ QString smartFieldName(SmartField f)
         return QStringLiteral("artistFavorite");
     case SmartField::AlbumCompletion:
         return QStringLiteral("albumCompletion");
+    case SmartField::Keyword:
+        return QStringLiteral("keyword");
     }
     return QStringLiteral("title");
 }
@@ -156,7 +158,18 @@ core::Result<SmartCondition> parseCondition(const QJsonObject &cObj)
         cond.value = cObj.value(QStringLiteral("value")).toVariant();
         cond.value2 = cObj.value(QStringLiteral("value2")).toVariant();
     } else if (cond.op != SmartOp::IsTrue && cond.op != SmartOp::IsFalse) {
-        cond.value = cObj.value(QStringLiteral("value")).toVariant();
+        const QJsonValue valJson = cObj.value(QStringLiteral("value"));
+        if (valJson.isArray()) {
+            QStringList list;
+            const QJsonArray arr = valJson.toArray();
+            list.reserve(arr.size());
+            for (const auto &item : arr) {
+                list.append(item.toString());
+            }
+            cond.value = list;
+        } else {
+            cond.value = valJson.toVariant();
+        }
     }
 
     return cond;
@@ -260,6 +273,7 @@ QList<SmartOp> smartOpsFor(SmartField field)
     case SmartField::AlbumArtist:
     case SmartField::Genre:
     case SmartField::Codec:
+    case SmartField::Keyword:
         return {
             SmartOp::Contains,
             SmartOp::NotContains,
@@ -314,6 +328,7 @@ SmartFieldKind smartFieldKind(SmartField field)
     case SmartField::AlbumArtist:
     case SmartField::Genre:
     case SmartField::Codec:
+    case SmartField::Keyword:
         return SmartFieldKind::Text;
     case SmartField::Year:
     case SmartField::Rating:
@@ -341,7 +356,26 @@ namespace {
 
 core::Result<void> validateTextCondition(const SmartCondition &cond)
 {
-    if (!cond.value.isValid() || !cond.value.canConvert<QString>()) {
+    if (cond.value.userType() == QMetaType::QStringList) {
+        if (cond.value.toStringList().isEmpty()) {
+            return ruleError(QStringLiteral("Text array value must not be empty"));
+        }
+        return { };
+    }
+    if (cond.value.userType() == QMetaType::QVariantList) {
+        const auto list = cond.value.toList();
+        if (list.isEmpty()) {
+            return ruleError(QStringLiteral("Text array value must not be empty"));
+        }
+        for (const auto &item : list) {
+            if (item.userType() != QMetaType::QString && !item.canConvert<QString>()) {
+                return ruleError(QStringLiteral("Text array elements must be strings"));
+            }
+        }
+        return { };
+    }
+    if (!cond.value.isValid() || !cond.value.canConvert<QString>()
+        || cond.value.userType() == QMetaType::Bool) {
         return ruleError(QStringLiteral("Text value required"));
     }
     return { };
@@ -353,7 +387,8 @@ core::Result<void> validateNumberCondition(const SmartCondition &cond)
         if (!cond.value.isValid() || !cond.value2.isValid()) {
             return ruleError(QStringLiteral("Between operator requires value and value2"));
         }
-        if (!cond.value.canConvert<double>() || !cond.value2.canConvert<double>()) {
+        if (isSmartTextList(cond.value) || isSmartTextList(cond.value2)
+            || !cond.value.canConvert<double>() || !cond.value2.canConvert<double>()) {
             return ruleError(QStringLiteral("Between values must be numbers"));
         }
         return { };
@@ -363,7 +398,7 @@ core::Result<void> validateNumberCondition(const SmartCondition &cond)
         return ruleError(QStringLiteral("Condition requires value"));
     }
 
-    if (!cond.value.canConvert<double>()) {
+    if (isSmartTextList(cond.value) || !cond.value.canConvert<double>()) {
         return ruleError(QStringLiteral("Numeric value required"));
     }
     return { };
@@ -588,6 +623,32 @@ core::Result<SmartRule> SmartRule::fromJson(const QString &json)
     }
 
     return fromJsonObject(root);
+}
+
+QStringList smartTextValues(const QVariant &value)
+{
+    if (value.userType() == QMetaType::QStringList) {
+        return value.toStringList();
+    }
+    if (value.userType() == QMetaType::QVariantList) {
+        const auto varList = value.toList();
+        QStringList list;
+        list.reserve(varList.size());
+        for (const auto &v : varList) {
+            list.append(v.toString());
+        }
+        return list;
+    }
+    if (value.isValid()) {
+        return { value.toString() };
+    }
+    return { };
+}
+
+bool isSmartTextList(const QVariant &value)
+{
+    return value.userType() == QMetaType::QStringList
+        || value.userType() == QMetaType::QVariantList;
 }
 
 } // namespace linernotes::library

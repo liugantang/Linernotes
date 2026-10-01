@@ -56,6 +56,13 @@ void TstNlqController::testChipsGeneration()
     cFav.op = library::SmartOp::IsTrue;
     q.rule.conditions.append(cFav);
 
+    library::SmartCondition cKeyword;
+    cKeyword.field = library::SmartField::Keyword;
+    cKeyword.op = library::SmartOp::Contains;
+    cKeyword.value = QStringList { QStringLiteral("ラブライブ"), QStringLiteral("μ's"),
+        QStringLiteral("Aqours") };
+    q.rule.conditions.append(cKeyword);
+
     q.rule.playedFrom = QDate(2025, 12, 1);
     q.rule.playedTo = QDate(2026, 2, 28);
     q.sortKey = nlq::SortKey::PlayCount;
@@ -63,10 +70,11 @@ void TstNlqController::testChipsGeneration()
     q.limit = 20;
 
     const QStringList chips = linernotes::ui::nlqChips(q);
-    QCOMPARE(chips.size(), 3);
+    QCOMPARE(chips.size(), 4);
     QCOMPARE(chips.at(0), QStringLiteral("Title Contains Rock"));
     QCOMPARE(chips.at(1), QStringLiteral("Favorite Is True"));
-    QCOMPARE(chips.at(2), QStringLiteral("Play period: 2025-12-01 \u2013 2026-02-28"));
+    QCOMPARE(chips.at(2), QStringLiteral("Keyword Contains ラブライブ / μ's / Aqours"));
+    QCOMPARE(chips.at(3), QStringLiteral("Play period: 2025-12-01 \u2013 2026-02-28"));
 
     // Empty query (no conditions, no play period) -> empty list
     nlq::Query qEmpty;

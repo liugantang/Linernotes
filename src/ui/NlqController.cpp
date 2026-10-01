@@ -11,6 +11,7 @@
 #include <nlq/LibrarySummary.h>
 #include <nlq/OfflineParser.h>
 #include <nlq/QueryRunner.h>
+#include <nlq/VariantPruning.h>
 #include <ui/ErrorText.h>
 #include <ui/Format.h>
 #include <ui/SmartLabels.h>
@@ -413,7 +414,7 @@ void NlqController::onInterpreterFinished()
     } else {
         m_clarification.clear();
         emit clarificationChanged();
-        executeQuery(m_resolution.query);
+        executeResolved(m_resolution.query);
     }
 }
 
@@ -463,7 +464,7 @@ void NlqController::chooseCandidate(int index)
     } else {
         m_clarification.clear();
         emit clarificationChanged();
-        executeQuery(m_resolution.query);
+        executeResolved(m_resolution.query);
     }
 }
 
@@ -629,6 +630,16 @@ void NlqController::updateEmptyAnalysis(const nlq::QueryRunner &runner, const nl
     }
 
     m_emptyHint = chooseEmptyHint(analysis, query);
+}
+
+void NlqController::executeResolved(const nlq::Query &query)
+{
+    const auto pruneRes = nlq::pruneTextVariants(m_db, query);
+    if (!pruneRes.ok()) {
+        failWith(pruneRes.error());
+        return;
+    }
+    executeQuery(pruneRes.value());
 }
 
 void NlqController::executeQuery(const nlq::Query &query)

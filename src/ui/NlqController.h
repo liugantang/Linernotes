@@ -115,6 +115,7 @@ private slots:
     void onInterpreterFinished();
 
 private:
+    void executeResolved(const nlq::Query &query);
     void executeQuery(const nlq::Query &query);
     void failWith(const core::Error &error);
     [[nodiscard]] QVariantList loadRows(const QList<qint64> &ids, nlq::Entity entity) const;

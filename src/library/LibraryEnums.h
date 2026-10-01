@@ -65,7 +65,8 @@ enum class SmartField : std::uint8_t {
     Language,
     AlbumFavorite,
     ArtistFavorite,
-    AlbumCompletion
+    AlbumCompletion,
+    Keyword
 };
 Q_ENUM_NS(SmartField)
 
