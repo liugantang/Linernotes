@@ -158,17 +158,12 @@ nlq::Entity NlqController::entity() const
     return m_entity;
 }
 
-library::SmartMatch NlqController::match() const
-{
-    return m_currentQuery.has_value() ? m_currentQuery->rule.match : library::SmartMatch::All;
-}
-
 QVariantList NlqController::rows() const
 {
     return m_rows;
 }
 
-QVariantList NlqController::chips() const
+QStringList NlqController::chips() const
 {
     return m_chips;
 }
@@ -367,7 +362,6 @@ void NlqController::handleOfflineKeywordSearch(const QString &text)
     emit rowsChanged();
     emit chipsChanged();
     emit entityChanged();
-    emit matchChanged();
     emit hasConversationChanged();
     emit emptyHintChanged();
     emit relaxationsChanged();
@@ -496,7 +490,6 @@ void NlqController::newConversation()
     emit chipsChanged();
     emit clarificationChanged();
     emit entityChanged();
-    emit matchChanged();
     emit hasConversationChanged();
     emit emptyHintChanged();
     emit relaxationsChanged();
@@ -511,86 +504,6 @@ void NlqController::cancel()
         m_state = m_currentQuery.has_value() ? State::Ready : State::Idle;
         emit stateChanged();
     }
-}
-
-void NlqController::removeChip(int index)
-{
-    if (!m_currentQuery.has_value()) {
-        return;
-    }
-    if (index >= 0 && index < m_currentQuery->rule.conditions.size()) {
-        m_currentQuery->rule.conditions.removeAt(index);
-        executeQuery(m_currentQuery.value());
-    }
-}
-
-library::SmartCondition NlqController::conditionAt(int index) const
-{
-    if (m_currentQuery.has_value() && index >= 0
-        && index < m_currentQuery->rule.conditions.size()) {
-        return m_currentQuery->rule.conditions.at(index);
-    }
-    return { };
-}
-
-void NlqController::setCondition(int index, const library::SmartCondition &cond)
-{
-    if (!m_currentQuery.has_value()) {
-        m_currentQuery = nlq::Query { };
-    }
-    if (index >= 0 && index < m_currentQuery->rule.conditions.size()) {
-        m_currentQuery->rule.conditions.replace(index, cond);
-    } else if (index == m_currentQuery->rule.conditions.size()) {
-        m_currentQuery->rule.conditions.append(cond);
-    }
-    executeQuery(m_currentQuery.value());
-}
-
-void NlqController::setPlayWindow(const QString &from, const QString &to)
-{
-    if (!m_currentQuery.has_value()) {
-        m_currentQuery = nlq::Query { };
-    }
-    m_currentQuery->rule.setPlayedFrom(from);
-    m_currentQuery->rule.setPlayedTo(to);
-    executeQuery(m_currentQuery.value());
-}
-
-void NlqController::setSort(nlq::SortKey key, Qt::SortOrder order)
-{
-    if (!m_currentQuery.has_value()) {
-        m_currentQuery = nlq::Query { };
-    }
-    m_currentQuery->sortKey = key;
-    m_currentQuery->sortOrder = order;
-    executeQuery(m_currentQuery.value());
-}
-
-void NlqController::setLimit(int limit)
-{
-    if (!m_currentQuery.has_value()) {
-        m_currentQuery = nlq::Query { };
-    }
-    m_currentQuery->limit = std::clamp(limit, 1, 500);
-    executeQuery(m_currentQuery.value());
-}
-
-void NlqController::setEntity(nlq::Entity entity)
-{
-    if (!m_currentQuery.has_value()) {
-        m_currentQuery = nlq::Query { };
-    }
-    m_currentQuery->entity = entity;
-    executeQuery(m_currentQuery.value());
-}
-
-void NlqController::setMatch(library::SmartMatch match)
-{
-    if (!m_currentQuery.has_value()) {
-        m_currentQuery = nlq::Query { };
-    }
-    m_currentQuery->rule.match = match;
-    executeQuery(m_currentQuery.value());
 }
 
 void NlqController::applyRelaxation(int index)
@@ -632,7 +545,6 @@ void NlqController::failWith(const core::Error &error)
     emit rowsChanged();
     emit chipsChanged();
     emit entityChanged();
-    emit matchChanged();
     emit hasConversationChanged();
     emit emptyHintChanged();
     emit relaxationsChanged();
@@ -727,7 +639,7 @@ void NlqController::executeQuery(const nlq::Query &query)
     const nlq::QueryRunner runner(m_db, m_settingsController.playCountRule());
     const auto runRes = runner.run(query);
 
-    m_chips = nlqChipsToVariantList(nlqChips(query));
+    m_chips = nlqChips(query);
 
     if (!runRes.ok()) {
         failWith(runRes.error());
@@ -758,7 +670,6 @@ void NlqController::executeQuery(const nlq::Query &query)
     emit rowsChanged();
     emit chipsChanged();
     emit entityChanged();
-    emit matchChanged();
     emit hasConversationChanged();
     emit emptyHintChanged();
     emit relaxationsChanged();

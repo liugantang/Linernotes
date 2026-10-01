@@ -4,6 +4,7 @@
 #include <QDate>
 #include <QObject>
 #include <QSqlQuery>
+#include <QStringList>
 #include <QTemporaryDir>
 #include <QTest>
 #include <QVariantMap>
@@ -25,7 +26,6 @@ using linernotes::core::Settings;
 using linernotes::library::Database;
 using linernotes::library::Migrator;
 using linernotes::ui::AppContext;
-using linernotes::ui::NlqChipKind;
 using linernotes::ui::NlqController;
 namespace library = linernotes::library;
 namespace nlq = linernotes::nlq;
@@ -62,110 +62,20 @@ void TstNlqController::testChipsGeneration()
     q.sortOrder = Qt::DescendingOrder;
     q.limit = 20;
 
-    const auto chips = linernotes::ui::nlqChips(q);
-    QCOMPARE(chips.size(), 7);
+    const QStringList chips = linernotes::ui::nlqChips(q);
+    QCOMPARE(chips.size(), 3);
+    QCOMPARE(chips.at(0), QStringLiteral("Title Contains Rock"));
+    QCOMPARE(chips.at(1), QStringLiteral("Favorite Is True"));
+    QCOMPARE(chips.at(2), QStringLiteral("Play period: 2025-12-01 \u2013 2026-02-28"));
 
-    // 1. Entity
-    QCOMPARE(chips.at(0).kind, NlqChipKind::Entity);
-    QCOMPARE(chips.at(0).text, QStringLiteral("Tracks"));
+    // Empty query (no conditions, no play period) -> empty list
+    nlq::Query qEmpty;
+    qEmpty.entity = nlq::Entity::Track;
+    qEmpty.sortKey = nlq::SortKey::Default;
+    qEmpty.limit = 50;
 
-    // 2. Match (Match all conditions)
-    QCOMPARE(chips.at(1).kind, NlqChipKind::Match);
-    QCOMPARE(chips.at(1).text, QStringLiteral("Match: all conditions"));
-
-    // 3. Condition 1 (Title Contains Rock)
-    QCOMPARE(chips.at(2).kind, NlqChipKind::Condition);
-    QCOMPARE(chips.at(2).index, 0);
-    QCOMPARE(chips.at(2).text, QStringLiteral("Title Contains Rock"));
-
-    // 4. Condition 2 (Favorite Is True - bool field must not show value)
-    QCOMPARE(chips.at(3).kind, NlqChipKind::Condition);
-    QCOMPARE(chips.at(3).index, 1);
-    QCOMPARE(chips.at(3).text, QStringLiteral("Favorite Is True"));
-
-    // 5. Play period
-    QCOMPARE(chips.at(4).kind, NlqChipKind::PlayWindow);
-    QCOMPARE(chips.at(4).text, QStringLiteral("Play period: 2025-12-01 \u2013 2026-02-28"));
-
-    // 6. Sort & Limit
-    QCOMPARE(chips.at(5).kind, NlqChipKind::Sort);
-    QCOMPARE(chips.at(5).text, QStringLiteral("Sort: Play count \u2193"));
-    QCOMPARE(chips.at(6).kind, NlqChipKind::Limit);
-    QCOMPARE(chips.at(6).text, QStringLiteral("Limit: 20"));
-
-    // Between condition test (single condition: must not include Match chip)
-    nlq::Query qBetween;
-    qBetween.entity = nlq::Entity::Album;
-    library::SmartCondition cYear;
-    cYear.field = library::SmartField::Year;
-    cYear.op = library::SmartOp::Between;
-    cYear.value = 2000;
-    cYear.value2 = 2010;
-    qBetween.rule.conditions.append(cYear);
-    qBetween.limit = 50;
-
-    const auto chipsBetween = linernotes::ui::nlqChips(qBetween);
-    QCOMPARE(chipsBetween.size(), 4);
-    QCOMPARE(chipsBetween.at(0).text, QStringLiteral("Albums"));
-    QCOMPARE(chipsBetween.at(1).text, QStringLiteral("Year Between 2000 \u2013 2010"));
-    QCOMPARE(chipsBetween.at(3).text, QStringLiteral("Limit: 50"));
-    QVERIFY(std::ranges::none_of(chipsBetween,
-        [](const linernotes::ui::NlqChip &c) { return c.kind == NlqChipKind::Match; }));
-
-    // Enum conditions test (VersionType and Language, match All)
-    nlq::Query qEnum;
-    library::SmartCondition cVer;
-    cVer.field = library::SmartField::VersionType;
-    cVer.op = library::SmartOp::Is;
-    cVer.value = QStringLiteral("studio");
-    qEnum.rule.conditions.append(cVer);
-
-    library::SmartCondition cLang;
-    cLang.field = library::SmartField::Language;
-    cLang.op = library::SmartOp::Is;
-    cLang.value = QStringLiteral("ja");
-    qEnum.rule.conditions.append(cLang);
-
-    const auto chipsEnum = linernotes::ui::nlqChips(qEnum);
-    QCOMPARE(chipsEnum.size(), 6);
-    QCOMPARE(chipsEnum.at(1).kind, NlqChipKind::Match);
-    QCOMPARE(chipsEnum.at(1).text, QStringLiteral("Match: all conditions"));
-    QCOMPARE(chipsEnum.at(2).text, QStringLiteral("Version Is Studio"));
-    QCOMPARE(chipsEnum.at(3).text, QStringLiteral("Language Is Japanese"));
-
-    // Match Any with two conditions test
-    nlq::Query qMatchAny;
-    qMatchAny.rule.match = library::SmartMatch::Any;
-    library::SmartCondition c1;
-    c1.field = library::SmartField::Genre;
-    c1.op = library::SmartOp::Contains;
-    c1.value = QStringLiteral("Rock");
-    qMatchAny.rule.conditions.append(c1);
-
-    library::SmartCondition c2;
-    c2.field = library::SmartField::Genre;
-    c2.op = library::SmartOp::Contains;
-    c2.value = QStringLiteral("Pop");
-    qMatchAny.rule.conditions.append(c2);
-
-    const auto chipsAny = linernotes::ui::nlqChips(qMatchAny);
-    QCOMPARE(chipsAny.size(), 6);
-    QCOMPARE(chipsAny.at(0).kind, NlqChipKind::Entity);
-    QCOMPARE(chipsAny.at(1).kind, NlqChipKind::Match);
-    QCOMPARE(chipsAny.at(1).text, QStringLiteral("Match: any condition"));
-    QCOMPARE(chipsAny.at(2).kind, NlqChipKind::Condition);
-    QCOMPARE(chipsAny.at(3).kind, NlqChipKind::Condition);
-
-    // Match Any with single condition: must not contain Match chip
-    nlq::Query qSingleAny;
-    qSingleAny.rule.match = library::SmartMatch::Any;
-    qSingleAny.rule.conditions.append(c1);
-    const auto chipsSingleAny = linernotes::ui::nlqChips(qSingleAny);
-    QCOMPARE(chipsSingleAny.size(), 4);
-    QCOMPARE(chipsSingleAny.at(0).kind, NlqChipKind::Entity);
-    QCOMPARE(chipsSingleAny.at(1).kind, NlqChipKind::Condition);
-    QVERIFY(std::ranges::none_of(chipsSingleAny,
-        [](const linernotes::ui::NlqChip &c) { return c.kind == NlqChipKind::Match; }));
+    const QStringList chipsEmpty = linernotes::ui::nlqChips(qEmpty);
+    QVERIFY(chipsEmpty.isEmpty());
 }
 
 void TstNlqController::testNlqControllerDbAndActions()
@@ -226,24 +136,15 @@ void TstNlqController::testNlqControllerDbAndActions()
     QCOMPARE(controller->state(), NlqController::State::Idle);
     QCOMPARE(controller->hasConversation(), false);
 
-    // 1. Set entity to Album through public API
-    controller->setEntity(nlq::Entity::Album);
+    // 1. Offline query for albums
+    controller->submit(QStringLiteral("albums"));
     QCOMPARE(controller->state(), NlqController::State::Ready);
     QCOMPARE(controller->hasConversation(), true);
+    QCOMPARE(controller->entity(), nlq::Entity::Album);
     QCOMPARE(controller->rows().size(), 2);
+    QCOMPARE(controller->chips().size(), 0);
 
-    // 2. Set condition: Title contains "One"
-    library::SmartCondition cond;
-    cond.field = library::SmartField::Album;
-    cond.op = library::SmartOp::Contains;
-    cond.value = QStringLiteral("One");
-    controller->setCondition(0, cond);
-
-    QCOMPARE(controller->state(), NlqController::State::Ready);
-    QCOMPARE(controller->rows().size(), 1);
-    QCOMPARE(controller->conditionAt(0).field, library::SmartField::Album);
-
-    // 3. saveAsPlaylist: Album result expands into its tracks (Track 1, Track 2)
+    // 2. saveAsPlaylist: Album result expands into its tracks (Track 1, Track 2, Track 3)
     controller->saveAsPlaylist(QStringLiteral("My Album Playlist"));
     auto *playlists = ctx.playlists();
     QVERIFY(playlists != nullptr);
@@ -254,17 +155,7 @@ void TstNlqController::testNlqControllerDbAndActions()
                             .toLongLong();
     QVERIFY(plId > 0);
 
-    // 4. removeChip: remove condition and verify results update back to 2 albums
-    controller->removeChip(0);
-    QCOMPARE(controller->rows().size(), 2);
-
-    // 5. setMatch: update match mode and verify
-    controller->setMatch(library::SmartMatch::Any);
-    QCOMPARE(controller->match(), library::SmartMatch::Any);
-    controller->setMatch(library::SmartMatch::All);
-    QCOMPARE(controller->match(), library::SmartMatch::All);
-
-    // 6. newConversation: resets state and rows
+    // 3. newConversation: resets state and rows
     controller->newConversation();
     QCOMPARE(controller->state(), NlqController::State::Idle);
     QCOMPARE(controller->hasConversation(), false);

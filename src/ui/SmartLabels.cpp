@@ -4,7 +4,6 @@
 #include "SmartLabels.h"
 
 #include <QCoreApplication>
-#include <QVariantMap>
 
 #include <library/EnumNames.h>
 
@@ -163,42 +162,6 @@ QString trackLanguageLabel(library::TrackLanguage lang)
     Q_UNREACHABLE_RETURN(QString());
 }
 
-QString nlqSortKeyLabel(nlq::SortKey key)
-{
-    switch (key) {
-    case nlq::SortKey::Default:
-        return QCoreApplication::translate("linernotes::ui::Nlq", "Default");
-    case nlq::SortKey::PlayCount:
-        return QCoreApplication::translate("linernotes::ui::Nlq", "Play count");
-    case nlq::SortKey::LastPlayed:
-        return QCoreApplication::translate("linernotes::ui::Nlq", "Last played");
-    case nlq::SortKey::Rating:
-        return QCoreApplication::translate("linernotes::ui::Nlq", "Rating");
-    case nlq::SortKey::Year:
-        return QCoreApplication::translate("linernotes::ui::Nlq", "Year");
-    case nlq::SortKey::DateAdded:
-        return QCoreApplication::translate("linernotes::ui::Nlq", "Date added");
-    case nlq::SortKey::Duration:
-        return QCoreApplication::translate("linernotes::ui::Nlq", "Duration");
-    case nlq::SortKey::Random:
-        return QCoreApplication::translate("linernotes::ui::Nlq", "Random");
-    }
-    Q_UNREACHABLE_RETURN(QString());
-}
-
-QString nlqEntityLabel(nlq::Entity entity)
-{
-    switch (entity) {
-    case nlq::Entity::Track:
-        return QCoreApplication::translate("linernotes::ui::Nlq", "Tracks");
-    case nlq::Entity::Album:
-        return QCoreApplication::translate("linernotes::ui::Nlq", "Albums");
-    case nlq::Entity::Artist:
-        return QCoreApplication::translate("linernotes::ui::Nlq", "Artists");
-    }
-    Q_UNREACHABLE_RETURN(QString());
-}
-
 QString smartConditionLabel(const library::SmartCondition &c)
 {
     const QString fieldStr = smartFieldLabel(c.field);
@@ -243,87 +206,22 @@ QString smartPlayWindowLabel(const library::SmartRule &rule)
     return { };
 }
 
-QList<NlqChip> nlqChips(const nlq::Query &query)
+QStringList nlqChips(const nlq::Query &query)
 {
-    QList<NlqChip> chips;
+    QStringList chips;
 
-    // 1. Entity
-    chips.append(NlqChip {
-        .kind = NlqChipKind::Entity,
-        .index = 0,
-        .text = nlqEntityLabel(query.entity),
-    });
-
-    // 2. Match (only if conditions count >= 2)
-    if (query.rule.conditions.size() >= 2) {
-        const QString matchText = (query.rule.match == library::SmartMatch::Any)
-            ? QCoreApplication::translate("linernotes::ui::Nlq", "Match: any condition")
-            : QCoreApplication::translate("linernotes::ui::Nlq", "Match: all conditions");
-        chips.append(NlqChip {
-            .kind = NlqChipKind::Match,
-            .index = 0,
-            .text = matchText,
-        });
+    for (const auto &c : query.rule.conditions) {
+        chips.append(smartConditionLabel(c));
     }
 
-    // 3. Conditions
-    for (int i = 0; i < query.rule.conditions.size(); ++i) {
-        const auto &c = query.rule.conditions.at(i);
-        chips.append(NlqChip {
-            .kind = NlqChipKind::Condition,
-            .index = i,
-            .text = smartConditionLabel(c),
-        });
-    }
-
-    // 3. Play period
     if (query.rule.playedFrom.has_value() || query.rule.playedTo.has_value()) {
-        chips.append(NlqChip {
-            .kind = NlqChipKind::PlayWindow,
-            .index = 0,
-            .text = smartPlayWindowLabel(query.rule),
-        });
+        const QString pw = smartPlayWindowLabel(query.rule);
+        if (!pw.isEmpty()) {
+            chips.append(pw);
+        }
     }
-
-    // 4. Sort
-    const QString sortKeyName = nlqSortKeyLabel(query.sortKey);
-    const QString arrow = (query.sortOrder == Qt::AscendingOrder) ? QStringLiteral("\u2191")
-                                                                  : QStringLiteral("\u2193");
-    QString sortText;
-    if (query.sortKey == nlq::SortKey::Random || query.sortKey == nlq::SortKey::Default) {
-        sortText = QCoreApplication::translate("linernotes::ui::Nlq", "Sort: %1").arg(sortKeyName);
-    } else {
-        sortText = QCoreApplication::translate("linernotes::ui::Nlq", "Sort: %1 %2")
-                       .arg(sortKeyName, arrow);
-    }
-    chips.append(NlqChip {
-        .kind = NlqChipKind::Sort,
-        .index = 0,
-        .text = sortText,
-    });
-
-    // 5. Limit
-    chips.append(NlqChip {
-        .kind = NlqChipKind::Limit,
-        .index = 0,
-        .text = QCoreApplication::translate("linernotes::ui::Nlq", "Limit: %1").arg(query.limit),
-    });
 
     return chips;
-}
-
-QVariantList nlqChipsToVariantList(const QList<NlqChip> &chips)
-{
-    QVariantList list;
-    list.reserve(chips.size());
-    for (const auto &chip : chips) {
-        QVariantMap map;
-        map.insert(QStringLiteral("kind"), static_cast<int>(chip.kind));
-        map.insert(QStringLiteral("index"), chip.index);
-        map.insert(QStringLiteral("text"), chip.text);
-        list.append(map);
-    }
-    return list;
 }
 
 } // namespace linernotes::ui
