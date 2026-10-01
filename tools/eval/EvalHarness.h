@@ -38,6 +38,8 @@ struct EvalConfig {
     QString corpusPath { };
     QString libraryPath { };
     QString keepDbPath { };
+    QString question { };
+    QString previous { };
     int timeoutMs = 60000;
     int requestsPerMinute = 0;
     bool verbose = false;
@@ -64,6 +66,7 @@ public:
     [[nodiscard]] ai::JobQueue &jobs() { return *m_jobs; }
     [[nodiscard]] ai::PromptLibrary &prompts() { return *m_prompts; }
     [[nodiscard]] ai::UsageStore &usage() { return *m_usage; }
+    [[nodiscard]] ai::LlmService &llm() { return *m_llm; }
 
     bool init();
     bool runJob(const QString &kind, const QString &title, const QStringList &items,

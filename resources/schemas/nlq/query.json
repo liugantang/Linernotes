@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NlqQueryInterpretation",
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "object",
+      "properties": {
+        "entity": {
+          "type": "string",
+          "enum": ["track", "album", "artist"]
+        },
+        "match": {
+          "type": "string",
+          "enum": ["all", "any"]
+        },
+        "playedFrom": {
+          "type": "string"
+        },
+        "playedTo": {
+          "type": "string"
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string",
+                "enum": [
+                  "title",
+                  "artist",
+                  "album",
+                  "albumArtist",
+                  "genre",
+                  "codec",
+                  "year",
+                  "rating",
+                  "durationSec",
+                  "favorite",
+                  "dateAdded",
+                  "playCount",
+                  "skipCount",
+                  "completedCount",
+                  "lastPlayed",
+                  "versionType",
+                  "language",
+                  "albumFavorite",
+                  "artistFavorite",
+                  "albumCompletion"
+                ]
+              },
+              "op": {
+                "type": "string",
+                "enum": [
+                  "contains",
+                  "notContains",
+                  "is",
+                  "isNot",
+                  "startsWith",
+                  "equals",
+                  "notEquals",
+                  "greater",
+                  "less",
+                  "between",
+                  "isTrue",
+                  "isFalse",
+                  "inLastDays",
+                  "notInLastDays"
+                ]
+              },
+              "value": {
+                "type": ["string", "number"]
+              },
+              "value2": {
+                "type": ["string", "number"]
+              }
+            },
+            "required": ["field", "op"],
+            "additionalProperties": false
+          }
+        },
+        "sort": {
+          "type": "string",
+          "enum": [
+            "default",
+            "playCount",
+            "lastPlayed",
+            "rating",
+            "year",
+            "dateAdded",
+            "duration",
+            "random"
+          ]
+        },
+        "order": {
+          "type": "string",
+          "enum": ["asc", "desc"]
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        }
+      },
+      "additionalProperties": false
+    },
+    "explanation": {
+      "type": "string"
+    }
+  },
+  "required": ["query", "explanation"],
+  "additionalProperties": false
+}

@@ -23,3 +23,14 @@ linernotes_add_test(
         Linernotes::TestSupport
 )
 
+linernotes_add_test(
+    NAME nlq_Interpreter
+    SOURCES
+        tst_Interpreter.cpp
+    LIBS
+        Linernotes::nlq
+        Linernotes::ai
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+)
