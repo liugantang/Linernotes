@@ -191,7 +191,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CommandPalette.qml" line="968"/>
+        <location filename="../qml/CommandPalette.qml" line="970"/>
         <source>%n track(s)</source>
         <translation type="unfinished">
             <numerusform>%n track</numerusform>
@@ -393,7 +393,7 @@
 <context>
     <name>linernotes::ui::NlqController</name>
     <message numerus="yes">
-        <location filename="../src/ui/NlqController.cpp" line="500"/>
+        <location filename="../src/ui/NlqController.cpp" line="656"/>
         <source>Remove &quot;%1&quot; → %n result(s)</source>
         <translation type="unfinished">
             <numerusform></numerusform>

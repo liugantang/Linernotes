@@ -883,8 +883,12 @@
     </message>
     <message>
         <location filename="../qml/CommandPalette.qml" line="568"/>
+        <source>Offline mode — AI service not configured; using simple keyword rules.</source>
+        <translation>离线模式——未配置 AI 服务，使用简单关键词规则。</translation>
+    </message>
+    <message>
         <source>AI service is not configured</source>
-        <translation>未配置 AI 服务</translation>
+        <translation type="vanished">未配置 AI 服务</translation>
     </message>
     <message>
         <location filename="../qml/CommandPalette.qml" line="594"/>
@@ -904,46 +908,46 @@
         <translation>没有结果</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="846"/>
+        <location filename="../qml/CommandPalette.qml" line="848"/>
         <source>Unknown Title</source>
         <translation>未知标题</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="857"/>
-        <location filename="../qml/CommandPalette.qml" line="917"/>
-        <location filename="../qml/CommandPalette.qml" line="960"/>
+        <location filename="../qml/CommandPalette.qml" line="859"/>
+        <location filename="../qml/CommandPalette.qml" line="919"/>
+        <location filename="../qml/CommandPalette.qml" line="962"/>
         <source>Unknown Artist</source>
         <translation>未知艺人</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="908"/>
+        <location filename="../qml/CommandPalette.qml" line="910"/>
         <source>Unknown Album</source>
         <translation>未知专辑</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/CommandPalette.qml" line="968"/>
+        <location filename="../qml/CommandPalette.qml" line="970"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n 首</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="1001"/>
+        <location filename="../qml/CommandPalette.qml" line="1003"/>
         <source>Play all</source>
         <translation>全部播放</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="1011"/>
+        <location filename="../qml/CommandPalette.qml" line="1013"/>
         <source>Add to queue</source>
         <translation>加入队列</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="1020"/>
+        <location filename="../qml/CommandPalette.qml" line="1022"/>
         <source>Save as playlist…</source>
         <translation>存为歌单…</translation>
     </message>
     <message>
-        <location filename="../qml/CommandPalette.qml" line="1024"/>
+        <location filename="../qml/CommandPalette.qml" line="1026"/>
         <source>Query Result</source>
         <translation>查询结果</translation>
     </message>
@@ -3898,35 +3902,50 @@
 <context>
     <name>linernotes::ui::NlqController</name>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="180"/>
         <source>AI service is not configured.</source>
-        <translation>未配置 AI 服务。</translation>
+        <translation type="vanished">未配置 AI 服务。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/NlqController.cpp" line="29"/>
+        <source>Understood with simple keyword rules.</source>
+        <translation>按简单关键词规则理解。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/NlqController.cpp" line="32"/>
+        <source>Understood with simple keyword rules; ignored “%1”.</source>
+        <translation>按简单关键词规则理解；未识别“%1”。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/NlqController.cpp" line="347"/>
+        <source>Keyword search: %1</source>
+        <translation>关键词搜索：%1</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ui/NlqController.cpp" line="500"/>
+        <location filename="../src/ui/NlqController.cpp" line="656"/>
         <source>Remove &quot;%1&quot; → %n result(s)</source>
         <translation>
             <numerusform>去掉“%1”→ %n 条结果</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="510"/>
+        <location filename="../src/ui/NlqController.cpp" line="666"/>
         <source>Play history starts on %1, so there are no plays in the selected period.</source>
         <translation>播放记录从 %1 开始，所选区间内没有播放。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="514"/>
+        <location filename="../src/ui/NlqController.cpp" line="670"/>
         <source>No play history yet.</source>
         <translation>还没有播放记录。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="517"/>
+        <location filename="../src/ui/NlqController.cpp" line="673"/>
         <source>No results match all conditions.</source>
         <translation>没有同时满足全部条件的结果。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="519"/>
-        <location filename="../src/ui/NlqController.cpp" line="528"/>
+        <location filename="../src/ui/NlqController.cpp" line="352"/>
+        <location filename="../src/ui/NlqController.cpp" line="675"/>
+        <location filename="../src/ui/NlqController.cpp" line="684"/>
         <source>Nothing in your library matches.</source>
         <translation>曲库中没有符合的内容。</translation>
     </message>

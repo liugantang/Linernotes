@@ -32,6 +32,9 @@ struct Resolution {
     bool operator==(const Resolution &) const = default;
 };
 
+core::Result<QList<ArtistCandidate>> findArtistCandidates(
+    library::Database &db, const QString &mention);
+
 core::Result<Resolution> resolveArtists(library::Database &db, const Query &query);
 
 /// 用户选定后本地改写：该条件变为 artist is <choice.name>。

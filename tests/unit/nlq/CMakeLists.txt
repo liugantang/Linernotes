@@ -56,3 +56,14 @@ linernotes_add_test(
         Linernotes::core
         Linernotes::TestSupport
 )
+
+linernotes_add_test(
+    NAME nlq_OfflineParser
+    SOURCES
+        tst_OfflineParser.cpp
+    LIBS
+        Linernotes::nlq
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+)

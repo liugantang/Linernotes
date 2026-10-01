@@ -15,6 +15,8 @@ add_library(linernotes_nlq STATIC
     NlqLogging.h
     NlqQuery.cpp
     NlqQuery.h
+    OfflineParser.cpp
+    OfflineParser.h
     QueryRunner.cpp
     QueryRunner.h
     Relaxation.cpp

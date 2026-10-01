@@ -477,7 +477,7 @@ Popup {
                 placeholderText: (AppContext.nlq && AppContext.nlq.hasConversation)
                     ? qsTr("Refine the results…")
                     : qsTr("Ask about your library…")
-                enabled: AppContext.nlq && AppContext.nlq.llmConfigured
+                enabled: true
 
                 Keys.onReturnPressed: (event) => {
                     if (text.trim().length > 0 && AppContext.nlq) {
@@ -527,7 +527,7 @@ Popup {
             spacing: Theme.spacingSmall
             visible: (AppContext.nlq && AppContext.nlq.state === NlqController.Interpreting)
                 || (AppContext.nlq && AppContext.nlq.state === NlqController.Failed)
-                || (AppContext.nlq && !AppContext.nlq.llmConfigured)
+                || (AppContext.nlq && AppContext.nlq.offline)
 
             BusyIndicator {
                 visible: AppContext.nlq && AppContext.nlq.state === NlqController.Interpreting
@@ -564,9 +564,9 @@ Popup {
             }
 
             Label {
-                visible: AppContext.nlq && !AppContext.nlq.llmConfigured
-                text: qsTr("AI service is not configured")
-                color: Theme.errorText
+                visible: AppContext.nlq && AppContext.nlq.offline && AppContext.nlq.state !== NlqController.Failed
+                text: qsTr("Offline mode — AI service not configured; using simple keyword rules.")
+                color: Theme.textSecondary
                 font.pixelSize: Theme.fontSizeSmall
                 wrapMode: Text.Wrap
                 Layout.fillWidth: true

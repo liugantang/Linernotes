@@ -30,6 +30,7 @@
 
 namespace linernotes::nlq {
 class QueryRunner;
+struct OfflineParse;
 } // namespace linernotes::nlq
 
 namespace linernotes::ui {
@@ -59,6 +60,7 @@ public:
 
     Q_PROPERTY(State state READ state NOTIFY stateChanged)
     Q_PROPERTY(bool llmConfigured READ isLlmConfigured NOTIFY llmConfiguredChanged)
+    Q_PROPERTY(bool offline READ isOffline NOTIFY offlineChanged)
     Q_PROPERTY(QString explanation READ explanation NOTIFY explanationChanged)
     Q_PROPERTY(QString errorText READ errorText NOTIFY errorTextChanged)
     Q_PROPERTY(linernotes::nlq::Entity entity READ entity NOTIFY entityChanged)
@@ -76,6 +78,7 @@ public:
 
     [[nodiscard]] State state() const;
     [[nodiscard]] bool isLlmConfigured() const;
+    [[nodiscard]] bool isOffline() const;
     [[nodiscard]] QString explanation() const;
     [[nodiscard]] QString errorText() const;
     [[nodiscard]] nlq::Entity entity() const;
@@ -109,6 +112,7 @@ public:
 signals:
     void stateChanged();
     void llmConfiguredChanged();
+    void offlineChanged();
     void explanationChanged();
     void errorTextChanged();
     void entityChanged();
@@ -135,6 +139,14 @@ private:
         const nlq::EmptyResultAnalysis &analysis, const nlq::Query &query) const;
     void updateClarificationProperty();
     [[nodiscard]] QList<qint64> collectAllTrackIds() const;
+
+    void submitOffline(const QString &text);
+    void handleOfflineLeftover(const QString &text, nlq::OfflineParse &parse);
+    void handleOfflineSingleArtist(nlq::OfflineParse &parse, const nlq::ArtistCandidate &candidate);
+    void handleOfflineDisambiguation(
+        nlq::OfflineParse &parse, QList<nlq::ArtistCandidate> candidates);
+    void handleOfflineKeywordSearch(const QString &text);
+    void handleOfflineIgnoredLeftover(const nlq::OfflineParse &parse);
 
     library::Database &m_db;
     const ai::AiConfig &m_aiConfig;

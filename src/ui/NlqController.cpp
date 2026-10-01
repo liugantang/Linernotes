@@ -3,10 +3,13 @@
 
 #include "NlqController.h"
 
+#include <QCoreApplication>
 #include <QTimeZone>
 
 #include <library/LibraryQuery.h>
+#include <library/LibrarySearch.h>
 #include <nlq/LibrarySummary.h>
+#include <nlq/OfflineParser.h>
 #include <nlq/QueryRunner.h>
 #include <ui/ErrorText.h>
 #include <ui/Format.h>
@@ -19,6 +22,17 @@
 namespace linernotes::ui {
 
 namespace {
+
+QString offlineExplanation(const QString &ignored)
+{
+    if (ignored.isEmpty()) {
+        return QCoreApplication::translate(
+            "linernotes::ui::NlqController", "Understood with simple keyword rules.");
+    }
+    return QCoreApplication::translate("linernotes::ui::NlqController",
+        "Understood with simple keyword rules; ignored \u201c%1\u201d.")
+        .arg(ignored);
+}
 
 QVariantList populateTrackRows(const QList<library::TrackRow> &tracks)
 {
@@ -114,12 +128,18 @@ bool NlqController::isLlmConfigured() const
     return m_llmConfigured;
 }
 
+bool NlqController::isOffline() const
+{
+    return !m_llmConfigured;
+}
+
 void NlqController::refreshLlmConfigured()
 {
     const bool configured = m_aiConfig.resolve(ai::Purpose::Query).has_value();
     if (m_llmConfigured != configured) {
         m_llmConfigured = configured;
         emit llmConfiguredChanged();
+        emit offlineChanged();
     }
 }
 
@@ -175,11 +195,8 @@ void NlqController::submit(const QString &text)
         return;
     }
 
-    if (!isLlmConfigured()) {
-        m_state = State::Failed;
-        m_errorText = tr("AI service is not configured.");
-        emit stateChanged();
-        emit errorTextChanged();
+    if (isOffline()) {
+        submitOffline(trimmed);
         return;
     }
 
@@ -216,6 +233,145 @@ void NlqController::submit(const QString &text)
 
     const std::optional<nlq::Query> previous = m_currentQuery;
     m_interpreter.interpret(trimmed, m_cachedSummaryText, previous);
+}
+
+void NlqController::submitOffline(const QString &text)
+{
+    cancel();
+    m_pendingClarifications.clear();
+    m_clarification.clear();
+    m_errorText.clear();
+    m_emptyHint.clear();
+    m_relaxations.clear();
+    m_lastRelaxations.clear();
+
+    const QDate today = QDate::currentDate();
+    auto parse = nlq::parseOffline(text, today, m_currentQuery);
+
+    if (!parse.leftover.isEmpty()) {
+        handleOfflineLeftover(text, parse);
+        return;
+    }
+
+    m_explanation = offlineExplanation({ });
+    emit explanationChanged();
+    executeQuery(parse.query);
+}
+
+void NlqController::handleOfflineLeftover(const QString &text, nlq::OfflineParse &parse)
+{
+    const auto candRes = nlq::findArtistCandidates(m_db, parse.leftover);
+    if (!candRes.ok()) {
+        failWith(candRes.error());
+        return;
+    }
+
+    const auto &candidates = candRes.value();
+    if (candidates.size() == 1) {
+        handleOfflineSingleArtist(parse, candidates.at(0));
+        return;
+    }
+    if (candidates.size() > 1) {
+        handleOfflineDisambiguation(parse, candidates);
+        return;
+    }
+    if (!parse.matchedRule) {
+        handleOfflineKeywordSearch(text);
+        return;
+    }
+    handleOfflineIgnoredLeftover(parse);
+}
+
+void NlqController::handleOfflineSingleArtist(
+    nlq::OfflineParse &parse, const nlq::ArtistCandidate &candidate)
+{
+    const library::SmartCondition artistCond {
+        .field = library::SmartField::Artist,
+        .op = library::SmartOp::Is,
+        .value = candidate.name,
+        .value2 = { },
+    };
+    parse.query.rule.conditions.append(artistCond);
+    m_explanation = offlineExplanation({ });
+    emit explanationChanged();
+    executeQuery(parse.query);
+}
+
+void NlqController::handleOfflineDisambiguation(
+    nlq::OfflineParse &parse, QList<nlq::ArtistCandidate> candidates)
+{
+    if (candidates.size() > 8) {
+        candidates = candidates.mid(0, 8);
+    }
+    const library::SmartCondition artistCond {
+        .field = library::SmartField::Artist,
+        .op = library::SmartOp::Is,
+        .value = parse.leftover,
+        .value2 = { },
+    };
+    parse.query.rule.conditions.append(artistCond);
+
+    const nlq::Clarification clar {
+        .conditionIndex = static_cast<int>(parse.query.rule.conditions.size()) - 1,
+        .mention = parse.leftover,
+        .candidates = candidates,
+    };
+    m_resolution.query = parse.query;
+    m_resolution.clarifications = { clar };
+    m_pendingClarifications = { clar };
+    m_explanation = offlineExplanation({ });
+    m_state = State::NeedsChoice;
+    updateClarificationProperty();
+    emit explanationChanged();
+    emit stateChanged();
+    emit clarificationChanged();
+}
+
+void NlqController::handleOfflineKeywordSearch(const QString &text)
+{
+    const auto connRes = m_db.connection();
+    if (!connRes.ok()) {
+        failWith(connRes.error());
+        return;
+    }
+    const library::LibrarySearch searcher(connRes.value());
+    const auto searchRes = searcher.search(text);
+    if (!searchRes.ok()) {
+        failWith(searchRes.error());
+        return;
+    }
+
+    m_rows = populateTrackRows(searchRes.value().tracks);
+    m_entity = nlq::Entity::Track;
+    m_chips.clear();
+    m_explanation = tr("Keyword search: %1").arg(text);
+    m_currentQuery.reset();
+    m_lastRelaxations.clear();
+    m_relaxations.clear();
+    if (m_rows.isEmpty()) {
+        m_emptyHint = tr("Nothing in your library matches.");
+    } else {
+        m_emptyHint.clear();
+    }
+    m_state = State::Ready;
+    m_errorText.clear();
+
+    emit stateChanged();
+    emit errorTextChanged();
+    emit explanationChanged();
+    emit rowsChanged();
+    emit chipsChanged();
+    emit entityChanged();
+    emit hasConversationChanged();
+    emit emptyHintChanged();
+    emit relaxationsChanged();
+}
+
+void NlqController::handleOfflineIgnoredLeftover(const nlq::OfflineParse &parse)
+{
+    m_explanation = offlineExplanation(parse.leftover);
+    emit explanationChanged();
+    executeQuery(parse.query);
 }
 
 void NlqController::onInterpreterFinished()
@@ -592,7 +748,18 @@ void NlqController::executeQuery(const nlq::Query &query)
 QList<qint64> NlqController::collectAllTrackIds() const
 {
     QList<qint64> trackIds;
-    if (!m_currentQuery.has_value() || m_rows.isEmpty()) {
+    if (m_rows.isEmpty()) {
+        return trackIds;
+    }
+
+    if (!m_currentQuery.has_value()) {
+        if (m_entity == nlq::Entity::Track) {
+            trackIds.reserve(m_rows.size());
+            for (const auto &rowVar : m_rows) {
+                const auto map = rowVar.toMap();
+                trackIds.append(map.value(QStringLiteral("trackId")).toLongLong());
+            }
+        }
         return trackIds;
     }
 
@@ -654,16 +821,19 @@ void NlqController::enqueueAll()
 
 void NlqController::playRow(int index)
 {
-    if (index < 0 || index >= m_rows.size() || !m_currentQuery.has_value()) {
+    if (index < 0 || index >= m_rows.size()) {
         return;
     }
 
-    if (m_currentQuery->entity == nlq::Entity::Track) {
+    if (!m_currentQuery.has_value() || m_currentQuery->entity == nlq::Entity::Track) {
         const QList<qint64> allTracks = collectAllTrackIds();
         if (!allTracks.isEmpty()) {
             m_actions.playTracks(allTracks, index, core::PlaySource::Nlq);
         }
-    } else if (m_currentQuery->entity == nlq::Entity::Album) {
+        return;
+    }
+
+    if (m_currentQuery->entity == nlq::Entity::Album) {
         const auto map = m_rows.at(index).toMap();
         const qint64 albumId = map.value(QStringLiteral("albumId")).toLongLong();
         const auto connRes = m_db.connection();

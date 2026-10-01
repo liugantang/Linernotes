@@ -109,7 +109,8 @@ core::Result<QList<ArtistCandidate>> queryFuzzyArtists(
 
 } // namespace
 
-core::Result<Resolution> resolveArtists(library::Database &db, const Query &query)
+core::Result<QList<ArtistCandidate>> findArtistCandidates(
+    library::Database &db, const QString &mention)
 {
     if (!db.isOpen()) {
         return core::Error {
@@ -125,6 +126,29 @@ core::Result<Resolution> resolveArtists(library::Database &db, const Query &quer
     }
     const QSqlDatabase &qDb = connRes.value();
 
+    // 1. Exact match
+    auto exactRes = queryExactArtists(qDb, mention);
+    if (!exactRes.ok()) {
+        return exactRes.error();
+    }
+    if (!exactRes.value().isEmpty()) {
+        return exactRes.value();
+    }
+
+    // 2. Fuzzy match
+    return queryFuzzyArtists(qDb, mention);
+}
+
+core::Result<Resolution> resolveArtists(library::Database &db, const Query &query)
+{
+    if (!db.isOpen()) {
+        return core::Error {
+            .code = QString(library::errc::kDbOpen),
+            .message = QStringLiteral("Database is not open"),
+            .detail = QString(),
+        };
+    }
+
     Resolution resolution;
     resolution.query = query;
 
@@ -138,47 +162,23 @@ core::Result<Resolution> resolveArtists(library::Database &db, const Query &quer
         }
 
         const QString mention = cond.value.toString();
-
-        // 1. Exact match
-        auto exactRes = queryExactArtists(qDb, mention);
-        if (!exactRes.ok()) {
-            return exactRes.error();
+        auto candRes = findArtistCandidates(db, mention);
+        if (!candRes.ok()) {
+            return candRes.error();
         }
-        auto exactCandidates = exactRes.value();
 
-        if (exactCandidates.size() == 1) {
+        auto candidates = candRes.value();
+        if (candidates.size() == 1) {
             cond.op = library::SmartOp::Is;
-            cond.value = exactCandidates.at(0).name;
-            continue;
-        }
-
-        if (exactCandidates.size() > 1) {
-            if (exactCandidates.size() > kMaxCandidates) {
-                exactCandidates = exactCandidates.mid(0, kMaxCandidates);
+            cond.value = candidates.at(0).name;
+        } else if (candidates.size() > 1) {
+            if (candidates.size() > kMaxCandidates) {
+                candidates = candidates.mid(0, kMaxCandidates);
             }
             Clarification clarification;
             clarification.conditionIndex = i;
             clarification.mention = mention;
-            clarification.candidates = exactCandidates;
-            resolution.clarifications.append(clarification);
-            continue;
-        }
-
-        // 2. Fuzzy match
-        auto fuzzyRes = queryFuzzyArtists(qDb, mention);
-        if (!fuzzyRes.ok()) {
-            return fuzzyRes.error();
-        }
-        const auto &fuzzyCandidates = fuzzyRes.value();
-
-        if (fuzzyCandidates.size() == 1) {
-            cond.op = library::SmartOp::Is;
-            cond.value = fuzzyCandidates.at(0).name;
-        } else if (fuzzyCandidates.size() > 1) {
-            Clarification clarification;
-            clarification.conditionIndex = i;
-            clarification.mention = mention;
-            clarification.candidates = fuzzyCandidates;
+            clarification.candidates = candidates;
             resolution.clarifications.append(clarification);
         }
         // 0 candidates: keep original condition
