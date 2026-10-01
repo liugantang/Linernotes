@@ -7,6 +7,7 @@
 #include <QList>
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <QVariantList>
 #include <QVariantMap>
 #include <Qt>
@@ -49,25 +50,14 @@ public:
     };
     Q_ENUM(State)
 
-    enum class ChipKind : std::uint8_t {
-        Entity,
-        Match,
-        Condition,
-        PlayWindow,
-        Sort,
-        Limit,
-    };
-    Q_ENUM(ChipKind)
-
     Q_PROPERTY(State state READ state NOTIFY stateChanged)
     Q_PROPERTY(bool llmConfigured READ isLlmConfigured NOTIFY llmConfiguredChanged)
     Q_PROPERTY(bool offline READ isOffline NOTIFY offlineChanged)
     Q_PROPERTY(QString explanation READ explanation NOTIFY explanationChanged)
     Q_PROPERTY(QString errorText READ errorText NOTIFY errorTextChanged)
     Q_PROPERTY(linernotes::nlq::Entity entity READ entity NOTIFY entityChanged)
-    Q_PROPERTY(linernotes::library::SmartMatch match READ match NOTIFY matchChanged)
     Q_PROPERTY(QVariantList rows READ rows NOTIFY rowsChanged)
-    Q_PROPERTY(QVariantList chips READ chips NOTIFY chipsChanged)
+    Q_PROPERTY(QStringList chips READ chips NOTIFY chipsChanged)
     Q_PROPERTY(QVariantMap clarification READ clarification NOTIFY clarificationChanged)
     Q_PROPERTY(bool hasConversation READ hasConversation NOTIFY hasConversationChanged)
     Q_PROPERTY(QString emptyHint READ emptyHint NOTIFY emptyHintChanged)
@@ -84,9 +74,8 @@ public:
     [[nodiscard]] QString explanation() const;
     [[nodiscard]] QString errorText() const;
     [[nodiscard]] nlq::Entity entity() const;
-    [[nodiscard]] library::SmartMatch match() const;
     [[nodiscard]] QVariantList rows() const;
-    [[nodiscard]] QVariantList chips() const;
+    [[nodiscard]] QStringList chips() const;
     [[nodiscard]] QVariantMap clarification() const;
     [[nodiscard]] bool hasConversation() const;
     [[nodiscard]] QString emptyHint() const;
@@ -96,14 +85,6 @@ public:
     Q_INVOKABLE void chooseCandidate(int index);
     Q_INVOKABLE void newConversation();
     Q_INVOKABLE void cancel();
-    Q_INVOKABLE void removeChip(int index);
-    [[nodiscard]] Q_INVOKABLE linernotes::library::SmartCondition conditionAt(int index) const;
-    Q_INVOKABLE void setCondition(int index, const linernotes::library::SmartCondition &cond);
-    Q_INVOKABLE void setPlayWindow(const QString &from, const QString &to);
-    Q_INVOKABLE void setSort(linernotes::nlq::SortKey key, Qt::SortOrder order);
-    Q_INVOKABLE void setLimit(int limit);
-    Q_INVOKABLE void setEntity(linernotes::nlq::Entity entity);
-    Q_INVOKABLE void setMatch(linernotes::library::SmartMatch match);
     Q_INVOKABLE void applyRelaxation(int index);
 
     Q_INVOKABLE void playAll();
@@ -120,7 +101,6 @@ signals:
     void explanationChanged();
     void errorTextChanged();
     void entityChanged();
-    void matchChanged();
     void rowsChanged();
     void chipsChanged();
     void clarificationChanged();
@@ -167,7 +147,7 @@ private:
     QString m_errorText;
     nlq::Entity m_entity = nlq::Entity::Track;
     QVariantList m_rows;
-    QVariantList m_chips;
+    QStringList m_chips;
     QVariantMap m_clarification;
     QString m_emptyHint;
     QVariantList m_relaxations;

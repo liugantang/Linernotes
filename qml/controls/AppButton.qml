@@ -30,7 +30,7 @@ Button {
             } else if (control.checked) {
                 return control.down ? Theme.itemSelected : (control.hovered ? Theme.itemHover : Theme.itemSelected)
             } else {
-                return control.down ? Theme.itemSelected : (control.hovered ? Theme.hoverOverlay : "transparent")
+                return control.down ? Theme.itemSelected : (control.hovered ? Theme.itemHover : "transparent")
             }
         }
         radius: Theme.radiusMedium
