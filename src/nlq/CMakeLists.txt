@@ -4,6 +4,8 @@
 file(GLOB SCHEMA_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/schemas/nlq/*.json")
 
 add_library(linernotes_nlq STATIC
+    EntityResolver.cpp
+    EntityResolver.h
     Errors.h
     Interpreter.cpp
     Interpreter.h

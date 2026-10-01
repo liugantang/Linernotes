@@ -12,7 +12,7 @@ schema: schemas/nlq/query.json
    - 问“歌曲”、“曲目”、“歌”、“首”或未明确指明实体时：`track`（默认）。
    - 问“专辑”、“唱片”、“大碟”时：`album`。
    - 问“艺人”、“歌手”、“乐队”、“音乐人”时：`artist`。
-3. 艺人名与专辑名：照用户说法写进 `artist` / `album` 条件（运算符使用 `contains`）。常见简称、昵称或别名请转换为标准正式名（如“周董”→“周杰伦”）；切勿凭记忆编造或补充年份、曲目等事实。
+3. 艺人名与专辑名：艺人名优先使用 `is`（精确的实体名或别名），只有用户明确说“名字里带 xx 的艺人”才用 `contains`；专辑名使用 `contains`。常见简称、昵称或别名请转换为标准正式名（如“周董”→“周杰伦”）；切勿凭记忆编造或补充年份、曲目等事实。
 4. 匹配模式 match：默认 `all`（满足全部条件），仅在用户明确表达“或者/任一”时使用 `any`。
 5. 排序 sort、order 与数量 limit：
    - `sort` 候选值：`default`, `playCount`, `lastPlayed`, `rating`, `year`, `dateAdded`, `duration`, `random`。
@@ -138,7 +138,7 @@ schema: schemas/nlq/query.json
     "conditions": [
       {
         "field": "artist",
-        "op": "contains",
+        "op": "is",
         "value": "周杰伦"
       },
       {

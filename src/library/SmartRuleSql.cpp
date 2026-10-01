@@ -56,6 +56,26 @@ void appendWindowConditions(const PlayWindow &w, QStringList &clauses, QList<QVa
 
 QString buildTextConditionSql(const SmartCondition &cond, QList<QVariant> &binds)
 {
+    if (cond.field == SmartField::Artist && (cond.op == SmartOp::Is || cond.op == SmartOp::IsNot)) {
+        const QString rawVal = cond.value.toString();
+        const QString escaped = escapeLikePattern(rawVal);
+        binds.append(rawVal);
+        binds.append(rawVal);
+        binds.append(escaped);
+        QString matchSql
+            = QStringLiteral("(EXISTS (SELECT 1 FROM track_artists ta "
+                             "JOIN artists a ON a.id = ta.artist_id "
+                             "LEFT JOIN artist_aliases aa ON aa.artist_id = a.id "
+                             "WHERE ta.track_id = ts.track_id "
+                             "AND ta.role IN ('artist', 'featured', 'performer') "
+                             "AND (a.name = ? COLLATE NOCASE OR aa.alias = ? COLLATE NOCASE)) "
+                             "OR COALESCE(ts.artist, '') LIKE ? ESCAPE '\\')");
+        if (cond.op == SmartOp::Is) {
+            return matchSql;
+        }
+        return QStringLiteral("NOT (%1)").arg(matchSql);
+    }
+
     QString expr;
     if (cond.field == SmartField::Title) {
         expr = QStringLiteral("ts.title");

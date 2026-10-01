@@ -93,6 +93,23 @@ struct DbHelper {
         q.exec();
     }
 
+    static void addArtistAlias(const QSqlDatabase &db, qint64 artistId, const QString &alias,
+        const QString &locale = QStringLiteral("en"),
+        const QString &kind = QStringLiteral("variant"),
+        const QString &source = QStringLiteral("tag"))
+    {
+        QSqlQuery q(db);
+        q.prepare(QStringLiteral(
+            "INSERT INTO artist_aliases (artist_id, alias, locale, kind, source, created_at) "
+            "VALUES (?, ?, ?, ?, ?, 1)"));
+        q.addBindValue(artistId);
+        q.addBindValue(alias);
+        q.addBindValue(locale);
+        q.addBindValue(kind);
+        q.addBindValue(source);
+        q.exec();
+    }
+
     static void addTrackArtist(const QSqlDatabase &db, qint64 trackId, qint64 artistId,
         const QString &role = QStringLiteral("artist"))
     {
@@ -174,6 +191,7 @@ private slots:
     void sqlVersionType();
     void sqlLanguage();
     void sqlAlbumFavoriteAndCompletion();
+    void sqlArtistEntityMatching();
 };
 
 void TstSmartRule::inferLanguage_data()
@@ -760,6 +778,82 @@ void TstSmartRule::sqlAlbumFavoriteAndCompletion()
     QCOMPARE(rows.size(), 2);
     QCOMPARE(rows.at(0).trackId, t1);
     QCOMPARE(rows.at(1).trackId, t2);
+}
+
+void TstSmartRule::sqlArtistEntityMatching()
+{
+    const QTemporaryDir dir;
+    QVERIFY(dir.isValid());
+    Database db(dir.filePath(QStringLiteral("test_sr_artist.db")));
+    QVERIFY(db.open(Migrator()).ok());
+    const auto qDb = db.connection().value();
+
+    const qint64 r = DbHelper::insertRoot(qDb);
+
+    // Artist 1: 周杰伦, with alias Jay Chou
+    const qint64 art1 = DbHelper::insertArtist(qDb, QStringLiteral("周杰伦"));
+    DbHelper::addArtistAlias(qDb, art1, QStringLiteral("Jay Chou"));
+
+    // Artist 2: 费玉清
+    const qint64 art2 = DbHelper::insertArtist(qDb, QStringLiteral("费玉清"));
+
+    // Artist 3: 林俊杰
+    const qint64 art3 = DbHelper::insertArtist(qDb, QStringLiteral("林俊杰"));
+
+    // Track 1: displayed as "周杰伦 / 费玉清"
+    const qint64 f1 = DbHelper::insertFile(qDb, r, QStringLiteral("1.mp3"));
+    const qint64 t1 = DbHelper::insertTrack(qDb, f1);
+    DbHelper::setMeta(qDb, t1, QStringLiteral("千里之外"), QStringLiteral("周杰伦 / 费玉清"),
+        QStringLiteral("依然范特西"));
+    DbHelper::addTrackArtist(qDb, t1, art1, QStringLiteral("artist"));
+    DbHelper::addTrackArtist(qDb, t1, art2, QStringLiteral("artist"));
+
+    // Track 2: displayed as "林俊杰"
+    const qint64 f2 = DbHelper::insertFile(qDb, r, QStringLiteral("2.mp3"));
+    const qint64 t2 = DbHelper::insertTrack(qDb, f2);
+    DbHelper::setMeta(
+        qDb, t2, QStringLiteral("江南"), QStringLiteral("林俊杰"), QStringLiteral("第二天堂"));
+    DbHelper::addTrackArtist(qDb, t2, art3, QStringLiteral("artist"));
+
+    LibraryQuery query(qDb);
+
+    // 1. Artist is "Jay Chou" (alias) -> matches t1 (displayed as "周杰伦 / 费玉清")
+    {
+        SmartRule rule;
+        rule.conditions = {
+            SmartCondition {
+                .field = SmartField::Artist,
+                .op = SmartOp::Is,
+                .value = QStringLiteral("Jay Chou"),
+                .value2 = { },
+            },
+        };
+        TrackFilter filter;
+        filter.smartRule = rule;
+        const auto rows
+            = query.tracks(filter, TrackSortKey::Title, Qt::AscendingOrder, 0, 10).value();
+        QCOMPARE(rows.size(), 1);
+        QCOMPARE(rows.at(0).trackId, t1);
+    }
+
+    // 2. Artist isNot "Jay Chou" (alias) -> excludes t1, matches t2
+    {
+        SmartRule rule;
+        rule.conditions = {
+            SmartCondition {
+                .field = SmartField::Artist,
+                .op = SmartOp::IsNot,
+                .value = QStringLiteral("Jay Chou"),
+                .value2 = { },
+            },
+        };
+        TrackFilter filter;
+        filter.smartRule = rule;
+        const auto rows
+            = query.tracks(filter, TrackSortKey::Title, Qt::AscendingOrder, 0, 10).value();
+        QCOMPARE(rows.size(), 1);
+        QCOMPARE(rows.at(0).trackId, t2);
+    }
 }
 
 } // namespace

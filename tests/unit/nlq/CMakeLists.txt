@@ -34,3 +34,14 @@ linernotes_add_test(
         Linernotes::core
         Linernotes::TestSupport
 )
+
+linernotes_add_test(
+    NAME nlq_EntityResolver
+    SOURCES
+        tst_EntityResolver.cpp
+    LIBS
+        Linernotes::nlq
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+)
