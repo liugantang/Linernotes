@@ -2,6 +2,8 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 add_library(linernotes_nlq STATIC
+    LibrarySummary.cpp
+    LibrarySummary.h
     NlqLogging.cpp
     NlqLogging.h
     NlqQuery.cpp

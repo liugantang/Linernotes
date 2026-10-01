@@ -11,3 +11,15 @@ linernotes_add_test(
         Linernotes::core
         Linernotes::TestSupport
 )
+
+linernotes_add_test(
+    NAME nlq_LibrarySummary
+    SOURCES
+        tst_LibrarySummary.cpp
+    LIBS
+        Linernotes::nlq
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
