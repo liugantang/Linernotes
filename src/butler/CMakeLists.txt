@@ -55,6 +55,14 @@ add_library(linernotes_butler STATIC
     MojibakeLlm.h
     MojibakeSource.cpp
     MojibakeSource.h
+    TitleMatchJobHandler.cpp
+    TitleMatchJobHandler.h
+    TitleMatchLlm.cpp
+    TitleMatchLlm.h
+    TitleMatchSource.cpp
+    TitleMatchSource.h
+    TitleMatchStore.cpp
+    TitleMatchStore.h
     TitleVersion.cpp
     TitleVersion.h
     TrackFieldTarget.h

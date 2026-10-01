@@ -33,6 +33,8 @@ inline constexpr QLatin1StringView kFingerprintInvalidKey { "fingerprint.invalid
 
 inline constexpr QLatin1StringView kVersionSuffixInvalidKey { "version_suffix.invalid_key" };
 inline constexpr QLatin1StringView kVersionSuffixInvalidResult { "version_suffix.invalid_result" };
+inline constexpr QLatin1StringView kTitleMatchInvalidKey { "title_match.invalid_key" };
+inline constexpr QLatin1StringView kTitleMatchInvalidResult { "title_match.invalid_result" };
 inline constexpr QLatin1StringView kVersionLinkInvalidKey { "version_link.invalid_key" };
 inline constexpr QLatin1StringView kTranslationInvalidKey { "translation.invalid_key" };
 inline constexpr QLatin1StringView kTranslationInvalidResult { "translation.invalid_result" };

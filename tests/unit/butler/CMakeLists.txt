@@ -118,6 +118,18 @@ linernotes_add_test(
 
 
 linernotes_add_test(
+    NAME butler_TitleMatch
+    SOURCES
+        tst_TitleMatch.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Linernotes::Deps::ICU
+)
+
+linernotes_add_test(
     NAME butler_TitleVersion
     SOURCES
         tst_TitleVersion.cpp

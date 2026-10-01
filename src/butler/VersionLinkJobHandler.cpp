@@ -26,17 +26,18 @@ class VersionLinkTask final : public QObject {
     Q_DISABLE_COPY_MOVE(VersionLinkTask)
 
 public:
-    VersionLinkTask(library::Database &db, const core::Clock &clock, int promptVersion,
-        std::function<void(const core::Result<void> &)> done)
+    VersionLinkTask(library::Database &db, const core::Clock &clock, int suffixPromptVersion,
+        int titleMatchPromptVersion, std::function<void(const core::Result<void> &)> done)
         : m_done(std::move(done))
     {
         connect(&m_watcher, &QFutureWatcher<core::Result<VersionLinkStats>>::finished, this,
             &VersionLinkTask::onFinished);
 
         auto future
-            = QtConcurrent::run([&db, &clock, promptVersion]() -> core::Result<VersionLinkStats> {
+            = QtConcurrent::run([&db, &clock, suffixPromptVersion,
+                                    titleMatchPromptVersion]() -> core::Result<VersionLinkStats> {
                   const VersionLinker linker(db, clock);
-                  return linker.linkAll(promptVersion);
+                  return linker.linkAll(suffixPromptVersion, titleMatchPromptVersion);
               });
         m_watcher.setFuture(future);
     }
@@ -111,16 +112,26 @@ std::unique_ptr<QObject> VersionLinkJobHandler::process(const QString &itemKey,
         return nullptr;
     }
 
-    int promptVersion = 0;
+    int suffixPromptVersion = 0;
     if (const auto promptRes = m_prompts.load(QStringLiteral("cleanup/version_suffix"));
         promptRes.ok()) {
-        promptVersion = promptRes.value().version;
+        suffixPromptVersion = promptRes.value().version;
     } else {
         qCWarning(lcButler, "Failed to load cleanup/version_suffix prompt: %s",
             qPrintable(promptRes.error().toString()));
     }
 
-    return std::make_unique<VersionLinkTask>(m_db, m_clock, promptVersion, std::move(done));
+    int titleMatchPromptVersion = 0;
+    if (const auto promptRes = m_prompts.load(QStringLiteral("cleanup/title_match"));
+        promptRes.ok()) {
+        titleMatchPromptVersion = promptRes.value().version;
+    } else {
+        qCWarning(lcButler, "Failed to load cleanup/title_match prompt: %s",
+            qPrintable(promptRes.error().toString()));
+    }
+
+    return std::make_unique<VersionLinkTask>(
+        m_db, m_clock, suffixPromptVersion, titleMatchPromptVersion, std::move(done));
 }
 
 } // namespace linernotes::butler

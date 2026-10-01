@@ -12,6 +12,7 @@
 #include <butler/DuplicateJobHandler.h>
 #include <butler/FingerprintJobHandler.h>
 #include <butler/MojibakeJobHandler.h>
+#include <butler/TitleMatchJobHandler.h>
 #include <butler/TranslationJobHandler.h>
 #include <butler/VersionLinkJobHandler.h>
 #include <butler/VersionSuffixJobHandler.h>
@@ -55,6 +56,8 @@ AiContext::AiContext(core::Settings &settings, library::Database &db, const core
         std::make_unique<butler::ArtistCreditJobHandler>(db, m_llm, m_prompts, clock));
     m_jobs.registerHandler(
         std::make_unique<butler::VersionSuffixJobHandler>(db, m_llm, m_prompts, clock));
+    m_jobs.registerHandler(
+        std::make_unique<butler::TitleMatchJobHandler>(db, m_llm, m_prompts, clock));
     m_jobs.registerHandler(std::make_unique<butler::VersionLinkJobHandler>(db, m_prompts, clock));
     m_jobs.registerHandler(
         std::make_unique<butler::TranslationJobHandler>(db, m_llm, m_prompts, clock));

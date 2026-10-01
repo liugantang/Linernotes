@@ -6,12 +6,14 @@
 #include <QHash>
 #include <QList>
 #include <QPair>
+#include <QSet>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QString>
 #include <QVariant>
 
 #include <butler/ArtistName.h>
+#include <butler/TitleMatchStore.h>
 #include <butler/TitleVersion.h>
 #include <butler/VersionSuffixStore.h>
 #include <core/Clock.h>
@@ -20,7 +22,9 @@
 #include <library/Errors.h>
 #include <library/LibraryEnums.h>
 
+#include <algorithm>
 #include <optional>
+#include <utility>
 
 namespace linernotes::butler {
 
@@ -29,7 +33,7 @@ namespace {
 struct RawTrack {
     qint64 trackId = 0;
     QString title;
-    std::optional<qint64> mainArtistId;
+    std::optional<qint64> mainArtistId = std::nullopt;
 };
 
 struct ProcessedTrack {
@@ -38,6 +42,8 @@ struct ProcessedTrack {
     library::VersionType type = library::VersionType::Studio;
     bool unresolved = false;
     QString groupingKey;
+    std::optional<qint64> mainArtistId = std::nullopt;
+    QString baseKey;
 };
 
 core::Result<QList<RawTrack>> loadAllTracks(const QSqlDatabase &conn)
@@ -102,8 +108,161 @@ void processTracks(const QList<RawTrack> &rawTracks,
             .type = tv.type,
             .unresolved = tv.unresolved,
             .groupingKey = groupingKey,
+            .mainArtistId = raw.mainArtistId,
+            .baseKey = baseKey,
         });
     }
+}
+class DisjointSet {
+public:
+    void add(const QString &x)
+    {
+        if (!m_parent.contains(x)) {
+            m_parent.insert(x, x);
+        }
+    }
+
+    QString find(const QString &x)
+    {
+        add(x);
+        QString root = x;
+        while (m_parent.value(root, root) != root) {
+            root = m_parent.value(root, root);
+        }
+        QString curr = x;
+        while (curr != root) {
+            const QString next = m_parent.value(curr, curr);
+            m_parent.insert(curr, root);
+            curr = next;
+        }
+        return root;
+    }
+
+    void unite(const QString &a, const QString &b)
+    {
+        const QString rootA = find(a);
+        const QString rootB = find(b);
+        if (rootA != rootB) {
+            m_parent.insert(rootA, rootB);
+        }
+    }
+
+    bool contains(const QString &x) const { return m_parent.contains(x); }
+
+    QList<QString> keys() const { return m_parent.keys(); }
+
+private:
+    QHash<QString, QString> m_parent;
+};
+
+QHash<QString, QStringList> buildTitleMatchMap(
+    const QHash<QPair<QString, QString>, TitleMatchVerdict> &titleMatchVerdicts)
+{
+    QHash<QString, QStringList> matches;
+    for (auto it = titleMatchVerdicts.cbegin(); it != titleMatchVerdicts.cend(); ++it) {
+        if (it.value().same && it.value().confidence >= kTitleMatchMinConfidence) {
+            const QString &keyA = it.key().first;
+            const QString &keyB = it.key().second;
+            auto matchIt = matches.find(keyA);
+            if (matchIt == matches.end()) {
+                matches.insert(keyA, QStringList { keyB });
+            } else {
+                matchIt.value().append(keyB);
+            }
+        }
+    }
+    return matches;
+}
+
+QHash<qint64, QSet<QString>> collectArtistBaseKeys(const QList<ProcessedTrack> &tracks)
+{
+    QHash<qint64, QSet<QString>> artistBaseKeys;
+    for (const auto &t : tracks) {
+        if (!t.mainArtistId.has_value() || t.baseKey.isEmpty()) {
+            continue;
+        }
+        const qint64 artistId = t.mainArtistId.value();
+        auto it = artistBaseKeys.find(artistId);
+        if (it == artistBaseKeys.end()) {
+            artistBaseKeys.insert(artistId, QSet<QString> { t.baseKey });
+        } else {
+            it.value().insert(t.baseKey);
+        }
+    }
+    return artistBaseKeys;
+}
+
+void connectMatchingGroups(DisjointSet &dsu, const QHash<qint64, QSet<QString>> &artistBaseKeys,
+    const QHash<QString, QStringList> &titleMatches)
+{
+    for (auto it = artistBaseKeys.cbegin(); it != artistBaseKeys.cend(); ++it) {
+        const qint64 artistId = it.key();
+        const QSet<QString> &baseKeys = it.value();
+
+        for (const auto &baseKey : baseKeys) {
+            const auto matchIt = titleMatches.constFind(baseKey);
+            if (matchIt == titleMatches.constEnd()) {
+                continue;
+            }
+            const QString g1 = baseKey + QLatin1Char('\x1f') + QString::number(artistId);
+            for (const auto &partner : matchIt.value()) {
+                if (baseKeys.contains(partner)) {
+                    const QString g2 = partner + QLatin1Char('\x1f') + QString::number(artistId);
+                    dsu.unite(g1, g2);
+                }
+            }
+        }
+    }
+}
+
+QHash<QString, QString> computeMinKeyPerRoot(DisjointSet &dsu)
+{
+    QHash<QString, QString> minKeyPerRoot;
+    const auto allKeys = dsu.keys();
+    for (const auto &g : allKeys) {
+        const QString root = dsu.find(g);
+        const auto it = minKeyPerRoot.find(root);
+        if (it == minKeyPerRoot.end() || g < it.value()) {
+            minKeyPerRoot.insert(root, g);
+        }
+    }
+    return minKeyPerRoot;
+}
+
+void updateTrackGroupingKeys(
+    QList<ProcessedTrack> &tracks, DisjointSet &dsu, const QHash<QString, QString> &minKeyPerRoot)
+{
+    for (auto &t : tracks) {
+        if (t.mainArtistId.has_value() && !t.baseKey.isEmpty()) {
+            if (dsu.contains(t.groupingKey)) {
+                const QString root = dsu.find(t.groupingKey);
+                const auto it = minKeyPerRoot.constFind(root);
+                if (it != minKeyPerRoot.constEnd()) {
+                    t.groupingKey = it.value();
+                }
+            }
+        }
+    }
+}
+
+void applyTitleMatches(QList<ProcessedTrack> &tracks,
+    const QHash<QPair<QString, QString>, TitleMatchVerdict> &titleMatchVerdicts)
+{
+    if (titleMatchVerdicts.isEmpty()) {
+        return;
+    }
+
+    const auto titleMatches = buildTitleMatchMap(titleMatchVerdicts);
+    if (titleMatches.isEmpty()) {
+        return;
+    }
+
+    const auto artistBaseKeys = collectArtistBaseKeys(tracks);
+    DisjointSet dsu;
+    connectMatchingGroups(dsu, artistBaseKeys, titleMatches);
+
+    const auto minKeyPerRoot = computeMinKeyPerRoot(dsu);
+    updateTrackGroupingKeys(tracks, dsu, minKeyPerRoot);
 }
 
 core::Result<void> saveTrackVersionsAndCleanEmpty(const QSqlDatabase &conn,
@@ -312,7 +471,8 @@ VersionLinker::VersionLinker(library::Database &db, const core::Clock &clock)
 {
 }
 
-core::Result<VersionLinkStats> VersionLinker::linkAll(int promptVersion) const
+core::Result<VersionLinkStats> VersionLinker::linkAll(
+    int suffixPromptVersion, int titleMatchPromptVersion) const
 {
     const auto connRes = m_db.connection();
     if (!connRes.ok()) {
@@ -330,11 +490,18 @@ core::Result<VersionLinkStats> VersionLinker::linkAll(int promptVersion) const
     }
 
     const VersionSuffixStore suffixStore(m_db, m_clock);
-    const auto storeRes = suffixStore.loadAll(promptVersion);
+    const auto storeRes = suffixStore.loadAll(suffixPromptVersion);
     if (!storeRes.ok()) {
         return storeRes.error();
     }
     const auto &verdicts = storeRes.value();
+
+    const TitleMatchStore titleMatchStore(m_db, m_clock);
+    const auto titleMatchRes = titleMatchStore.loadAll(titleMatchPromptVersion);
+    if (!titleMatchRes.ok()) {
+        return titleMatchRes.error();
+    }
+    const auto &titleMatchVerdicts = titleMatchRes.value();
 
     auto classify = [&verdicts](const QString &s) -> SuffixClass {
         SuffixClass cls = classifySuffix(s);
@@ -357,6 +524,7 @@ core::Result<VersionLinkStats> VersionLinker::linkAll(int promptVersion) const
     QList<ProcessedTrack> validTracks;
     QList<qint64> emptyTrackIds;
     processTracks(rawTracksRes.value(), classify, validTracks, emptyTrackIds);
+    applyTitleMatches(validTracks, titleMatchVerdicts);
 
     const qint64 nowMs = m_clock.nowMs();
 

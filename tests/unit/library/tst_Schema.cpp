@@ -100,7 +100,7 @@ void TstSchema::migratesFreshDatabaseToLatest()
     QVERIFY(db.open(Migrator()).ok());
     const auto conn = db.connection().value();
 
-    QCOMPARE(Migrator::currentVersion(conn).value(), 26);
+    QCOMPARE(Migrator::currentVersion(conn).value(), 27);
 
     // Verify core tables exist
     QSqlQuery q(conn);
@@ -118,6 +118,7 @@ void TstSchema::migratesFreshDatabaseToLatest()
     QVERIFY(tables.contains(QStringLiteral("track_issues")));
     QVERIFY(tables.contains(QStringLiteral("fingerprints")));
     QVERIFY(tables.contains(QStringLiteral("version_suffixes")));
+    QVERIFY(tables.contains(QStringLiteral("title_matches")));
     QVERIFY(tables.contains(QStringLiteral("track_versions")));
     QVERIFY(tables.contains(QStringLiteral("text_translations")));
     QVERIFY(tables.contains(QStringLiteral("duplicate_groups")));

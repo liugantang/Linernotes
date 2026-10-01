@@ -40,6 +40,7 @@ public:
         Merge,
         VersionSuffix,
         VersionLink,
+        TitleMatch,
         Translate,
         Fingerprint,
         Duplicates,
@@ -54,6 +55,7 @@ public:
     Q_PROPERTY(int mergeClusters READ mergeClusters NOTIFY healthChanged)
     Q_PROPERTY(int versionTracks READ versionTracks NOTIFY healthChanged)
     Q_PROPERTY(int versionSuffixes READ versionSuffixes NOTIFY healthChanged)
+    Q_PROPERTY(int titleMatchPairs READ titleMatchPairs NOTIFY healthChanged)
     Q_PROPERTY(int translateTexts READ translateTexts NOTIFY healthChanged)
     Q_PROPERTY(int duplicateCandidates READ duplicateCandidates NOTIFY healthChanged)
     Q_PROPERTY(int fingerprintPending READ fingerprintPending NOTIFY healthChanged)
@@ -62,6 +64,7 @@ public:
     Q_PROPERTY(int creditTokens READ creditTokens NOTIFY healthChanged)
     Q_PROPERTY(int mergeTokens READ mergeTokens NOTIFY healthChanged)
     Q_PROPERTY(int versionTokens READ versionTokens NOTIFY healthChanged)
+    Q_PROPERTY(int titleMatchTokens READ titleMatchTokens NOTIFY healthChanged)
     Q_PROPERTY(int translateTokens READ translateTokens NOTIFY healthChanged)
 
     // Run / Progress
@@ -89,6 +92,8 @@ public:
         int versionTracks = 0;
         int versionSuffixes = 0;
         QStringList versionSuffixItems;
+        int titleMatchPairs = 0;
+        QStringList titleMatchItems;
         int translateTexts = 0;
         QStringList translateItems;
         int duplicateCandidates = 0;
@@ -108,6 +113,7 @@ public:
     [[nodiscard]] int mergeClusters() const;
     [[nodiscard]] int versionTracks() const;
     [[nodiscard]] int versionSuffixes() const;
+    [[nodiscard]] int titleMatchPairs() const;
     [[nodiscard]] int translateTexts() const;
     [[nodiscard]] int duplicateCandidates() const;
     [[nodiscard]] int fingerprintPending() const;
@@ -116,6 +122,7 @@ public:
     [[nodiscard]] int creditTokens() const;
     [[nodiscard]] int mergeTokens() const;
     [[nodiscard]] int versionTokens() const;
+    [[nodiscard]] int titleMatchTokens() const;
     [[nodiscard]] int translateTokens() const;
 
     [[nodiscard]] bool isRunning() const;
@@ -179,6 +186,7 @@ private:
     int m_mergeClusters = 0;
     int m_versionTracks = 0;
     int m_versionSuffixes = 0;
+    int m_titleMatchPairs = 0;
     int m_translateTexts = 0;
     int m_duplicateCandidates = 0;
     int m_fingerprintPending = 0;
@@ -187,6 +195,7 @@ private:
     int m_creditTokens = 0;
     int m_mergeTokens = 0;
     int m_versionTokens = 0;
+    int m_titleMatchTokens = 0;
     int m_translateTokens = 0;
     QFutureWatcher<HealthReportData> m_healthWatcher;
 

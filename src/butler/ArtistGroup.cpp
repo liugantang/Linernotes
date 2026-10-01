@@ -72,6 +72,10 @@ QSet<QString> collectIdentityKeys(
             }
         }
     }
+    const QString rKey = romanKey(entry.name);
+    if (!rKey.isEmpty()) {
+        keys.insert(QStringLiteral("r:") + rKey);
+    }
     return keys;
 }
 

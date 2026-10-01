@@ -35,7 +35,8 @@ struct ArtistGrouping {
 };
 
 /// altNames：exactKey(艺人名) → 该名字的其他写法（来自署名解析的 aka 等）。
-/// 每个实体的身份键 = exactKey(自身名字) ∪ { exactKey(n) | n ∈ altNames[exactKey(自身名字)] }，
+/// 每个实体的身份键 = exactKey(自身名字) ∪ { exactKey(n) | n ∈ altNames[exactKey(自身名字)] }
+///                 ∪ { "r:" + romanKey(自身名字) }（非空时），
 /// 空键忽略。有共同键的实体用并查集并成一组；只有 1 个成员的组不输出。
 ArtistGrouping groupArtists(const QList<ArtistEntry> &entries,
     const QHash<QString, QStringList> &altNames, int maxGroupSize);

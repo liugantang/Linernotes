@@ -11,6 +11,7 @@
 namespace {
 
 using linernotes::butler::exactKey;
+using linernotes::butler::romanKey;
 
 class TstArtistName : public QObject {
     Q_OBJECT
@@ -18,6 +19,8 @@ class TstArtistName : public QObject {
 private slots:
     void exactKeyNormalizes_data();
     void exactKeyNormalizes();
+    void romanKeyMatchesKanaAndLatin();
+    void romanKeyRejectsHanAndTooShort();
 };
 
 void TstArtistName::exactKeyNormalizes_data()
@@ -51,6 +54,25 @@ void TstArtistName::exactKeyNormalizes()
 
     QCOMPARE(exactKey(input1), expectedKey);
     QCOMPARE(exactKey(input2), expectedKey);
+}
+
+void TstArtistName::romanKeyMatchesKanaAndLatin()
+{
+    const QString k1 = romanKey(QStringLiteral("ハルカトミユキ"));
+    const QString k2 = romanKey(QStringLiteral("Haruka to Miyuki"));
+    QVERIFY(!k1.isEmpty());
+    QCOMPARE(k1, k2);
+
+    const QString c1 = romanKey(QStringLiteral("ちょうちょ"));
+    const QString c2 = romanKey(QStringLiteral("ChouCho"));
+    QVERIFY(!c1.isEmpty());
+    QCOMPARE(c1, c2);
+}
+
+void TstArtistName::romanKeyRejectsHanAndTooShort()
+{
+    QVERIFY(romanKey(QStringLiteral("浜崎あゆみ")).isEmpty());
+    QVERIFY(romanKey(QStringLiteral("IU")).isEmpty());
 }
 
 } // namespace

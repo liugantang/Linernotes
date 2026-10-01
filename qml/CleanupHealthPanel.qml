@@ -44,6 +44,7 @@ Rectangle {
         else if (step === CleanupController.Merge) title = qsTr("Merging duplicate artists...")
         else if (step === CleanupController.VersionSuffix) title = qsTr("Classifying title suffixes...")
         else if (step === CleanupController.VersionLink) title = qsTr("Grouping song versions...")
+        else if (step === CleanupController.TitleMatch) title = qsTr("Matching titles across scripts...")
         else if (step === CleanupController.Translate) title = qsTr("Translating titles...")
         else if (step === CleanupController.Fingerprint) title = qsTr("Computing audio fingerprints...")
         else if (step === CleanupController.Duplicates) title = qsTr("Finding duplicates...")
@@ -285,10 +286,18 @@ Rectangle {
                     text: {
                         if (!hasCleanup) return ""
                         const candidates = AppContext.cleanup.duplicateCandidates
+                        const pairs = AppContext.cleanup.titleMatchPairs
+                        const tokens = AppContext.cleanup.titleMatchTokens
                         const fpPending = AppContext.cleanup.fingerprintPending
                         const groups = AppContext.cleanup.duplicateGroups
                         const versionPending = AppContext.cleanup.versionTracks
                         let desc = qsTr("%n candidate track(s)", "", candidates)
+                        if (pairs > 0) {
+                            desc += qsTr(" · %n title pair(s) to check with AI", "", pairs)
+                            if (tokens > 0) {
+                                desc += qsTr(" · ≈ %1 tokens").arg(tokens)
+                            }
+                        }
                         if (fpPending > 0) {
                             desc += qsTr(" · %n audio fingerprint(s) to compute", "", fpPending)
                         }
