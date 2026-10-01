@@ -8,9 +8,13 @@ add_library(linernotes_audio STATIC
     AudioEmbedder.h
     AudioLogging.cpp
     AudioLogging.h
+    EmbeddingIndex.cpp
+    EmbeddingIndex.h
     Errors.h
     Fingerprint.cpp
     Fingerprint.h
+    TrackEmbedding.cpp
+    TrackEmbedding.h
 )
 add_library(Linernotes::audio ALIAS linernotes_audio)
 

@@ -100,7 +100,7 @@ void TstSchema::migratesFreshDatabaseToLatest()
     QVERIFY(db.open(Migrator()).ok());
     const auto conn = db.connection().value();
 
-    QCOMPARE(Migrator::currentVersion(conn).value(), 27);
+    QCOMPARE(Migrator::currentVersion(conn).value(), 28);
 
     // Verify core tables exist
     QSqlQuery q(conn);
@@ -126,6 +126,8 @@ void TstSchema::migratesFreshDatabaseToLatest()
     QVERIFY(tables.contains(QStringLiteral("duplicate_dismissals")));
     QVERIFY(tables.contains(QStringLiteral("writebacks")));
     QVERIFY(tables.contains(QStringLiteral("writeback_files")));
+    QVERIFY(tables.contains(QStringLiteral("audio_embeddings")));
+    QVERIFY(!tables.contains(QStringLiteral("embeddings")));
     QVERIFY(!tables.contains(QStringLiteral("album_info_checks")));
     QVERIFY(!tables.contains(QStringLiteral("mb_cache")));
     QVERIFY(!tables.contains(QStringLiteral("mb_album_matches")));

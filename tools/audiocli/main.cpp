@@ -12,11 +12,19 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLoggingCategory>
+#include <QSqlDatabase>
+#include <QSqlQuery>
 #include <QStringLiteral>
 
 #include <audio/AudioDecoder.h>
 #include <audio/AudioEmbedder.h>
+#include <audio/EmbeddingIndex.h>
+#include <audio/TrackEmbedding.h>
+#include <core/Clock.h>
 #include <core/Result.h>
+#include <library/Database.h>
+#include <library/EmbeddingStore.h>
+#include <library/Migrator.h>
 
 #include <algorithm>
 #include <cmath>
@@ -32,8 +40,12 @@ namespace {
 struct CliConfig {
     QString command;
     QString modelPath;
+    QString dbPath;
     bool preferGpu = false;
     int threads = 4;
+    int limit = 0;
+    int topK = 10;
+    qint64 targetTrackId = 0;
     std::optional<QString> refPath;
     QStringList files;
     bool verbose = false;
@@ -41,13 +53,22 @@ struct CliConfig {
 
 struct CliOptions {
     QCommandLineOption modelOption { QStringLiteral("model"),
-        QStringLiteral("Path to MS-CLAP ONNX model file (required for embed)."),
+        QStringLiteral("Path to MS-CLAP ONNX model file (required for embed and analyze)."),
+        QStringLiteral("path") };
+    QCommandLineOption dbOption { QStringLiteral("db"),
+        QStringLiteral("Path to SQLite database file (required for analyze and similar)."),
         QStringLiteral("path") };
     QCommandLineOption gpuOption { QStringLiteral("gpu"),
         QStringLiteral("Try the CUDA execution provider (falls back to CPU).") };
     QCommandLineOption threadsOption { QStringLiteral("threads"),
         QStringLiteral("Number of intra-op threads for inference (default: 4)."),
         QStringLiteral("N"), QStringLiteral("4") };
+    QCommandLineOption limitOption { QStringLiteral("limit"),
+        QStringLiteral("Limit number of tracks to analyze (default: 0 = all)."),
+        QStringLiteral("N"), QStringLiteral("0") };
+    QCommandLineOption topKOption { QStringList { QStringLiteral("k"), QStringLiteral("top-k") },
+        QStringLiteral("Number of similar tracks to return (default: 10)."), QStringLiteral("N"),
+        QStringLiteral("10") };
     QCommandLineOption refOption { QStringLiteral("ref"),
         QStringLiteral("Path to reference embeddings JSON file for similarity comparison."),
         QStringLiteral("path") };
@@ -62,14 +83,115 @@ void setupParser(QCommandLineParser &parser, const CliOptions &opts)
     parser.addHelpOption();
     parser.addVersionOption();
     parser.addOption(opts.modelOption);
+    parser.addOption(opts.dbOption);
     parser.addOption(opts.gpuOption);
     parser.addOption(opts.threadsOption);
+    parser.addOption(opts.limitOption);
+    parser.addOption(opts.topKOption);
     parser.addOption(opts.refOption);
     parser.addOption(opts.verboseOption);
     parser.addPositionalArgument(QStringLiteral("command"),
-        QStringLiteral("Subcommand to run (e.g. 'embed')."), QStringLiteral("<command>"));
-    parser.addPositionalArgument(QStringLiteral("files"), QStringLiteral("Audio files to process."),
-        QStringLiteral("[files...]"));
+        QStringLiteral("Subcommand to run ('embed', 'analyze', 'similar')."),
+        QStringLiteral("<command>"));
+    parser.addPositionalArgument(QStringLiteral("args"),
+        QStringLiteral("Command-specific arguments (files for 'embed', track_id for 'similar')."),
+        QStringLiteral("[args...]"));
+}
+
+std::optional<CliConfig> parseEmbedConfig(const QCommandLineParser &parser, const CliOptions &opts,
+    const QStringList &positionalArgs, int threads, int &exitCode)
+{
+    if (!parser.isSet(opts.modelOption)) {
+        std::cerr << "Error: --model <path> is required for 'embed'.\n\n";
+        std::cerr << qPrintable(parser.helpText());
+        exitCode = 2;
+        return std::nullopt;
+    }
+    const QStringList files = positionalArgs.mid(1);
+    if (files.isEmpty()) {
+        std::cerr << "Error: No audio files specified for 'embed'.\n\n";
+        std::cerr << qPrintable(parser.helpText());
+        exitCode = 2;
+        return std::nullopt;
+    }
+
+    std::optional<QString> refPath;
+    if (parser.isSet(opts.refOption)) {
+        refPath = parser.value(opts.refOption);
+    }
+
+    CliConfig cfg;
+    cfg.command = QStringLiteral("embed");
+    cfg.modelPath = parser.value(opts.modelOption);
+    cfg.preferGpu = parser.isSet(opts.gpuOption);
+    cfg.threads = threads;
+    cfg.refPath = refPath;
+    cfg.files = files;
+    cfg.verbose = parser.isSet(opts.verboseOption);
+    return cfg;
+}
+
+std::optional<CliConfig> parseAnalyzeConfig(
+    const QCommandLineParser &parser, const CliOptions &opts, int threads, int limit, int &exitCode)
+{
+    if (!parser.isSet(opts.dbOption)) {
+        std::cerr << "Error: --db <path> is required for 'analyze'.\n\n";
+        std::cerr << qPrintable(parser.helpText());
+        exitCode = 2;
+        return std::nullopt;
+    }
+    if (!parser.isSet(opts.modelOption)) {
+        std::cerr << "Error: --model <path> is required for 'analyze'.\n\n";
+        std::cerr << qPrintable(parser.helpText());
+        exitCode = 2;
+        return std::nullopt;
+    }
+
+    CliConfig cfg;
+    cfg.command = QStringLiteral("analyze");
+    cfg.modelPath = parser.value(opts.modelOption);
+    cfg.dbPath = parser.value(opts.dbOption);
+    cfg.preferGpu = parser.isSet(opts.gpuOption);
+    cfg.threads = threads;
+    cfg.limit = limit;
+    cfg.verbose = parser.isSet(opts.verboseOption);
+    return cfg;
+}
+
+std::optional<CliConfig> parseSimilarConfig(const QCommandLineParser &parser,
+    const CliOptions &opts, const QStringList &positionalArgs, int topK, int &exitCode)
+{
+    if (!parser.isSet(opts.dbOption)) {
+        std::cerr << "Error: --db <path> is required for 'similar'.\n\n";
+        std::cerr << qPrintable(parser.helpText());
+        exitCode = 2;
+        return std::nullopt;
+    }
+
+    const QStringList restArgs = positionalArgs.mid(1);
+    if (restArgs.isEmpty()) {
+        std::cerr << "Error: <track_id> positional argument is required for 'similar'.\n\n";
+        std::cerr << qPrintable(parser.helpText());
+        exitCode = 2;
+        return std::nullopt;
+    }
+
+    bool ok = false;
+    const qint64 trackId = restArgs.at(0).toLongLong(&ok);
+    if (!ok || trackId <= 0) {
+        std::cerr << "Error: Invalid <track_id>: " << qPrintable(restArgs.at(0))
+                  << " (must be a positive integer)\n";
+        exitCode = 2;
+        return std::nullopt;
+    }
+
+    CliConfig cfg;
+    cfg.command = QStringLiteral("similar");
+    cfg.dbPath = parser.value(opts.dbOption);
+    cfg.topK = topK;
+    cfg.targetTrackId = trackId;
+    cfg.verbose = parser.isSet(opts.verboseOption);
+    return cfg;
 }
 
 std::optional<CliConfig> parseArgs(
@@ -90,22 +212,7 @@ std::optional<CliConfig> parseArgs(
 
     const QStringList positionalArgs = parser.positionalArguments();
     if (positionalArgs.isEmpty()) {
-        std::cerr << "Error: No command specified. Available commands: embed\n\n";
-        std::cerr << qPrintable(parser.helpText());
-        exitCode = 2;
-        return std::nullopt;
-    }
-
-    const QString &command = positionalArgs.at(0);
-    if (command != QStringLiteral("embed")) {
-        std::cerr << "Error: Unknown command '" << qPrintable(command)
-                  << "'. Available commands: embed\n\n";
-        exitCode = 2;
-        return std::nullopt;
-    }
-
-    if (!parser.isSet(opts.modelOption)) {
-        std::cerr << "Error: --model <path> is required for 'embed'.\n\n";
+        std::cerr << "Error: No command specified. Available commands: embed, analyze, similar\n\n";
         std::cerr << qPrintable(parser.helpText());
         exitCode = 2;
         return std::nullopt;
@@ -123,28 +230,45 @@ std::optional<CliConfig> parseArgs(
         }
     }
 
-    const QStringList files = positionalArgs.mid(1);
-    if (files.isEmpty()) {
-        std::cerr << "Error: No audio files specified for 'embed'.\n\n";
-        std::cerr << qPrintable(parser.helpText());
-        exitCode = 2;
-        return std::nullopt;
+    int limit = 0;
+    if (parser.isSet(opts.limitOption)) {
+        bool ok = false;
+        limit = parser.value(opts.limitOption).toInt(&ok);
+        if (!ok || limit < 0) {
+            std::cerr << "Error: Invalid --limit value: "
+                      << qPrintable(parser.value(opts.limitOption)) << " (must be >= 0)\n";
+            exitCode = 2;
+            return std::nullopt;
+        }
     }
 
-    std::optional<QString> refPath;
-    if (parser.isSet(opts.refOption)) {
-        refPath = parser.value(opts.refOption);
+    int topK = 10;
+    if (parser.isSet(opts.topKOption)) {
+        bool ok = false;
+        topK = parser.value(opts.topKOption).toInt(&ok);
+        if (!ok || topK <= 0) {
+            std::cerr << "Error: Invalid -k value: " << qPrintable(parser.value(opts.topKOption))
+                      << " (must be > 0)\n";
+            exitCode = 2;
+            return std::nullopt;
+        }
     }
 
-    return CliConfig {
-        .command = command,
-        .modelPath = parser.value(opts.modelOption),
-        .preferGpu = parser.isSet(opts.gpuOption),
-        .threads = threads,
-        .refPath = refPath,
-        .files = files,
-        .verbose = parser.isSet(opts.verboseOption),
-    };
+    const QString &command = positionalArgs.at(0);
+    if (command == QStringLiteral("embed")) {
+        return parseEmbedConfig(parser, opts, positionalArgs, threads, exitCode);
+    }
+    if (command == QStringLiteral("analyze")) {
+        return parseAnalyzeConfig(parser, opts, threads, limit, exitCode);
+    }
+    if (command == QStringLiteral("similar")) {
+        return parseSimilarConfig(parser, opts, positionalArgs, topK, exitCode);
+    }
+
+    std::cerr << "Error: Unknown command '" << qPrintable(command)
+              << "'. Available commands: embed, analyze, similar\n\n";
+    exitCode = 2;
+    return std::nullopt;
 }
 
 core::Result<QHash<QString, QList<float>>> loadReferenceJson(const QString &refPath)
@@ -358,6 +482,204 @@ int executeEmbed(const CliConfig &cfg)
     return 0;
 }
 
+int executeAnalyze(const CliConfig &cfg)
+{
+    linernotes::library::Database db(cfg.dbPath);
+    const linernotes::library::Migrator migrator;
+    const auto openRes = db.open(migrator);
+    if (!openRes.ok()) {
+        std::cerr << "Database error: " << qPrintable(openRes.error().toString()) << "\n";
+        return 1;
+    }
+
+    linernotes::audio::EmbedderOptions embedderOptions;
+    embedderOptions.intraOpThreads = cfg.threads;
+    embedderOptions.preferGpu = cfg.preferGpu;
+
+    auto embedderRes = linernotes::audio::AudioEmbedder::create(cfg.modelPath, embedderOptions);
+    if (!embedderRes.ok()) {
+        std::cerr << "Error loading model: " << qPrintable(embedderRes.error().toString()) << "\n";
+        return 1;
+    }
+    const auto embedder = std::move(embedderRes.value());
+
+    const linernotes::core::SystemClock clock;
+    linernotes::library::EmbeddingStore store(db, clock);
+
+    const QString modelId = QString(linernotes::audio::kEmbeddingModelId);
+    auto pendingRes = store.pendingTrackIds(modelId);
+    if (!pendingRes.ok()) {
+        std::cerr << "Error querying pending tracks: " << qPrintable(pendingRes.error().toString())
+                  << "\n";
+        return 1;
+    }
+
+    QList<qint64> trackIds = pendingRes.value();
+    if (cfg.limit > 0 && trackIds.size() > cfg.limit) {
+        trackIds = trackIds.mid(0, cfg.limit);
+    }
+
+    const qsizetype total = trackIds.size();
+    int successCount = 0;
+    int failedCount = 0;
+    qint64 totalElapsedMs = 0;
+
+    for (qsizetype i = 0; i < total; ++i) {
+        const qint64 trackId = trackIds.at(i);
+        QElapsedTimer timer;
+        timer.start();
+
+        const auto sourceRes = store.source(trackId);
+        if (!sourceRes.ok()) {
+            const qint64 elapsedMs = timer.elapsed();
+            const QString errStr = sourceRes.error().message;
+            static_cast<void>(store.saveFailure(trackId, modelId, errStr));
+            std::cout << QStringLiteral("%1/%2\t%3\t%4\t%5")
+                             .arg(i + 1)
+                             .arg(total)
+                             .arg(trackId)
+                             .arg(elapsedMs)
+                             .arg(errStr)
+                             .toStdString()
+                      << "\n";
+            failedCount++;
+            continue;
+        }
+
+        const auto &source = sourceRes.value();
+        const auto embedRes = linernotes::audio::embedTrack(
+            *embedder, source.path, source.startMs, source.durationMs);
+
+        if (!embedRes.ok()) {
+            const qint64 elapsedMs = timer.elapsed();
+            const QString errStr = embedRes.error().message;
+            static_cast<void>(store.saveFailure(trackId, modelId, errStr));
+            std::cout << QStringLiteral("%1/%2\t%3\t%4\t%5")
+                             .arg(i + 1)
+                             .arg(total)
+                             .arg(trackId)
+                             .arg(elapsedMs)
+                             .arg(errStr)
+                             .toStdString()
+                      << "\n";
+            failedCount++;
+        } else {
+            const auto saveRes = store.save(trackId, modelId, embedRes.value());
+            const qint64 elapsedMs = timer.elapsed();
+            if (!saveRes.ok()) {
+                const QString errStr = saveRes.error().message;
+                std::cout << QStringLiteral("%1/%2\t%3\t%4\t%5")
+                                 .arg(i + 1)
+                                 .arg(total)
+                                 .arg(trackId)
+                                 .arg(elapsedMs)
+                                 .arg(errStr)
+                                 .toStdString()
+                          << "\n";
+                failedCount++;
+            } else {
+                std::cout << QStringLiteral("%1/%2\t%3\t%4\tok")
+                                 .arg(i + 1)
+                                 .arg(total)
+                                 .arg(trackId)
+                                 .arg(elapsedMs)
+                                 .toStdString()
+                          << "\n";
+                successCount++;
+                totalElapsedMs += elapsedMs;
+            }
+        }
+    }
+
+    const double avgMs = (successCount > 0)
+        ? static_cast<double>(totalElapsedMs) / static_cast<double>(successCount)
+        : 0.0;
+    std::cout << qPrintable(QStringLiteral("Done: %1 succeeded, %2 failed, avg time: %3 ms\n")
+            .arg(successCount)
+            .arg(failedCount)
+            .arg(QString::asprintf("%.2f", avgMs)));
+
+    return 0;
+}
+
+QString getTrackDisplay(const QSqlDatabase &conn, qint64 trackId)
+{
+    QSqlQuery q(conn);
+    q.prepare(QStringLiteral("SELECT em.artist, em.title, f.path "
+                             "FROM tracks t "
+                             "JOIN files f ON f.id = t.file_id "
+                             "LEFT JOIN effective_metadata em ON em.track_id = t.id "
+                             "WHERE t.id = ?;"));
+    q.addBindValue(trackId);
+    if (q.exec() && q.next()) {
+        QString artist = q.value(0).toString().trimmed();
+        QString title = q.value(1).toString().trimmed();
+        QString path = q.value(2).toString();
+        if (!artist.isEmpty() && !title.isEmpty()) {
+            return QStringLiteral("%1 - %2").arg(artist, title);
+        }
+        if (!title.isEmpty()) {
+            return title;
+        }
+        if (!artist.isEmpty()) {
+            return artist;
+        }
+        return path;
+    }
+    return QStringLiteral("<unknown>");
+}
+
+int executeSimilar(const CliConfig &cfg)
+{
+    linernotes::library::Database db(cfg.dbPath);
+    const linernotes::library::Migrator migrator;
+    const auto openRes = db.open(migrator);
+    if (!openRes.ok()) {
+        std::cerr << "Database error: " << qPrintable(openRes.error().toString()) << "\n";
+        return 1;
+    }
+
+    const linernotes::core::SystemClock clock;
+    const linernotes::library::EmbeddingStore store(db, clock);
+
+    const QString modelId = QString(linernotes::audio::kEmbeddingModelId);
+    const auto loadRes = store.loadAll(modelId);
+    if (!loadRes.ok()) {
+        std::cerr << "Error loading embeddings: " << qPrintable(loadRes.error().toString()) << "\n";
+        return 1;
+    }
+
+    linernotes::audio::EmbeddingIndex index(linernotes::audio::AudioEmbedder::kDim);
+    for (const auto &stored : loadRes.value()) {
+        index.add(stored.trackId, stored.vector);
+    }
+
+    if (!index.contains(cfg.targetTrackId)) {
+        std::cerr << "Error: No embedding found for track " << cfg.targetTrackId << "\n";
+        return 1;
+    }
+
+    const auto connRes = db.connection();
+    if (!connRes.ok()) {
+        std::cerr << "Database error: " << qPrintable(connRes.error().toString()) << "\n";
+        return 1;
+    }
+    const auto &conn = connRes.value();
+
+    const QString targetDisplay = getTrackDisplay(conn, cfg.targetTrackId);
+    std::cout << "Track " << cfg.targetTrackId << ": " << qPrintable(targetDisplay) << "\n";
+
+    const auto neighbors = index.nearest(cfg.targetTrackId, cfg.topK);
+    for (const auto &neighbor : neighbors) {
+        const QString display = getTrackDisplay(conn, neighbor.id);
+        std::cout << qPrintable(
+            QString::asprintf("%.4f\t%lld\t%s", neighbor.score, neighbor.id, qPrintable(display)))
+                  << "\n";
+    }
+
+    return 0;
+}
+
 } // namespace
 
 int main(int argc, char *argv[])
@@ -381,7 +703,17 @@ int main(int argc, char *argv[])
             QLoggingCategory::setFilterRules(QStringLiteral("linernotes.*.debug=false"));
         }
 
-        return executeEmbed(*cfg);
+        if (cfg->command == QStringLiteral("embed")) {
+            return executeEmbed(*cfg);
+        }
+        if (cfg->command == QStringLiteral("analyze")) {
+            return executeAnalyze(*cfg);
+        }
+        if (cfg->command == QStringLiteral("similar")) {
+            return executeSimilar(*cfg);
+        }
+
+        return 0;
     } catch (const std::exception &e) {
         std::cerr << "Fatal exception: " << e.what() << "\n";
         return 1;

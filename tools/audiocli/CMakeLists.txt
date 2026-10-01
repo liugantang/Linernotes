@@ -8,8 +8,10 @@ add_executable(linernotes-audio
 target_link_libraries(linernotes-audio
     PRIVATE
         Linernotes::audio
+        Linernotes::library
         Linernotes::core
         Qt6::Core
+        Qt6::Sql
 )
 
 linernotes_set_target_options(linernotes-audio)
