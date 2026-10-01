@@ -4,6 +4,7 @@
 #pragma once
 
 #include <QDate>
+#include <QJsonObject>
 #include <QList>
 #include <QString>
 #include <QVariant>
@@ -84,7 +85,9 @@ public:
     }
 
     [[nodiscard]] QString toJson() const; // 存入 playlists.rule
+    [[nodiscard]] QJsonObject toJsonObject() const;
     static core::Result<SmartRule> fromJson(const QString &json);
+    static core::Result<SmartRule> fromJsonObject(const QJsonObject &root);
     [[nodiscard]] core::Result<void> validate() const;
 };
 

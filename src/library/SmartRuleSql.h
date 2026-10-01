@@ -21,4 +21,9 @@ QString buildSmartRuleWhereSql(const SmartRule &rule, QList<QVariant> &binds,
 /// 转义 LIKE 模糊匹配中的特殊字符 (% _ \)
 QString escapeLikePattern(const QString &input);
 
+/// 生成计算曲目播放次数的 SQL 表达式（窗口内播放次数或
+/// track_play_stats.play_count），并将参数绑定追加至 binds。 适用于 track_sort 别名为 ts 的上下文。
+QString buildPlayCountSqlExpr(
+    const SmartRule &rule, const PlayCountRule &countRule, QList<QVariant> &binds);
+
 } // namespace linernotes::library::detail

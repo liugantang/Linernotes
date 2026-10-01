@@ -468,7 +468,7 @@ core::Result<void> SmartRule::validate() const
     return { };
 }
 
-QString SmartRule::toJson() const
+QJsonObject SmartRule::toJsonObject() const
 {
     QJsonObject root;
     root.insert(QStringLiteral("version"), 1);
@@ -507,25 +507,17 @@ QString SmartRule::toJson() const
         root.insert(QStringLiteral("limit"), limit.value());
     }
 
-    const QJsonDocument doc(root);
+    return root;
+}
+
+QString SmartRule::toJson() const
+{
+    const QJsonDocument doc(toJsonObject());
     return QString::fromUtf8(doc.toJson(QJsonDocument::Compact));
 }
 
-core::Result<SmartRule> SmartRule::fromJson(const QString &json)
+core::Result<SmartRule> SmartRule::fromJsonObject(const QJsonObject &root)
 {
-    QJsonParseError parseError;
-    const QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8(), &parseError);
-    if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
-        return ruleError(
-            QStringLiteral("Failed to parse smart rule JSON"), parseError.errorString());
-    }
-
-    const QJsonObject root = doc.object();
-    if (!root.contains(QStringLiteral("version"))
-        || root.value(QStringLiteral("version")).toInt() != 1) {
-        return ruleError(QStringLiteral("Invalid or unsupported smart rule version"), json);
-    }
-
     SmartRule rule;
 
     const auto matchRes = parseMatch(root);
@@ -546,11 +538,13 @@ core::Result<SmartRule> SmartRule::fromJson(const QString &json)
     }
     rule.playedTo = ptRes.value();
 
-    auto condsRes = parseConditions(root.value(QStringLiteral("conditions")));
-    if (!condsRes.ok()) {
-        return condsRes.error();
+    if (root.contains(QStringLiteral("conditions"))) {
+        auto condsRes = parseConditions(root.value(QStringLiteral("conditions")));
+        if (!condsRes.ok()) {
+            return condsRes.error();
+        }
+        rule.conditions = condsRes.value();
     }
-    rule.conditions = condsRes.value();
 
     const auto sortKeyRes = parseSortKey(root);
     if (!sortKeyRes.ok()) {
@@ -564,7 +558,7 @@ core::Result<SmartRule> SmartRule::fromJson(const QString &json)
     }
     rule.sortOrder = sortOrderRes.value();
 
-    const auto limitRes = parseLimit(root, json);
+    const auto limitRes = parseLimit(root, QString());
     if (!limitRes.ok()) {
         return limitRes.error();
     }
@@ -576,6 +570,24 @@ core::Result<SmartRule> SmartRule::fromJson(const QString &json)
     }
 
     return rule;
+}
+
+core::Result<SmartRule> SmartRule::fromJson(const QString &json)
+{
+    QJsonParseError parseError;
+    const QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8(), &parseError);
+    if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+        return ruleError(
+            QStringLiteral("Failed to parse smart rule JSON"), parseError.errorString());
+    }
+
+    const QJsonObject root = doc.object();
+    if (!root.contains(QStringLiteral("version"))
+        || root.value(QStringLiteral("version")).toInt() != 1) {
+        return ruleError(QStringLiteral("Invalid or unsupported smart rule version"), json);
+    }
+
+    return fromJsonObject(root);
 }
 
 } // namespace linernotes::library

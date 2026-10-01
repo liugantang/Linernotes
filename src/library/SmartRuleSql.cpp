@@ -97,7 +97,9 @@ QString buildTextConditionSql(const SmartCondition &cond, QList<QVariant> &binds
     }
 }
 
-QString buildPlayCountExpr(
+} // namespace
+
+QString buildPlayCountSqlExpr(
     const SmartRule &rule, const PlayCountRule &countRule, QList<QVariant> &binds)
 {
     const PlayWindow w = extractPlayWindow(rule);
@@ -127,6 +129,8 @@ QString buildPlayCountExpr(
         "COALESCE((SELECT tps.play_count FROM track_play_stats tps WHERE tps.track_id = "
         "ts.track_id), 0)");
 }
+
+namespace {
 
 QString buildSkipCountExpr(const SmartRule &rule, QList<QVariant> &binds)
 {
@@ -176,7 +180,7 @@ QString buildNumberConditionSql(const SmartCondition &cond, const SmartRule &rul
             "COALESCE((SELECT apc.completion * 100.0 FROM album_play_completion apc WHERE "
             "apc.album_id = ts.album_id), 0.0)");
     } else if (cond.field == SmartField::PlayCount) {
-        expr = buildPlayCountExpr(rule, countRule, binds);
+        expr = buildPlayCountSqlExpr(rule, countRule, binds);
     } else if (cond.field == SmartField::SkipCount) {
         expr = buildSkipCountExpr(rule, binds);
     } else if (cond.field == SmartField::CompletedCount) {
