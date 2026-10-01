@@ -9,7 +9,6 @@
 #include <QJsonObject>
 #include <QtConcurrent>
 
-#include <core/Clock.h>
 #include <library/Database.h>
 #include <library/Errors.h>
 #include <library/TagWriter.h>
@@ -91,9 +90,8 @@ core::Result<library::TagSnapshot> originalSnapshot(library::WritebackStore &sto
 
 } // namespace
 
-WritebackJobHandler::WritebackJobHandler(library::Database &db, const core::Clock &clock)
+WritebackJobHandler::WritebackJobHandler(library::Database &db)
     : m_db(db)
-    , m_clock(clock)
 {
     m_pool.setMaxThreadCount(kMaxWritebackThreads);
 }
@@ -137,51 +135,49 @@ std::unique_ptr<QObject> WritebackJobHandler::process(const QString &itemKey,
         return nullptr;
     }
 
-    auto future = QtConcurrent::run(
-        &m_pool, [&db = m_db, &clock = m_clock, writebackId, fileId]() -> core::Result<void> {
-            library::WritebackStore store(db, clock);
-            const auto recRes = store.fileRecord(writebackId, fileId);
-            if (!recRes.ok()) {
-                return recRes.error();
-            }
-            const auto &record = recRes.value();
-            // 幂等：任务项可能被重试（例如更新任务状态时数据库忙）。已写过的直接成功；
-            // 已存过快照的沿用旧快照——重新快照拿到的会是已修改的标签，撤销就回不到原样了。
-            if (record.status == library::WritebackFileStatus::Written) {
-                return { };
-            }
-            const auto snapRes = originalSnapshot(store, writebackId, fileId, record);
-            if (!snapRes.ok()) {
-                static_cast<void>(store.markFailed(writebackId, fileId,
-                    library::WritebackFileStatus::Failed, snapRes.error().message));
-                return snapRes.error();
-            }
+    auto future
+        = QtConcurrent::run(&m_pool, [&db = m_db, writebackId, fileId]() -> core::Result<void> {
+              library::WritebackStore store(db);
+              const auto recRes = store.fileRecord(writebackId, fileId);
+              if (!recRes.ok()) {
+                  return recRes.error();
+              }
+              const auto &record = recRes.value();
+              // 幂等：任务项可能被重试（例如更新任务状态时数据库忙）。已写过的直接成功；
+              // 已存过快照的沿用旧快照——重新快照拿到的会是已修改的标签，撤销就回不到原样了。
+              if (record.status == library::WritebackFileStatus::Written) {
+                  return { };
+              }
+              const auto snapRes = originalSnapshot(store, writebackId, fileId, record);
+              if (!snapRes.ok()) {
+                  static_cast<void>(store.markFailed(writebackId, fileId,
+                      library::WritebackFileStatus::Failed, snapRes.error().message));
+                  return snapRes.error();
+              }
 
-            const auto writeRes = library::TagWriter::writeFields(record.path, record.fields);
-            if (!writeRes.ok()) {
-                static_cast<void>(library::TagWriter::restore(record.path, snapRes.value()));
-                static_cast<void>(store.markFailed(writebackId, fileId,
-                    library::WritebackFileStatus::Failed, writeRes.error().message));
-                return writeRes.error();
-            }
+              const auto writeRes = library::TagWriter::writeFields(record.path, record.fields);
+              if (!writeRes.ok()) {
+                  static_cast<void>(library::TagWriter::restore(record.path, snapRes.value()));
+                  static_cast<void>(store.markFailed(writebackId, fileId,
+                      library::WritebackFileStatus::Failed, writeRes.error().message));
+                  return writeRes.error();
+              }
 
-            const QFileInfo fi(record.path);
-            const qint64 size = fi.size();
-            const qint64 mtime = fi.lastModified().toMSecsSinceEpoch();
-            const auto markRes = store.markWritten(writebackId, fileId, size, mtime);
-            if (!markRes.ok()) {
-                return markRes.error();
-            }
-            return { };
-        });
+              const QFileInfo fi(record.path);
+              const qint64 size = fi.size();
+              const qint64 mtime = fi.lastModified().toMSecsSinceEpoch();
+              const auto markRes = store.markWritten(writebackId, fileId, size, mtime);
+              if (!markRes.ok()) {
+                  return markRes.error();
+              }
+              return { };
+          });
 
     return std::make_unique<JobActionWorker>(future, std::move(done));
 }
 
-WritebackRevertJobHandler::WritebackRevertJobHandler(
-    library::Database &db, const core::Clock &clock)
+WritebackRevertJobHandler::WritebackRevertJobHandler(library::Database &db)
     : m_db(db)
-    , m_clock(clock)
 {
     m_pool.setMaxThreadCount(kMaxWritebackThreads);
 }
@@ -225,57 +221,57 @@ std::unique_ptr<QObject> WritebackRevertJobHandler::process(const QString &itemK
         return nullptr;
     }
 
-    auto future = QtConcurrent::run(
-        &m_pool, [&db = m_db, &clock = m_clock, writebackId, fileId]() -> core::Result<void> {
-            library::WritebackStore store(db, clock);
-            const auto recRes = store.fileRecord(writebackId, fileId);
-            if (!recRes.ok()) {
-                return recRes.error();
-            }
-            const auto &record = recRes.value();
-            if (record.status != library::WritebackFileStatus::Written) {
-                return { };
-            }
+    auto future
+        = QtConcurrent::run(&m_pool, [&db = m_db, writebackId, fileId]() -> core::Result<void> {
+              library::WritebackStore store(db);
+              const auto recRes = store.fileRecord(writebackId, fileId);
+              if (!recRes.ok()) {
+                  return recRes.error();
+              }
+              const auto &record = recRes.value();
+              if (record.status != library::WritebackFileStatus::Written) {
+                  return { };
+              }
 
-            const QFileInfo fi(record.path);
-            if (!fi.exists() || fi.size() != record.writtenSize
-                || fi.lastModified().toMSecsSinceEpoch() != record.writtenMtime) {
-                const QString errMsg = QStringLiteral("File was modified after writeback");
-                static_cast<void>(store.markFailed(
-                    writebackId, fileId, library::WritebackFileStatus::RevertFailed, errMsg));
-                return core::Error {
-                    .code = QString(library::errc::kWritebackRevertFailed),
-                    .message = errMsg,
-                    .detail = record.path,
-                };
-            }
+              const QFileInfo fi(record.path);
+              if (!fi.exists() || fi.size() != record.writtenSize
+                  || fi.lastModified().toMSecsSinceEpoch() != record.writtenMtime) {
+                  const QString errMsg = QStringLiteral("File was modified after writeback");
+                  static_cast<void>(store.markFailed(
+                      writebackId, fileId, library::WritebackFileStatus::RevertFailed, errMsg));
+                  return core::Error {
+                      .code = QString(library::errc::kWritebackRevertFailed),
+                      .message = errMsg,
+                      .detail = record.path,
+                  };
+              }
 
-            const auto doc = QJsonDocument::fromJson(record.snapshot.toUtf8());
-            const auto snapOpt = library::TagSnapshot::fromJson(doc.object());
-            if (!snapOpt.has_value()) {
-                const QString errMsg = QStringLiteral("Invalid tag snapshot JSON");
-                static_cast<void>(store.markFailed(
-                    writebackId, fileId, library::WritebackFileStatus::RevertFailed, errMsg));
-                return core::Error {
-                    .code = QString(library::errc::kWritebackRevertFailed),
-                    .message = errMsg,
-                    .detail = record.path,
-                };
-            }
+              const auto doc = QJsonDocument::fromJson(record.snapshot.toUtf8());
+              const auto snapOpt = library::TagSnapshot::fromJson(doc.object());
+              if (!snapOpt.has_value()) {
+                  const QString errMsg = QStringLiteral("Invalid tag snapshot JSON");
+                  static_cast<void>(store.markFailed(
+                      writebackId, fileId, library::WritebackFileStatus::RevertFailed, errMsg));
+                  return core::Error {
+                      .code = QString(library::errc::kWritebackRevertFailed),
+                      .message = errMsg,
+                      .detail = record.path,
+                  };
+              }
 
-            const auto restoreRes = library::TagWriter::restore(record.path, snapOpt.value());
-            if (!restoreRes.ok()) {
-                static_cast<void>(store.markFailed(writebackId, fileId,
-                    library::WritebackFileStatus::RevertFailed, restoreRes.error().message));
-                return restoreRes.error();
-            }
+              const auto restoreRes = library::TagWriter::restore(record.path, snapOpt.value());
+              if (!restoreRes.ok()) {
+                  static_cast<void>(store.markFailed(writebackId, fileId,
+                      library::WritebackFileStatus::RevertFailed, restoreRes.error().message));
+                  return restoreRes.error();
+              }
 
-            const auto markRes = store.markReverted(writebackId, fileId);
-            if (!markRes.ok()) {
-                return markRes.error();
-            }
-            return { };
-        });
+              const auto markRes = store.markReverted(writebackId, fileId);
+              if (!markRes.ok()) {
+                  return markRes.error();
+              }
+              return { };
+          });
 
     return std::make_unique<JobActionWorker>(future, std::move(done));
 }

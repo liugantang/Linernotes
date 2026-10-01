@@ -14,10 +14,6 @@
 #include <cstdint>
 #include <optional>
 
-namespace linernotes::core {
-class Clock;
-}
-
 namespace linernotes::library {
 
 class Database;
@@ -65,7 +61,7 @@ struct WritebackFileRecord {
 
 class WritebackStore {
 public:
-    WritebackStore(Database &db, const core::Clock &clock);
+    explicit WritebackStore(Database &db);
 
     [[nodiscard]] core::Result<WritebackPlan> plan(qint64 batchId) const;
     core::Result<qint64> create(qint64 batchId, const WritebackPlan &plan, qint64 now);
@@ -85,7 +81,6 @@ public:
 
 private:
     Database &m_db;
-    const core::Clock &m_clock;
 };
 
 } // namespace linernotes::library

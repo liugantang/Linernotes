@@ -11,10 +11,6 @@
 #include <functional>
 #include <memory>
 
-namespace linernotes::core {
-class Clock;
-}
-
 namespace linernotes::library {
 class Database;
 }
@@ -23,7 +19,7 @@ namespace linernotes::butler {
 
 class WritebackJobHandler final : public ai::JobHandler {
 public:
-    WritebackJobHandler(library::Database &db, const core::Clock &clock);
+    explicit WritebackJobHandler(library::Database &db);
     ~WritebackJobHandler() override;
     Q_DISABLE_COPY_MOVE(WritebackJobHandler)
 
@@ -36,13 +32,12 @@ public:
 
 private:
     library::Database &m_db;
-    const core::Clock &m_clock;
     QThreadPool m_pool;
 };
 
 class WritebackRevertJobHandler final : public ai::JobHandler {
 public:
-    WritebackRevertJobHandler(library::Database &db, const core::Clock &clock);
+    explicit WritebackRevertJobHandler(library::Database &db);
     ~WritebackRevertJobHandler() override;
     Q_DISABLE_COPY_MOVE(WritebackRevertJobHandler)
 
@@ -55,7 +50,6 @@ public:
 
 private:
     library::Database &m_db;
-    const core::Clock &m_clock;
     QThreadPool m_pool;
 };
 

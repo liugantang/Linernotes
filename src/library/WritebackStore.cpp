@@ -11,7 +11,6 @@
 #include <QSqlError>
 #include <QSqlQuery>
 
-#include <core/Clock.h>
 #include <library/Database.h>
 #include <library/EnumNames.h>
 #include <library/Errors.h>
@@ -79,9 +78,8 @@ struct FileGroup {
 
 } // namespace
 
-WritebackStore::WritebackStore(Database &db, const core::Clock &clock)
+WritebackStore::WritebackStore(Database &db)
     : m_db(db)
-    , m_clock(clock)
 {
 }
 

@@ -132,7 +132,7 @@ void TstWriteback::writebackAndRevert()
     };
     QVERIFY(corrStore.addProposals(batchId, { p1, p2 }, 0.5).ok());
 
-    WritebackStore wbStore(db, clock);
+    WritebackStore wbStore(db);
     const auto planRes = wbStore.plan(batchId);
     QVERIFY(planRes.ok());
     const auto &plan = planRes.value();
@@ -145,8 +145,8 @@ void TstWriteback::writebackAndRevert()
     const qint64 wbId = createRes.value();
 
     JobQueue queue(db, clock);
-    queue.registerHandler(std::make_unique<WritebackJobHandler>(db, clock));
-    queue.registerHandler(std::make_unique<WritebackRevertJobHandler>(db, clock));
+    queue.registerHandler(std::make_unique<WritebackJobHandler>(db));
+    queue.registerHandler(std::make_unique<WritebackRevertJobHandler>(db));
 
     const QStringList itemKeys { QString::number(flacFileId), QString::number(mp3FileId) };
     const QJsonObject params { { QStringLiteral("writebackId"), wbId } };
@@ -302,7 +302,7 @@ void TstWriteback::revertFailsWhenFileModified()
     };
     QVERIFY(corrStore.addProposals(batchId, { p1, p2 }, 0.5).ok());
 
-    WritebackStore wbStore(db, clock);
+    WritebackStore wbStore(db);
     const auto planRes = wbStore.plan(batchId);
     QVERIFY(planRes.ok());
 
@@ -311,8 +311,8 @@ void TstWriteback::revertFailsWhenFileModified()
     const qint64 wbId = createRes.value();
 
     JobQueue queue(db, clock);
-    queue.registerHandler(std::make_unique<WritebackJobHandler>(db, clock));
-    queue.registerHandler(std::make_unique<WritebackRevertJobHandler>(db, clock));
+    queue.registerHandler(std::make_unique<WritebackJobHandler>(db));
+    queue.registerHandler(std::make_unique<WritebackRevertJobHandler>(db));
 
     const QStringList itemKeys { QString::number(flacFileId), QString::number(mp3FileId) };
     const QJsonObject params { { QStringLiteral("writebackId"), wbId } };

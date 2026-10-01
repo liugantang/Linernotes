@@ -65,8 +65,8 @@ AiContext::AiContext(core::Settings &settings, library::Database &db, const core
         std::make_unique<butler::ArtistMergeJobHandler>(db, m_llm, m_prompts, clock));
     m_jobs.registerHandler(std::make_unique<butler::FingerprintJobHandler>(db, clock));
     m_jobs.registerHandler(std::make_unique<butler::DuplicateJobHandler>(db, clock));
-    m_jobs.registerHandler(std::make_unique<butler::WritebackJobHandler>(db, clock));
-    m_jobs.registerHandler(std::make_unique<butler::WritebackRevertJobHandler>(db, clock));
+    m_jobs.registerHandler(std::make_unique<butler::WritebackJobHandler>(db));
+    m_jobs.registerHandler(std::make_unique<butler::WritebackRevertJobHandler>(db));
 }
 
 void AiContext::onDatabaseReady()

@@ -22,7 +22,7 @@ WritebackController::WritebackController(library::Database &db, const core::Cloc
     , m_clock(clock)
     , m_jobs(jobs)
     , m_scanner(scanner)
-    , m_store(db, clock)
+    , m_store(db)
 {
     connect(&m_jobs, &ai::JobQueue::jobChanged, this, &WritebackController::onJobChanged);
 }

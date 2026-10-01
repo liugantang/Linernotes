@@ -4,7 +4,8 @@
 #
 # 一次性验证：构建、测试、格式、clang-tidy 全部并行，只输出摘要。
 #   --quick  执行者用：debug 构建 + ctest + 格式 + tidy（仅改动文件）
-#   默认     审查者用：再加 ci 预设（-Werror）构建 + ctest，tidy 全量（与 CI 的 Lint 一致）
+#   默认     审查者用：再加 ci 预设（-Werror）用 clang 构建 + ctest（debug 已覆盖 gcc，
+#            clang 独有的告警在 CI 上屡次漏网），tidy 全量（与 CI 的 Lint 一致）
 #   --asan   额外构建并运行 asan 预设
 # 每一步的完整输出在 build/verify/<步骤>.log，失败时打印其尾部。
 set -uo pipefail
@@ -19,7 +20,7 @@ for arg in "$@"; do
         --quick) QUICK=true ;;
         --asan) ASAN=true ;;
         -h|--help)
-            sed -n '4,9p' "$0" | sed 's/^# \{0,1\}//'
+            sed -n '4,10p' "$0" | sed 's/^# \{0,1\}//'
             exit 0
             ;;
         *)
@@ -41,6 +42,13 @@ build_and_test() {
     cmake --preset "${preset}" >/dev/null &&
         cmake --build --preset "${preset}" -j "${JOBS_BUILD}" &&
         ctest --test-dir "build/${preset}" -j "${JOBS_TEST}" --output-on-failure
+}
+
+ci_clang_step() {
+    # 与 CI 矩阵的 clang job 一致；单独目录，避免和 gcc 的 CMake 缓存冲突
+    CC=clang CXX=clang++ cmake --preset ci -B build/ci-clang >/dev/null &&
+        cmake --build build/ci-clang -j "${JOBS_BUILD}" &&
+        ctest --test-dir build/ci-clang -j "${JOBS_TEST}" --output-on-failure
 }
 
 tidy_step() {
@@ -82,7 +90,7 @@ run debug debug_step
 run format scripts/format.sh --check
 run tidy tidy_step
 if [[ "${QUICK}" == false ]]; then
-    run ci build_and_test ci
+    run ci ci_clang_step
 fi
 if [[ "${ASAN}" == true ]]; then
     run asan build_and_test asan
