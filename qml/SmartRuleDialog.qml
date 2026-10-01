@@ -69,10 +69,14 @@ Popup {
             conditions: [ defaultCondition() ],
             sortKey: Library.TrackSortKey.Default,
             sortOrder: Qt.AscendingOrder,
-            limit: 0
+            limit: 0,
+            playedFrom: "",
+            playedTo: ""
         }
         errorMessage = ""
         nameField.text = ""
+        playedFromField.text = ""
+        playedToField.text = ""
         open()
         syncCombos()
     }
@@ -87,12 +91,16 @@ Popup {
                 conditions: [],
                 sortKey: Library.TrackSortKey.Default,
                 sortOrder: Qt.AscendingOrder,
-                limit: 0
+                limit: 0,
+                playedFrom: "",
+                playedTo: ""
             }
         }
         rule = r
         errorMessage = ""
         nameField.text = initialName
+        playedFromField.text = r.playedFrom || ""
+        playedToField.text = r.playedTo || ""
         open()
         syncCombos()
     }
@@ -271,6 +279,62 @@ Popup {
                     onClicked: {
                         root.addCondition()
                     }
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 1
+                color: Theme.divider
+            }
+
+            // Play count period
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Theme.spacingSmall
+
+                Label {
+                    text: qsTr("Play count period:")
+                    font.pixelSize: Theme.fontSizeNormal
+                    color: Theme.text
+                }
+
+                Controls.AppTextField {
+                    id: playedFromField
+                    Layout.preferredWidth: 110
+                    placeholderText: "yyyy-MM-dd"
+                    text: root.rule ? (root.rule.playedFrom || "") : ""
+                    onTextEdited: {
+                        let r = root.rule
+                        r.playedFrom = text.trim()
+                        root.rule = r
+                    }
+                }
+
+                Label {
+                    text: qsTr("to")
+                    font.pixelSize: Theme.fontSizeNormal
+                    color: Theme.textSecondary
+                }
+
+                Controls.AppTextField {
+                    id: playedToField
+                    Layout.preferredWidth: 110
+                    placeholderText: "yyyy-MM-dd"
+                    text: root.rule ? (root.rule.playedTo || "") : ""
+                    onTextEdited: {
+                        let r = root.rule
+                        r.playedTo = text.trim()
+                        root.rule = r
+                    }
+                }
+
+                Label {
+                    text: qsTr("Only affects play/skip/completed counts")
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.textSecondary
+                    Layout.fillWidth: true
+                    elide: Text.ElideRight
                 }
             }
 

@@ -59,6 +59,8 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_search(m_db)
     , m_playlists(m_db, m_player)
     , m_actions(m_db, m_player, m_settings)
+    , m_nlq(m_db, m_ai.llm(), m_ai.prompts(), m_ai.config(), m_actions, m_playlists,
+          m_settingsController)
 {
     connect(this, &AppContext::libraryChanged, &m_nowPlaying, &NowPlaying::refresh);
     connect(&m_marks, &MarksController::marksChanged, &m_nowPlaying, &NowPlaying::refresh);
@@ -76,6 +78,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     connect(this, &AppContext::libraryChanged, &m_queueModel, &QueueModel::refresh);
     connect(this, &AppContext::libraryChanged, &m_search, &SearchController::refresh);
     connect(this, &AppContext::libraryChanged, &m_playlists, &PlaylistController::refresh);
+    connect(this, &AppContext::libraryChanged, &m_nlq, &NlqController::invalidateSummaryCache);
     connectScannerSignals();
     connect(&m_recorder, &PlayEventRecorder::playEventFinished, this, [this](qint64 trackId) {
         if (m_libraryReady) {
@@ -277,6 +280,11 @@ SearchController *AppContext::search()
 PlaylistController *AppContext::playlists()
 {
     return &m_playlists;
+}
+
+NlqController *AppContext::nlq()
+{
+    return &m_nlq;
 }
 
 MarksController *AppContext::marks()

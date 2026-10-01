@@ -12,6 +12,7 @@
 #include <library/ArtistNamePreference.h>
 #include <library/LibraryEnums.h>
 #include <library/SmartRule.h>
+#include <nlq/NlqQuery.h>
 #include <player/PlayMode.h>
 #include <player/PlayQueue.h>
 #include <player/Player.h>
@@ -29,6 +30,7 @@
 #include <ui/LlmDebugController.h>
 #include <ui/LlmDebugModel.h>
 #include <ui/MarksController.h>
+#include <ui/NlqController.h>
 #include <ui/NowPlaying.h>
 #include <ui/PlaylistController.h>
 #include <ui/PlaylistListModel.h>
@@ -139,6 +141,19 @@ struct PlaylistControllerForeign {
     QML_FOREIGN(linernotes::ui::PlaylistController)
     QML_NAMED_ELEMENT(PlaylistController)
     QML_UNCREATABLE("PlaylistController is managed by AppContext")
+};
+
+struct NlqControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::NlqController)
+    QML_NAMED_ELEMENT(NlqController)
+    QML_UNCREATABLE("NlqController is managed by AppContext")
+};
+
+struct NlqForeign {
+    Q_GADGET
+    QML_FOREIGN_NAMESPACE(linernotes::nlq)
+    QML_NAMED_ELEMENT(Nlq)
 };
 
 struct MarksControllerForeign {

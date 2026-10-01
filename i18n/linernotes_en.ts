@@ -181,6 +181,25 @@
     </message>
 </context>
 <context>
+    <name>CommandPalette</name>
+    <message numerus="yes">
+        <location filename="../qml/CommandPalette.qml" line="674"/>
+        <source>%1 · %n track(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../qml/CommandPalette.qml" line="1033"/>
+        <source>%n track(s)</source>
+        <translation type="unfinished">
+            <numerusform>%n track</numerusform>
+            <numerusform>%n tracks</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
     <name>CorrectionActionBar</name>
     <message numerus="yes">
         <location filename="../qml/CorrectionActionBar.qml" line="326"/>
@@ -254,7 +273,7 @@
 <context>
     <name>Main</name>
     <message numerus="yes">
-        <location filename="../qml/Main.qml" line="118"/>
+        <location filename="../qml/Main.qml" line="123"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n track</numerusform>
@@ -368,6 +387,17 @@
         <translation>
             <numerusform>%n file could not be moved to the trash</numerusform>
             <numerusform>%n files could not be moved to the trash</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>linernotes::ui::NlqController</name>
+    <message numerus="yes">
+        <location filename="../src/ui/NlqController.cpp" line="674"/>
+        <source>Remove &quot;%1&quot; → %n result(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
 </context>

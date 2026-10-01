@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <QDate>
+#include <QJsonObject>
 #include <QList>
 #include <QString>
 #include <QVariant>
@@ -37,19 +39,55 @@ struct SmartRule {
     Q_PROPERTY(linernotes::library::TrackSortKey sortKey MEMBER sortKey)
     Q_PROPERTY(Qt::SortOrder sortOrder MEMBER sortOrder)
     Q_PROPERTY(int limit READ getLimit WRITE setLimit)
+    Q_PROPERTY(QString playedFrom READ getPlayedFrom WRITE setPlayedFrom)
+    Q_PROPERTY(QString playedTo READ getPlayedTo WRITE setPlayedTo)
 public:
     SmartMatch match = SmartMatch::All;
     QList<SmartCondition> conditions; // 为空表示匹配全部曲目
     TrackSortKey sortKey = TrackSortKey::Default;
     Qt::SortOrder sortOrder = Qt::AscendingOrder;
     std::optional<int> limit; // 例：“最近添加的 50 首”= DateAdded 降序 + limit 50
+    std::optional<QDate> playedFrom;
+    std::optional<QDate> playedTo;
     bool operator==(const SmartRule &) const = default;
 
     [[nodiscard]] int getLimit() const { return limit.value_or(0); }
     void setLimit(int v) { limit = (v > 0) ? std::optional<int>(v) : std::nullopt; }
 
+    [[nodiscard]] QString getPlayedFrom() const
+    {
+        return playedFrom.has_value() ? playedFrom->toString(Qt::ISODate) : QString();
+    }
+    void setPlayedFrom(const QString &v)
+    {
+        const QString trimmed = v.trimmed();
+        if (trimmed.isEmpty()) {
+            playedFrom = std::nullopt;
+            return;
+        }
+        const QDate d = QDate::fromString(trimmed, Qt::ISODate);
+        playedFrom = d.isValid() ? std::optional<QDate>(d) : std::nullopt;
+    }
+
+    [[nodiscard]] QString getPlayedTo() const
+    {
+        return playedTo.has_value() ? playedTo->toString(Qt::ISODate) : QString();
+    }
+    void setPlayedTo(const QString &v)
+    {
+        const QString trimmed = v.trimmed();
+        if (trimmed.isEmpty()) {
+            playedTo = std::nullopt;
+            return;
+        }
+        const QDate d = QDate::fromString(trimmed, Qt::ISODate);
+        playedTo = d.isValid() ? std::optional<QDate>(d) : std::nullopt;
+    }
+
     [[nodiscard]] QString toJson() const; // 存入 playlists.rule
+    [[nodiscard]] QJsonObject toJsonObject() const;
     static core::Result<SmartRule> fromJson(const QString &json);
+    static core::Result<SmartRule> fromJsonObject(const QJsonObject &root);
     [[nodiscard]] core::Result<void> validate() const;
 };
 

@@ -19,6 +19,7 @@ Item {
     property var sidePanel: null
     property var playerBar: null
     property var shortcutsDialog: null
+    property var commandPalette: null
 
     readonly property var entries: [
         // Playback
@@ -227,6 +228,16 @@ Item {
             description: qsTr("Search"),
             group: AppShortcuts.Group.Navigation,
             action: null
+        },
+        {
+            sequence: "Ctrl+K",
+            description: qsTr("Command Palette"),
+            group: AppShortcuts.Group.Navigation,
+            action: () => {
+                if (root.commandPalette) {
+                    root.commandPalette.openPalette()
+                }
+            }
         },
         {
             sequence: "Esc",

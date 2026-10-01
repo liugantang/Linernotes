@@ -155,6 +155,7 @@ linernotes_add_test(
         tst_SmartRule.cpp
     LIBS
         Linernotes::library
+        Linernotes::TestSupport
 )
 
 linernotes_add_test(

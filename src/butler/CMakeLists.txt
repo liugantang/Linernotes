@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
-file(GLOB SCHEMA_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/schemas/*/*.json")
+file(GLOB SCHEMA_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/schemas/cleanup/*.json")
 
 add_library(linernotes_butler STATIC
     ArtistCredit.cpp

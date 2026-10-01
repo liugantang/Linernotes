@@ -55,9 +55,12 @@ public:
     [[nodiscard]] Q_INVOKABLE library::SmartFieldKind smartFieldKind(
         library::SmartField field) const;
     [[nodiscard]] Q_INVOKABLE QVariantList smartSortKeys() const;
+    [[nodiscard]] Q_INVOKABLE QVariantList smartEnumValues(library::SmartField field) const;
     [[nodiscard]] Q_INVOKABLE QString fieldLabel(library::SmartField field) const;
     [[nodiscard]] Q_INVOKABLE QString opLabel(library::SmartOp op) const;
     [[nodiscard]] Q_INVOKABLE QString sortKeyLabel(library::TrackSortKey key) const;
+    [[nodiscard]] Q_INVOKABLE QString versionLabel(library::VersionType type) const;
+    [[nodiscard]] Q_INVOKABLE QString languageLabel(library::TrackLanguage lang) const;
     [[nodiscard]] std::optional<library::PlaylistInfo> info(qint64 id) const;
     [[nodiscard]] Q_INVOKABLE bool isManual(qint64 id) const;
 

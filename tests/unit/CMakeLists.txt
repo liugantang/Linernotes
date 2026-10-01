@@ -6,6 +6,7 @@ add_subdirectory(library)
 add_subdirectory(audio)
 add_subdirectory(ai)
 add_subdirectory(butler)
+add_subdirectory(nlq)
 add_subdirectory(player)
 add_subdirectory(ui)
 

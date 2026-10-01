@@ -216,4 +216,26 @@ inline std::optional<WritebackFileStatus> writebackFileStatusFromString(QStringV
     return detail::enumFromName<WritebackFileStatus>(name, writebackFileStatusToString);
 }
 
+inline QString trackLanguageToString(TrackLanguage lang)
+{
+    switch (lang) {
+    case TrackLanguage::Chinese:
+        return QStringLiteral("zh");
+    case TrackLanguage::Japanese:
+        return QStringLiteral("ja");
+    case TrackLanguage::Korean:
+        return QStringLiteral("ko");
+    case TrackLanguage::Western:
+        return QStringLiteral("western");
+    case TrackLanguage::Other:
+        return QStringLiteral("other");
+    }
+    return { };
+}
+
+inline std::optional<TrackLanguage> trackLanguageFromString(QStringView name)
+{
+    return detail::enumFromName<TrackLanguage>(name, trackLanguageToString);
+}
+
 } // namespace linernotes::library

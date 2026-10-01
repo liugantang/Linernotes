@@ -3,13 +3,16 @@
 
 #include <QMetaEnum>
 #include <QVariant>
+#include <QVariantMap>
 
 #include <library/Database.h>
+#include <library/EnumNames.h>
 #include <library/LibraryQuery.h>
 #include <library/SmartRule.h>
 #include <player/PlayQueue.h>
 #include <player/Player.h>
 #include <ui/PlaylistController.h>
+#include <ui/SmartLabels.h>
 #include <ui/UiLogging.h>
 
 namespace linernotes::ui {
@@ -225,110 +228,56 @@ QVariantList PlaylistController::smartSortKeys() const
     return list;
 }
 
+QVariantList PlaylistController::smartEnumValues(library::SmartField field) const
+{
+    QVariantList list;
+    if (field == library::SmartField::VersionType) {
+        const auto metaEnum = QMetaEnum::fromType<library::VersionType>();
+        list.reserve(metaEnum.keyCount());
+        for (int i = 0; i < metaEnum.keyCount(); ++i) {
+            const auto vt = static_cast<library::VersionType>(metaEnum.value(i));
+            QVariantMap item;
+            item.insert(QStringLiteral("text"), versionLabel(vt));
+            item.insert(QStringLiteral("value"), library::versionTypeToString(vt));
+            list.append(item);
+        }
+    } else if (field == library::SmartField::Language) {
+        const auto metaEnum = QMetaEnum::fromType<library::TrackLanguage>();
+        list.reserve(metaEnum.keyCount());
+        for (int i = 0; i < metaEnum.keyCount(); ++i) {
+            const auto lang = static_cast<library::TrackLanguage>(metaEnum.value(i));
+            QVariantMap item;
+            item.insert(QStringLiteral("text"), languageLabel(lang));
+            item.insert(QStringLiteral("value"), library::trackLanguageToString(lang));
+            list.append(item);
+        }
+    }
+    return list;
+}
+
 QString PlaylistController::fieldLabel(library::SmartField field) const
 {
-    switch (field) {
-    case library::SmartField::Title:
-        //: Smart playlist condition field: Track title
-        return tr("Title");
-    case library::SmartField::Artist:
-        //: Smart playlist condition field: Track artist
-        return tr("Artist");
-    case library::SmartField::Album:
-        //: Smart playlist condition field: Album name
-        return tr("Album");
-    case library::SmartField::AlbumArtist:
-        //: Smart playlist condition field: Album artist
-        return tr("Album Artist");
-    case library::SmartField::Genre:
-        //: Smart playlist condition field: Music genre
-        return tr("Genre");
-    case library::SmartField::Year:
-        //: Smart playlist condition field: Release year
-        return tr("Year");
-    case library::SmartField::Codec:
-        //: Smart playlist condition field: Audio codec
-        return tr("Codec");
-    case library::SmartField::Rating:
-        //: Smart playlist condition field: Track rating
-        return tr("Rating");
-    case library::SmartField::Favorite:
-        //: Smart playlist condition field: Favorite / loved status
-        return tr("Favorite");
-    case library::SmartField::DateAdded:
-        //: Smart playlist condition field: Date added to library
-        return tr("Date Added");
-    case library::SmartField::DurationSec:
-        //: Smart playlist condition field: Track duration
-        return tr("Duration");
-    }
-    Q_UNREACHABLE_RETURN(QString());
+    return smartFieldLabel(field);
 }
 
 QString PlaylistController::opLabel(library::SmartOp op) const
 {
-    switch (op) {
-    case library::SmartOp::Contains:
-        return tr("Contains");
-    case library::SmartOp::NotContains:
-        return tr("Does Not Contain");
-    case library::SmartOp::Is:
-        return tr("Is");
-    case library::SmartOp::IsNot:
-        return tr("Is Not");
-    case library::SmartOp::StartsWith:
-        return tr("Starts With");
-    case library::SmartOp::Equals:
-        return tr("Equals");
-    case library::SmartOp::NotEquals:
-        return tr("Does Not Equal");
-    case library::SmartOp::Greater:
-        return tr("Greater Than");
-    case library::SmartOp::Less:
-        return tr("Less Than");
-    case library::SmartOp::Between:
-        return tr("Between");
-    case library::SmartOp::IsTrue:
-        return tr("Is True");
-    case library::SmartOp::IsFalse:
-        return tr("Is False");
-    case library::SmartOp::InLastDays:
-        return tr("In the Last (Days)");
-    case library::SmartOp::NotInLastDays:
-        return tr("Not in the Last (Days)");
-    }
-    Q_UNREACHABLE_RETURN(QString());
+    return smartOpLabel(op);
 }
 
 QString PlaylistController::sortKeyLabel(library::TrackSortKey key) const
 {
-    switch (key) {
-    case library::TrackSortKey::Default:
-        //: Default track sorting order
-        return tr("Default");
-    case library::TrackSortKey::Title:
-        //: Sort by track title
-        return tr("Title");
-    case library::TrackSortKey::Artist:
-        //: Sort by track artist
-        return tr("Artist");
-    case library::TrackSortKey::Album:
-        //: Sort by album name
-        return tr("Album");
-    case library::TrackSortKey::Year:
-        //: Sort by release year
-        return tr("Year");
-    case library::TrackSortKey::Duration:
-        //: Sort by track duration
-        return tr("Duration");
-    case library::TrackSortKey::DateAdded:
-        //: Sort by date added
-        return tr("Date Added");
-    case library::TrackSortKey::PlaylistOrder:
-        //: Sort by custom playlist order
-        return tr("Playlist Order");
-    }
-    Q_UNREACHABLE_RETURN(QString());
+    return trackSortKeyLabel(key);
+}
+
+QString PlaylistController::versionLabel(library::VersionType type) const
+{
+    return versionTypeLabel(type);
+}
+
+QString PlaylistController::languageLabel(library::TrackLanguage lang) const
+{
+    return trackLanguageLabel(lang);
 }
 
 std::optional<library::PlaylistInfo> PlaylistController::info(qint64 id) const

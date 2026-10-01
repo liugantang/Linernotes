@@ -42,6 +42,8 @@ add_library(linernotes_ui STATIC
     LlmDebugModel.h
     MarksController.cpp
     MarksController.h
+    NlqController.cpp
+    NlqController.h
     NotificationSink.h
     NowPlaying.cpp
     NowPlaying.h
@@ -64,6 +66,8 @@ add_library(linernotes_ui STATIC
     ServiceListModel.h
     SettingsController.cpp
     SettingsController.h
+    SmartLabels.cpp
+    SmartLabels.h
     TagEditorModel.cpp
     TagEditorModel.h
     TrackListModel.cpp
@@ -111,6 +115,7 @@ target_link_libraries(linernotes_ui
         Linernotes::butler
         Linernotes::core
         Linernotes::library
+        Linernotes::nlq
         Linernotes::player
         Qt6::Core
         Qt6::Gui

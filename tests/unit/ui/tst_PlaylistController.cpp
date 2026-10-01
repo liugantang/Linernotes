@@ -6,6 +6,7 @@
 #include <QSqlQuery>
 #include <QTemporaryDir>
 #include <QTest>
+#include <QVariantMap>
 
 #include <core/Settings.h>
 #include <library/Database.h>
@@ -32,6 +33,27 @@ class TstPlaylistController : public QObject {
 private slots:
     void testPlaylistController();
 };
+
+bool enumValuesValid(const PlaylistController &controller, library::SmartField field)
+{
+    const auto values = controller.smartEnumValues(field);
+    if (values.isEmpty()) {
+        return false;
+    }
+    for (const auto &item : values) {
+        library::SmartRule rule;
+        rule.conditions.append(library::SmartCondition {
+            .field = field,
+            .op = library::SmartOp::Is,
+            .value = item.toMap().value(QStringLiteral("value")),
+            .value2 = { },
+        });
+        if (!rule.validate().ok()) {
+            return false;
+        }
+    }
+    return true;
+}
 
 void TstPlaylistController::testPlaylistController()
 {
@@ -221,6 +243,10 @@ void TstPlaylistController::testPlaylistController()
         controller->smartSortKeys().contains(QVariant::fromValue(library::TrackSortKey::Title)));
     QVERIFY(!controller->smartSortKeys().contains(
         QVariant::fromValue(library::TrackSortKey::PlaylistOrder)));
+
+    // 11. 下拉框给出的枚举值都能通过规则校验
+    QVERIFY(enumValuesValid(*controller, library::SmartField::VersionType));
+    QVERIFY(enumValuesValid(*controller, library::SmartField::Language));
 }
 
 } // namespace

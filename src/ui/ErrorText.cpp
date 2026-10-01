@@ -8,10 +8,29 @@
 #include <ai/Errors.h>
 #include <core/Result.h>
 #include <library/Errors.h>
+#include <nlq/Errors.h>
 
 namespace linernotes::ui {
 
-QString userErrorText(const core::Error &error)
+namespace {
+
+QString nlqErrorText(const QString &code)
+{
+    if (code == nlq::errc::kQueryInvalid) {
+        return QCoreApplication::translate(
+            "linernotes::ui::ErrorText", "Invalid natural language query.");
+    }
+    if (code == nlq::errc::kInvalidResult) {
+        return QCoreApplication::translate(
+            "linernotes::ui::ErrorText", "Failed to interpret the query.");
+    }
+    if (code == nlq::errc::kSchemaNotFound || code == nlq::errc::kPromptRenderFailed) {
+        return QCoreApplication::translate("linernotes::ui::ErrorText", "Query template error.");
+    }
+    return { };
+}
+
+QString coreErrorText(const core::Error &error)
 {
     if (error.code == library::errc::kDbTooNew) {
         return QCoreApplication::translate("linernotes::ui::ErrorText",
@@ -113,6 +132,14 @@ QString userErrorText(const core::Error &error)
     return QCoreApplication::translate(
         "linernotes::ui::ErrorText", "Operation failed (error code: %1)")
         .arg(error.code);
+}
+
+} // namespace
+
+QString userErrorText(const core::Error &error)
+{
+    const QString text = nlqErrorText(error.code);
+    return text.isEmpty() ? coreErrorText(error) : text;
 }
 
 } // namespace linernotes::ui
