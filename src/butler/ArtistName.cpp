@@ -35,6 +35,23 @@ icu::Transliterator *getTradToSimp()
     return s_trans.get();
 }
 
+icu::Transliterator *getRomanTransliterator()
+{
+    thread_local const std::unique_ptr<icu::Transliterator> s_trans = []() {
+        UErrorCode status = U_ZERO_ERROR;
+        auto *t = icu::Transliterator::createInstance(
+            icu::UnicodeString::fromUTF8("Hiragana-Latin; Katakana-Latin; NFD; [:Nonspacing Mark:] "
+                                         "Remove; Latin-ASCII; NFC"),
+            UTRANS_FORWARD, status);
+        if (U_FAILURE(status) != 0) {
+            delete t;
+            return std::unique_ptr<icu::Transliterator>();
+        }
+        return std::unique_ptr<icu::Transliterator>(t);
+    }();
+    return s_trans.get();
+}
+
 QString transliterateWith(icu::Transliterator *trans, const QString &text)
 {
     if (trans == nullptr || text.isEmpty()) {
@@ -74,6 +91,19 @@ bool isPunctuationSymbolOrSeparator(uint cp)
     }
 }
 
+bool isValidRomanKeyScript(const QList<uint> &ucs4)
+{
+    return std::ranges::all_of(ucs4, [](const uint cp) {
+        const auto s = QChar::script(cp);
+        if (s == QChar::Script_Han || s == QChar::Script_Hangul) {
+            return false;
+        }
+        return s == QChar::Script_Latin || s == QChar::Script_Hiragana
+            || s == QChar::Script_Katakana || s == QChar::Script_Common
+            || s == QChar::Script_Inherited;
+    });
+}
+
 } // namespace
 
 QString exactKey(QStringView name)
@@ -99,6 +129,44 @@ QString exactKey(QStringView name)
         }
     }
     return result;
+}
+
+QString romanKey(QStringView name)
+{
+    if (name.trimmed().isEmpty()) {
+        return { };
+    }
+
+    const QList<uint> ucs4 = name.toString().toUcs4();
+    if (!isValidRomanKeyScript(ucs4)) {
+        return { };
+    }
+
+    auto *trans = getRomanTransliterator();
+    if (trans == nullptr) {
+        return { };
+    }
+
+    QString text = transliterateWith(trans, name.toString());
+    text = text.toLower();
+
+    QString filtered;
+    filtered.reserve(text.size());
+    for (const QChar ch : text) {
+        const char16_t u = ch.unicode();
+        if ((u >= u'a' && u <= u'z') || (u >= u'0' && u <= u'9')) {
+            filtered.append(ch);
+        }
+    }
+
+    filtered.replace(QStringLiteral("ou"), QStringLiteral("o"));
+    filtered.replace(QStringLiteral("oo"), QStringLiteral("o"));
+    filtered.replace(QStringLiteral("uu"), QStringLiteral("u"));
+
+    if (filtered.length() < 4) {
+        return { };
+    }
+    return filtered;
 }
 
 } // namespace linernotes::butler

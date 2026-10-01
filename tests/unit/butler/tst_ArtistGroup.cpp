@@ -28,6 +28,7 @@ private slots:
     void transitiveGrouping();
     void oversizedGroupEntersOversized();
     void noCommonKeysNoGroups();
+    void connectedViaRomanKeyExactOnlyFalse();
 };
 
 void TstArtistGroup::exactKeySameLongNamesExactOnlyTrue()
@@ -139,6 +140,26 @@ void TstArtistGroup::noCommonKeysNoGroups()
     const auto grouping = groupArtists({ e1, e2 }, { }, 12);
     QVERIFY(grouping.groups.isEmpty());
     QVERIFY(grouping.oversized.isEmpty());
+}
+
+void TstArtistGroup::connectedViaRomanKeyExactOnlyFalse()
+{
+    const ArtistEntry e1 {
+        .artistId = 1, .name = QStringLiteral("ハルカトミユキ"), .trackCount = 10
+    };
+    const ArtistEntry e2 {
+        .artistId = 2, .name = QStringLiteral("Haruka to Miyuki"), .trackCount = 5
+    };
+
+    const auto grouping = groupArtists({ e1, e2 }, { }, 12);
+    QCOMPARE(grouping.groups.size(), 1);
+    QVERIFY(grouping.oversized.isEmpty());
+
+    const auto &group = grouping.groups.first();
+    QCOMPARE(group.members.size(), 2);
+    QVERIFY(!group.exactOnly);
+    QCOMPARE(group.members.at(0).artistId, 1);
+    QCOMPARE(group.members.at(1).artistId, 2);
 }
 
 } // namespace
