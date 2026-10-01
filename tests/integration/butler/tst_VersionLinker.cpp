@@ -7,6 +7,8 @@
 #include <QTemporaryDir>
 #include <QTest>
 
+#include <butler/ArtistName.h>
+#include <butler/TitleMatchStore.h>
 #include <butler/TitleVersion.h>
 #include <butler/VersionLinker.h>
 #include <butler/VersionSuffixStore.h>
@@ -17,13 +19,17 @@
 #include <library/Migrator.h>
 
 #include <tuple>
+#include <utility>
 
 namespace {
 
+using linernotes::butler::exactKey;
 using linernotes::butler::SuffixClass;
 using linernotes::butler::suffixKey;
 using linernotes::butler::SuffixRole;
 using linernotes::butler::SuffixVerdict;
+using linernotes::butler::TitleMatchStore;
+using linernotes::butler::TitleMatchVerdict;
 using linernotes::butler::VersionLinker;
 using linernotes::butler::VersionSuffixStore;
 using linernotes::library::Database;
@@ -91,6 +97,7 @@ class TstVersionLinker : public QObject {
 
 private slots:
     void linksVersionsAndHandlesOrphans();
+    void linksCrossScriptTitlesWhenMatched();
 };
 
 void TstVersionLinker::linksVersionsAndHandlesOrphans()
@@ -156,8 +163,8 @@ void TstVersionLinker::linksVersionsAndHandlesOrphans()
     QVERIFY(initialPendingRes.ok());
     QCOMPARE(initialPendingRes.value(), 6);
 
-    // 2. First linkAll(1)
-    const auto linkRes1 = versionLinker.linkAll(1);
+    // 2. First linkAll(1, 0)
+    const auto linkRes1 = versionLinker.linkAll(1, 0);
     QVERIFY(linkRes1.ok());
     const auto &stats1 = linkRes1.value();
 
@@ -238,6 +245,7 @@ void TstVersionLinker::linksVersionsAndHandlesOrphans()
     // Song (Elite)
     const auto [base4, vt4, unres4] = getTrackVersion(t4);
     QCOMPARE(base4, QStringLiteral("Song (Elite)"));
+    QCOMPARE(vt4, QStringLiteral("studio"));
     QCOMPARE(unres4, 0);
 
     // Other (Forget about my love)
@@ -249,8 +257,8 @@ void TstVersionLinker::linksVersionsAndHandlesOrphans()
     QVERIFY(pendingRes1.ok());
     QCOMPARE(pendingRes1.value(), 1);
 
-    // 3. Re-run linkAll(1): work IDs and works count remain unchanged
-    const auto linkRes2 = versionLinker.linkAll(1);
+    // 3. Re-run linkAll(1, 0): work IDs and works count remain unchanged
+    const auto linkRes2 = versionLinker.linkAll(1, 0);
     QVERIFY(linkRes2.ok());
     const auto &stats2 = linkRes2.value();
     QCOMPARE(stats2.tracks, 6);
@@ -266,7 +274,7 @@ void TstVersionLinker::linksVersionsAndHandlesOrphans()
     QSqlQuery delQ(conn);
     QVERIFY(delQ.exec(QStringLiteral("DELETE FROM tracks WHERE id = %1;").arg(t6)));
 
-    const auto linkRes3 = versionLinker.linkAll(1);
+    const auto linkRes3 = versionLinker.linkAll(1, 0);
     QVERIFY(linkRes3.ok());
     const auto &stats3 = linkRes3.value();
     QCOMPARE(stats3.tracks, 5);
@@ -274,6 +282,95 @@ void TstVersionLinker::linksVersionsAndHandlesOrphans()
     QCOMPARE(stats3.unresolved, 1);
 
     QCOMPARE(getWorkTitle(workB), QString());
+}
+
+void TstVersionLinker::linksCrossScriptTitlesWhenMatched()
+{
+    const QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    Database db(tempDir.filePath(QStringLiteral("test_cross_script.db")));
+    QVERIFY(db.open(Migrator()).ok());
+    const auto conn = db.connection().value();
+
+    const qint64 rootId = TestDbHelper::insertRoot(conn);
+
+    const qint64 f1 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/1.m4a"));
+    const qint64 t1 = TestDbHelper::insertTrack(conn, f1);
+    TestDbHelper::insertRawTag(conn, t1, QStringLiteral("TITLE"), QStringLiteral("17-sai"));
+    TestDbHelper::insertRawTag(conn, t1, QStringLiteral("ARTIST"), QStringLiteral("Artist X"));
+    TestDbHelper::updateTagsReadAt(conn, t1);
+
+    const qint64 f2 = TestDbHelper::insertFile(conn, rootId, QStringLiteral("/music/2.flac"));
+    const qint64 t2 = TestDbHelper::insertTrack(conn, f2);
+    TestDbHelper::insertRawTag(conn, t2, QStringLiteral("TITLE"), QStringLiteral("17才"));
+    TestDbHelper::insertRawTag(conn, t2, QStringLiteral("ARTIST"), QStringLiteral("Artist X"));
+    TestDbHelper::updateTagsReadAt(conn, t2);
+
+    EntityLinker linker(conn);
+    QVERIFY(linker.linkTrack(t1).ok());
+    QVERIFY(linker.linkTrack(t2).ok());
+
+    const ManualClock clock(1000);
+    const VersionLinker versionLinker(db, clock);
+
+    // 1. Initially without title matches: linkAll produces 2 works
+    const auto linkRes1 = versionLinker.linkAll(1, 1);
+    QVERIFY(linkRes1.ok());
+    QCOMPARE(linkRes1.value().tracks, 2);
+    QCOMPARE(linkRes1.value().works, 2);
+
+    auto getTrackWorkId = [&](qint64 tId) -> qint64 {
+        QSqlQuery q(conn);
+        q.prepare(QStringLiteral("SELECT work_id FROM tracks WHERE id = ?;"));
+        q.addBindValue(tId);
+        if (q.exec() && q.next()) {
+            return q.value(0).toLongLong();
+        }
+        return -1;
+    };
+
+    const qint64 w1 = getTrackWorkId(t1);
+    const qint64 w2 = getTrackWorkId(t2);
+    QVERIFY(w1 > 0);
+    QVERIFY(w2 > 0);
+    QVERIFY(w1 != w2);
+
+    // 2. Save a match with low confidence (0.5 < 0.8) -> should NOT merge
+    const TitleMatchStore titleStore(db, clock);
+    const QString k1 = exactKey(QStringLiteral("17-sai"));
+    const QString k2 = exactKey(QStringLiteral("17才"));
+    QString kA = k1;
+    QString kB = k2;
+    if (kA > kB) {
+        std::swap(kA, kB);
+    }
+    const auto keyPair = qMakePair(kA, kB);
+
+    const TitleMatchVerdict lowConfVerdict {
+        .same = true,
+        .confidence = 0.5,
+        .reason = QStringLiteral("Unsure"),
+    };
+    QVERIFY(titleStore.save({ { keyPair, lowConfVerdict } }, QStringLiteral("test-model"), 1).ok());
+
+    const auto linkRes2 = versionLinker.linkAll(1, 1);
+    QVERIFY(linkRes2.ok());
+    QCOMPARE(linkRes2.value().works, 2);
+    QVERIFY(getTrackWorkId(t1) != getTrackWorkId(t2));
+
+    // 3. Save a match with high confidence (0.95 >= 0.8, same=1) -> should merge into 1 work
+    const TitleMatchVerdict highConfVerdict {
+        .same = true,
+        .confidence = 0.95,
+        .reason = QStringLiteral("Romanization match"),
+    };
+    QVERIFY(
+        titleStore.save({ { keyPair, highConfVerdict } }, QStringLiteral("test-model"), 1).ok());
+
+    const auto linkRes3 = versionLinker.linkAll(1, 1);
+    QVERIFY(linkRes3.ok());
+    QCOMPARE(linkRes3.value().works, 1);
+    QCOMPARE(getTrackWorkId(t1), getTrackWorkId(t2));
 }
 
 } // namespace
