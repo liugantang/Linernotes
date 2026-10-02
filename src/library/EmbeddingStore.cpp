@@ -11,6 +11,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>
+#include <QtEndian>
 
 #include <core/Clock.h>
 #include <library/Database.h>
@@ -39,16 +40,12 @@ std::optional<QList<float>> deserializeVector(const QByteArray &blob)
     if (blob.size() % static_cast<qsizetype>(sizeof(quint16)) != 0) {
         return std::nullopt;
     }
+    // 整块转换：逐个经 QDataStream 读取在 1.5 万首时要数秒（尤其 debug 构建）
     const qsizetype count = blob.size() / static_cast<qsizetype>(sizeof(quint16));
-    QList<float> vec;
-    vec.reserve(count);
-    QDataStream stream(blob);
-    stream.setByteOrder(QDataStream::LittleEndian);
-    for (qsizetype i = 0; i < count; ++i) {
-        qfloat16 f16;
-        stream >> f16;
-        vec.append(static_cast<float>(f16));
-    }
+    QList<qfloat16> halves(count);
+    qFromLittleEndian<quint16>(blob.constData(), count, halves.data());
+    QList<float> vec(count);
+    qFloatFromFloat16(vec.data(), halves.constData(), count);
     return vec;
 }
 
