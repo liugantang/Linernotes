@@ -41,7 +41,7 @@ MS-CLAP 2023 包含音频编码器（约 3300 万参数）和文本编码器。L
 
 把导出的模型放到源码根目录的 `models/msclap-2023-audio.onnx`（已被 git 忽略），CMake 会自动使用；也可以用 `-DLINERNOTES_AUDIO_MODEL=<路径>` 指定。
 
-构建时模型复制到程序输出目录的 `models/` 下；安装时装到程序目录下的 `models/`（`${CMAKE_INSTALL_BINDIR}/models/`）。程序只在程序目录下的 `models/` 找模型。Arch 包把程序与模型一起装在 `/opt/linernotes/`，`/usr/bin/linernotes` 是指向它的软链接。Arch 打包（`packaging/arch`）从工作区的 `models/` 取模型，缺失时报错。
+构建时模型复制到程序输出目录的 `models/` 下；安装时装到程序目录下的 `models/`（`${CMAKE_INSTALL_BINDIR}/models/`）。程序只在程序目录下的 `models/` 找模型。Arch 包把程序与模型一起装在 `/opt/linernotes/`，`/usr/bin/linernotes` 是指向它的软链接。Arch 打包（`packaging/arch`）从 GitHub Release [`model-msclap-2023`](https://github.com/liugantang/Linernotes/releases/tag/model-msclap-2023) 下载模型并校验 SHA-256。本地开发可从同一地址下载到 `models/`。
 
 ## 模型许可证
 
