@@ -10,74 +10,189 @@ import "../controls" as Controls
 Item {
     id: root
 
-    ScrollView {
-        id: scrollView
+    readonly property var navSections: [
+        { title: qsTr("Library") },
+        { title: qsTr("Playback") },
+        { title: qsTr("Appearance") },
+        { title: qsTr("AI") }
+    ]
+
+    ColumnLayout {
         anchors.fill: parent
-        contentWidth: availableWidth
-        clip: true
+        anchors.topMargin: Theme.spacingLarge
+        anchors.leftMargin: Theme.spacingLarge
+        anchors.rightMargin: Theme.spacingLarge
+        anchors.bottomMargin: 0
+        spacing: Theme.spacingLarge
 
-        ScrollBar.vertical: Controls.AppScrollBar {}
+        // Top title
+        Label {
+            text: qsTr("Settings")
+            font.pixelSize: Theme.fontSizeTitle
+            font.bold: true
+            color: Theme.text
+            Layout.fillWidth: true
+        }
 
-        ColumnLayout {
-            width: Math.min(scrollView.availableWidth - Theme.spacingLarge * 2, 720)
-            anchors.horizontalCenter: parent.horizontalCenter
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 1
+            color: Theme.divider
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
             spacing: Theme.spacingLarge
 
-            Item {
-                Layout.preferredHeight: Theme.spacingMedium
+            // Left: Vertical navigation
+            ListView {
+                id: navListView
+                Layout.preferredWidth: 180
+                Layout.fillHeight: true
+                model: root.navSections
+                currentIndex: 0
+                spacing: Theme.spacingTiny
+                clip: true
+                focus: true
+                keyNavigationEnabled: true
+                keyNavigationWraps: false
+                boundsBehavior: Flickable.StopAtBounds
+
+                delegate: Rectangle {
+                    id: itemDelegate
+                    required property int index
+                    required property var modelData
+
+                    readonly property string title: modelData.title
+
+                    width: ListView.view.width
+                    height: Theme.navItemHeight
+                    radius: 6
+                    color: {
+                        if (navListView.currentIndex === itemDelegate.index) {
+                            return Theme.itemSelected
+                        }
+                        if (mouseArea.containsMouse) {
+                            return Theme.itemHover
+                        }
+                        return "transparent"
+                    }
+
+                    MouseArea {
+                        id: mouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onClicked: {
+                            navListView.currentIndex = itemDelegate.index
+                            navListView.forceActiveFocus()
+                        }
+                    }
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: Theme.spacingMedium
+                        anchors.rightMargin: Theme.spacingMedium
+                        spacing: Theme.spacingSmall
+
+                        Label {
+                            text: itemDelegate.title
+                            font.pixelSize: Theme.fontSizeNormal
+                            font.bold: navListView.currentIndex === itemDelegate.index
+                            color: navListView.currentIndex === itemDelegate.index ? Theme.accent : Theme.text
+                            Layout.fillWidth: true
+                            elide: Text.ElideRight
+                        }
+                    }
+                }
             }
 
-            // Top title
-            Label {
-                text: qsTr("Settings")
-                font.pixelSize: Theme.fontSizeTitle
-                font.bold: true
-                color: Theme.text
+            // Right: Content sections
+            StackLayout {
+                id: contentStack
                 Layout.fillWidth: true
-            }
+                Layout.fillHeight: true
+                currentIndex: navListView.currentIndex
 
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 1
-                color: Theme.divider
-            }
+                ScrollView {
+                    id: libraryScroll
+                    clip: true
+                    contentWidth: availableWidth
+                    ScrollBar.vertical: Controls.AppScrollBar {}
 
-            SettingsLibrarySection {
-                Layout.fillWidth: true
-            }
+                    ColumnLayout {
+                        width: Math.min(libraryScroll.availableWidth, 720)
+                        spacing: Theme.spacingLarge
 
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 1
-                color: Theme.divider
-            }
+                        SettingsLibrarySection {
+                            Layout.fillWidth: true
+                        }
 
-            SettingsPlaybackSection {
-                Layout.fillWidth: true
-            }
+                        Item {
+                            Layout.preferredHeight: Theme.spacingExtraLarge
+                        }
+                    }
+                }
 
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 1
-                color: Theme.divider
-            }
+                ScrollView {
+                    id: playbackScroll
+                    clip: true
+                    contentWidth: availableWidth
+                    ScrollBar.vertical: Controls.AppScrollBar {}
 
-            SettingsAppearanceSection {
-                Layout.fillWidth: true
-            }
+                    ColumnLayout {
+                        width: Math.min(playbackScroll.availableWidth, 720)
+                        spacing: Theme.spacingLarge
 
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 1
-                color: Theme.divider
-            }
+                        SettingsPlaybackSection {
+                            Layout.fillWidth: true
+                        }
 
-            SettingsAiSection {
-                Layout.fillWidth: true
-            }
+                        Item {
+                            Layout.preferredHeight: Theme.spacingExtraLarge
+                        }
+                    }
+                }
 
-            Item {
-                Layout.preferredHeight: Theme.spacingExtraLarge
+                ScrollView {
+                    id: appearanceScroll
+                    clip: true
+                    contentWidth: availableWidth
+                    ScrollBar.vertical: Controls.AppScrollBar {}
+
+                    ColumnLayout {
+                        width: Math.min(appearanceScroll.availableWidth, 720)
+                        spacing: Theme.spacingLarge
+
+                        SettingsAppearanceSection {
+                            Layout.fillWidth: true
+                        }
+
+                        Item {
+                            Layout.preferredHeight: Theme.spacingExtraLarge
+                        }
+                    }
+                }
+
+                ScrollView {
+                    id: aiScroll
+                    clip: true
+                    contentWidth: availableWidth
+                    ScrollBar.vertical: Controls.AppScrollBar {}
+
+                    ColumnLayout {
+                        width: Math.min(aiScroll.availableWidth, 720)
+                        spacing: Theme.spacingLarge
+
+                        SettingsAiSection {
+                            Layout.fillWidth: true
+                        }
+
+                        Item {
+                            Layout.preferredHeight: Theme.spacingExtraLarge
+                        }
+                    }
+                }
             }
         }
     }
