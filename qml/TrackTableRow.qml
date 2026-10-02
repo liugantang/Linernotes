@@ -111,90 +111,117 @@ Rectangle {
         Repeater {
             model: rootRow.visibleColumns
 
-            delegate: Item {
-                id: cellItem
+            // 每格只创建该列需要的内容；载入的组件通过 parent（即本 Loader）取列信息
+            delegate: Loader {
                 required property var modelData
-                required property int index
 
                 width: rootRow.table.getColumnWidth(modelData.key)
                 height: rootRow.height
                 clip: true
-
-                Controls.FavoriteButton {
-                    visible: modelData.key === "favorite"
-                    anchors.centerIn: parent
-                    favorite: rootRow.favorite
-                    onFavoriteToggled: {
-                        if (AppContext.marks && rootRow.trackId) {
-                            AppContext.marks.toggleFavorite(Library.FavoriteKind.Track, rootRow.trackId)
-                        }
+                sourceComponent: {
+                    switch (modelData.key) {
+                    case "favorite":
+                        return favoriteComponent
+                    case "rating":
+                        return ratingComponent
+                    case "title":
+                        return titleComponent
+                    default:
+                        return textComponent
                     }
-                }
-
-                Controls.RatingStars {
-                    visible: modelData.key === "rating"
-                    anchors.centerIn: parent
-                    rating: rootRow.rating
-                    onRated: (value) => {
-                        if (AppContext.marks && rootRow.trackId) {
-                            AppContext.marks.setRating([rootRow.trackId], value)
-                        }
-                    }
-                }
-
-                RowLayout {
-                    visible: modelData.key === "title"
-                    anchors.fill: parent
-                    anchors.leftMargin: Theme.spacingSmall
-                    anchors.rightMargin: Theme.spacingSmall
-                    spacing: Theme.spacingTiny
-
-                    Label {
-                        Layout.fillWidth: true
-                        Layout.maximumWidth: implicitWidth
-                        verticalAlignment: Text.AlignVCenter
-                        text: rootRow.cellText("title")
-                        textFormat: Text.PlainText
-                        elide: Text.ElideRight
-                        color: rootRow.isSelectedRow ? Theme.text : Theme.text
-                        font.pixelSize: Theme.fontSizeNormal
-                    }
-
-                    Label {
-                        visible: AppContext.settings && AppContext.settings.showTranslations && rootRow.titleTranslated.length > 0
-                        text: rootRow.titleTranslated
-                        textFormat: Text.PlainText
-                        elide: Text.ElideRight
-                        color: Theme.textSecondary
-                        font.pixelSize: Theme.fontSizeSmall
-                        verticalAlignment: Text.AlignVCenter
-                        Layout.maximumWidth: (cellItem.width - Theme.spacingSmall * 2) * 0.4
-                    }
-
-                    VersionBadge {
-                        versionType: rootRow.versionType
-                        Layout.alignment: Qt.AlignVCenter
-                    }
-
-                    Item {
-                        Layout.fillWidth: true
-                    }
-                }
-
-                Label {
-                    visible: modelData.key !== "title" && modelData.key !== "favorite" && modelData.key !== "rating"
-                    anchors.fill: parent
-                    anchors.leftMargin: Theme.spacingSmall
-                    anchors.rightMargin: Theme.spacingSmall
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: modelData.alignRight ? Text.AlignRight : Text.AlignLeft
-                    text: modelData.key === "album" ? rootRow.albumDisplayText() : rootRow.cellText(modelData.key)
-                    textFormat: (modelData.key === "album" && AppContext.settings && AppContext.settings.showTranslations && rootRow.albumTranslated.length > 0) ? Text.StyledText : Text.PlainText
-                    elide: Text.ElideRight
-                    color: rootRow.isSelectedRow ? Theme.text : Theme.text
-                    font.pixelSize: Theme.fontSizeNormal
                 }
             }
+        }
+    }
+
+    Component {
+        id: favoriteComponent
+
+        Controls.FavoriteButton {
+            anchors.centerIn: parent
+            favorite: rootRow.favorite
+            onFavoriteToggled: {
+                if (AppContext.marks && rootRow.trackId) {
+                    AppContext.marks.toggleFavorite(Library.FavoriteKind.Track, rootRow.trackId)
+                }
+            }
+        }
+    }
+
+    Component {
+        id: ratingComponent
+
+        Controls.RatingStars {
+            anchors.centerIn: parent
+            rating: rootRow.rating
+            onRated: (value) => {
+                if (AppContext.marks && rootRow.trackId) {
+                    AppContext.marks.setRating([rootRow.trackId], value)
+                }
+            }
+        }
+    }
+
+    Component {
+        id: titleComponent
+
+        RowLayout {
+            id: titleCell
+            anchors.fill: parent
+            anchors.leftMargin: Theme.spacingSmall
+            anchors.rightMargin: Theme.spacingSmall
+            spacing: Theme.spacingTiny
+
+            Label {
+                Layout.fillWidth: true
+                Layout.maximumWidth: implicitWidth
+                verticalAlignment: Text.AlignVCenter
+                text: rootRow.cellText("title")
+                textFormat: Text.PlainText
+                elide: Text.ElideRight
+                color: rootRow.isSelectedRow ? Theme.text : Theme.text
+                font.pixelSize: Theme.fontSizeNormal
+            }
+
+            Label {
+                visible: AppContext.settings && AppContext.settings.showTranslations && rootRow.titleTranslated.length > 0
+                text: rootRow.titleTranslated
+                textFormat: Text.PlainText
+                elide: Text.ElideRight
+                color: Theme.textSecondary
+                font.pixelSize: Theme.fontSizeSmall
+                verticalAlignment: Text.AlignVCenter
+                Layout.maximumWidth: titleCell.width * 0.4
+            }
+
+            VersionBadge {
+                versionType: rootRow.versionType
+                Layout.alignment: Qt.AlignVCenter
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+        }
+    }
+
+    Component {
+        id: textComponent
+
+        Label {
+            // parent 是单元格 Loader；卸载时可能已为 null
+            readonly property var column: parent?.modelData ?? { }
+
+            anchors.fill: parent
+            anchors.leftMargin: Theme.spacingSmall
+            anchors.rightMargin: Theme.spacingSmall
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: column.alignRight ? Text.AlignRight : Text.AlignLeft
+            text: column.key === "album" ? rootRow.albumDisplayText() : rootRow.cellText(column.key)
+            textFormat: (column.key === "album" && AppContext.settings && AppContext.settings.showTranslations && rootRow.albumTranslated.length > 0) ? Text.StyledText : Text.PlainText
+            elide: Text.ElideRight
+            color: rootRow.isSelectedRow ? Theme.text : Theme.text
+            font.pixelSize: Theme.fontSizeNormal
         }
     }
 
