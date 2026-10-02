@@ -3046,6 +3046,19 @@
     </message>
 </context>
 <context>
+    <name>SmartLabels</name>
+    <message>
+        <location filename="../src/ui/SmartLabels.cpp" line="219"/>
+        <source>Like the current track</source>
+        <translation>像正在播放的歌</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SmartLabels.cpp" line="221"/>
+        <source>Like “%1”</source>
+        <translation>像“%1”</translation>
+    </message>
+</context>
+<context>
     <name>SmartRuleDialog</name>
     <message>
         <location filename="../qml/SmartRuleDialog.qml" line="43"/>
@@ -4112,46 +4125,47 @@
         <translation type="vanished">未配置 AI 服务。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="30"/>
+        <location filename="../src/ui/NlqController.cpp" line="33"/>
         <source>Understood with simple keyword rules.</source>
         <translation>按简单关键词规则理解。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="33"/>
+        <location filename="../src/ui/NlqController.cpp" line="36"/>
         <source>Understood with simple keyword rules; ignored “%1”.</source>
         <translation>按简单关键词规则理解；未识别“%1”。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="348"/>
+        <location filename="../src/ui/NlqController.cpp" line="354"/>
         <source>Keyword search: %1</source>
         <translation>关键词搜索：%1</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ui/NlqController.cpp" line="587"/>
+        <location filename="../src/ui/NlqController.cpp" line="593"/>
         <source>Remove &quot;%1&quot; → %n result(s)</source>
         <translation>
             <numerusform>去掉“%1”→ %n 条结果</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="597"/>
+        <location filename="../src/ui/NlqController.cpp" line="603"/>
         <source>Play history starts on %1, so there are no plays in the selected period.</source>
         <translation>播放记录从 %1 开始，所选区间内没有播放。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="601"/>
+        <location filename="../src/ui/NlqController.cpp" line="607"/>
         <source>No play history yet.</source>
         <translation>还没有播放记录。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="604"/>
+        <location filename="../src/ui/NlqController.cpp" line="610"/>
         <source>No results match all conditions.</source>
         <translation>没有同时满足全部条件的结果。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="353"/>
-        <location filename="../src/ui/NlqController.cpp" line="606"/>
-        <location filename="../src/ui/NlqController.cpp" line="615"/>
+        <location filename="../src/ui/NlqController.cpp" line="359"/>
+        <location filename="../src/ui/NlqController.cpp" line="612"/>
+        <location filename="../src/ui/NlqController.cpp" line="621"/>
+        <location filename="../src/ui/NlqController.cpp" line="690"/>
         <source>Nothing in your library matches.</source>
         <translation>曲库中没有符合的内容。</translation>
     </message>

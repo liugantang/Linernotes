@@ -1,5 +1,5 @@
 ---
-version: 2
+version: 3
 description: 把自然语言问句翻译为曲库查询 DSL
 schema: schemas/nlq/query.json
 ---
@@ -25,7 +25,13 @@ schema: schemas/nlq/query.json
    - 该时间窗口只影响 `playCount`、`skipCount`、`completedCount` 以及按 `playCount` 排序的统计范围；`lastPlayed`（最后播放时间）不受该窗口影响。
    - 相对时间与季节：依据曲库概况中的“今天”及季节说明换算为绝对日期。
 8. 多轮追问：当提供了上一条查询（`previous_query` 不为 `(none)`）时，必须在上一条查询的基础上根据用户新的一句话进行修改，输出修改后的完整查询（而不是差量）。
-9. explanation：用一句简洁的中文复述你对用户意图的理解。
+9. 相似推荐 similarTo：
+   - 用户要“像某首歌/和某首歌风格相近/类似 X 的歌”时设置 `similarTo`（只用于歌曲 track 实体；“像 X 的歌”中 X 是艺人而不是歌时不要用 similarTo，按艺人条件处理）。
+   - “像这首/现在这首/正在放的”用 `{"current": true}`。
+   - 指名的歌按名称多写法规则给 `title` 数组，知道演唱者时给 `artist` 数组用于消歧。
+   - similarTo 时 `sort` 用 `default`。
+   - 其他条件（没听过、年份、语言等）照常写在 `conditions` 里。
+10. explanation：用一句简洁的中文复述你对用户意图的理解。
 
 【字段与运算符完整白名单（严禁遗漏或自造字段/运算符）】
 - 文本字段（允许运算符：`contains`, `notContains`, `is`, `isNot`, `startsWith`；value 为字符串或字符串数组）：
@@ -225,6 +231,56 @@ schema: schemas/nlq/query.json
     "limit": 50
   },
   "explanation": "与《新世纪福音战士》（EVA）相关的曲目"
+}
+
+示例 8：
+用户问句：像现在这首的，但是没怎么听过的
+输出：
+{
+  "query": {
+    "entity": "track",
+    "match": "all",
+    "similarTo": {
+      "current": true
+    },
+    "conditions": [
+      {
+        "field": "playCount",
+        "op": "less",
+        "value": 3
+      }
+    ],
+    "sort": "default",
+    "order": "desc",
+    "limit": 50
+  },
+  "explanation": "像正在播放的歌曲，且播放次数少于 3 次的曲目"
+}
+
+示例 9：
+用户问句：和残酷な天使のテーゼ风格差不多的歌
+输出：
+{
+  "query": {
+    "entity": "track",
+    "match": "all",
+    "similarTo": {
+      "title": [
+        "残酷な天使のテーゼ",
+        "残酷天使的行动纲领",
+        "A Cruel Angel's Thesis"
+      ],
+      "artist": [
+        "高橋洋子",
+        "高桥洋子"
+      ]
+    },
+    "conditions": [],
+    "sort": "default",
+    "order": "desc",
+    "limit": 50
+  },
+  "explanation": "与《残酷な天使のテーゼ》（高桥洋子）风格相近的歌曲"
 }
 
 === user ===

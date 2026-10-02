@@ -11,5 +11,7 @@ inline constexpr QLatin1StringView kQueryInvalid { "nlq.query_invalid" };
 inline constexpr QLatin1StringView kInvalidResult { "nlq.invalid_result" };
 inline constexpr QLatin1StringView kSchemaNotFound { "nlq.schema_not_found" };
 inline constexpr QLatin1StringView kPromptRenderFailed { "nlq.prompt_render_failed" };
+inline constexpr QLatin1StringView kSimilarSeedMissing { "nlq.similar_seed_missing" };
+inline constexpr QLatin1StringView kSimilarSeedNotFound { "nlq.similar_seed_not_found" };
 
 } // namespace linernotes::nlq::errc

@@ -3,8 +3,10 @@
 
 #include <QDate>
 #include <QDateTime>
+#include <QJsonArray>
 #include <QJsonObject>
 #include <QObject>
+#include <QSet>
 #include <QSqlQuery>
 #include <QTemporaryDir>
 #include <QTest>
@@ -13,6 +15,7 @@
 #include <library/Migrator.h>
 #include <library/PlayCountRule.h>
 #include <library/SmartRule.h>
+#include <nlq/Errors.h>
 #include <nlq/NlqQuery.h>
 #include <nlq/QueryRunner.h>
 
@@ -20,6 +23,7 @@ namespace {
 
 using namespace linernotes;
 using namespace linernotes::nlq;
+namespace errc = linernotes::nlq::errc;
 
 struct DbHelper {
     static qint64 insertRoot(const QSqlDatabase &db)
@@ -144,11 +148,121 @@ private slots:
     void jsonRoundTrip();
     void jsonDefaults();
     void jsonErrorsAndClamping();
+    void jsonSimilarToRoundTrip();
+    void jsonSimilarToValidation();
     void runnerTrackWindowedPlayCount();
     void runnerAlbumAggregatedPlayCount();
     void runnerArtistAggregated();
     void runnerSqlInjectionSafe();
+    void runnerMatchingTrackIdsReturnsAll();
 };
+
+void TstNlqQuery::jsonSimilarToRoundTrip()
+{
+    // 1. Current track seed
+    {
+        Query q;
+        q.entity = Entity::Track;
+        q.similarTo = SimilarTo {
+            .current = true,
+            .titles = { },
+            .artists = { },
+        };
+        q.sortKey = SortKey::Default;
+        q.limit = 50;
+
+        const QJsonObject json = q.toJson();
+        QVERIFY(json.contains(QStringLiteral("similarTo")));
+        const QJsonObject stObj = json.value(QStringLiteral("similarTo")).toObject();
+        QCOMPARE(stObj.value(QStringLiteral("current")).toBool(), true);
+        QVERIFY(!stObj.contains(QStringLiteral("title")));
+        QVERIFY(!stObj.contains(QStringLiteral("artist")));
+
+        const auto res = Query::fromJson(json);
+        QVERIFY(res.ok());
+        QCOMPARE(res.value(), q);
+    }
+
+    // 2. Named track seed with array titles & artists
+    {
+        Query q;
+        q.entity = Entity::Track;
+        q.similarTo = SimilarTo {
+            .current = false,
+            .titles
+            = { QStringLiteral("残酷な天使のテーゼ"), QStringLiteral("残酷天使的行动纲领") },
+            .artists = { QStringLiteral("高橋洋子") },
+        };
+        q.sortKey = SortKey::Default;
+        q.limit = 50;
+
+        const QJsonObject json = q.toJson();
+        QVERIFY(json.contains(QStringLiteral("similarTo")));
+        const QJsonObject stObj = json.value(QStringLiteral("similarTo")).toObject();
+        QVERIFY(!stObj.value(QStringLiteral("current")).toBool());
+        QCOMPARE(stObj.value(QStringLiteral("title")).toArray().size(), 2);
+        QCOMPARE(stObj.value(QStringLiteral("artist")).toArray().size(), 1);
+
+        const auto res = Query::fromJson(json);
+        QVERIFY(res.ok());
+        QCOMPARE(res.value(), q);
+    }
+
+    // 3. fromJson with single-string title and artist
+    {
+        QJsonObject stObj;
+        stObj.insert(QStringLiteral("title"), QStringLiteral("Single Title"));
+        stObj.insert(QStringLiteral("artist"), QStringLiteral("Single Artist"));
+
+        QJsonObject queryObj;
+        queryObj.insert(QStringLiteral("entity"), QStringLiteral("track"));
+        queryObj.insert(QStringLiteral("similarTo"), stObj);
+
+        const auto res = Query::fromJson(queryObj);
+        QVERIFY(res.ok());
+        const auto &q = res.value();
+        QCOMPARE(q.similarTo,
+            std::optional<SimilarTo>(SimilarTo {
+                .current = false,
+                .titles = { QStringLiteral("Single Title") },
+                .artists = { QStringLiteral("Single Artist") },
+            }));
+    }
+}
+
+void TstNlqQuery::jsonSimilarToValidation()
+{
+    // Album with similarTo is rejected
+    {
+        Query q;
+        q.entity = Entity::Album;
+        q.similarTo = SimilarTo { .current = true, .titles = { }, .artists = { } };
+        const auto res = q.validate();
+        QVERIFY(!res.ok());
+    }
+
+    // current = false with empty titles is rejected
+    {
+        Query q;
+        q.entity = Entity::Track;
+        q.similarTo = SimilarTo { .current = false, .titles = { }, .artists = { } };
+        const auto res = q.validate();
+        QVERIFY(!res.ok());
+    }
+
+    // current = false with valid titles is accepted
+    {
+        Query q;
+        q.entity = Entity::Track;
+        q.similarTo = SimilarTo {
+            .current = false,
+            .titles = { QStringLiteral("Valid Title") },
+            .artists = { },
+        };
+        const auto res = q.validate();
+        QVERIFY(res.ok());
+    }
+}
 
 void TstNlqQuery::jsonRoundTrip()
 {
@@ -443,6 +557,61 @@ void TstNlqQuery::runnerSqlInjectionSafe()
     const auto res = runner.run(q);
     QVERIFY(res.ok());
     QVERIFY(res.value().isEmpty());
+}
+
+void TstNlqQuery::runnerMatchingTrackIdsReturnsAll()
+{
+    const QTemporaryDir dir;
+    QVERIFY(dir.isValid());
+    library::Database db(dir.filePath(QStringLiteral("test_matching_ids.db")));
+    QVERIFY(db.open(library::Migrator()).ok());
+    const auto qDb = db.connection().value();
+
+    const qint64 r = DbHelper::insertRoot(qDb);
+
+    QSet<qint64> expectedIds;
+    expectedIds.reserve(600);
+
+    {
+        library::Transaction tx(qDb);
+        for (int i = 0; i < 600; ++i) {
+            const qint64 f
+                = DbHelper::insertFile(qDb, r, QStringLiteral("song_%1.mp3").arg(i), 200000);
+            const qint64 t = DbHelper::insertTrack(qDb, f);
+            DbHelper::setMeta(qDb, t, QStringLiteral("Song %1").arg(i), QStringLiteral("Artist"),
+                QStringLiteral("Album"));
+            expectedIds.insert(t);
+        }
+        QVERIFY(tx.commit().ok());
+    }
+
+    QueryRunner runner(db, library::PlayCountRule { });
+
+    // 1. Without conditions (matching all visible tracks, ignoring limit)
+    {
+        Query q;
+        q.entity = Entity::Track;
+        q.limit = 10;
+
+        const auto res = runner.matchingTrackIds(q);
+        QVERIFY(res.ok());
+        QCOMPARE(res.value().size(), 600);
+        QCOMPARE(res.value(), expectedIds);
+
+        // runner.run still respects limit
+        const auto runRes = runner.run(q);
+        QVERIFY(runRes.ok());
+        QCOMPARE(runRes.value().size(), 10);
+    }
+
+    // 2. Entity other than Track is rejected
+    {
+        Query albumQuery;
+        albumQuery.entity = Entity::Album;
+        const auto albumRes = runner.matchingTrackIds(albumQuery);
+        QVERIFY(!albumRes.ok());
+        QCOMPARE(albumRes.error().code, QString(errc::kQueryInvalid));
+    }
 }
 
 } // namespace

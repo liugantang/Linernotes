@@ -191,9 +191,9 @@ private:
     SearchController m_search;
     PlaylistController m_playlists;
     LibraryActions m_actions;
-    NlqController m_nlq;
     rec::SoundIndex m_soundIndex;
     rec::Recommender m_recommender;
+    NlqController m_nlq;
     rec::SimilarTracks m_similarTracks;
     SimilarController m_similar;
     EndlessPlay m_endless;

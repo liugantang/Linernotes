@@ -78,3 +78,15 @@ linernotes_add_test(
         Linernotes::core
         Linernotes::TestSupport
 )
+
+linernotes_add_test(
+    NAME nlq_SimilarQuery
+    SOURCES
+        tst_SimilarQuery.cpp
+    LIBS
+        Linernotes::nlq
+        Linernotes::rec
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+)

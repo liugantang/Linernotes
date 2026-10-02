@@ -393,7 +393,7 @@
 <context>
     <name>linernotes::ui::NlqController</name>
     <message numerus="yes">
-        <location filename="../src/ui/NlqController.cpp" line="587"/>
+        <location filename="../src/ui/NlqController.cpp" line="593"/>
         <source>Remove &quot;%1&quot; → %n result(s)</source>
         <translation type="unfinished">
             <numerusform></numerusform>

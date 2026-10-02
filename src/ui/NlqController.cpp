@@ -11,7 +11,10 @@
 #include <nlq/LibrarySummary.h>
 #include <nlq/OfflineParser.h>
 #include <nlq/QueryRunner.h>
+#include <nlq/SimilarQuery.h>
 #include <nlq/VariantPruning.h>
+#include <player/PlayQueue.h>
+#include <rec/Recommender.h>
 #include <ui/ErrorText.h>
 #include <ui/Format.h>
 #include <ui/SmartLabels.h>
@@ -104,13 +107,16 @@ bool queryUsesPlayStats(const nlq::Query &query)
 
 NlqController::NlqController(library::Database &db, ai::LlmService &llm, ai::PromptLibrary &prompts,
     const ai::AiConfig &aiConfig, LibraryActions &actions, PlaylistController &playlists,
-    SettingsController &settingsController, QObject *parent)
+    SettingsController &settingsController, rec::Recommender &recommender, player::PlayQueue &queue,
+    QObject *parent)
     : QObject(parent)
     , m_db(db)
     , m_aiConfig(aiConfig)
     , m_actions(actions)
     , m_playlists(playlists)
     , m_settingsController(settingsController)
+    , m_recommender(recommender)
+    , m_queue(queue)
     , m_interpreter(llm, prompts, this)
 {
     connect(
@@ -647,10 +653,24 @@ void NlqController::executeQuery(const nlq::Query &query)
     m_currentQuery = query;
     m_entity = query.entity;
 
-    const nlq::QueryRunner runner(m_db, m_settingsController.playCountRule());
-    const auto runRes = runner.run(query);
-
     m_chips = nlqChips(query);
+
+    const nlq::QueryRunner runner(m_db, m_settingsController.playCountRule());
+    const auto runRes = [&]() -> core::Result<QList<qint64>> {
+        if (!query.similarTo.has_value()) {
+            return runner.run(query);
+        }
+        std::optional<qint64> currentTrackId;
+        const auto curItem = m_queue.currentItem();
+        if (curItem.has_value() && curItem->trackId > 0) {
+            currentTrackId = curItem->trackId;
+        }
+        const auto seedRes = nlq::resolveSimilarSeed(m_db, query.similarTo.value(), currentTrackId);
+        if (!seedRes.ok()) {
+            return seedRes.error();
+        }
+        return nlq::runSimilarQuery(runner, m_recommender, query, seedRes.value());
+    }();
 
     if (!runRes.ok()) {
         failWith(runRes.error());
@@ -666,7 +686,13 @@ void NlqController::executeQuery(const nlq::Query &query)
     m_rows = loadRows(runRes.value(), query.entity);
 
     if (m_rows.isEmpty()) {
-        updateEmptyAnalysis(runner, query);
+        if (query.similarTo.has_value()) {
+            m_emptyHint = tr("Nothing in your library matches.");
+            m_relaxations.clear();
+            m_lastRelaxations.clear();
+        } else {
+            updateEmptyAnalysis(runner, query);
+        }
     } else {
         m_emptyHint.clear();
         m_relaxations.clear();

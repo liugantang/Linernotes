@@ -214,6 +214,15 @@ QStringList nlqChips(const nlq::Query &query)
 {
     QStringList chips;
 
+    if (query.similarTo.has_value()) {
+        if (query.similarTo->current) {
+            chips.append(QCoreApplication::translate("SmartLabels", "Like the current track"));
+        } else if (!query.similarTo->titles.isEmpty()) {
+            chips.append(QCoreApplication::translate("SmartLabels", "Like “%1”")
+                    .arg(query.similarTo->titles.first()));
+        }
+    }
+
     for (const auto &c : query.rule.conditions) {
         chips.append(smartConditionLabel(c));
     }

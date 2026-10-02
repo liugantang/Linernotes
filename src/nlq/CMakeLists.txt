@@ -21,6 +21,8 @@ add_library(linernotes_nlq STATIC
     QueryRunner.h
     Relaxation.cpp
     Relaxation.h
+    SimilarQuery.cpp
+    SimilarQuery.h
     VariantPruning.cpp
     VariantPruning.h
 )
@@ -45,6 +47,7 @@ target_link_libraries(linernotes_nlq
     PUBLIC
         Linernotes::core
         Linernotes::library
+        Linernotes::rec
         Linernotes::ai
         Qt6::Core
         Qt6::Sql

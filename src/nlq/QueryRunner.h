@@ -4,6 +4,7 @@
 #pragma once
 
 #include <QList>
+#include <QSet>
 #include <QtGlobal>
 
 #include <core/Result.h>
@@ -18,6 +19,10 @@ public:
     QueryRunner(library::Database &db, library::PlayCountRule countRule);
     /// 返回按排序后的实体 id（曲目 id / 专辑 id / 艺人 id），最多 limit 个。
     [[nodiscard]] core::Result<QList<qint64>> run(const Query &query) const;
+
+    /// 满足 query.rule 条件的全部可见曲目 id（忽略 entity 以外的
+    /// sort/limit，不排序、不限量）。entity 必须为 Track。
+    [[nodiscard]] core::Result<QSet<qint64>> matchingTrackIds(const Query &query) const;
 
 private:
     library::Database &m_db;
