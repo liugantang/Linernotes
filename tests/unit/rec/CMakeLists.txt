@@ -24,3 +24,14 @@ linernotes_add_test(
         Linernotes::TestSupport
         Qt6::Sql
 )
+
+linernotes_add_test(
+    NAME rec_SessionSeeds
+    SOURCES
+        tst_SessionSeeds.cpp
+    LIBS
+        Linernotes::rec
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Sql
+)

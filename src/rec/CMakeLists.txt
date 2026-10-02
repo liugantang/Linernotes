@@ -9,6 +9,8 @@ add_library(linernotes_rec STATIC
     RecLogging.h
     Recommender.cpp
     Recommender.h
+    SessionSeeds.cpp
+    SessionSeeds.h
     SimilarTracks.cpp
     SimilarTracks.h
     SoundIndex.cpp

@@ -31,6 +31,8 @@ add_library(linernotes_ui STATIC
     CoverSearchController.h
     DuplicateController.cpp
     DuplicateController.h
+    EndlessPlay.cpp
+    EndlessPlay.h
     ErrorText.cpp
     ErrorText.h
     Format.h

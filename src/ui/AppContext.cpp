@@ -64,8 +64,10 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_nlq(m_db, m_ai.llm(), m_ai.prompts(), m_ai.config(), m_actions, m_playlists,
           m_settingsController)
     , m_soundIndex(m_db, m_clock)
+    , m_recommender(m_db, m_soundIndex, m_clock)
     , m_similarTracks(m_db, m_soundIndex)
     , m_similar(m_similarTracks, m_db, m_actions)
+    , m_endless(m_db, *m_player.queue(), m_recommender, m_settings, m_clock)
 {
     connect(this, &AppContext::libraryChanged, &m_nowPlaying, &NowPlaying::refresh);
     connect(&m_marks, &MarksController::marksChanged, &m_nowPlaying, &NowPlaying::refresh);
@@ -357,6 +359,11 @@ DuplicateController *AppContext::duplicates()
 CoverSearchController *AppContext::coverSearch()
 {
     return &m_coverSearch;
+}
+
+EndlessPlay *AppContext::endless()
+{
+    return &m_endless;
 }
 
 library::Database &AppContext::database()

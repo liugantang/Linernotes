@@ -489,6 +489,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS icons/repeat.svg
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/resources/icons/infinity.svg
+    PROPERTIES
+        QT_RESOURCE_ALIAS icons/infinity.svg
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/resources/icons/repeat-1.svg
     PROPERTIES
         QT_RESOURCE_ALIAS icons/repeat-1.svg
@@ -670,6 +675,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/resources/icons/list-music.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/list-plus.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/repeat.svg
+        ${CMAKE_SOURCE_DIR}/resources/icons/infinity.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/repeat-1.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/rotate-ccw.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/search.svg

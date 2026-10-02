@@ -56,5 +56,7 @@ inline const core::SettingKey<double> kButlerAutoAccept { u"butler/autoAccept", 
 inline const core::SettingKey<bool> kButlerAutoCleanup { u"butler/autoCleanup", true };
 // NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 inline const core::SettingKey<bool> kUiShowTranslations { u"ui/showTranslations", false };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<bool> kQueueEndless { u"queue/endless", false };
 
 } // namespace linernotes::ui
