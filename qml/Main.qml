@@ -44,6 +44,10 @@ ApplicationWindow {
         id: commandPalette
     }
 
+    SimilarTracksDialog {
+        id: similarTracksDialog
+    }
+
     ShortcutsDialog {
         id: shortcutsDialog
         shortcuts: appShortcuts
@@ -165,8 +169,12 @@ ApplicationWindow {
                 Layout.fillHeight: true
                 spacing: 0
 
-                // Top toolbar
+                // Top toolbar: search and AI entries are hidden on the settings page
                 RowLayout {
+                    id: topBar
+
+                    readonly property bool onSettingsPage: sidebar.currentPage === NavigationSidebar.Settings
+
                     Layout.fillWidth: true
                     Layout.preferredHeight: Theme.topBarHeight
                     Layout.leftMargin: Theme.spacingMedium
@@ -175,6 +183,7 @@ ApplicationWindow {
 
                     SearchBox {
                         id: searchBox
+                        visible: !topBar.onSettingsPage
                         Layout.preferredWidth: 280
                         onFocusTrackListRequested: {
                             if (searchResults.visible) {
@@ -184,6 +193,7 @@ ApplicationWindow {
                     }
 
                     Controls.IconButton {
+                        visible: !topBar.onSettingsPage
                         icon.source: "icons/sparkles.svg"
                         toolTip: qsTr("Ask Library (Ctrl+K)")
                         onClicked: commandPalette.openPalette()
@@ -254,7 +264,7 @@ ApplicationWindow {
                     SearchResults {
                         id: searchResults
                         anchors.fill: parent
-                        visible: AppContext.search && AppContext.search.active
+                        visible: !topBar.onSettingsPage && AppContext.search && AppContext.search.active
                         onOpenAlbumRequested: (albumId) => window.openAlbum(albumId)
                         onOpenArtistRequested: (artistId) => window.openArtist(artistId)
                         onFocusSearchBoxRequested: searchBox.focusInput()

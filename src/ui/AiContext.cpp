@@ -7,9 +7,11 @@
 
 #include <QStringList>
 
+#include <audio/TrackEmbedding.h>
 #include <butler/ArtistCreditJobHandler.h>
 #include <butler/ArtistMergeJobHandler.h>
 #include <butler/DuplicateJobHandler.h>
+#include <butler/EmbeddingJobHandler.h>
 #include <butler/FingerprintJobHandler.h>
 #include <butler/MojibakeJobHandler.h>
 #include <butler/TitleMatchJobHandler.h>
@@ -64,6 +66,8 @@ AiContext::AiContext(core::Settings &settings, library::Database &db, const core
     m_jobs.registerHandler(
         std::make_unique<butler::ArtistMergeJobHandler>(db, m_llm, m_prompts, clock));
     m_jobs.registerHandler(std::make_unique<butler::FingerprintJobHandler>(db, clock));
+    m_jobs.registerHandler(std::make_unique<butler::EmbeddingJobHandler>(
+        db, clock, audio::defaultEmbeddingModelPath()));
     m_jobs.registerHandler(std::make_unique<butler::DuplicateJobHandler>(db, clock));
     m_jobs.registerHandler(std::make_unique<butler::WritebackJobHandler>(db));
     m_jobs.registerHandler(std::make_unique<butler::WritebackRevertJobHandler>(db));

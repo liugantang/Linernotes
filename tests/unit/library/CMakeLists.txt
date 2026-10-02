@@ -65,6 +65,15 @@ linernotes_add_test(
 )
 
 linernotes_add_test(
+    NAME library_EmbeddingStore
+    SOURCES
+        tst_EmbeddingStore.cpp
+    LIBS
+        Linernotes::library
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
     NAME library_FingerprintStore
     SOURCES
         tst_FingerprintStore.cpp

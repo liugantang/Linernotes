@@ -19,6 +19,8 @@ add_library(linernotes_library STATIC
     DatabaseBackup.h
     DirectoryWalker.cpp
     DirectoryWalker.h
+    EmbeddingStore.cpp
+    EmbeddingStore.h
     EntityLinker.cpp
     EntityLinker.h
     EnumNames.h

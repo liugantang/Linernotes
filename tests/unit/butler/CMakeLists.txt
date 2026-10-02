@@ -163,5 +163,19 @@ linernotes_add_test(
         Linernotes::TestSupport
 )
 
+linernotes_add_test(
+    NAME butler_EmbeddingJobHandler
+    SOURCES
+        tst_EmbeddingJobHandler.cpp
+    LIBS
+        Linernotes::butler
+        Linernotes::audio
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+)
+
+
 
 

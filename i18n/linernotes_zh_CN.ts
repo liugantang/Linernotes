@@ -2616,11 +2616,72 @@
         <source>After new files are scanned, fix garbled tags with rules, apply known artist credits and group song versions. AI and online steps still run only when you start them.</source>
         <translation>新文件扫描入库后，用规则修复乱码、套用已知的艺人署名并归并歌曲版本。AI 与联网步骤仍需手动运行。</translation>
     </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="326"/>
+        <source>Sound analysis</source>
+        <translation>声音分析</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="333"/>
+        <source>Analyze the sound of each track for similarity search and recommendations. Everything is processed locally.</source>
+        <translation>分析每首歌的声音，用于找相似和推荐。全部在本机完成。</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="342"/>
+        <source>Audio embedding model not found: %1</source>
+        <translation>未找到声音模型：%1</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="352"/>
+        <source>%1 analyzed, %2 pending</source>
+        <translation>已分析 %1 首，待分析 %2 首</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="382"/>
+        <source>%1 / %2</source>
+        <translation>%1 / %2</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="396"/>
+        <location filename="../qml/SettingsLibrarySection.qml" line="399"/>
+        <source>Start Analysis</source>
+        <translation>开始分析</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="397"/>
+        <source>Pause</source>
+        <translation>暂停</translation>
+    </message>
+    <message>
+        <location filename="../qml/SettingsLibrarySection.qml" line="398"/>
+        <source>Resume</source>
+        <translation>继续</translation>
+    </message>
 </context>
 <context>
     <name>SettingsPage</name>
     <message>
-        <location filename="../qml/pages/SettingsPage.qml" line="32"/>
+        <location filename="../qml/pages/SettingsPage.qml" line="14"/>
+        <source>Library</source>
+        <translation>曲库</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="15"/>
+        <source>Playback</source>
+        <translation>播放</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="16"/>
+        <source>Appearance</source>
+        <translation>外观</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="17"/>
+        <source>AI</source>
+        <translation>AI</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/SettingsPage.qml" line="30"/>
         <source>Settings</source>
         <translation>设置</translation>
     </message>
@@ -2799,28 +2860,28 @@
         <translation>值</translation>
     </message>
     <message>
-        <location filename="../qml/SmartConditionRow.qml" line="256"/>
+        <location filename="../qml/SmartConditionRow.qml" line="262"/>
         <source>Min</source>
         <translation>最小值</translation>
     </message>
     <message>
-        <location filename="../qml/SmartConditionRow.qml" line="268"/>
-        <location filename="../qml/SmartConditionRow.qml" line="332"/>
+        <location filename="../qml/SmartConditionRow.qml" line="274"/>
+        <location filename="../qml/SmartConditionRow.qml" line="338"/>
         <source>and</source>
         <translation>至</translation>
     </message>
     <message>
-        <location filename="../qml/SmartConditionRow.qml" line="275"/>
+        <location filename="../qml/SmartConditionRow.qml" line="281"/>
         <source>Max</source>
         <translation>最大值</translation>
     </message>
     <message>
-        <location filename="../qml/SmartConditionRow.qml" line="307"/>
+        <location filename="../qml/SmartConditionRow.qml" line="313"/>
         <source>days</source>
         <translation>天</translation>
     </message>
     <message>
-        <location filename="../qml/SmartConditionRow.qml" line="380"/>
+        <location filename="../qml/SmartConditionRow.qml" line="386"/>
         <source>Remove Condition</source>
         <translation>移除条件</translation>
     </message>
@@ -2950,6 +3011,41 @@
     </message>
 </context>
 <context>
+    <name>SimilarTracksDialog</name>
+    <message>
+        <source>Similar to “%1”</source>
+        <translation>像「%1」的歌</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <source>This track has not been analyzed for audio features yet. Go to Settings → Library → Audio Analysis to run analysis and try again.</source>
+        <translation>这首歌还没有分析声音。到 设置 → 曲库 → 声音分析 运行分析后再试。</translation>
+    </message>
+    <message>
+        <source>No similar tracks found.</source>
+        <translation>没有找到相似的歌。</translation>
+    </message>
+    <message>
+        <source>Unknown Title</source>
+        <translation>未知标题</translation>
+    </message>
+    <message>
+        <source>Unknown Artist</source>
+        <translation>未知艺人</translation>
+    </message>
+    <message>
+        <source>Play All</source>
+        <translation>全部播放</translation>
+    </message>
+    <message>
+        <source>Add to Queue</source>
+        <translation>加入队列</translation>
+    </message>
+</context>
+<context>
     <name>TagEditorDialog</name>
     <message>
         <location filename="../qml/TagEditorDialog.qml" line="59"/>
@@ -3015,6 +3111,10 @@
         <location filename="../qml/TrackContextMenu.qml" line="109"/>
         <source>Add to Queue</source>
         <translation>添加到播放队列</translation>
+    </message>
+    <message>
+        <source>Find Similar</source>
+        <translation>找相似</translation>
     </message>
     <message>
         <location filename="../qml/TrackContextMenu.qml" line="119"/>
@@ -3840,17 +3940,17 @@
         <translation type="vanished">艺人</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="195"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="199"/>
         <source>Play period: %1 – %2</source>
         <translation>播放统计：%1 – %2</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="199"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="203"/>
         <source>Play period: from %1</source>
         <translation>播放统计：%1 起</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="203"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="207"/>
         <source>Play period: until %1</source>
         <translation>播放统计：截至 %1</translation>
     </message>
@@ -3882,46 +3982,46 @@
         <translation type="vanished">未配置 AI 服务。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="29"/>
+        <location filename="../src/ui/NlqController.cpp" line="30"/>
         <source>Understood with simple keyword rules.</source>
         <translation>按简单关键词规则理解。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="32"/>
+        <location filename="../src/ui/NlqController.cpp" line="33"/>
         <source>Understood with simple keyword rules; ignored “%1”.</source>
         <translation>按简单关键词规则理解；未识别“%1”。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="347"/>
+        <location filename="../src/ui/NlqController.cpp" line="348"/>
         <source>Keyword search: %1</source>
         <translation>关键词搜索：%1</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ui/NlqController.cpp" line="586"/>
+        <location filename="../src/ui/NlqController.cpp" line="587"/>
         <source>Remove &quot;%1&quot; → %n result(s)</source>
         <translation>
             <numerusform>去掉“%1”→ %n 条结果</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="596"/>
+        <location filename="../src/ui/NlqController.cpp" line="597"/>
         <source>Play history starts on %1, so there are no plays in the selected period.</source>
         <translation>播放记录从 %1 开始，所选区间内没有播放。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="600"/>
+        <location filename="../src/ui/NlqController.cpp" line="601"/>
         <source>No play history yet.</source>
         <translation>还没有播放记录。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="603"/>
+        <location filename="../src/ui/NlqController.cpp" line="604"/>
         <source>No results match all conditions.</source>
         <translation>没有同时满足全部条件的结果。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="352"/>
-        <location filename="../src/ui/NlqController.cpp" line="605"/>
-        <location filename="../src/ui/NlqController.cpp" line="614"/>
+        <location filename="../src/ui/NlqController.cpp" line="353"/>
+        <location filename="../src/ui/NlqController.cpp" line="606"/>
+        <location filename="../src/ui/NlqController.cpp" line="615"/>
         <source>Nothing in your library matches.</source>
         <translation>曲库中没有符合的内容。</translation>
     </message>
@@ -3930,19 +4030,19 @@
     <name>linernotes::ui::PlaylistController</name>
     <message>
         <location filename="../src/ui/SmartLabels.cpp" line="16"/>
-        <location filename="../src/ui/SmartLabels.cpp" line="106"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="108"/>
         <source>Title</source>
         <translation>标题</translation>
     </message>
     <message>
         <location filename="../src/ui/SmartLabels.cpp" line="18"/>
-        <location filename="../src/ui/SmartLabels.cpp" line="108"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="110"/>
         <source>Artist</source>
         <translation>艺人</translation>
     </message>
     <message>
         <location filename="../src/ui/SmartLabels.cpp" line="20"/>
-        <location filename="../src/ui/SmartLabels.cpp" line="110"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="112"/>
         <source>Album</source>
         <translation>专辑</translation>
     </message>
@@ -3958,7 +4058,7 @@
     </message>
     <message>
         <location filename="../src/ui/SmartLabels.cpp" line="26"/>
-        <location filename="../src/ui/SmartLabels.cpp" line="112"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="114"/>
         <source>Year</source>
         <translation>年份</translation>
     </message>
@@ -3979,13 +4079,13 @@
     </message>
     <message>
         <location filename="../src/ui/SmartLabels.cpp" line="34"/>
-        <location filename="../src/ui/SmartLabels.cpp" line="116"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="118"/>
         <source>Date Added</source>
         <translation>添加日期</translation>
     </message>
     <message>
         <location filename="../src/ui/SmartLabels.cpp" line="36"/>
-        <location filename="../src/ui/SmartLabels.cpp" line="114"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="116"/>
         <source>Duration</source>
         <translation>时长</translation>
     </message>
@@ -4040,154 +4140,165 @@
         <translation>关键词</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="66"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="68"/>
         <source>Contains</source>
         <translation>包含</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="68"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="70"/>
         <source>Does Not Contain</source>
         <translation>不包含</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="71"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="73"/>
         <source>Is</source>
         <translation>是</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="73"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="75"/>
         <source>Is Not</source>
         <translation>不是</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="75"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="77"/>
         <source>Starts With</source>
         <translation>开头是</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="77"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="79"/>
         <source>Equals</source>
         <translation>等于</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="79"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="81"/>
         <source>Does Not Equal</source>
         <translation>不等于</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="81"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="83"/>
         <source>Greater Than</source>
         <translation>大于</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="83"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="85"/>
         <source>Less Than</source>
         <translation>小于</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="85"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="87"/>
         <source>Between</source>
         <translation>介于</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="87"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="89"/>
         <source>Is True</source>
         <translation>为真</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="89"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="91"/>
         <source>Is False</source>
         <translation>为假</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="91"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="93"/>
         <source>In the Last (Days)</source>
         <translation>在过去（天）内</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="94"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="96"/>
         <source>Not in the Last (Days)</source>
         <translation>不在过去（天）内</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="104"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="106"/>
         <source>Default</source>
         <translation>默认</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="118"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="120"/>
         <source>Playlist Order</source>
         <translation>歌单顺序</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="127"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="129"/>
         <source>Studio</source>
         <translation>录音室</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="129"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="131"/>
         <source>Live</source>
         <translation>现场</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="131"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="133"/>
         <source>Remaster</source>
         <translation>重制</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="133"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="135"/>
         <source>Acoustic</source>
         <translation>原声</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="135"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="137"/>
         <source>Remix</source>
         <translation>混音</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="137"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="139"/>
         <source>Demo</source>
         <translation>小样</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="139"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="141"/>
         <source>Instrumental</source>
         <translation>伴奏</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="141"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="143"/>
         <source>Edit</source>
         <translation>剪辑版</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="143"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="145"/>
         <source>Alt. version</source>
         <translation>其他版本</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="152"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="154"/>
         <source>Chinese</source>
         <translation>中文</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="154"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="156"/>
         <source>Japanese</source>
         <translation>日语</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="156"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="158"/>
         <source>Korean</source>
         <translation>韩语</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="158"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="160"/>
         <source>Western</source>
         <translation>西文</translation>
     </message>
     <message>
-        <location filename="../src/ui/SmartLabels.cpp" line="160"/>
+        <location filename="../src/ui/SmartLabels.cpp" line="162"/>
         <source>Other</source>
         <translation>其他</translation>
+    </message>
+</context>
+<context>
+    <name>linernotes::ui::SimilarController</name>
+    <message>
+        <source>Unknown Title</source>
+        <translation>未知标题</translation>
+    </message>
+    <message>
+        <source>Unknown Artist</source>
+        <translation>未知艺人</translation>
     </message>
 </context>
 <context>

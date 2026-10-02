@@ -13,6 +13,8 @@ add_library(linernotes_ui STATIC
     AppSettings.h
     ArtistListModel.cpp
     ArtistListModel.h
+    AudioAnalysisController.cpp
+    AudioAnalysisController.h
     CleanupController.cpp
     CleanupController.h
     CorrectionBatchModel.cpp
@@ -66,6 +68,10 @@ add_library(linernotes_ui STATIC
     ServiceListModel.h
     SettingsController.cpp
     SettingsController.h
+    SimilarController.cpp
+    SimilarController.h
+    SimilarTracks.cpp
+    SimilarTracks.h
     SmartLabels.cpp
     SmartLabels.h
     TagEditorModel.cpp
@@ -112,6 +118,7 @@ target_include_directories(linernotes_ui
 target_link_libraries(linernotes_ui
     PUBLIC
         Linernotes::ai
+        Linernotes::audio
         Linernotes::butler
         Linernotes::core
         Linernotes::library

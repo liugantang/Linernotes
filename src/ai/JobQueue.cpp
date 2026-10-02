@@ -9,6 +9,7 @@
 #include <QPointer>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QTimer>
 #include <QVariant>
 
 #include <ai/AiEnumNames.h>
@@ -22,6 +23,8 @@
 namespace linernotes::ai {
 
 namespace {
+
+constexpr int kDbErrorRetryDelayMs = 2000;
 
 bool isConfigError(const QString &code)
 {
@@ -148,6 +151,7 @@ core::Result<qint64> JobQueue::enqueue(
     }
 
     const qint64 jobId = insertJobQuery.lastInsertId().toLongLong();
+    insertJobQuery.finish();
 
     if (!empty) {
         QSqlQuery insertItemQuery(conn);
@@ -167,6 +171,7 @@ core::Result<qint64> JobQueue::enqueue(
                 };
             }
         }
+        insertItemQuery.finish();
     }
 
     const auto commitRes = tx.commit();
@@ -203,6 +208,7 @@ core::Result<void> JobQueue::restore()
             .detail = query.lastQuery(),
         };
     }
+    query.finish();
 
     return { };
 }
@@ -232,7 +238,10 @@ void JobQueue::pause(qint64 jobId)
         return;
     }
 
-    if (query.numRowsAffected() > 0) {
+    const int affected = query.numRowsAffected();
+    query.finish();
+
+    if (affected > 0) {
         emit jobChanged(jobId);
     }
 }
@@ -248,12 +257,23 @@ void JobQueue::resume(qint64 jobId)
     QSqlQuery jobQuery(connRes.value());
     jobQuery.prepare(QStringLiteral("SELECT kind, state FROM jobs WHERE id = ?"));
     jobQuery.addBindValue(jobId);
-    if (!jobQuery.exec() || !jobQuery.next()) {
+    if (!jobQuery.exec()) {
+        handleDbError(jobId,
+            core::Error {
+                .code = QString(library::errc::kDbQuery),
+                .message = jobQuery.lastError().text(),
+                .detail = jobQuery.lastQuery(),
+            });
+        return;
+    }
+    if (!jobQuery.next()) {
+        jobQuery.finish();
         return;
     }
 
     const QString kind = jobQuery.value(0).toString();
     const QString stateStr = jobQuery.value(1).toString();
+    jobQuery.finish();
 
     if (stateStr == QStringLiteral("running")) {
         return;
@@ -271,7 +291,7 @@ void JobQueue::resume(qint64 jobId)
     countQuery.prepare(
         QStringLiteral("SELECT COUNT(*) FROM job_items WHERE job_id = ? AND state = 'pending'"));
     countQuery.addBindValue(jobId);
-    if (!countQuery.exec() || !countQuery.next()) {
+    if (!countQuery.exec()) {
         handleDbError(jobId,
             core::Error {
                 .code = QString(library::errc::kDbQuery),
@@ -280,8 +300,13 @@ void JobQueue::resume(qint64 jobId)
             });
         return;
     }
+    if (!countQuery.next()) {
+        countQuery.finish();
+        return;
+    }
 
     const int pendingCount = countQuery.value(0).toInt();
+    countQuery.finish();
     const bool hasInFlight = m_inFlight.contains(jobId) && !m_inFlight.at(jobId).empty();
 
     if (pendingCount == 0 && !hasInFlight) {
@@ -331,6 +356,7 @@ void JobQueue::retryFailed(qint64 jobId)
             });
         return;
     }
+    resetItemsQuery.finish();
 
     const qint64 nowMs = m_clock.nowMs();
     QSqlQuery updateJobQuery(connRes.value());
@@ -347,6 +373,7 @@ void JobQueue::retryFailed(qint64 jobId)
             });
         return;
     }
+    updateJobQuery.finish();
 
     const auto commitRes = tx.commit();
     if (!commitRes.ok()) {
@@ -360,9 +387,13 @@ void JobQueue::retryFailed(qint64 jobId)
     checkQuery.prepare(QStringLiteral("SELECT state FROM jobs WHERE id = ?"));
     checkQuery.addBindValue(jobId);
     if (checkQuery.exec() && checkQuery.next()) {
-        if (checkQuery.value(0).toString() == QStringLiteral("running")) {
+        const QString state = checkQuery.value(0).toString();
+        checkQuery.finish();
+        if (state == QStringLiteral("running")) {
             dispatchJob(jobId);
         }
+    } else {
+        checkQuery.finish();
     }
 }
 
@@ -390,6 +421,7 @@ void JobQueue::remove(qint64 jobId)
             });
         return;
     }
+    deleteItemsQuery.finish();
 
     QSqlQuery deleteJobQuery(connRes.value());
     deleteJobQuery.prepare(QStringLiteral("DELETE FROM jobs WHERE id = ?"));
@@ -403,6 +435,7 @@ void JobQueue::remove(qint64 jobId)
             });
         return;
     }
+    deleteJobQuery.finish();
 
     const auto commitRes = tx.commit();
     if (!commitRes.ok()) {
@@ -434,6 +467,7 @@ QList<JobInfo> JobQueue::jobs() const
     while (query.next()) {
         results.append(jobInfoFromQuery(query));
     }
+    query.finish();
     return results;
 }
 
@@ -457,10 +491,13 @@ std::optional<JobInfo> JobQueue::job(qint64 jobId) const
     }
 
     if (!query.next()) {
+        query.finish();
         return std::nullopt;
     }
 
-    return jobInfoFromQuery(query);
+    auto info = jobInfoFromQuery(query);
+    query.finish();
+    return info;
 }
 
 void JobQueue::dispatchJob(qint64 jobId)
@@ -474,13 +511,24 @@ void JobQueue::dispatchJob(qint64 jobId)
     QSqlQuery jobQuery(connRes.value());
     jobQuery.prepare(QStringLiteral("SELECT kind, params, state FROM jobs WHERE id = ?"));
     jobQuery.addBindValue(jobId);
-    if (!jobQuery.exec() || !jobQuery.next()) {
+    if (!jobQuery.exec()) {
+        handleDbError(jobId,
+            core::Error {
+                .code = QString(library::errc::kDbQuery),
+                .message = jobQuery.lastError().text(),
+                .detail = jobQuery.lastQuery(),
+            });
+        return;
+    }
+    if (!jobQuery.next()) {
+        jobQuery.finish();
         return;
     }
 
     const QString kind = jobQuery.value(0).toString();
     const QString paramsStr = jobQuery.value(1).toString();
     const QString stateStr = jobQuery.value(2).toString();
+    jobQuery.finish();
 
     if (stateStr != QStringLiteral("running")) {
         return;
@@ -537,6 +585,7 @@ void JobQueue::dispatchJob(qint64 jobId)
             }
         }
     }
+    itemsQuery.finish();
 
     if (pendingItems.isEmpty()) {
         if (inFlightMap.empty() && !hasAnyPending) {
@@ -614,11 +663,23 @@ void JobQueue::handleItemDone(qint64 jobId, int seq, const core::Result<void> &r
     QSqlQuery stateQuery(connRes.value());
     stateQuery.prepare(QStringLiteral("SELECT state FROM jobs WHERE id = ?"));
     stateQuery.addBindValue(jobId);
-    if (!stateQuery.exec() || !stateQuery.next()) {
+    if (!stateQuery.exec()) {
+        handleDbError(jobId,
+            core::Error {
+                .code = QString(library::errc::kDbQuery),
+                .message = stateQuery.lastError().text(),
+                .detail = stateQuery.lastQuery(),
+            });
+        return;
+    }
+    if (!stateQuery.next()) {
+        stateQuery.finish();
         return;
     }
 
     const QString currentState = stateQuery.value(0).toString();
+    stateQuery.finish();
+
     if (currentState == QStringLiteral("cancelled")) {
         return;
     }
@@ -640,12 +701,14 @@ void JobQueue::handleItemDone(qint64 jobId, int seq, const core::Result<void> &r
                 });
             return;
         }
+        updateItem.finish();
 
         QSqlQuery updateJob(connRes.value());
         updateJob.prepare(QStringLiteral("UPDATE jobs SET updated_at = ? WHERE id = ?"));
         updateJob.addBindValue(nowMs);
         updateJob.addBindValue(jobId);
         updateJob.exec();
+        updateJob.finish();
 
         emit jobChanged(jobId);
     } else if (isConfigError(result.error().code)) {
@@ -670,12 +733,14 @@ void JobQueue::handleItemDone(qint64 jobId, int seq, const core::Result<void> &r
                 });
             return;
         }
+        updateItem.finish();
 
         QSqlQuery updateJob(connRes.value());
         updateJob.prepare(QStringLiteral("UPDATE jobs SET updated_at = ? WHERE id = ?"));
         updateJob.addBindValue(nowMs);
         updateJob.addBindValue(jobId);
         updateJob.exec();
+        updateJob.finish();
 
         emit jobChanged(jobId);
     }
@@ -710,12 +775,20 @@ void JobQueue::updateJobState(qint64 jobId, JobState state, const QString &lastE
     if (!query.exec()) {
         qCWarning(lcAi) << "JobQueue::updateJobState failed:" << query.lastError().text();
     }
+    query.finish();
 }
 
 void JobQueue::handleDbError(qint64 jobId, const core::Error &error)
 {
     qCWarning(lcAi) << "JobQueue database error for job" << jobId << ":" << error.message;
-    updateJobState(jobId, JobState::Paused, error.code + QStringLiteral(": ") + error.message);
+    if (jobId <= 0) {
+        return;
+    }
+    QTimer::singleShot(kDbErrorRetryDelayMs, this, [guard = QPointer<JobQueue>(this), jobId]() {
+        if (!guard.isNull()) {
+            guard->dispatchJob(jobId);
+        }
+    });
 }
 
 } // namespace linernotes::ai

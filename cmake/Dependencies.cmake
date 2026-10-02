@@ -19,6 +19,7 @@ find_package(Qt6Keychain REQUIRED)
 
 find_package(nlohmann_json 3.11 REQUIRED)
 find_package(nlohmann_json_schema_validator REQUIRED)
+find_package(onnxruntime REQUIRED CONFIG)
 
 find_package(PkgConfig REQUIRED)
 
@@ -82,6 +83,10 @@ target_link_libraries(linernotes_dep_json_schema INTERFACE
 )
 add_library(Linernotes::Deps::JsonSchema ALIAS linernotes_dep_json_schema)
 
+add_library(linernotes_dep_onnxruntime INTERFACE)
+target_link_libraries(linernotes_dep_onnxruntime INTERFACE onnxruntime::onnxruntime)
+add_library(Linernotes::Deps::OnnxRuntime ALIAS linernotes_dep_onnxruntime)
+
 # Format ICU and FFmpeg versions for display
 if(NOT ICU_VERSION)
     if(ICU_icu-uc_VERSION)
@@ -121,4 +126,5 @@ message(STATUS "  ffmpeg               : ${FFMPEG_VERSION}")
 message(STATUS "  libebur128           : ${EBUR128_VERSION}")
 message(STATUS "  sqlite3              : ${SQLITE3_VERSION}")
 message(STATUS "  json-schema-validator: ${JSON_SCHEMA_VERSION}")
+message(STATUS "  onnxruntime          : ${onnxruntime_VERSION}")
 message(STATUS "==============================================================")

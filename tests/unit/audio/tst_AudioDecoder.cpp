@@ -19,6 +19,7 @@ class TstAudioDecoder : public QObject {
 private slots:
     void decodesToneToMonoCustomSampleRate();
     void decodesWithMaxDuration();
+    void decodesWithStartMsAndMaxDuration();
     void corruptFileReturnsError();
     void nonexistentPathReturnsError();
 };
@@ -58,6 +59,58 @@ void TstAudioDecoder::decodesWithMaxDuration()
     const auto &pcm = res.value();
     const qint64 duration = pcm.durationMs();
     QVERIFY(duration >= 450 && duration <= 550);
+}
+
+void TstAudioDecoder::decodesWithStartMsAndMaxDuration()
+{
+    const QString path = fixturePath(QStringLiteral("audio/melody_8s.flac"));
+    const DecodeOptions fullOpts {
+        .sampleRate = 44100,
+        .channels = 1,
+        .maxDurationMs = 0,
+        .startMs = 0,
+    };
+
+    const auto fullRes = AudioDecoder::decode(path, fullOpts);
+    QVERIFY(fullRes.ok());
+    const auto &fullPcm = fullRes.value();
+    QVERIFY(fullPcm.durationMs() >= 7500);
+
+    const DecodeOptions seekOpts {
+        .sampleRate = 44100,
+        .channels = 1,
+        .maxDurationMs = 1000,
+        .startMs = 2000,
+    };
+
+    const auto seekRes = AudioDecoder::decode(path, seekOpts);
+    QVERIFY(seekRes.ok());
+    const auto &seekPcm = seekRes.value();
+
+    const qint64 duration = seekPcm.durationMs();
+    QVERIFY(duration >= 950 && duration <= 1050);
+
+    // Compare with full decode slice at 2.0s
+    const qsizetype offsetSamples = 2000 * 44100 / 1000;
+    const qsizetype compareCount
+        = std::min(seekPcm.samples.size(), fullPcm.samples.size() - offsetSamples);
+    QVERIFY(compareCount > 40000);
+
+    double dot = 0.0;
+    double normFull = 0.0;
+    double normSeek = 0.0;
+    const qsizetype skipHead = 64;
+    for (qsizetype i = skipHead; i < compareCount; ++i) {
+        const auto sFull = static_cast<double>(fullPcm.samples.at(offsetSamples + i));
+        const auto sSeek = static_cast<double>(seekPcm.samples.at(i));
+        dot += sFull * sSeek;
+        normFull += sFull * sFull;
+        normSeek += sSeek * sSeek;
+    }
+    const double corr = (normFull > 0.0 && normSeek > 0.0)
+        ? (dot / (std::sqrt(normFull) * std::sqrt(normSeek)))
+        : 0.0;
+    QVERIFY(corr > 0.99);
 }
 
 void TstAudioDecoder::corruptFileReturnsError()

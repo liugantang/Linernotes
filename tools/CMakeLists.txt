@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 add_subdirectory(aicli)
+add_subdirectory(audiocli)
 add_subdirectory(depcheck)
 add_subdirectory(eval)
 add_subdirectory(playcli)

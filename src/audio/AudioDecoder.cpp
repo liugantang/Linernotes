@@ -212,12 +212,48 @@ core::Result<SwrContextPtr> createResampler(
     return swrCtx;
 }
 
-bool convertAndAppendFrame(SwrContext *swrCtx, const AVFrame *inFrame, int targetChannels,
-    qint64 maxFrames, qint64 &totalFrames, QList<qint16> &pcmSamples)
-{
-    const uint8_t *const *inData = (inFrame != nullptr) ? inFrame->data : nullptr;
+struct DecodeContext {
+    qint64 startMs = 0;
+    qint64 startSample = 0;
+    int srcSampleRate = 44100;
+    int targetSampleRate = 44100;
+    int targetChannels = 2;
+    qint64 maxFrames = 0;
+    AVRational timeBase { .num = 1, .den = 44100 };
+};
 
-    const int inCount = (inFrame != nullptr) ? inFrame->nb_samples : 0;
+bool convertAndAppendFrame(SwrContext *swrCtx, const AVFrame *inFrame, const DecodeContext &ctx,
+    bool &startReached, qint64 &currentStreamSample, qint64 &totalFrames, QList<qint16> &pcmSamples)
+{
+    if (inFrame == nullptr) {
+        return true;
+    }
+
+    int64_t pts = inFrame->best_effort_timestamp;
+    if (pts == AV_NOPTS_VALUE) {
+        pts = inFrame->pts;
+    }
+    qint64 frameStartSample = 0;
+    if (pts != AV_NOPTS_VALUE) {
+        frameStartSample
+            = av_rescale_q(pts, ctx.timeBase, AVRational { .num = 1, .den = ctx.targetSampleRate });
+        currentStreamSample = frameStartSample;
+    } else {
+        frameStartSample = currentStreamSample;
+    }
+    const int frameSrcRate = inFrame->sample_rate > 0 ? inFrame->sample_rate : ctx.srcSampleRate;
+    const qint64 frameDurationSamples
+        = av_rescale(inFrame->nb_samples, ctx.targetSampleRate, frameSrcRate);
+    currentStreamSample = frameStartSample + frameDurationSamples;
+
+    if (!startReached) {
+        const qint64 frameEndSample = frameStartSample + frameDurationSamples;
+        if (frameEndSample <= ctx.startSample) {
+            return true;
+        }
+    }
+
+    const int inCount = inFrame->nb_samples;
     const int outCount = swr_get_out_samples(swrCtx, inCount);
     if (outCount <= 0) {
         return true;
@@ -225,34 +261,80 @@ bool convertAndAppendFrame(SwrContext *swrCtx, const AVFrame *inFrame, int targe
 
     uint8_t *outData = nullptr;
     int linesize = 0;
-    if (av_samples_alloc(&outData, &linesize, targetChannels, outCount, AV_SAMPLE_FMT_S16, 0) < 0) {
+    if (av_samples_alloc(&outData, &linesize, ctx.targetChannels, outCount, AV_SAMPLE_FMT_S16, 0)
+        < 0) {
         return false;
     }
 
-    const int converted = swr_convert(swrCtx, &outData, outCount, inData, inCount);
+    const int converted = swr_convert(swrCtx, &outData, outCount, inFrame->data, inCount);
     if (converted > 0) {
         // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast) - FFmpeg outData contains raw
         // S16 PCM bytes
         const auto *s16 = reinterpret_cast<const qint16 *>(outData);
         // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
+        qint64 skipFrames = 0;
+        if (!startReached && frameStartSample < ctx.startSample) {
+            const qint64 skipNeeded = ctx.startSample - frameStartSample;
+            skipFrames = std::clamp<qint64>(skipNeeded, 0, converted);
+        }
+        startReached = true;
+        const auto takeFrames = static_cast<qsizetype>(converted - skipFrames);
+        if (takeFrames > 0) {
+            const std::span<const qint16> sampleSpan(
+                s16, static_cast<size_t>(converted) * static_cast<size_t>(ctx.targetChannels));
+            const auto subSpan = sampleSpan.subspan(
+                static_cast<size_t>(skipFrames) * static_cast<size_t>(ctx.targetChannels),
+                static_cast<size_t>(takeFrames) * static_cast<size_t>(ctx.targetChannels));
+            for (const qint16 sample : subSpan) {
+                pcmSamples.append(sample);
+            }
+            totalFrames += takeFrames;
+        }
+    }
+    av_freep(static_cast<void *>(&outData));
+
+    return ctx.maxFrames <= 0 || totalFrames < ctx.maxFrames;
+}
+
+bool flushSwr(SwrContext *swrCtx, const DecodeContext &ctx, bool startReached, qint64 &totalFrames,
+    QList<qint16> &pcmSamples)
+{
+    if (!startReached) {
+        return true;
+    }
+    const int outCount = swr_get_out_samples(swrCtx, 0);
+    if (outCount <= 0) {
+        return true;
+    }
+    uint8_t *outData = nullptr;
+    int linesize = 0;
+    if (av_samples_alloc(&outData, &linesize, ctx.targetChannels, outCount, AV_SAMPLE_FMT_S16, 0)
+        < 0) {
+        return false;
+    }
+    const int converted = swr_convert(swrCtx, &outData, outCount, nullptr, 0);
+    if (converted > 0) {
+        // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
+        const auto *s16 = reinterpret_cast<const qint16 *>(outData);
+        // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
         const std::span<const qint16> sampleSpan(
-            s16, static_cast<size_t>(converted) * static_cast<size_t>(targetChannels));
+            s16, static_cast<size_t>(converted) * static_cast<size_t>(ctx.targetChannels));
         for (const qint16 sample : sampleSpan) {
             pcmSamples.append(sample);
         }
         totalFrames += converted;
     }
     av_freep(static_cast<void *>(&outData));
-
-    return maxFrames <= 0 || totalFrames < maxFrames;
+    return true;
 }
 
-bool drainFrames(AVCodecContext *codecCtx, SwrContext *swrCtx, AVFrame *frame, int targetChannels,
-    qint64 maxFrames, qint64 &totalFrames, QList<qint16> &pcmSamples)
+bool drainFrames(AVCodecContext *codecCtx, SwrContext *swrCtx, AVFrame *frame,
+    const DecodeContext &ctx, bool &startReached, qint64 &currentStreamSample, qint64 &totalFrames,
+    QList<qint16> &pcmSamples)
 {
     while (avcodec_receive_frame(codecCtx, frame) >= 0) {
         if (!convertAndAppendFrame(
-                swrCtx, frame, targetChannels, maxFrames, totalFrames, pcmSamples)) {
+                swrCtx, frame, ctx, startReached, currentStreamSample, totalFrames, pcmSamples)) {
             return false;
         }
     }
@@ -260,8 +342,8 @@ bool drainFrames(AVCodecContext *codecCtx, SwrContext *swrCtx, AVFrame *frame, i
 }
 
 core::Result<void> decodePackets(AVFormatContext *formatCtx, int audioStreamIndex,
-    AVCodecContext *codecCtx, SwrContext *swrCtx, int targetChannels, qint64 maxFrames,
-    const QString &path, QList<qint16> &pcmSamples)
+    AVCodecContext *codecCtx, SwrContext *swrCtx, const DecodeContext &ctx, const QString &path,
+    QList<qint16> &pcmSamples)
 {
     PacketPtr packet(av_packet_alloc());
     const FramePtr frame(av_frame_alloc());
@@ -275,12 +357,14 @@ core::Result<void> decodePackets(AVFormatContext *formatCtx, int audioStreamInde
 
     qint64 totalFrames = 0;
     bool continueDecoding = true;
+    bool startReached = (ctx.startMs <= 0);
+    qint64 currentStreamSample = 0;
 
     while (continueDecoding && av_read_frame(formatCtx, packet.get()) >= 0) {
         if (packet->stream_index == audioStreamIndex) {
             if (avcodec_send_packet(codecCtx, packet.get()) >= 0) {
-                continueDecoding = drainFrames(codecCtx, swrCtx, frame.get(), targetChannels,
-                    maxFrames, totalFrames, pcmSamples);
+                continueDecoding = drainFrames(codecCtx, swrCtx, frame.get(), ctx, startReached,
+                    currentStreamSample, totalFrames, pcmSamples);
             }
         }
         av_packet_unref(packet.get());
@@ -288,16 +372,16 @@ core::Result<void> decodePackets(AVFormatContext *formatCtx, int audioStreamInde
 
     if (continueDecoding) {
         avcodec_send_packet(codecCtx, nullptr);
-        continueDecoding = drainFrames(
-            codecCtx, swrCtx, frame.get(), targetChannels, maxFrames, totalFrames, pcmSamples);
+        continueDecoding = drainFrames(codecCtx, swrCtx, frame.get(), ctx, startReached,
+            currentStreamSample, totalFrames, pcmSamples);
     }
 
     if (continueDecoding) {
-        convertAndAppendFrame(swrCtx, nullptr, targetChannels, maxFrames, totalFrames, pcmSamples);
+        flushSwr(swrCtx, ctx, startReached, totalFrames, pcmSamples);
     }
 
-    if (maxFrames > 0 && totalFrames > maxFrames) {
-        pcmSamples.resize(static_cast<qsizetype>(maxFrames * targetChannels));
+    if (ctx.maxFrames > 0 && totalFrames > ctx.maxFrames) {
+        pcmSamples.resize(static_cast<qsizetype>(ctx.maxFrames * ctx.targetChannels));
     }
 
     return { };
@@ -335,6 +419,23 @@ core::Result<PcmBuffer> AudioDecoder::decode(const QString &path, const DecodeOp
         = options.channels > 0 ? std::max(1, std::min(options.channels, srcChannels)) : srcChannels;
     const int targetSampleRate = options.sampleRate > 0 ? options.sampleRate : srcSampleRate;
 
+    const auto *stream = *std::next(
+        std::span(streamInfo.formatCtx->streams, streamInfo.formatCtx->nb_streams).begin(),
+        streamInfo.audioStreamIndex);
+    const AVRational timeBase = (stream->time_base.den > 0 && stream->time_base.num > 0)
+        ? stream->time_base
+        : AVRational { .num = 1, .den = srcSampleRate };
+
+    if (options.startMs > 0) {
+        const int64_t targetPts
+            = av_rescale_q(options.startMs, AVRational { .num = 1, .den = 1000 }, timeBase);
+        const int seekRet = av_seek_frame(streamInfo.formatCtx.get(), streamInfo.audioStreamIndex,
+            targetPts, AVSEEK_FLAG_BACKWARD);
+        if (seekRet >= 0) {
+            avcodec_flush_buffers(codecCtx.get());
+        }
+    }
+
     auto swrCtxRes = createResampler(codecCtx.get(), targetChannels, targetSampleRate, path);
     if (!swrCtxRes.ok()) {
         return swrCtxRes.error();
@@ -342,7 +443,19 @@ core::Result<PcmBuffer> AudioDecoder::decode(const QString &path, const DecodeOp
     const auto &swrCtx = swrCtxRes.value();
 
     const qint64 maxFrames
-        = (options.maxDurationMs > 0) ? (options.maxDurationMs * targetSampleRate / 1000) : 0;
+        = (options.maxDurationMs > 0) ? ((options.maxDurationMs * targetSampleRate) / 1000) : 0;
+    const qint64 startSample
+        = (options.startMs > 0) ? ((options.startMs * targetSampleRate) / 1000) : 0;
+
+    const DecodeContext ctx {
+        .startMs = options.startMs,
+        .startSample = startSample,
+        .srcSampleRate = srcSampleRate,
+        .targetSampleRate = targetSampleRate,
+        .targetChannels = targetChannels,
+        .maxFrames = maxFrames,
+        .timeBase = timeBase,
+    };
 
     QList<qint16> pcmSamples;
     if (maxFrames > 0) {
@@ -351,7 +464,7 @@ core::Result<PcmBuffer> AudioDecoder::decode(const QString &path, const DecodeOp
         pcmSamples.reserve(static_cast<qsizetype>(maxFrames) * targetChannels);
     }
     const auto decodeRes = decodePackets(streamInfo.formatCtx.get(), streamInfo.audioStreamIndex,
-        codecCtx.get(), swrCtx.get(), targetChannels, maxFrames, path, pcmSamples);
+        codecCtx.get(), swrCtx.get(), ctx, path, pcmSamples);
     if (!decodeRes.ok()) {
         return decodeRes.error();
     }

@@ -52,6 +52,7 @@ private slots:
     void upgradesTo0024AddsAlbumInfoChecks();
     void upgradesTo0025DropsMusicBrainz();
     void upgradesTo0026DropsAlbumInfo();
+    void upgradesTo0028AddsAudioEmbeddings();
 };
 
 void TstMigrator::appliesMigrationsInOrder()
@@ -968,6 +969,81 @@ void TstMigrator::upgradesTo0026DropsAlbumInfo()
     QVERIFY(checkQ.exec(QStringLiteral(
         "SELECT name FROM sqlite_master WHERE type='table' AND name = 'album_info_checks';")));
     QVERIFY(!checkQ.next());
+}
+
+void TstMigrator::upgradesTo0028AddsAudioEmbeddings()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 28);
+
+    // Write migrations 1..27
+    for (int i = 0; i < 27; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 27);
+
+    // Insert track row in v27 schema
+    {
+        QSqlQuery q(conn);
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO library_roots (id, path, enabled, added_at) "
+                                      "VALUES (1, '/music', 1, 100);")));
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO files (id, root_id, path, duration_ms, size, "
+                                      "mtime, first_seen_at, scanned_at) VALUES "
+                                      "(1, 1, '/music/1.mp3', 60000, 1, 1, 1, 1);")));
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO tracks (id, file_id, tags_read_at, created_at) "
+                                      "VALUES (1, 1, 1, 1);")));
+        // Verify embeddings table exists in v27
+        QVERIFY(q.exec(QStringLiteral("SELECT COUNT(*) FROM embeddings;")));
+    }
+
+    // Add migration 28
+    const auto &m28 = allMigrations.at(27);
+    const QString fileName28
+        = QStringLiteral("%1_%2.sql").arg(m28.version, 4, 10, QLatin1Char('0')).arg(m28.name);
+    writeSqlFile(migDir.path(), fileName28, m28.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 28);
+
+    // Verify embeddings table dropped and audio_embeddings table exists
+    QSqlQuery checkQ(conn);
+    QVERIFY(checkQ.exec(QStringLiteral(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name = 'embeddings';")));
+    QVERIFY(!checkQ.next());
+
+    QVERIFY(checkQ.exec(QStringLiteral(
+        "INSERT INTO audio_embeddings (track_id, model, content_hash, vector, error, computed_at) "
+        "VALUES (1, 'msclap2023-3x7s', 'hash1', X'00010203', NULL, 1000);")));
+    QVERIFY(checkQ.exec(QStringLiteral("SELECT COUNT(*) FROM audio_embeddings;")));
+    QVERIFY(checkQ.next());
+    QCOMPARE(checkQ.value(0).toInt(), 1);
+
+    // Cascade delete when track is deleted
+    QVERIFY(checkQ.exec(QStringLiteral("DELETE FROM tracks WHERE id = 1;")));
+    QVERIFY(checkQ.exec(QStringLiteral("SELECT COUNT(*) FROM audio_embeddings;")));
+    QVERIFY(checkQ.next());
+    QCOMPARE(checkQ.value(0).toInt(), 0);
 }
 
 } // namespace

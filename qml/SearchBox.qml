@@ -24,6 +24,7 @@ Item {
     Shortcut {
         sequence: "Ctrl+F"
         context: Qt.WindowShortcut
+        enabled: root.visible
         onActivated: root.focusInput()
     }
 

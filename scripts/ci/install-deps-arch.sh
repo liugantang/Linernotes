@@ -19,4 +19,5 @@ pacman -Syu --noconfirm --needed \
     qtkeychain-qt6 \
     nlohmann-json \
     json-schema-validator \
+    onnxruntime-cpu \
     git

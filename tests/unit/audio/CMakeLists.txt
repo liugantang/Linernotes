@@ -20,3 +20,23 @@ linernotes_add_test(
         Linernotes::core
         Linernotes::TestSupport
 )
+
+linernotes_add_test(
+    NAME audio_TrackEmbedding
+    SOURCES
+        tst_TrackEmbedding.cpp
+    LIBS
+        Linernotes::audio
+        Linernotes::core
+        Linernotes::TestSupport
+)
+
+linernotes_add_test(
+    NAME audio_EmbeddingIndex
+    SOURCES
+        tst_EmbeddingIndex.cpp
+    LIBS
+        Linernotes::audio
+        Linernotes::core
+        Linernotes::TestSupport
+)

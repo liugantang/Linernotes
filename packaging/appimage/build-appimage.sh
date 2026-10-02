@@ -12,7 +12,7 @@
 #   - Build tools: cmake, ninja, C++20 compiler (GCC/Clang), git
 #   - Development libraries: Qt 6 (Core, Gui, Quick, QuickControls2, Widgets, Sql,
 #     Network, DBus, Concurrent, LinguistTools, Svg), QtKeyChain, libmpv, TagLib,
-#     uchardet, ICU, chromaprint, FFmpeg, libebur128, SQLite3
+#     uchardet, ICU, chromaprint, FFmpeg, libebur128, SQLite3, ONNX Runtime
 #   - Network access (curl/wget) to download linuxdeploy tools if not already in PATH
 #
 # Notes on dependencies:

@@ -246,3 +246,27 @@ if(UNIX AND NOT APPLE)
     )
 endif()
 
+linernotes_add_test(
+    NAME ui_SimilarTracks
+    SOURCES
+        tst_SimilarTracks.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::audio
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Sql
+)
+
+linernotes_add_test(
+    NAME ui_AudioAnalysisController
+    SOURCES
+        tst_AudioAnalysisController.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::ai
+        Linernotes::audio
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Sql
+)

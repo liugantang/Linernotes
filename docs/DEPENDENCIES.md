@@ -19,3 +19,4 @@
 | **SQLite3** | 嵌入式关系型数据库引擎 | Public Domain / Blessing | 3.40 | 阶段 2 |
 | **nlohmann_json** | C++ 现代 JSON 解析与序列化库 | MIT | 3.11 | 阶段 5 |
 | **json-schema-validator** | 基于 nlohmann/json 的 JSON Schema (draft-07) 校验器 | MIT | - | 阶段 5 |
+| **ONNX Runtime** | 本地音频模型推理 | MIT | 1.29 | 阶段 9 |

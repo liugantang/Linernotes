@@ -15,6 +15,7 @@ struct DecodeOptions {
     int sampleRate = 0; // 0 = 保持源采样率
     int channels = 2; // 1 或 2；源声道数更少时取源声道数
     qint64 maxDurationMs = 0; // 0 = 解码全部；否则最多解码这么长
+    qint64 startMs = 0; // 从这里开始解码（seek）
 };
 
 struct PcmBuffer {

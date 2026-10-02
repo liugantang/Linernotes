@@ -20,6 +20,7 @@
 #include <ui/AlbumGridModel.h>
 #include <ui/AppContext.h>
 #include <ui/ArtistListModel.h>
+#include <ui/AudioAnalysisController.h>
 #include <ui/CleanupController.h>
 #include <ui/CorrectionBatchModel.h>
 #include <ui/CorrectionListModel.h>
@@ -305,4 +306,11 @@ struct DuplicateSectionModelForeign {
     QML_FOREIGN(linernotes::ui::DuplicateSectionModel)
     QML_NAMED_ELEMENT(DuplicateSectionModel)
     QML_UNCREATABLE("DuplicateSectionModel is managed by DuplicateController")
+};
+
+struct AudioAnalysisControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::AudioAnalysisController)
+    QML_NAMED_ELEMENT(AudioAnalysisController)
+    QML_UNCREATABLE("AudioAnalysisController is managed by AppContext")
 };
