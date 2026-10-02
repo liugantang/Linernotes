@@ -2,6 +2,8 @@
 /.ai/
 
 /build/
+# 声音分析模型（体积大，不进 git）
+/models/
 /.cache/
 CMakeUserPresets.json
 compile_commands.json

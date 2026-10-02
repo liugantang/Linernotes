@@ -4,6 +4,8 @@
 #include "TrackEmbedding.h"
 
 #include <QCoreApplication>
+#include <QDir>
+#include <QFileInfo>
 
 #include <audio/AudioDecoder.h>
 #include <audio/AudioEmbedder.h>
@@ -18,8 +20,14 @@ namespace linernotes::audio {
 
 QString defaultEmbeddingModelPath()
 {
-    return QCoreApplication::applicationDirPath() + QStringLiteral("/models/")
-        + QString::fromLatin1(kEmbeddingModelFileName.data(), kEmbeddingModelFileName.size());
+    const QString name
+        = QString::fromLatin1(kEmbeddingModelFileName.data(), kEmbeddingModelFileName.size());
+    const QString appDir = QCoreApplication::applicationDirPath();
+    QString besideApp = appDir + QStringLiteral("/models/") + name;
+    if (QFileInfo::exists(besideApp)) {
+        return besideApp;
+    }
+    return QDir::cleanPath(appDir + QStringLiteral("/../share/linernotes/models/") + name);
 }
 
 QList<qint64> embedWindowStartsMs(qint64 durationMs)
