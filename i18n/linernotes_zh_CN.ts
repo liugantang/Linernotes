@@ -47,18 +47,23 @@
         <translation>随机播放</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="227"/>
+        <location filename="../qml/AlbumDetail.qml" line="226"/>
+        <source>Make Similar Playlist</source>
+        <translation>生成相似歌单</translation>
+    </message>
+    <message>
+        <location filename="../qml/AlbumDetail.qml" line="237"/>
         <source>Find cover online</source>
         <translation>在线查找封面</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="271"/>
+        <location filename="../qml/AlbumDetail.qml" line="281"/>
         <source>Title</source>
         <extracomment>Track title header</extracomment>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="279"/>
+        <location filename="../qml/AlbumDetail.qml" line="289"/>
         <source>Duration</source>
         <extracomment>Track duration header</extracomment>
         <translation>时长</translation>
@@ -223,8 +228,12 @@
     </message>
     <message>
         <location filename="../qml/AppShortcuts.qml" line="208"/>
+        <source>Go to For You</source>
+        <translation>转到推荐</translation>
+    </message>
+    <message>
         <source>Go to AI</source>
-        <translation>前往 AI</translation>
+        <translation type="vanished">前往 AI</translation>
     </message>
     <message>
         <location filename="../qml/AppShortcuts.qml" line="218"/>
@@ -242,53 +251,53 @@
         <translation>命令面板</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="244"/>
+        <location filename="../qml/AppShortcuts.qml" line="246"/>
         <source>Back from detail page</source>
         <translation>从详情页返回</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="252"/>
+        <location filename="../qml/AppShortcuts.qml" line="254"/>
         <source>Favorite / Unfavorite current track</source>
         <translation>收藏 / 取消收藏当前歌曲</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="262"/>
+        <location filename="../qml/AppShortcuts.qml" line="264"/>
         <source>Clear rating</source>
         <translation>清除评分</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="272"/>
+        <location filename="../qml/AppShortcuts.qml" line="274"/>
         <source>Rate 1 star</source>
         <translation>评为 1 星</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="282"/>
+        <location filename="../qml/AppShortcuts.qml" line="284"/>
         <source>Rate 2 stars</source>
         <translation>评为 2 星</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="292"/>
+        <location filename="../qml/AppShortcuts.qml" line="294"/>
         <source>Rate 3 stars</source>
         <translation>评为 3 星</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="302"/>
+        <location filename="../qml/AppShortcuts.qml" line="304"/>
         <source>Rate 4 stars</source>
         <translation>评为 4 星</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="312"/>
+        <location filename="../qml/AppShortcuts.qml" line="314"/>
         <source>Rate 5 stars</source>
         <translation>评为 5 星</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="324"/>
+        <location filename="../qml/AppShortcuts.qml" line="326"/>
         <source>Toggle side panel</source>
         <translation>切换侧面板</translation>
     </message>
     <message>
-        <location filename="../qml/AppShortcuts.qml" line="334"/>
-        <location filename="../qml/AppShortcuts.qml" line="344"/>
+        <location filename="../qml/AppShortcuts.qml" line="336"/>
+        <location filename="../qml/AppShortcuts.qml" line="346"/>
         <source>Keyboard shortcuts</source>
         <translation>快捷键</translation>
     </message>
@@ -1465,6 +1474,80 @@
     </message>
 </context>
 <context>
+    <name>ForYouPage</name>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="42"/>
+        <location filename="../qml/pages/ForYouPage.qml" line="122"/>
+        <source>Save as Playlist</source>
+        <translation>保存为歌单</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="43"/>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="78"/>
+        <source>Daily Mix</source>
+        <translation>每日推荐</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="81"/>
+        <source>For You</source>
+        <translation>为你推荐</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="91"/>
+        <source>Refresh</source>
+        <translation>换一批</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="101"/>
+        <source>Play All</source>
+        <translation>全部播放</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="112"/>
+        <source>Add to Queue</source>
+        <translation>加入队列</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="129"/>
+        <source>For You %1</source>
+        <translation>为你推荐 %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="130"/>
+        <source>Daily Mix %1</source>
+        <translation>每日推荐 %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="139"/>
+        <source>Tracks you haven&apos;t heard in a while, or ever, picked to match your recent taste.</source>
+        <translation>按你近期的口味，挑出很久没听或从没听过的歌。</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="140"/>
+        <source>A fixed mix for today: favorites you play often plus new discoveries.</source>
+        <translation>今天的固定歌单：常听的喜爱曲目，加上新发现。</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="177"/>
+        <source>Nothing to recommend yet. Play some music first.</source>
+        <translation>暂时没有可推荐的歌，先听几首吧。</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="271"/>
+        <source>Unknown Title</source>
+        <translation>未知标题</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="282"/>
+        <source>Unknown Artist</source>
+        <translation>未知艺人</translation>
+    </message>
+</context>
+<context>
     <name>LlmDebugPanel</name>
     <message>
         <location filename="../qml/LlmDebugPanel.qml" line="13"/>
@@ -1577,29 +1660,29 @@
         <translation>Linernotes</translation>
     </message>
     <message numerus="yes">
-        <location filename="../qml/Main.qml" line="123"/>
+        <location filename="../qml/Main.qml" line="127"/>
         <source>%n track(s)</source>
         <translation>
             <numerusform>%n 首</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="188"/>
+        <location filename="../qml/Main.qml" line="198"/>
         <source>Ask Library (Ctrl+K)</source>
         <translation>问问曲库（Ctrl+K）</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="198"/>
+        <location filename="../qml/Main.qml" line="208"/>
         <source>Show Panel (Ctrl+Alt+P)</source>
         <translation>显示面板 (Ctrl+Alt+P)</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="198"/>
+        <location filename="../qml/Main.qml" line="208"/>
         <source>Hide Panel (Ctrl+Alt+P)</source>
         <translation>隐藏面板 (Ctrl+Alt+P)</translation>
     </message>
     <message>
-        <location filename="../qml/Main.qml" line="225"/>
+        <location filename="../qml/Main.qml" line="235"/>
         <source>Startup Error: %1</source>
         <translation>启动错误：%1</translation>
     </message>
@@ -1607,27 +1690,32 @@
 <context>
     <name>NavigationSidebar</name>
     <message>
-        <location filename="../qml/NavigationSidebar.qml" line="29"/>
+        <location filename="../qml/NavigationSidebar.qml" line="30"/>
         <source>Tracks</source>
         <translation>歌曲</translation>
     </message>
     <message>
-        <location filename="../qml/NavigationSidebar.qml" line="30"/>
+        <location filename="../qml/NavigationSidebar.qml" line="31"/>
         <source>Albums</source>
         <translation>专辑</translation>
     </message>
     <message>
-        <location filename="../qml/NavigationSidebar.qml" line="31"/>
+        <location filename="../qml/NavigationSidebar.qml" line="32"/>
         <source>Artists</source>
         <translation>艺人</translation>
     </message>
     <message>
-        <location filename="../qml/NavigationSidebar.qml" line="32"/>
+        <location filename="../qml/NavigationSidebar.qml" line="33"/>
         <source>Playlists</source>
         <translation>歌单</translation>
     </message>
     <message>
-        <location filename="../qml/NavigationSidebar.qml" line="33"/>
+        <location filename="../qml/NavigationSidebar.qml" line="34"/>
+        <source>For You</source>
+        <translation>推荐</translation>
+    </message>
+    <message>
+        <location filename="../qml/NavigationSidebar.qml" line="35"/>
         <source>Library Cleanup</source>
         <translation>曲库整理</translation>
     </message>
@@ -1640,12 +1728,12 @@
         <translation type="vanished">敬请期待</translation>
     </message>
     <message>
-        <location filename="../qml/NavigationSidebar.qml" line="198"/>
+        <location filename="../qml/NavigationSidebar.qml" line="200"/>
         <source>Scanning library…</source>
         <translation>正在扫描曲库…</translation>
     </message>
     <message>
-        <location filename="../qml/NavigationSidebar.qml" line="253"/>
+        <location filename="../qml/NavigationSidebar.qml" line="255"/>
         <source>Settings</source>
         <translation>设置</translation>
     </message>
@@ -1863,7 +1951,7 @@
     <name>QueuePanel</name>
     <message>
         <location filename="../qml/QueuePanel.qml" line="31"/>
-        <location filename="../qml/QueuePanel.qml" line="219"/>
+        <location filename="../qml/QueuePanel.qml" line="231"/>
         <source>Save as Playlist</source>
         <translation>保存为歌单</translation>
     </message>
@@ -1910,22 +1998,27 @@
         </translation>
     </message>
     <message>
-        <location filename="../qml/QueuePanel.qml" line="222"/>
+        <location filename="../qml/QueuePanel.qml" line="221"/>
+        <source>Endless play: add similar tracks when the queue runs out (sequential mode)</source>
+        <translation>无尽续播：顺序播放快到队尾时自动续上相似的歌</translation>
+    </message>
+    <message>
+        <location filename="../qml/QueuePanel.qml" line="234"/>
         <source>Queue %1</source>
         <translation>播放队列 %1</translation>
     </message>
     <message>
-        <location filename="../qml/QueuePanel.qml" line="229"/>
+        <location filename="../qml/QueuePanel.qml" line="241"/>
         <source>Clear queue (keeps currently playing track)</source>
         <translation>清空播放队列（保留当前播放歌曲）</translation>
     </message>
     <message>
-        <location filename="../qml/QueuePanel.qml" line="377"/>
+        <location filename="../qml/QueuePanel.qml" line="389"/>
         <source>Queue is empty</source>
         <translation>播放队列为空</translation>
     </message>
     <message>
-        <location filename="../qml/QueuePanel.qml" line="385"/>
+        <location filename="../qml/QueuePanel.qml" line="397"/>
         <source>Double-click tracks in the library to start playing</source>
         <translation>双击曲库中的歌曲开始播放</translation>
     </message>
@@ -1946,12 +2039,12 @@
 <context>
     <name>SearchBox</name>
     <message>
-        <location filename="../qml/SearchBox.qml" line="44"/>
+        <location filename="../qml/SearchBox.qml" line="45"/>
         <source>Search tracks, albums, artists</source>
         <translation>搜索歌曲、专辑、艺人</translation>
     </message>
     <message>
-        <location filename="../qml/SearchBox.qml" line="93"/>
+        <location filename="../qml/SearchBox.qml" line="94"/>
         <source>Clear</source>
         <translation>清除</translation>
     </message>
@@ -2853,6 +2946,72 @@
     </message>
 </context>
 <context>
+    <name>SimilarTracksDialog</name>
+    <message>
+        <location filename="../qml/SimilarTracksDialog.qml" line="50"/>
+        <location filename="../qml/SimilarTracksDialog.qml" line="299"/>
+        <source>Save as Playlist</source>
+        <translation>保存为歌单</translation>
+    </message>
+    <message>
+        <location filename="../qml/SimilarTracksDialog.qml" line="51"/>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location filename="../qml/SimilarTracksDialog.qml" line="73"/>
+        <location filename="../qml/SimilarTracksDialog.qml" line="302"/>
+        <source>Playlist like “%1”</source>
+        <translation>像“%1”的歌单</translation>
+    </message>
+    <message>
+        <location filename="../qml/SimilarTracksDialog.qml" line="74"/>
+        <source>Similar to “%1”</source>
+        <translation>像「%1」的歌</translation>
+    </message>
+    <message>
+        <location filename="../qml/SimilarTracksDialog.qml" line="84"/>
+        <location filename="../qml/SimilarTracksDialog.qml" line="312"/>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <location filename="../qml/SimilarTracksDialog.qml" line="114"/>
+        <source>This track has not been analyzed for audio features yet. Go to Settings → Library → Audio Analysis to run analysis and try again.</source>
+        <translation>这首歌还没有分析声音。到 设置 → 曲库 → 声音分析 运行分析后再试。</translation>
+    </message>
+    <message>
+        <location filename="../qml/SimilarTracksDialog.qml" line="132"/>
+        <source>No tracks to recommend.</source>
+        <translation>没有可推荐的歌曲。</translation>
+    </message>
+    <message>
+        <location filename="../qml/SimilarTracksDialog.qml" line="133"/>
+        <source>No similar tracks found.</source>
+        <translation>没有找到相似的歌。</translation>
+    </message>
+    <message>
+        <location filename="../qml/SimilarTracksDialog.qml" line="216"/>
+        <source>Unknown Title</source>
+        <translation>未知标题</translation>
+    </message>
+    <message>
+        <location filename="../qml/SimilarTracksDialog.qml" line="227"/>
+        <source>Unknown Artist</source>
+        <translation>未知艺人</translation>
+    </message>
+    <message>
+        <location filename="../qml/SimilarTracksDialog.qml" line="277"/>
+        <source>Play All</source>
+        <translation>全部播放</translation>
+    </message>
+    <message>
+        <location filename="../qml/SimilarTracksDialog.qml" line="288"/>
+        <source>Add to Queue</source>
+        <translation>加入队列</translation>
+    </message>
+</context>
+<context>
     <name>SmartConditionRow</name>
     <message>
         <location filename="../qml/SmartConditionRow.qml" line="223"/>
@@ -2884,6 +3043,19 @@
         <location filename="../qml/SmartConditionRow.qml" line="386"/>
         <source>Remove Condition</source>
         <translation>移除条件</translation>
+    </message>
+</context>
+<context>
+    <name>SmartLabels</name>
+    <message>
+        <location filename="../src/ui/SmartLabels.cpp" line="219"/>
+        <source>Like the current track</source>
+        <translation>像正在播放的歌</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SmartLabels.cpp" line="221"/>
+        <source>Like “%1”</source>
+        <translation>像“%1”</translation>
     </message>
 </context>
 <context>
@@ -3011,41 +3183,6 @@
     </message>
 </context>
 <context>
-    <name>SimilarTracksDialog</name>
-    <message>
-        <source>Similar to “%1”</source>
-        <translation>像「%1」的歌</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation>关闭</translation>
-    </message>
-    <message>
-        <source>This track has not been analyzed for audio features yet. Go to Settings → Library → Audio Analysis to run analysis and try again.</source>
-        <translation>这首歌还没有分析声音。到 设置 → 曲库 → 声音分析 运行分析后再试。</translation>
-    </message>
-    <message>
-        <source>No similar tracks found.</source>
-        <translation>没有找到相似的歌。</translation>
-    </message>
-    <message>
-        <source>Unknown Title</source>
-        <translation>未知标题</translation>
-    </message>
-    <message>
-        <source>Unknown Artist</source>
-        <translation>未知艺人</translation>
-    </message>
-    <message>
-        <source>Play All</source>
-        <translation>全部播放</translation>
-    </message>
-    <message>
-        <source>Add to Queue</source>
-        <translation>加入队列</translation>
-    </message>
-</context>
-<context>
     <name>TagEditorDialog</name>
     <message>
         <location filename="../qml/TagEditorDialog.qml" line="59"/>
@@ -3113,56 +3250,62 @@
         <translation>添加到播放队列</translation>
     </message>
     <message>
+        <location filename="../qml/TrackContextMenu.qml" line="118"/>
         <source>Find Similar</source>
         <translation>找相似</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="119"/>
+        <location filename="../qml/TrackContextMenu.qml" line="128"/>
+        <source>Make Playlist Like This</source>
+        <translation>生成相似歌单</translation>
+    </message>
+    <message>
+        <location filename="../qml/TrackContextMenu.qml" line="139"/>
         <source>Add to Playlist</source>
         <translation>添加到歌单</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="122"/>
+        <location filename="../qml/TrackContextMenu.qml" line="142"/>
         <source>New Playlist...</source>
         <translation>新建歌单…</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="188"/>
+        <location filename="../qml/TrackContextMenu.qml" line="208"/>
         <source>Remove from Playlist</source>
         <translation>从歌单中移除</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="203"/>
+        <location filename="../qml/TrackContextMenu.qml" line="223"/>
         <source>Remove from Loved</source>
         <translation>取消收藏</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="203"/>
+        <location filename="../qml/TrackContextMenu.qml" line="223"/>
         <source>Love</source>
         <translation>收藏</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="213"/>
+        <location filename="../qml/TrackContextMenu.qml" line="233"/>
         <source>Rating</source>
         <translation>评分</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="216"/>
+        <location filename="../qml/TrackContextMenu.qml" line="236"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="273"/>
+        <location filename="../qml/TrackContextMenu.qml" line="293"/>
         <source>Show in File Manager</source>
         <translation>在文件管理器中显示</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="283"/>
+        <location filename="../qml/TrackContextMenu.qml" line="303"/>
         <source>Edit Tags...</source>
         <translation>编辑标签…</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="162"/>
+        <location filename="../qml/TrackContextMenu.qml" line="182"/>
         <source>Other Versions</source>
         <translation>其他版本</translation>
     </message>
@@ -3982,46 +4125,47 @@
         <translation type="vanished">未配置 AI 服务。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="30"/>
+        <location filename="../src/ui/NlqController.cpp" line="33"/>
         <source>Understood with simple keyword rules.</source>
         <translation>按简单关键词规则理解。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="33"/>
+        <location filename="../src/ui/NlqController.cpp" line="36"/>
         <source>Understood with simple keyword rules; ignored “%1”.</source>
         <translation>按简单关键词规则理解；未识别“%1”。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="348"/>
+        <location filename="../src/ui/NlqController.cpp" line="354"/>
         <source>Keyword search: %1</source>
         <translation>关键词搜索：%1</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/ui/NlqController.cpp" line="587"/>
+        <location filename="../src/ui/NlqController.cpp" line="593"/>
         <source>Remove &quot;%1&quot; → %n result(s)</source>
         <translation>
             <numerusform>去掉“%1”→ %n 条结果</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="597"/>
+        <location filename="../src/ui/NlqController.cpp" line="603"/>
         <source>Play history starts on %1, so there are no plays in the selected period.</source>
         <translation>播放记录从 %1 开始，所选区间内没有播放。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="601"/>
+        <location filename="../src/ui/NlqController.cpp" line="607"/>
         <source>No play history yet.</source>
         <translation>还没有播放记录。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="604"/>
+        <location filename="../src/ui/NlqController.cpp" line="610"/>
         <source>No results match all conditions.</source>
         <translation>没有同时满足全部条件的结果。</translation>
     </message>
     <message>
-        <location filename="../src/ui/NlqController.cpp" line="353"/>
-        <location filename="../src/ui/NlqController.cpp" line="606"/>
-        <location filename="../src/ui/NlqController.cpp" line="615"/>
+        <location filename="../src/ui/NlqController.cpp" line="359"/>
+        <location filename="../src/ui/NlqController.cpp" line="612"/>
+        <location filename="../src/ui/NlqController.cpp" line="621"/>
+        <location filename="../src/ui/NlqController.cpp" line="690"/>
         <source>Nothing in your library matches.</source>
         <translation>曲库中没有符合的内容。</translation>
     </message>
@@ -4293,12 +4437,19 @@
 <context>
     <name>linernotes::ui::SimilarController</name>
     <message>
+        <location filename="../src/ui/SimilarController.cpp" line="76"/>
+        <location filename="../src/ui/SimilarController.cpp" line="139"/>
         <source>Unknown Title</source>
         <translation>未知标题</translation>
     </message>
     <message>
+        <location filename="../src/ui/SimilarController.cpp" line="188"/>
+        <source>Unknown Album</source>
+        <translation>未知专辑</translation>
+    </message>
+    <message>
         <source>Unknown Artist</source>
-        <translation>未知艺人</translation>
+        <translation type="vanished">未知艺人</translation>
     </message>
 </context>
 <context>

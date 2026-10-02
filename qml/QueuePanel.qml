@@ -215,6 +215,18 @@ FocusScope {
             }
 
             Controls.IconButton {
+                icon.source: "icons/infinity.svg"
+                checked: AppContext.endless ? AppContext.endless.enabled : false
+                icon.color: checked ? Theme.accent : Theme.text
+                toolTip: qsTr("Endless play: add similar tracks when the queue runs out (sequential mode)")
+                onClicked: {
+                    if (AppContext.endless) {
+                        AppContext.endless.enabled = !AppContext.endless.enabled
+                    }
+                }
+            }
+
+            Controls.IconButton {
                 icon.source: "icons/list-plus.svg"
                 toolTip: qsTr("Save as Playlist")
                 enabled: root.queueCount > 0

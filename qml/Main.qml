@@ -257,6 +257,7 @@ ApplicationWindow {
                         AlbumsPage { id: albumsPage }
                         ArtistsPage { id: artistsPage }
                         PlaylistsPage {}
+                        ForYouPage {}
                         CleanupPage {}
                         SettingsPage {}
                     }

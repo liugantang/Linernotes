@@ -247,18 +247,6 @@ if(UNIX AND NOT APPLE)
 endif()
 
 linernotes_add_test(
-    NAME ui_SimilarTracks
-    SOURCES
-        tst_SimilarTracks.cpp
-    LIBS
-        Linernotes::ui
-        Linernotes::audio
-        Linernotes::library
-        Linernotes::TestSupport
-        Qt6::Sql
-)
-
-linernotes_add_test(
     NAME ui_AudioAnalysisController
     SOURCES
         tst_AudioAnalysisController.cpp
@@ -270,3 +258,46 @@ linernotes_add_test(
         Linernotes::TestSupport
         Qt6::Sql
 )
+
+linernotes_add_test(
+    NAME ui_EndlessPlay
+    SOURCES
+        tst_EndlessPlay.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::rec
+        Linernotes::player
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+)
+
+linernotes_add_test(
+    NAME ui_SimilarController
+    SOURCES
+        tst_SimilarController.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::rec
+        Linernotes::player
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+)
+
+linernotes_add_test(
+    NAME ui_RecommendController
+    SOURCES
+        tst_RecommendController.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::rec
+        Linernotes::player
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+)
+

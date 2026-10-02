@@ -72,6 +72,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS pages/PlaylistsPage.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/pages/ForYouPage.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS pages/ForYouPage.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/pages/CleanupPage.qml
     PROPERTIES
         QT_RESOURCE_ALIAS pages/CleanupPage.qml
@@ -489,6 +494,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS icons/repeat.svg
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/resources/icons/infinity.svg
+    PROPERTIES
+        QT_RESOURCE_ALIAS icons/infinity.svg
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/resources/icons/repeat-1.svg
     PROPERTIES
         QT_RESOURCE_ALIAS icons/repeat-1.svg
@@ -567,6 +577,11 @@ set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/resources/icons/rotate-ccw.svg
     PROPERTIES
         QT_RESOURCE_ALIAS icons/rotate-ccw.svg
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/resources/icons/compass.svg
+    PROPERTIES
+        QT_RESOURCE_ALIAS icons/compass.svg
 )
 
 qt_add_qml_module(linernotes
@@ -650,6 +665,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/pages/AlbumsPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/ArtistsPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/PlaylistsPage.qml
+        ${CMAKE_SOURCE_DIR}/qml/pages/ForYouPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/CleanupPage.qml
         ${CMAKE_SOURCE_DIR}/qml/pages/SettingsPage.qml
     RESOURCES
@@ -670,8 +686,10 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/resources/icons/list-music.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/list-plus.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/repeat.svg
+        ${CMAKE_SOURCE_DIR}/resources/icons/infinity.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/repeat-1.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/rotate-ccw.svg
+        ${CMAKE_SOURCE_DIR}/resources/icons/compass.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/search.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/settings.svg
         ${CMAKE_SOURCE_DIR}/resources/icons/sparkles.svg

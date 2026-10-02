@@ -10,6 +10,35 @@
           "type": "string",
           "enum": ["track", "album", "artist"]
         },
+        "similarTo": {
+          "type": "object",
+          "properties": {
+            "current": {
+              "type": "boolean"
+            },
+            "title": {
+              "anyOf": [
+                { "type": "string" },
+                {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "minItems": 1
+                }
+              ]
+            },
+            "artist": {
+              "anyOf": [
+                { "type": "string" },
+                {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "minItems": 1
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
         "match": {
           "type": "string",
           "enum": ["all", "any"]

@@ -124,6 +124,16 @@ Controls.AppMenu {
         }
     }
 
+    Controls.AppMenuItem {
+        text: qsTr("Make Playlist Like This")
+        enabled: root.trackIds.length === 1
+        onTriggered: {
+            if (AppContext.similar && root.trackIds.length === 1) {
+                AppContext.similar.playlistFromTrack(root.trackIds[0])
+            }
+        }
+    }
+
     Controls.AppMenu {
         id: addToPlaylistMenu
         title: qsTr("Add to Playlist")

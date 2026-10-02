@@ -3,6 +3,7 @@
 
 #include "QueryRunner.h"
 
+#include <QSet>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -165,29 +166,14 @@ QString buildQuerySql(
     return sql;
 }
 
-} // namespace
-
-QueryRunner::QueryRunner(library::Database &db, library::PlayCountRule countRule)
-    : m_db(db)
-    , m_countRule(countRule)
+core::Result<QSqlQuery> executeQuerySql(
+    library::Database &database, const QString &sql, const QList<QVariant> &binds)
 {
-}
-
-core::Result<QList<qint64>> QueryRunner::run(const Query &query) const
-{
-    const auto valRes = query.validate();
-    if (!valRes.ok()) {
-        return valRes.error();
-    }
-
-    auto connRes = m_db.connection();
+    auto connRes = database.connection();
     if (!connRes.ok()) {
         return connRes.error();
     }
     const QSqlDatabase &db = connRes.value();
-
-    QList<QVariant> binds;
-    const QString sql = buildQuerySql(query, m_countRule, binds);
 
     QSqlQuery q(db);
     q.prepare(sql);
@@ -203,10 +189,73 @@ core::Result<QList<qint64>> QueryRunner::run(const Query &query) const
         };
     }
 
+    return q;
+}
+
+} // namespace
+
+QueryRunner::QueryRunner(library::Database &db, library::PlayCountRule countRule)
+    : m_db(db)
+    , m_countRule(countRule)
+{
+}
+
+core::Result<QList<qint64>> QueryRunner::run(const Query &query) const
+{
+    const auto valRes = query.validate();
+    if (!valRes.ok()) {
+        return valRes.error();
+    }
+
+    QList<QVariant> binds;
+    const QString sql = buildQuerySql(query, m_countRule, binds);
+
+    auto execRes = executeQuerySql(m_db, sql, binds);
+    if (!execRes.ok()) {
+        return execRes.error();
+    }
+    auto &q = execRes.value();
+
     QList<qint64> results;
     results.reserve(query.limit);
     while (q.next()) {
         results.append(q.value(0).toLongLong());
+    }
+
+    return results;
+}
+
+core::Result<QSet<qint64>> QueryRunner::matchingTrackIds(const Query &query) const
+{
+    const auto valRes = query.validate();
+    if (!valRes.ok()) {
+        return valRes.error();
+    }
+
+    if (query.entity != Entity::Track) {
+        return core::Error {
+            .code = QString(errc::kQueryInvalid),
+            .message = QStringLiteral("matchingTrackIds is only supported for track entity"),
+            .detail = QString(),
+        };
+    }
+
+    QList<QVariant> binds;
+    const QString whereSql
+        = library::detail::buildSmartRuleWhereSql(query.rule, binds, m_countRule);
+    const QString sql
+        = QStringLiteral("SELECT ts.track_id FROM track_sort ts WHERE ts.visible = 1%1")
+              .arg(whereSql);
+
+    auto execRes = executeQuerySql(m_db, sql, binds);
+    if (!execRes.ok()) {
+        return execRes.error();
+    }
+    auto &q = execRes.value();
+
+    QSet<qint64> results;
+    while (q.next()) {
+        results.insert(q.value(0).toLongLong());
     }
 
     return results;

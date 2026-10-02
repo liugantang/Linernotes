@@ -45,6 +45,20 @@ Popup {
         }
     }
 
+    PlaylistNameDialog {
+        id: savePlaylistDialog
+        titleText: qsTr("Save as Playlist")
+        acceptButtonText: qsTr("Save")
+        onAccepted: (name) => {
+            if (AppContext.similar) {
+                const res = AppContext.similar.saveAsPlaylist(name)
+                if (res > 0) {
+                    root.close()
+                }
+            }
+        }
+    }
+
     contentItem: ColumnLayout {
         id: mainLayout
         spacing: Theme.spacingMedium
@@ -55,7 +69,9 @@ Popup {
             spacing: Theme.spacingSmall
 
             Label {
-                text: qsTr("Similar to “%1”").arg((AppContext.similar && AppContext.similar.seedTitle) ? AppContext.similar.seedTitle : "")
+                text: (AppContext.similar && AppContext.similar.playlistMode)
+                    ? qsTr("Playlist like “%1”").arg((AppContext.similar && AppContext.similar.seedTitle) ? AppContext.similar.seedTitle : "")
+                    : qsTr("Similar to “%1”").arg((AppContext.similar && AppContext.similar.seedTitle) ? AppContext.similar.seedTitle : "")
                 font.pixelSize: Theme.fontSizeLarge
                 font.bold: true
                 color: Theme.text
@@ -112,7 +128,9 @@ Popup {
                     Layout.fillWidth: true
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.Wrap
-                    text: qsTr("No similar tracks found.")
+                    text: (AppContext.similar && AppContext.similar.playlistMode)
+                        ? qsTr("No tracks to recommend.")
+                        : qsTr("No similar tracks found.")
                     font.pixelSize: Theme.fontSizeLarge
                     color: Theme.textSecondary
                 }
@@ -273,6 +291,16 @@ Popup {
                     if (AppContext.similar) {
                         AppContext.similar.enqueueAll()
                     }
+                }
+            }
+
+            Controls.AppButton {
+                visible: !!(AppContext.similar && AppContext.similar.playlistMode)
+                text: qsTr("Save as Playlist")
+                enabled: !!(AppContext.similar && AppContext.similar.rows.length > 0)
+                onClicked: {
+                    const defaultName = qsTr("Playlist like “%1”").arg((AppContext.similar && AppContext.similar.seedTitle) ? AppContext.similar.seedTitle : "")
+                    savePlaylistDialog.openWithText(defaultName)
                 }
             }
 

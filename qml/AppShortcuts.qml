@@ -205,11 +205,11 @@ Item {
         },
         {
             sequence: "Alt+5",
-            description: qsTr("Go to AI"),
+            description: qsTr("Go to For You"),
             group: AppShortcuts.Group.Navigation,
             action: () => {
                 if (root.sidebar) {
-                    root.sidebar.currentPage = NavigationSidebar.Ai
+                    root.sidebar.currentPage = NavigationSidebar.ForYou
                 }
             }
         },

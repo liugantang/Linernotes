@@ -3,6 +3,8 @@
 
 #include "NlqQuery.h"
 
+#include <QJsonArray>
+
 #include <library/Errors.h>
 #include <nlq/Errors.h>
 
@@ -98,6 +100,23 @@ core::Result<void> Query::validate() const
             .detail = QString::number(limit),
         };
     }
+    if (similarTo.has_value()) {
+        if (entity != Entity::Track) {
+            return core::Error {
+                .code = QString(errc::kQueryInvalid),
+                .message = QStringLiteral("similarTo is only supported for track entity"),
+                .detail = QString(),
+            };
+        }
+        if (!similarTo->current && similarTo->titles.isEmpty()) {
+            return core::Error {
+                .code = QString(errc::kQueryInvalid),
+                .message
+                = QStringLiteral("similarTo requires non-empty titles when current is false"),
+                .detail = QString(),
+            };
+        }
+    }
     return rule.validate();
 }
 
@@ -115,8 +134,66 @@ QJsonObject Query::toJson() const
         sortOrder == Qt::AscendingOrder ? QStringLiteral("asc") : QStringLiteral("desc"));
     obj.insert(QStringLiteral("limit"), limit);
 
+    if (similarTo.has_value()) {
+        QJsonObject stObj;
+        if (similarTo->current) {
+            stObj.insert(QStringLiteral("current"), true);
+        }
+        if (!similarTo->titles.isEmpty()) {
+            QJsonArray titleArr;
+            for (const auto &t : similarTo->titles) {
+                titleArr.append(t);
+            }
+            stObj.insert(QStringLiteral("title"), titleArr);
+        }
+        if (!similarTo->artists.isEmpty()) {
+            QJsonArray artistArr;
+            for (const auto &a : similarTo->artists) {
+                artistArr.append(a);
+            }
+            stObj.insert(QStringLiteral("artist"), artistArr);
+        }
+        obj.insert(QStringLiteral("similarTo"), stObj);
+    }
+
     return obj;
 }
+
+namespace {
+
+QStringList stringListFromJson(const QJsonValue &value)
+{
+    if (value.isString()) {
+        return { value.toString() };
+    }
+    QStringList list;
+    const auto arr = value.toArray();
+    for (const auto &v : arr) {
+        if (v.isString()) {
+            list.append(v.toString());
+        }
+    }
+    return list;
+}
+
+core::Result<SimilarTo> similarToFromJson(const QJsonValue &value)
+{
+    if (!value.isObject()) {
+        return core::Error {
+            .code = QString(errc::kQueryInvalid),
+            .message = QStringLiteral("similarTo must be an object"),
+            .detail = QString(),
+        };
+    }
+    const QJsonObject stObj = value.toObject();
+    SimilarTo st;
+    st.current = stObj.value(QStringLiteral("current")).toBool(false);
+    st.titles = stringListFromJson(stObj.value(QStringLiteral("title")));
+    st.artists = stringListFromJson(stObj.value(QStringLiteral("artist")));
+    return st;
+}
+
+} // namespace
 
 core::Result<Query> Query::fromJson(const QJsonObject &obj)
 {
@@ -134,6 +211,14 @@ core::Result<Query> Query::fromJson(const QJsonObject &obj)
         q.entity = entOpt.value();
     } else {
         q.entity = Entity::Track;
+    }
+
+    if (obj.contains(QStringLiteral("similarTo"))) {
+        auto stRes = similarToFromJson(obj.value(QStringLiteral("similarTo")));
+        if (!stRes.ok()) {
+            return stRes.error();
+        }
+        q.similarTo = stRes.value();
     }
 
     if (obj.contains(QStringLiteral("sort"))) {
@@ -184,6 +269,7 @@ core::Result<Query> Query::fromJson(const QJsonObject &obj)
 
     QJsonObject ruleObj = obj;
     ruleObj.remove(QStringLiteral("limit"));
+    ruleObj.remove(QStringLiteral("similarTo"));
     if (!ruleObj.contains(QStringLiteral("match"))) {
         ruleObj.insert(QStringLiteral("match"), QStringLiteral("all"));
     }

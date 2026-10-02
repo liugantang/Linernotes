@@ -19,6 +19,9 @@
 #include <library/Scanner.h>
 #include <player/MpvHandle.h>
 #include <player/Player.h>
+#include <rec/Recommender.h>
+#include <rec/SimilarTracks.h>
+#include <rec/SoundIndex.h>
 #include <ui/AiContext.h>
 #include <ui/AiSettingsController.h>
 #include <ui/AudioAnalysisController.h>
@@ -26,6 +29,7 @@
 #include <ui/CorrectionReviewController.h>
 #include <ui/CoverSearchController.h>
 #include <ui/DuplicateController.h>
+#include <ui/EndlessPlay.h>
 #include <ui/LibraryActions.h>
 #include <ui/LibraryRootsModel.h>
 #include <ui/LlmDebugController.h>
@@ -35,10 +39,10 @@
 #include <ui/PlayEventRecorder.h>
 #include <ui/PlaylistController.h>
 #include <ui/QueueModel.h>
+#include <ui/RecommendController.h>
 #include <ui/SearchController.h>
 #include <ui/SettingsController.h>
 #include <ui/SimilarController.h>
-#include <ui/SimilarTracks.h>
 #include <ui/TagEditorModel.h>
 #include <ui/WritebackController.h>
 
@@ -85,6 +89,8 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::AudioAnalysisController *audioAnalysis READ audioAnalysis CONSTANT)
     Q_PROPERTY(linernotes::ui::DuplicateController *duplicates READ duplicates CONSTANT)
     Q_PROPERTY(linernotes::ui::CoverSearchController *coverSearch READ coverSearch CONSTANT)
+    Q_PROPERTY(linernotes::ui::EndlessPlay *endless READ endless CONSTANT)
+    Q_PROPERTY(linernotes::ui::RecommendController *recommend READ recommend CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
     Q_PROPERTY(QString startupError READ startupError NOTIFY startupErrorChanged)
     Q_PROPERTY(bool scanning READ isScanning NOTIFY scanningChanged)
@@ -135,6 +141,8 @@ public:
     [[nodiscard]] AudioAnalysisController *audioAnalysis();
     [[nodiscard]] DuplicateController *duplicates();
     [[nodiscard]] CoverSearchController *coverSearch();
+    [[nodiscard]] EndlessPlay *endless();
+    [[nodiscard]] RecommendController *recommend();
     [[nodiscard]] library::Database &database();
     [[nodiscard]] const library::Database &database() const;
     [[nodiscard]] library::CoverStore *coverStore();
@@ -183,9 +191,13 @@ private:
     SearchController m_search;
     PlaylistController m_playlists;
     LibraryActions m_actions;
+    rec::SoundIndex m_soundIndex;
+    rec::Recommender m_recommender;
     NlqController m_nlq;
-    SimilarTracks m_similarTracks;
+    rec::SimilarTracks m_similarTracks;
     SimilarController m_similar;
+    EndlessPlay m_endless;
+    RecommendController m_recommend;
     std::unique_ptr<library::LibraryWatcher> m_watcher;
     QTimer m_saveTimer;
     QTimer m_backupTimer;

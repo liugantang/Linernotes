@@ -61,10 +61,14 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_search(m_db)
     , m_playlists(m_db, m_player)
     , m_actions(m_db, m_player, m_settings)
+    , m_soundIndex(m_db, m_clock)
+    , m_recommender(m_db, m_soundIndex, m_clock)
     , m_nlq(m_db, m_ai.llm(), m_ai.prompts(), m_ai.config(), m_actions, m_playlists,
-          m_settingsController)
-    , m_similarTracks(m_db, m_clock)
-    , m_similar(m_similarTracks, m_db, m_actions)
+          m_settingsController, m_recommender, *m_player.queue())
+    , m_similarTracks(m_db, m_soundIndex)
+    , m_similar(m_similarTracks, m_recommender, m_playlists, m_db, m_actions)
+    , m_endless(m_db, *m_player.queue(), m_recommender, m_settings, m_clock)
+    , m_recommend(m_db, m_recommender, m_playlists, m_actions, m_settings, m_clock)
 {
     connect(this, &AppContext::libraryChanged, &m_nowPlaying, &NowPlaying::refresh);
     connect(&m_marks, &MarksController::marksChanged, &m_nowPlaying, &NowPlaying::refresh);
@@ -356,6 +360,16 @@ DuplicateController *AppContext::duplicates()
 CoverSearchController *AppContext::coverSearch()
 {
     return &m_coverSearch;
+}
+
+EndlessPlay *AppContext::endless()
+{
+    return &m_endless;
+}
+
+RecommendController *AppContext::recommend()
+{
+    return &m_recommend;
 }
 
 library::Database &AppContext::database()

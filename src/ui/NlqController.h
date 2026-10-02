@@ -34,6 +34,14 @@ class QueryRunner;
 struct OfflineParse;
 } // namespace linernotes::nlq
 
+namespace linernotes::player {
+class PlayQueue;
+} // namespace linernotes::player
+
+namespace linernotes::rec {
+class Recommender;
+} // namespace linernotes::rec
+
 namespace linernotes::ui {
 
 class NlqController : public QObject {
@@ -65,7 +73,8 @@ public:
 
     NlqController(library::Database &db, ai::LlmService &llm, ai::PromptLibrary &prompts,
         const ai::AiConfig &aiConfig, LibraryActions &actions, PlaylistController &playlists,
-        SettingsController &settingsController, QObject *parent = nullptr);
+        SettingsController &settingsController, rec::Recommender &recommender,
+        player::PlayQueue &queue, QObject *parent = nullptr);
     ~NlqController() override = default;
 
     [[nodiscard]] State state() const;
@@ -139,6 +148,8 @@ private:
     LibraryActions &m_actions;
     PlaylistController &m_playlists;
     SettingsController &m_settingsController;
+    rec::Recommender &m_recommender;
+    player::PlayQueue &m_queue;
 
     nlq::Interpreter m_interpreter;
 

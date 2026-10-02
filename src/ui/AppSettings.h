@@ -56,5 +56,13 @@ inline const core::SettingKey<double> kButlerAutoAccept { u"butler/autoAccept", 
 inline const core::SettingKey<bool> kButlerAutoCleanup { u"butler/autoCleanup", true };
 // NOLINTNEXTLINE(bugprone-throwing-static-initialization)
 inline const core::SettingKey<bool> kUiShowTranslations { u"ui/showTranslations", false };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<bool> kQueueEndless { u"queue/endless", false };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization) - QString constructor is non-noexcept in
+// Qt6
+inline const core::SettingKey<QString> kRecDailyDate { u"rec/dailyDate", u""_s };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization) - QString constructor is non-noexcept in
+// Qt6
+inline const core::SettingKey<QString> kRecDailyTracks { u"rec/dailyTracks", u""_s };
 
 } // namespace linernotes::ui
