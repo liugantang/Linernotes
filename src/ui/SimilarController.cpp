@@ -5,12 +5,11 @@
 
 #include <QVariantMap>
 
-#include <core/PlaySource.h>
 #include <library/Database.h>
 #include <library/LibraryQuery.h>
+#include <rec/SimilarTracks.h>
 #include <ui/Format.h>
 #include <ui/LibraryActions.h>
-#include <ui/SimilarTracks.h>
 
 namespace linernotes::ui {
 
@@ -36,8 +35,8 @@ QVariantList populateTrackRows(const QList<library::TrackRow> &tracks)
 
 } // namespace
 
-SimilarController::SimilarController(
-    SimilarTracks &similarTracks, library::Database &db, LibraryActions &actions, QObject *parent)
+SimilarController::SimilarController(rec::SimilarTracks &similarTracks, library::Database &db,
+    LibraryActions &actions, QObject *parent)
     : QObject(parent)
     , m_similarTracks(similarTracks)
     , m_db(db)

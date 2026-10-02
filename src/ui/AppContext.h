@@ -19,6 +19,8 @@
 #include <library/Scanner.h>
 #include <player/MpvHandle.h>
 #include <player/Player.h>
+#include <rec/SimilarTracks.h>
+#include <rec/SoundIndex.h>
 #include <ui/AiContext.h>
 #include <ui/AiSettingsController.h>
 #include <ui/AudioAnalysisController.h>
@@ -38,7 +40,6 @@
 #include <ui/SearchController.h>
 #include <ui/SettingsController.h>
 #include <ui/SimilarController.h>
-#include <ui/SimilarTracks.h>
 #include <ui/TagEditorModel.h>
 #include <ui/WritebackController.h>
 
@@ -184,7 +185,8 @@ private:
     PlaylistController m_playlists;
     LibraryActions m_actions;
     NlqController m_nlq;
-    SimilarTracks m_similarTracks;
+    rec::SoundIndex m_soundIndex;
+    rec::SimilarTracks m_similarTracks;
     SimilarController m_similar;
     std::unique_ptr<library::LibraryWatcher> m_watcher;
     QTimer m_saveTimer;

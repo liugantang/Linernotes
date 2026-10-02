@@ -72,7 +72,7 @@ Refs: ROADMAP 2.6
 | `ci` | CI 配置 |
 | `chore` | 其他杂项 |
 
-`scope` 使用模块名：`player`、`library`、`db`、`ui`、`ai`、`butler`、`nlq`、`audio`、`guide`、`dj`、`archive`。
+`scope` 使用模块名：`player`、`library`、`db`、`ui`、`ai`、`butler`、`nlq`、`audio`、`rec`、`guide`、`dj`、`archive`。
 
 示例：`feat(library): 读取标签时保留 Latin-1 原始字节`
 

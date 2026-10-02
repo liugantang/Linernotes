@@ -70,8 +70,6 @@ add_library(linernotes_ui STATIC
     SettingsController.h
     SimilarController.cpp
     SimilarController.h
-    SimilarTracks.cpp
-    SimilarTracks.h
     SmartLabels.cpp
     SmartLabels.h
     TagEditorModel.cpp
@@ -124,6 +122,7 @@ target_link_libraries(linernotes_ui
         Linernotes::library
         Linernotes::nlq
         Linernotes::player
+        Linernotes::rec
         Qt6::Core
         Qt6::Gui
         Qt6::Network

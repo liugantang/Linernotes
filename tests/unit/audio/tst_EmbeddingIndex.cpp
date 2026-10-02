@@ -22,6 +22,7 @@ private slots:
     void nearestWithUnknownIdReturnsEmpty();
     void nearestWithQueryVector();
     void ignoresDimensionMismatch();
+    void vectorAndDim();
 };
 
 void TstEmbeddingIndex::nearestSortsDescendingExcludingSelf()
@@ -120,6 +121,25 @@ void TstEmbeddingIndex::ignoresDimensionMismatch()
     QCOMPARE(index.size(), 0);
     QVERIFY(!index.contains(1));
     QVERIFY(!index.contains(2));
+}
+
+void TstEmbeddingIndex::vectorAndDim()
+{
+    EmbeddingIndex index(3);
+    QCOMPARE(index.dim(), 3);
+
+    const std::array<float, 3> v1 { 0.5F, 0.6F, 0.7F };
+    index.add(42, v1);
+
+    const auto vec = index.vector(42);
+    QCOMPARE(vec.size(), 3);
+    auto it = vec.begin();
+    QCOMPARE(*it++, 0.5F);
+    QCOMPARE(*it++, 0.6F);
+    QCOMPARE(*it++, 0.7F);
+
+    const auto emptyVec = index.vector(999);
+    QVERIFY(emptyVec.empty());
 }
 
 } // namespace

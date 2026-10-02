@@ -12,7 +12,8 @@
 #include <library/Database.h>
 #include <library/EmbeddingStore.h>
 #include <library/Migrator.h>
-#include <ui/SimilarTracks.h>
+#include <rec/SimilarTracks.h>
+#include <rec/SoundIndex.h>
 
 #include <cmath>
 
@@ -22,8 +23,9 @@ using linernotes::audio::kEmbeddingModelId;
 using linernotes::library::Database;
 using linernotes::library::EmbeddingStore;
 using linernotes::library::Migrator;
+using linernotes::rec::SimilarTracks;
+using linernotes::rec::SoundIndex;
 using linernotes::test::ManualClock;
-using linernotes::ui::SimilarTracks;
 
 constexpr int kDim = 1024;
 
@@ -136,7 +138,8 @@ void TstSimilarTracks::similarTracksFilteringAndOrdering()
     QVERIFY(store.save(t4, model, makeVector(0.99F, 0.141F, 0.0F)).ok());
     QVERIFY(store.save(t5, model, makeVector(0.7F, 0.714F, 0.0F)).ok());
 
-    SimilarTracks similar(db, clock);
+    SoundIndex soundIndex(db, clock);
+    SimilarTracks similar(db, soundIndex);
 
     // Query similarTo for t1:
     // - t1 is excluded (self)
@@ -176,7 +179,8 @@ void TstSimilarTracks::rebuildsWhenCountChanges()
     QVERIFY(store.save(t1, model, makeVector(1.0F, 0.0F, 0.0F)).ok());
     QVERIFY(store.save(t2, model, makeVector(0.5F, 0.866F, 0.0F)).ok());
 
-    SimilarTracks similar(db, clock);
+    SoundIndex soundIndex(db, clock);
+    SimilarTracks similar(db, soundIndex);
     auto res1 = similar.similarTo(t1, 10);
     QVERIFY(res1.ok());
     QCOMPARE(res1.value().size(), 1);
@@ -219,7 +223,8 @@ void TstSimilarTracks::returnsEmptyForTrackWithoutEmbedding()
     const QString model = QString(kEmbeddingModelId);
     QVERIFY(store.save(t1, model, makeVector(1.0F, 0.0F, 0.0F)).ok());
 
-    SimilarTracks similar(db, clock);
+    SoundIndex soundIndex(db, clock);
+    SimilarTracks similar(db, soundIndex);
 
     QVERIFY(similar.hasEmbedding(t1));
     QVERIFY(!similar.hasEmbedding(tUnanalyzed));

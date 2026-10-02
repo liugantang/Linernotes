@@ -50,6 +50,22 @@ bool EmbeddingIndex::contains(qint64 id) const
     return m_idToIndex.contains(id);
 }
 
+std::span<const float> EmbeddingIndex::vector(qint64 id) const
+{
+    const auto it = m_idToIndex.constFind(id);
+    if (it == m_idToIndex.constEnd() || m_dim <= 0) {
+        return { };
+    }
+    const auto idx = static_cast<size_t>(it.value());
+    const auto dim = static_cast<size_t>(m_dim);
+    return std::span<const float>(m_vectors).subspan(idx * dim, dim);
+}
+
+int EmbeddingIndex::dim() const
+{
+    return m_dim;
+}
+
 QList<Neighbor> EmbeddingIndex::nearest(qint64 id, int k) const
 {
     if (k <= 0 || m_dim <= 0 || !m_idToIndex.contains(id)) {

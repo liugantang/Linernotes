@@ -13,10 +13,13 @@ namespace linernotes::library {
 class Database;
 } // namespace linernotes::library
 
+namespace linernotes::rec {
+class SimilarTracks;
+} // namespace linernotes::rec
+
 namespace linernotes::ui {
 
 class LibraryActions;
-class SimilarTracks;
 
 class SimilarController : public QObject {
     Q_OBJECT
@@ -27,8 +30,8 @@ class SimilarController : public QObject {
     Q_PROPERTY(bool seedAnalyzed READ isSeedAnalyzed NOTIFY resultsChanged)
 
 public:
-    SimilarController(SimilarTracks &similarTracks, library::Database &db, LibraryActions &actions,
-        QObject *parent = nullptr);
+    SimilarController(rec::SimilarTracks &similarTracks, library::Database &db,
+        LibraryActions &actions, QObject *parent = nullptr);
     ~SimilarController() override = default;
 
     [[nodiscard]] QString seedTitle() const;
@@ -47,7 +50,7 @@ signals:
 private:
     [[nodiscard]] QList<qint64> collectResultTrackIds() const;
 
-    SimilarTracks &m_similarTracks;
+    rec::SimilarTracks &m_similarTracks;
     library::Database &m_db;
     LibraryActions &m_actions;
 

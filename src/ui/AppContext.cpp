@@ -63,7 +63,8 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_actions(m_db, m_player, m_settings)
     , m_nlq(m_db, m_ai.llm(), m_ai.prompts(), m_ai.config(), m_actions, m_playlists,
           m_settingsController)
-    , m_similarTracks(m_db, m_clock)
+    , m_soundIndex(m_db, m_clock)
+    , m_similarTracks(m_db, m_soundIndex)
     , m_similar(m_similarTracks, m_db, m_actions)
 {
     connect(this, &AppContext::libraryChanged, &m_nowPlaying, &NowPlaying::refresh);
