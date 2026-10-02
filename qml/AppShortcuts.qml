@@ -234,7 +234,9 @@ Item {
             description: qsTr("Command Palette"),
             group: AppShortcuts.Group.Navigation,
             action: () => {
-                if (root.commandPalette) {
+                // The settings page has no AI entry
+                const onSettings = root.sidebar && root.sidebar.currentPage === NavigationSidebar.Settings
+                if (root.commandPalette && !onSettings) {
                     root.commandPalette.openPalette()
                 }
             }
