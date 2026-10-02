@@ -14,31 +14,39 @@ class Database;
 } // namespace linernotes::library
 
 namespace linernotes::rec {
+class Recommender;
 class SimilarTracks;
 } // namespace linernotes::rec
 
 namespace linernotes::ui {
 
 class LibraryActions;
+class PlaylistController;
 
 class SimilarController : public QObject {
     Q_OBJECT
     Q_DISABLE_COPY_MOVE(SimilarController)
 
+    Q_PROPERTY(bool playlistMode READ isPlaylistMode NOTIFY resultsChanged)
     Q_PROPERTY(QString seedTitle READ seedTitle NOTIFY resultsChanged)
     Q_PROPERTY(QVariantList rows READ rows NOTIFY resultsChanged)
     Q_PROPERTY(bool seedAnalyzed READ isSeedAnalyzed NOTIFY resultsChanged)
 
 public:
-    SimilarController(rec::SimilarTracks &similarTracks, library::Database &db,
-        LibraryActions &actions, QObject *parent = nullptr);
+    SimilarController(rec::SimilarTracks &similarTracks, rec::Recommender &recommender,
+        PlaylistController &playlists, library::Database &db, LibraryActions &actions,
+        QObject *parent = nullptr);
     ~SimilarController() override = default;
 
     [[nodiscard]] QString seedTitle() const;
     [[nodiscard]] QVariantList rows() const;
     [[nodiscard]] bool isSeedAnalyzed() const;
+    [[nodiscard]] bool isPlaylistMode() const;
 
     Q_INVOKABLE void find(qint64 trackId);
+    Q_INVOKABLE void playlistFromTrack(qint64 trackId);
+    Q_INVOKABLE void playlistFromAlbum(qint64 albumId);
+    Q_INVOKABLE qint64 saveAsPlaylist(const QString &name);
     Q_INVOKABLE void playAll();
     Q_INVOKABLE void playRow(int index);
     Q_INVOKABLE void enqueueAll();
@@ -51,6 +59,8 @@ private:
     [[nodiscard]] QList<qint64> collectResultTrackIds() const;
 
     rec::SimilarTracks &m_similarTracks;
+    rec::Recommender &m_recommender;
+    PlaylistController &m_playlists;
     library::Database &m_db;
     LibraryActions &m_actions;
 
@@ -58,6 +68,7 @@ private:
     QString m_seedTitle;
     QVariantList m_rows;
     bool m_seedAnalyzed = false;
+    bool m_playlistMode = false;
 };
 
 } // namespace linernotes::ui

@@ -66,7 +66,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_soundIndex(m_db, m_clock)
     , m_recommender(m_db, m_soundIndex, m_clock)
     , m_similarTracks(m_db, m_soundIndex)
-    , m_similar(m_similarTracks, m_db, m_actions)
+    , m_similar(m_similarTracks, m_recommender, m_playlists, m_db, m_actions)
     , m_endless(m_db, *m_player.queue(), m_recommender, m_settings, m_clock)
 {
     connect(this, &AppContext::libraryChanged, &m_nowPlaying, &NowPlaying::refresh);

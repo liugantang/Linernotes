@@ -223,6 +223,16 @@ Item {
                     }
 
                     Controls.AppButton {
+                        text: qsTr("Make Similar Playlist")
+                        icon.source: "icons/sparkles.svg"
+                        onClicked: {
+                            if (AppContext.similar && root.albumId > 0) {
+                                AppContext.similar.playlistFromAlbum(root.albumId)
+                            }
+                        }
+                    }
+
+                    Controls.AppButton {
                         visible: !(root.info && root.info.coverHash)
                         text: qsTr("Find cover online")
                         icon.source: "icons/search.svg"

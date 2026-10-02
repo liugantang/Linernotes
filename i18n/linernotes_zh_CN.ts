@@ -47,18 +47,23 @@
         <translation>随机播放</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="227"/>
+        <location filename="../qml/AlbumDetail.qml" line="226"/>
+        <source>Make Similar Playlist</source>
+        <translation>生成相似歌单</translation>
+    </message>
+    <message>
+        <location filename="../qml/AlbumDetail.qml" line="237"/>
         <source>Find cover online</source>
         <translation>在线查找封面</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="271"/>
+        <location filename="../qml/AlbumDetail.qml" line="281"/>
         <source>Title</source>
         <extracomment>Track title header</extracomment>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../qml/AlbumDetail.qml" line="279"/>
+        <location filename="../qml/AlbumDetail.qml" line="289"/>
         <source>Duration</source>
         <extracomment>Track duration header</extracomment>
         <translation>时长</translation>
@@ -2860,43 +2865,65 @@
 <context>
     <name>SimilarTracksDialog</name>
     <message>
-        <location filename="../qml/SimilarTracksDialog.qml" line="58"/>
+        <location filename="../qml/SimilarTracksDialog.qml" line="50"/>
+        <location filename="../qml/SimilarTracksDialog.qml" line="299"/>
+        <source>Save as Playlist</source>
+        <translation>保存为歌单</translation>
+    </message>
+    <message>
+        <location filename="../qml/SimilarTracksDialog.qml" line="51"/>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location filename="../qml/SimilarTracksDialog.qml" line="73"/>
+        <location filename="../qml/SimilarTracksDialog.qml" line="302"/>
+        <source>Playlist like “%1”</source>
+        <translation>像“%1”的歌单</translation>
+    </message>
+    <message>
+        <location filename="../qml/SimilarTracksDialog.qml" line="74"/>
         <source>Similar to “%1”</source>
         <translation>像「%1」的歌</translation>
     </message>
     <message>
-        <location filename="../qml/SimilarTracksDialog.qml" line="68"/>
-        <location filename="../qml/SimilarTracksDialog.qml" line="284"/>
+        <location filename="../qml/SimilarTracksDialog.qml" line="84"/>
+        <location filename="../qml/SimilarTracksDialog.qml" line="312"/>
         <source>Close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../qml/SimilarTracksDialog.qml" line="98"/>
+        <location filename="../qml/SimilarTracksDialog.qml" line="114"/>
         <source>This track has not been analyzed for audio features yet. Go to Settings → Library → Audio Analysis to run analysis and try again.</source>
         <translation>这首歌还没有分析声音。到 设置 → 曲库 → 声音分析 运行分析后再试。</translation>
     </message>
     <message>
-        <location filename="../qml/SimilarTracksDialog.qml" line="115"/>
+        <location filename="../qml/SimilarTracksDialog.qml" line="132"/>
+        <source>No tracks to recommend.</source>
+        <translation>没有可推荐的歌曲。</translation>
+    </message>
+    <message>
+        <location filename="../qml/SimilarTracksDialog.qml" line="133"/>
         <source>No similar tracks found.</source>
         <translation>没有找到相似的歌。</translation>
     </message>
     <message>
-        <location filename="../qml/SimilarTracksDialog.qml" line="198"/>
+        <location filename="../qml/SimilarTracksDialog.qml" line="216"/>
         <source>Unknown Title</source>
         <translation>未知标题</translation>
     </message>
     <message>
-        <location filename="../qml/SimilarTracksDialog.qml" line="209"/>
+        <location filename="../qml/SimilarTracksDialog.qml" line="227"/>
         <source>Unknown Artist</source>
         <translation>未知艺人</translation>
     </message>
     <message>
-        <location filename="../qml/SimilarTracksDialog.qml" line="259"/>
+        <location filename="../qml/SimilarTracksDialog.qml" line="277"/>
         <source>Play All</source>
         <translation>全部播放</translation>
     </message>
     <message>
-        <location filename="../qml/SimilarTracksDialog.qml" line="270"/>
+        <location filename="../qml/SimilarTracksDialog.qml" line="288"/>
         <source>Add to Queue</source>
         <translation>加入队列</translation>
     </message>
@@ -3132,52 +3159,57 @@
         <translation>找相似</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="129"/>
+        <location filename="../qml/TrackContextMenu.qml" line="128"/>
+        <source>Make Playlist Like This</source>
+        <translation>生成相似歌单</translation>
+    </message>
+    <message>
+        <location filename="../qml/TrackContextMenu.qml" line="139"/>
         <source>Add to Playlist</source>
         <translation>添加到歌单</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="132"/>
+        <location filename="../qml/TrackContextMenu.qml" line="142"/>
         <source>New Playlist...</source>
         <translation>新建歌单…</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="198"/>
+        <location filename="../qml/TrackContextMenu.qml" line="208"/>
         <source>Remove from Playlist</source>
         <translation>从歌单中移除</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="213"/>
+        <location filename="../qml/TrackContextMenu.qml" line="223"/>
         <source>Remove from Loved</source>
         <translation>取消收藏</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="213"/>
+        <location filename="../qml/TrackContextMenu.qml" line="223"/>
         <source>Love</source>
         <translation>收藏</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="223"/>
+        <location filename="../qml/TrackContextMenu.qml" line="233"/>
         <source>Rating</source>
         <translation>评分</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="226"/>
+        <location filename="../qml/TrackContextMenu.qml" line="236"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="283"/>
+        <location filename="../qml/TrackContextMenu.qml" line="293"/>
         <source>Show in File Manager</source>
         <translation>在文件管理器中显示</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="293"/>
+        <location filename="../qml/TrackContextMenu.qml" line="303"/>
         <source>Edit Tags...</source>
         <translation>编辑标签…</translation>
     </message>
     <message>
-        <location filename="../qml/TrackContextMenu.qml" line="172"/>
+        <location filename="../qml/TrackContextMenu.qml" line="182"/>
         <source>Other Versions</source>
         <translation>其他版本</translation>
     </message>
@@ -4308,9 +4340,15 @@
 <context>
     <name>linernotes::ui::SimilarController</name>
     <message>
-        <location filename="../src/ui/SimilarController.cpp" line="86"/>
+        <location filename="../src/ui/SimilarController.cpp" line="98"/>
+        <location filename="../src/ui/SimilarController.cpp" line="161"/>
         <source>Unknown Title</source>
         <translation>未知标题</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/SimilarController.cpp" line="210"/>
+        <source>Unknown Album</source>
+        <translation>未知专辑</translation>
     </message>
     <message>
         <source>Unknown Artist</source>
