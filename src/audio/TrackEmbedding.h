@@ -18,8 +18,7 @@ inline constexpr qint64 kEmbedWindowMs = 7000;
 inline constexpr QLatin1StringView kEmbeddingModelFileName { "msclap-2023-audio.onnx" };
 inline constexpr QLatin1StringView kEmbeddingModelId { "msclap2023-3x7s" };
 
-// 默认模型文件路径：<applicationDirPath>/models/msclap-2023-audio.onnx（构建目录），
-// 不存在时用 <applicationDirPath>/../share/linernotes/models/（安装后）
+// 默认模型文件路径：<applicationDirPath>/models/msclap-2023-audio.onnx
 QString defaultEmbeddingModelPath();
 
 // 3 个窗口的起点：中心在曲目的 20%/50%/80%，并夹到 [0, durationMs - kEmbedWindowMs]；

@@ -733,7 +733,7 @@ if(LINERNOTES_AUDIO_MODEL)
         COMMENT "Copying audio embedding model to app directory"
     )
     install(FILES "${LINERNOTES_AUDIO_MODEL}"
-        DESTINATION ${CMAKE_INSTALL_DATADIR}/linernotes/models
+        DESTINATION ${CMAKE_INSTALL_BINDIR}/models
         RENAME msclap-2023-audio.onnx
     )
 endif()

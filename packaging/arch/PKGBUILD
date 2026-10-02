@@ -3,7 +3,7 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 pkgname=linernotes-git
-pkgver=0.1.0.r272.ga3eefd4
+pkgver=0.1.0.r273.g79965f3
 pkgrel=1
 pkgdesc="Modern local music player with AI-powered features"
 arch=('x86_64')
@@ -56,7 +56,9 @@ build() {
   cmake -B build -S linernotes \
     -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_INSTALL_PREFIX=/opt/linernotes \
+    -DCMAKE_INSTALL_BINDIR=. \
+    -DCMAKE_INSTALL_DATADIR=/usr/share \
     -DLINERNOTES_BUILD_TESTS=OFF \
     -DLINERNOTES_BUILD_TOOLS=OFF \
     -DLINERNOTES_AUDIO_MODEL="$model"
@@ -64,5 +66,8 @@ build() {
 }
 
 package() {
+  # 程序与资源（models/）一起放在 /opt/linernotes；桌面文件、图标、许可证仍装到 /usr/share
   DESTDIR="$pkgdir" cmake --install build
+  install -d "$pkgdir/usr/bin"
+  ln -s /opt/linernotes/linernotes "$pkgdir/usr/bin/linernotes"
 }
