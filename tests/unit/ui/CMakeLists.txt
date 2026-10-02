@@ -258,3 +258,15 @@ linernotes_add_test(
         Qt6::Sql
 )
 
+linernotes_add_test(
+    NAME ui_AudioAnalysisController
+    SOURCES
+        tst_AudioAnalysisController.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::ai
+        Linernotes::audio
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Sql
+)
