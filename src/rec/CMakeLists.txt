@@ -15,6 +15,8 @@ add_library(linernotes_rec STATIC
     SimilarTracks.h
     SoundIndex.cpp
     SoundIndex.h
+    TasteSeeds.cpp
+    TasteSeeds.h
 )
 add_library(Linernotes::rec ALIAS linernotes_rec)
 

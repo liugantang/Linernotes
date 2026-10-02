@@ -36,6 +36,7 @@
 #include <ui/PlaylistController.h>
 #include <ui/PlaylistListModel.h>
 #include <ui/QueueModel.h>
+#include <ui/RecommendController.h>
 #include <ui/RowSelection.h>
 #include <ui/SearchController.h>
 #include <ui/ServiceListModel.h>
@@ -313,4 +314,11 @@ struct AudioAnalysisControllerForeign {
     QML_FOREIGN(linernotes::ui::AudioAnalysisController)
     QML_NAMED_ELEMENT(AudioAnalysisController)
     QML_UNCREATABLE("AudioAnalysisController is managed by AppContext")
+};
+
+struct RecommendControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::RecommendController)
+    QML_NAMED_ELEMENT(RecommendController)
+    QML_UNCREATABLE("RecommendController is managed by AppContext")
 };

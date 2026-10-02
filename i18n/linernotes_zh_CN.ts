@@ -228,8 +228,12 @@
     </message>
     <message>
         <location filename="../qml/AppShortcuts.qml" line="208"/>
+        <source>Go to For You</source>
+        <translation>转到推荐</translation>
+    </message>
+    <message>
         <source>Go to AI</source>
-        <translation>前往 AI</translation>
+        <translation type="vanished">前往 AI</translation>
     </message>
     <message>
         <location filename="../qml/AppShortcuts.qml" line="218"/>
@@ -1470,6 +1474,80 @@
     </message>
 </context>
 <context>
+    <name>ForYouPage</name>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="42"/>
+        <location filename="../qml/pages/ForYouPage.qml" line="122"/>
+        <source>Save as Playlist</source>
+        <translation>保存为歌单</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="43"/>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="78"/>
+        <source>Daily Mix</source>
+        <translation>每日推荐</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="81"/>
+        <source>For You</source>
+        <translation>为你推荐</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="91"/>
+        <source>Refresh</source>
+        <translation>换一批</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="101"/>
+        <source>Play All</source>
+        <translation>全部播放</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="112"/>
+        <source>Add to Queue</source>
+        <translation>加入队列</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="129"/>
+        <source>For You %1</source>
+        <translation>为你推荐 %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="130"/>
+        <source>Daily Mix %1</source>
+        <translation>每日推荐 %1</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="139"/>
+        <source>Tracks you haven&apos;t heard in a while, or ever, picked to match your recent taste.</source>
+        <translation>按你近期的口味，挑出很久没听或从没听过的歌。</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="140"/>
+        <source>A fixed mix for today: favorites you play often plus new discoveries.</source>
+        <translation>今天的固定歌单：常听的喜爱曲目，加上新发现。</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="177"/>
+        <source>Nothing to recommend yet. Play some music first.</source>
+        <translation>暂时没有可推荐的歌，先听几首吧。</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="271"/>
+        <source>Unknown Title</source>
+        <translation>未知标题</translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/ForYouPage.qml" line="282"/>
+        <source>Unknown Artist</source>
+        <translation>未知艺人</translation>
+    </message>
+</context>
+<context>
     <name>LlmDebugPanel</name>
     <message>
         <location filename="../qml/LlmDebugPanel.qml" line="13"/>
@@ -1612,27 +1690,32 @@
 <context>
     <name>NavigationSidebar</name>
     <message>
-        <location filename="../qml/NavigationSidebar.qml" line="29"/>
+        <location filename="../qml/NavigationSidebar.qml" line="30"/>
         <source>Tracks</source>
         <translation>歌曲</translation>
     </message>
     <message>
-        <location filename="../qml/NavigationSidebar.qml" line="30"/>
+        <location filename="../qml/NavigationSidebar.qml" line="31"/>
         <source>Albums</source>
         <translation>专辑</translation>
     </message>
     <message>
-        <location filename="../qml/NavigationSidebar.qml" line="31"/>
+        <location filename="../qml/NavigationSidebar.qml" line="32"/>
         <source>Artists</source>
         <translation>艺人</translation>
     </message>
     <message>
-        <location filename="../qml/NavigationSidebar.qml" line="32"/>
+        <location filename="../qml/NavigationSidebar.qml" line="33"/>
         <source>Playlists</source>
         <translation>歌单</translation>
     </message>
     <message>
-        <location filename="../qml/NavigationSidebar.qml" line="33"/>
+        <location filename="../qml/NavigationSidebar.qml" line="34"/>
+        <source>For You</source>
+        <translation>推荐</translation>
+    </message>
+    <message>
+        <location filename="../qml/NavigationSidebar.qml" line="35"/>
         <source>Library Cleanup</source>
         <translation>曲库整理</translation>
     </message>
@@ -1645,12 +1728,12 @@
         <translation type="vanished">敬请期待</translation>
     </message>
     <message>
-        <location filename="../qml/NavigationSidebar.qml" line="198"/>
+        <location filename="../qml/NavigationSidebar.qml" line="200"/>
         <source>Scanning library…</source>
         <translation>正在扫描曲库…</translation>
     </message>
     <message>
-        <location filename="../qml/NavigationSidebar.qml" line="253"/>
+        <location filename="../qml/NavigationSidebar.qml" line="255"/>
         <source>Settings</source>
         <translation>设置</translation>
     </message>
@@ -4340,13 +4423,13 @@
 <context>
     <name>linernotes::ui::SimilarController</name>
     <message>
-        <location filename="../src/ui/SimilarController.cpp" line="98"/>
-        <location filename="../src/ui/SimilarController.cpp" line="161"/>
+        <location filename="../src/ui/SimilarController.cpp" line="76"/>
+        <location filename="../src/ui/SimilarController.cpp" line="139"/>
         <source>Unknown Title</source>
         <translation>未知标题</translation>
     </message>
     <message>
-        <location filename="../src/ui/SimilarController.cpp" line="210"/>
+        <location filename="../src/ui/SimilarController.cpp" line="188"/>
         <source>Unknown Album</source>
         <translation>未知专辑</translation>
     </message>

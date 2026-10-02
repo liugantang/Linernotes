@@ -39,6 +39,7 @@
 #include <ui/PlayEventRecorder.h>
 #include <ui/PlaylistController.h>
 #include <ui/QueueModel.h>
+#include <ui/RecommendController.h>
 #include <ui/SearchController.h>
 #include <ui/SettingsController.h>
 #include <ui/SimilarController.h>
@@ -89,6 +90,7 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::DuplicateController *duplicates READ duplicates CONSTANT)
     Q_PROPERTY(linernotes::ui::CoverSearchController *coverSearch READ coverSearch CONSTANT)
     Q_PROPERTY(linernotes::ui::EndlessPlay *endless READ endless CONSTANT)
+    Q_PROPERTY(linernotes::ui::RecommendController *recommend READ recommend CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
     Q_PROPERTY(QString startupError READ startupError NOTIFY startupErrorChanged)
     Q_PROPERTY(bool scanning READ isScanning NOTIFY scanningChanged)
@@ -140,6 +142,7 @@ public:
     [[nodiscard]] DuplicateController *duplicates();
     [[nodiscard]] CoverSearchController *coverSearch();
     [[nodiscard]] EndlessPlay *endless();
+    [[nodiscard]] RecommendController *recommend();
     [[nodiscard]] library::Database &database();
     [[nodiscard]] const library::Database &database() const;
     [[nodiscard]] library::CoverStore *coverStore();
@@ -194,6 +197,7 @@ private:
     rec::SimilarTracks m_similarTracks;
     SimilarController m_similar;
     EndlessPlay m_endless;
+    RecommendController m_recommend;
     std::unique_ptr<library::LibraryWatcher> m_watcher;
     QTimer m_saveTimer;
     QTimer m_backupTimer;

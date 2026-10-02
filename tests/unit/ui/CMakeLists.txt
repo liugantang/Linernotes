@@ -286,3 +286,18 @@ linernotes_add_test(
         Linernotes::TestSupport
         Qt6::Sql
 )
+
+linernotes_add_test(
+    NAME ui_RecommendController
+    SOURCES
+        tst_RecommendController.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::rec
+        Linernotes::player
+        Linernotes::library
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Sql
+)
+

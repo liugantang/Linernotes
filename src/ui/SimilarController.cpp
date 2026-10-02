@@ -10,33 +10,11 @@
 #include <library/LibraryQuery.h>
 #include <rec/Recommender.h>
 #include <rec/SimilarTracks.h>
-#include <ui/Format.h>
 #include <ui/LibraryActions.h>
 #include <ui/PlaylistController.h>
+#include <ui/TrackRows.h>
 
 namespace linernotes::ui {
-
-namespace {
-
-QVariantList populateTrackRows(const QList<library::TrackRow> &tracks)
-{
-    QVariantList rows;
-    rows.reserve(tracks.size());
-    for (const auto &t : tracks) {
-        QVariantMap map;
-        map.insert(QStringLiteral("trackId"), t.trackId);
-        map.insert(QStringLiteral("title"), t.title);
-        map.insert(QStringLiteral("artist"), t.artist);
-        map.insert(QStringLiteral("album"), t.album);
-        map.insert(QStringLiteral("albumId"), t.albumId.value_or(0));
-        map.insert(QStringLiteral("durationText"), formatDuration(t.durationMs));
-        map.insert(QStringLiteral("coverHash"), t.coverHash);
-        rows.append(map);
-    }
-    return rows;
-}
-
-} // namespace
 
 SimilarController::SimilarController(rec::SimilarTracks &similarTracks,
     rec::Recommender &recommender, PlaylistController &playlists, library::Database &db,
@@ -119,7 +97,7 @@ void SimilarController::find(qint64 trackId)
         if (!resultIds.isEmpty()) {
             const auto tracksRes = lq.tracksByIds(resultIds);
             if (tracksRes.ok()) {
-                m_rows = populateTrackRows(tracksRes.value());
+                m_rows = trackRowsToVariant(tracksRes.value());
             }
         }
     }
@@ -168,13 +146,13 @@ void SimilarController::playlistFromTrack(qint64 trackId)
     req.freshnessWeight = 0.2;
     req.randomness = 0.0;
 
-    m_rows = populateTrackRows(seedTrackRes.value());
+    m_rows = trackRowsToVariant(seedTrackRes.value());
 
     const auto recRes = m_recommender.recommend(req);
     if (recRes.ok() && !recRes.value().isEmpty()) {
         const auto tracksRes = lq.tracksByIds(recRes.value());
         if (tracksRes.ok()) {
-            m_rows.append(populateTrackRows(tracksRes.value()));
+            m_rows.append(trackRowsToVariant(tracksRes.value()));
         }
     }
 
@@ -237,7 +215,7 @@ void SimilarController::playlistFromAlbum(qint64 albumId)
     if (recRes.ok() && !recRes.value().isEmpty()) {
         const auto tracksRes = lq.tracksByIds(recRes.value());
         if (tracksRes.ok()) {
-            m_rows = populateTrackRows(tracksRes.value());
+            m_rows = trackRowsToVariant(tracksRes.value());
         }
     }
 

@@ -17,8 +17,6 @@
 
 namespace linernotes::rec {
 
-namespace {
-
 double calculateCompletionRate(qint64 playedMs, const QVariant &durationVar, bool completed)
 {
     if (!durationVar.isNull() && durationVar.toLongLong() > 0) {
@@ -28,8 +26,6 @@ double calculateCompletionRate(qint64 playedMs, const QVariant &durationVar, boo
     }
     return completed ? 1.0 : 0.5;
 }
-
-} // namespace
 
 core::Result<QList<Seed>> sessionSeeds(
     library::Database &db, qint64 nowMs, std::optional<qint64> currentTrackId)

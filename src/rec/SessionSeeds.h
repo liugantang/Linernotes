@@ -4,6 +4,7 @@
 #pragma once
 
 #include <QList>
+#include <QVariant>
 #include <QtGlobal>
 
 #include <core/Result.h>
@@ -22,6 +23,9 @@ inline constexpr int kSessionMaxEvents = 10;
 inline constexpr double kSessionNegativeWeight = -0.7;
 inline constexpr double kSessionRecencyDecay = 0.8;
 inline constexpr double kSessionCurrentTrackWeight = 1.0;
+
+[[nodiscard]] double calculateCompletionRate(
+    qint64 playedMs, const QVariant &durationVar, bool completed);
 
 [[nodiscard]] core::Result<QList<Seed>> sessionSeeds(
     library::Database &db, qint64 nowMs, std::optional<qint64> currentTrackId = std::nullopt);

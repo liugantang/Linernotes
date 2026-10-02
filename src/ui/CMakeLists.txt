@@ -62,6 +62,8 @@ add_library(linernotes_ui STATIC
     PlaylistListModel.h
     QueueModel.cpp
     QueueModel.h
+    RecommendController.cpp
+    RecommendController.h
     RowSelection.cpp
     RowSelection.h
     SearchController.cpp
@@ -80,6 +82,8 @@ add_library(linernotes_ui STATIC
     TrackListModel.h
     TrackNotifier.cpp
     TrackNotifier.h
+    TrackRows.cpp
+    TrackRows.h
     Translations.cpp
     Translations.h
     UiLogging.cpp
