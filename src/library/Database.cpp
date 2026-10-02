@@ -156,7 +156,8 @@ core::Result<void> applyPragmas(const QSqlDatabase &db, const QString &filePath)
         { .sql = "PRAGMA busy_timeout = 5000;", .name = "busy_timeout" },
         { .sql = "PRAGMA temp_store = MEMORY;", .name = "temp_store" },
         { .sql = "PRAGMA cache_size = -20000;", .name = "cache_size" },
-        { .sql = "PRAGMA mmap_size = 268435456;", .name = "mmap_size" },
+        // 不用 mmap：每个连接各映射一份库文件，读过的页全部计入进程内存；走系统页缓存即可
+        { .sql = "PRAGMA mmap_size = 0;", .name = "mmap_size" },
     } };
 
     for (const auto &pragma : kPragmas) {

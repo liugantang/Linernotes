@@ -265,6 +265,10 @@ MpvHandle::OptionList MpvHandle::defaultOptions()
         { QStringLiteral("replaygain"), QStringLiteral("track") },
         { QStringLiteral("idle"), QStringLiteral("yes") },
         { QStringLiteral("prefetch-playlist"), QStringLiteral("yes") },
+        // SMB 等网络文件系统上的文件 mpv 会默认开缓存，整首读进内存（高解析 FLAC 近百 MB）；
+        // 16MiB 仍可预读约一分钟
+        { QStringLiteral("demuxer-max-bytes"), QStringLiteral("16MiB") },
+        { QStringLiteral("demuxer-max-back-bytes"), QStringLiteral("1MiB") },
         { QStringLiteral("config"), QStringLiteral("no") },
         { QStringLiteral("load-scripts"), QStringLiteral("no") },
         { QStringLiteral("load-stats-overlay"), QStringLiteral("no") },
