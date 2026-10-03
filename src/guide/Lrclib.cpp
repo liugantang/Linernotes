@@ -5,6 +5,7 @@
 
 #include "Errors.h"
 #include "GuideUtils.h"
+#include "Knowledge.h"
 
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -43,16 +44,7 @@ LrclibQuery lrclibQueryFor(const library::TrackRow &track)
     LrclibQuery query;
     const auto resolved = butler::resolveTitle(track.title, butler::classifySuffix);
     query.title = resolved.baseTitle;
-
-    const QString artist = track.artist;
-    static const QRegularExpression s_artistSplitRegex(QStringLiteral(R"( / |; |、)"));
-    const auto parts = artist.split(s_artistSplitRegex);
-    if (!parts.isEmpty()) {
-        query.artist = parts.at(0).trimmed();
-    } else {
-        query.artist = artist.trimmed();
-    }
-
+    query.artist = primaryArtist(track.artist);
     query.album = track.album;
     if (track.durationMs > 0) {
         query.durationSec

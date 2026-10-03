@@ -9,6 +9,12 @@ add_library(linernotes_guide STATIC
     GuideLogging.cpp
     GuideLogging.h
     GuideUtils.h
+    Knowledge.cpp
+    Knowledge.h
+    KnowledgeService.cpp
+    KnowledgeService.h
+    KnowledgeStore.cpp
+    KnowledgeStore.h
     LineExplainer.cpp
     LineExplainer.h
     LocalLyrics.cpp

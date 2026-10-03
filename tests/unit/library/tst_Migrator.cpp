@@ -55,6 +55,7 @@ private slots:
     void upgradesTo0028AddsAudioEmbeddings();
     void upgradesTo0029AddsLyrics();
     void upgradesTo0030AddsLyricsTranslations();
+    void upgradesTo0031AddsKnowledge();
 };
 
 void TstMigrator::appliesMigrationsInOrder()
@@ -1185,6 +1186,64 @@ void TstMigrator::upgradesTo0030AddsLyricsTranslations()
     QVERIFY(checkQ.exec(QStringLiteral("SELECT COUNT(*) FROM lyrics_translations;")));
     QVERIFY(checkQ.next());
     QCOMPARE(checkQ.value(0).toInt(), 0);
+}
+
+void TstMigrator::upgradesTo0031AddsKnowledge()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 31);
+
+    // Write migrations 1..30
+    for (int i = 0; i < 30; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 30);
+
+    // Add migration 31
+    const auto &m31 = allMigrations.at(30);
+    const QString fileName31
+        = QStringLiteral("%1_%2.sql").arg(m31.version, 4, 10, QLatin1Char('0')).arg(m31.name);
+    writeSqlFile(migDir.path(), fileName31, m31.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 31);
+
+    // Verify knowledge tables exist and work
+    QSqlQuery checkQ(conn);
+    QVERIFY(checkQ.exec(
+        QStringLiteral("INSERT INTO knowledge_entries (qid, kind, payload, fetched_at) "
+                       "VALUES ('Q4021857', 'artist', '{\"qid\":\"Q4021857\"}', 1000);")));
+    QVERIFY(checkQ.exec(QStringLiteral("INSERT INTO knowledge_lookups (key, qid, fetched_at) "
+                                       "VALUES ('artist|aoi eir', 'Q4021857', 1000);")));
+
+    QVERIFY(checkQ.exec(QStringLiteral("SELECT COUNT(*) FROM knowledge_entries;")));
+    QVERIFY(checkQ.next());
+    QCOMPARE(checkQ.value(0).toInt(), 1);
+
+    QVERIFY(checkQ.exec(QStringLiteral("SELECT COUNT(*) FROM knowledge_lookups;")));
+    QVERIFY(checkQ.next());
+    QCOMPARE(checkQ.value(0).toInt(), 1);
 }
 
 } // namespace

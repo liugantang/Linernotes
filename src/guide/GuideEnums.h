@@ -21,4 +21,7 @@ Q_ENUM_NS(LyricsStatus)
 enum class KnowledgeKind : std::uint8_t { Artist, Song, Album };
 Q_ENUM_NS(KnowledgeKind)
 
+enum class KnowledgeStatus : std::uint8_t { Found, NotFound, Failed };
+Q_ENUM_NS(KnowledgeStatus)
+
 } // namespace linernotes::guide

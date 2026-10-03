@@ -123,3 +123,42 @@ linernotes_add_test(
         Linernotes::TestSupport
         Qt6::Core
 )
+
+linernotes_add_test(
+    NAME guide_Knowledge
+    SOURCES
+        tst_Knowledge.cpp
+    LIBS
+        Linernotes::guide
+        Linernotes::butler
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Core
+)
+
+linernotes_add_test(
+    NAME guide_KnowledgeStore
+    SOURCES
+        tst_KnowledgeStore.cpp
+    LIBS
+        Linernotes::guide
+        Linernotes::core
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Core
+        Qt6::Sql
+)
+
+linernotes_add_test(
+    NAME guide_KnowledgeService
+    SOURCES
+        tst_KnowledgeService.cpp
+    LIBS
+        Linernotes::guide
+        Linernotes::core
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Core
+        Qt6::Network
+        Qt6::Sql
+)
