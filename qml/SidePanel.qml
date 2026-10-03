@@ -20,6 +20,12 @@ Rectangle {
         property bool collapsed: false
     }
 
+    Binding {
+        target: AppContext.guide
+        property: "active"
+        value: !root.collapsed && panelStack.currentIndex === 2
+    }
+
     color: Theme.surface
     border.color: Theme.divider
     border.width: 1
@@ -71,24 +77,9 @@ Rectangle {
             }
 
             // Guide tab
-            Item {
-                ColumnLayout {
-                    anchors.centerIn: parent
-                    spacing: Theme.spacingSmall
-                    Label {
-                        text: qsTr("Guide")
-                        font.pixelSize: Theme.fontSizeLarge
-                        font.bold: true
-                        color: Theme.text
-                        Layout.alignment: Qt.AlignHCenter
-                    }
-                    Label {
-                        text: qsTr("AI music guide and liner notes.")
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.textSecondary
-                        Layout.alignment: Qt.AlignHCenter
-                    }
-                }
+            GuidePanel {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
             }
 
             // DJ tab

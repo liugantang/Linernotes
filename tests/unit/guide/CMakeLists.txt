@@ -162,3 +162,14 @@ linernotes_add_test(
         Qt6::Network
         Qt6::Sql
 )
+
+linernotes_add_test(
+    NAME guide_KnowledgeCardWriter
+    SOURCES
+        tst_KnowledgeCardWriter.cpp
+    LIBS
+        Linernotes::guide
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Core
+)

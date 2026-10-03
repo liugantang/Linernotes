@@ -11,6 +11,8 @@ add_library(linernotes_guide STATIC
     GuideUtils.h
     Knowledge.cpp
     Knowledge.h
+    KnowledgeCardWriter.cpp
+    KnowledgeCardWriter.h
     KnowledgeService.cpp
     KnowledgeService.h
     KnowledgeStore.cpp

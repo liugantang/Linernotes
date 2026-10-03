@@ -36,6 +36,8 @@ add_library(linernotes_ui STATIC
     ErrorText.cpp
     ErrorText.h
     Format.h
+    GuideController.cpp
+    GuideController.h
     LibraryActions.cpp
     LibraryActions.h
     LibraryRootsModel.cpp

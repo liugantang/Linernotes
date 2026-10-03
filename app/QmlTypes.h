@@ -27,6 +27,7 @@
 #include <ui/CorrectionListModel.h>
 #include <ui/CorrectionReviewController.h>
 #include <ui/DuplicateController.h>
+#include <ui/GuideController.h>
 #include <ui/LibraryActions.h>
 #include <ui/LibraryRootsModel.h>
 #include <ui/LlmDebugController.h>
@@ -336,4 +337,11 @@ struct LyricsControllerForeign {
     QML_FOREIGN(linernotes::ui::LyricsController)
     QML_NAMED_ELEMENT(LyricsController)
     QML_UNCREATABLE("LyricsController is managed by AppContext")
+};
+
+struct GuideControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::GuideController)
+    QML_NAMED_ELEMENT(GuideController)
+    QML_UNCREATABLE("GuideController is managed by AppContext")
 };

@@ -1548,6 +1548,59 @@
     </message>
 </context>
 <context>
+    <name>GuidePanel</name>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="32"/>
+        <source>Nothing playing.</source>
+        <translation>没有正在播放的歌曲。</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="51"/>
+        <source>Looking up…</source>
+        <translation>正在查找资料…</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="69"/>
+        <source>Couldn&apos;t reach Wikipedia.</source>
+        <translation>无法连接到维基百科。</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="76"/>
+        <source>Retry</source>
+        <translation>重试</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="97"/>
+        <source>No information found for this track.</source>
+        <translation>没有找到这首歌的相关资料。</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="125"/>
+        <source>Looking up more…</source>
+        <translation>正在查找更多资料…</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="197"/>
+        <source>Writing…</source>
+        <translation>正在撰写…</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="253"/>
+        <source>Show less</source>
+        <translation>收起</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="254"/>
+        <source>Show all (%1)</source>
+        <translation>显示全部（%1）</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="308"/>
+        <source>Written by AI from the sources above</source>
+        <translation>由 AI 根据以上来源撰写</translation>
+    </message>
+</context>
+<context>
     <name>LlmDebugPanel</name>
     <message>
         <location filename="../qml/LlmDebugPanel.qml" line="13"/>
@@ -3066,23 +3119,22 @@
 <context>
     <name>SidePanel</name>
     <message>
-        <location filename="../qml/SidePanel.qml" line="36"/>
+        <location filename="../qml/SidePanel.qml" line="42"/>
         <source>Queue</source>
         <translation>播放队列</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="39"/>
+        <location filename="../qml/SidePanel.qml" line="45"/>
         <source>Lyrics</source>
         <translation>歌词</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="42"/>
-        <location filename="../qml/SidePanel.qml" line="79"/>
+        <location filename="../qml/SidePanel.qml" line="48"/>
         <source>Guide</source>
         <translation>向导</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="45"/>
+        <location filename="../qml/SidePanel.qml" line="51"/>
         <source>DJ</source>
         <translation>DJ</translation>
     </message>
@@ -3091,17 +3143,16 @@
         <translation type="vanished">同步歌词将在此显示。</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="86"/>
         <source>AI music guide and liner notes.</source>
-        <translation>AI 音乐向导与专辑内页说明。</translation>
+        <translation type="vanished">AI 音乐向导与专辑内页说明。</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="100"/>
+        <location filename="../qml/SidePanel.qml" line="91"/>
         <source>DJ Subtitles</source>
         <translation>DJ 字幕</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="107"/>
+        <location filename="../qml/SidePanel.qml" line="98"/>
         <source>Live AI DJ commentary and subtitles.</source>
         <translation>实时 AI DJ 解说与字幕。</translation>
     </message>
@@ -3848,6 +3899,94 @@
     </message>
 </context>
 <context>
+    <name>linernotes::guide::Wikidata</name>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="530"/>
+        <source>Release date</source>
+        <translation>发行日期</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="533"/>
+        <source>Inception</source>
+        <translation>成立时间</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="536"/>
+        <source>Date of birth</source>
+        <translation>出生日期</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="539"/>
+        <source>Country of citizenship</source>
+        <translation>国籍</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="542"/>
+        <source>Country of origin</source>
+        <translation>来源国</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="545"/>
+        <source>Genre</source>
+        <translation>流派</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="548"/>
+        <source>Record label</source>
+        <translation>唱片公司</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="551"/>
+        <source>Members</source>
+        <translation>成员</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="554"/>
+        <source>Member of</source>
+        <translation>所属团体</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="557"/>
+        <source>Performer</source>
+        <translation>表演者</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="560"/>
+        <source>Composer</source>
+        <translation>作曲</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="563"/>
+        <source>Lyricist</source>
+        <translation>作词</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="566"/>
+        <source>Producer</source>
+        <translation>制作人</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="569"/>
+        <source>Part of</source>
+        <translation>收录于</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="572"/>
+        <source>Based on</source>
+        <translation>改编自</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="575"/>
+        <source>Follows</source>
+        <translation>前作</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="578"/>
+        <source>Followed by</source>
+        <translation>后作</translation>
+    </message>
+</context>
+<context>
     <name>linernotes::ui::AiSettingsController</name>
     <message>
         <location filename="../src/ui/AiSettingsController.cpp" line="52"/>
@@ -4200,6 +4339,24 @@
         <location filename="../src/ui/ErrorText.cpp" line="142"/>
         <source>Operation failed (error code: %1)</source>
         <translation>操作失败（错误码：%1）</translation>
+    </message>
+</context>
+<context>
+    <name>linernotes::ui::GuideController</name>
+    <message>
+        <location filename="../src/ui/GuideController.cpp" line="348"/>
+        <source>Song</source>
+        <translation>歌曲</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/GuideController.cpp" line="351"/>
+        <source>Album</source>
+        <translation>专辑</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/GuideController.cpp" line="354"/>
+        <source>Artist</source>
+        <translation>艺人</translation>
     </message>
 </context>
 <context>

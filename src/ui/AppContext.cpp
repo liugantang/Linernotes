@@ -43,6 +43,8 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
               return opts;
           }())
     , m_ai(m_settings, m_db, m_clock, m_options.promptsDir)
+    , m_knowledgeService(m_db, m_ai.network(), m_clock)
+    , m_knowledgeCardWriter(m_ai.llm(), m_ai.prompts())
     , m_lyricsService(m_db, m_ai.network(), m_clock)
     , m_lyricsTranslator(m_ai.llm(), m_ai.prompts(), m_db, m_clock)
     , m_lineExplainer(m_ai.llm(), m_ai.prompts())
@@ -62,6 +64,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_nowPlaying(m_db, m_player, m_coverStore)
     , m_lyrics(m_lyricsService, m_lyricsTranslator, m_lineExplainer, m_ai.config(), m_settings,
           m_player, m_nowPlaying)
+    , m_guide(m_knowledgeService, m_knowledgeCardWriter, m_ai.config(), m_nowPlaying)
     , m_queueModel(m_db, m_player)
     , m_search(m_db)
     , m_playlists(m_db, m_player)
@@ -380,6 +383,11 @@ RecommendController *AppContext::recommend()
 LyricsController *AppContext::lyrics()
 {
     return &m_lyrics;
+}
+
+GuideController *AppContext::guide()
+{
+    return &m_guide;
 }
 
 library::Database &AppContext::database()
