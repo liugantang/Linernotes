@@ -8,11 +8,14 @@ add_library(linernotes_guide STATIC
     GuideEnums.h
     GuideLogging.cpp
     GuideLogging.h
+    GuideSettings.h
     GuideUtils.h
     Knowledge.cpp
     Knowledge.h
     KnowledgeCardWriter.cpp
     KnowledgeCardWriter.h
+    KnowledgePrewarmer.cpp
+    KnowledgePrewarmer.h
     KnowledgeService.cpp
     KnowledgeService.h
     KnowledgeStore.cpp
@@ -37,6 +40,8 @@ add_library(linernotes_guide STATIC
     LyricsTranslationStore.h
     LyricsTranslator.cpp
     LyricsTranslator.h
+    TrackFacts.cpp
+    TrackFacts.h
     Wikidata.cpp
     Wikidata.h
     Wikipedia.cpp

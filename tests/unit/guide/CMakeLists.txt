@@ -173,3 +173,30 @@ linernotes_add_test(
         Linernotes::TestSupport
         Qt6::Core
 )
+
+linernotes_add_test(
+    NAME guide_TrackFacts
+    SOURCES
+        tst_TrackFacts.cpp
+    LIBS
+        Linernotes::guide
+        Linernotes::core
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Core
+        Qt6::Sql
+)
+
+linernotes_add_test(
+    NAME guide_KnowledgePrewarmer
+    SOURCES
+        tst_KnowledgePrewarmer.cpp
+    LIBS
+        Linernotes::guide
+        Linernotes::core
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Core
+        Qt6::Network
+        Qt6::Sql
+)

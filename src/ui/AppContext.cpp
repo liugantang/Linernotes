@@ -45,6 +45,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_ai(m_settings, m_db, m_clock, m_options.promptsDir)
     , m_knowledgeService(m_db, m_ai.network(), m_clock)
     , m_knowledgeCardWriter(m_ai.llm(), m_ai.prompts())
+    , m_knowledgePrewarmer(m_db, m_knowledgeService, m_clock, m_settings)
     , m_lyricsService(m_db, m_ai.network(), m_clock)
     , m_lyricsTranslator(m_ai.llm(), m_ai.prompts(), m_db, m_clock)
     , m_lineExplainer(m_ai.llm(), m_ai.prompts())
@@ -185,6 +186,7 @@ void AppContext::connectScannerSignals()
 
 AppContext::~AppContext()
 {
+    m_knowledgePrewarmer.stop();
     m_backupTimer.stop();
     if (m_backupFuture.isRunning()) {
         m_backupFuture.waitForFinished();
@@ -244,6 +246,9 @@ core::Result<void> AppContext::start()
 
     m_watcher->reload();
     rescan();
+
+    QTimer::singleShot(
+        std::chrono::minutes(2), this, [this]() { m_knowledgePrewarmer.maybeStart(); });
 
     if (!m_options.backupDir.isEmpty()) {
         triggerBackupIfDue();

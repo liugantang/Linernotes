@@ -14,6 +14,7 @@
 #include <core/Clock.h>
 #include <core/Result.h>
 #include <guide/KnowledgeCardWriter.h>
+#include <guide/KnowledgePrewarmer.h>
 #include <guide/KnowledgeService.h>
 #include <guide/LineExplainer.h>
 #include <guide/LyricsService.h>
@@ -184,6 +185,7 @@ private:
     AiContext m_ai;
     guide::KnowledgeService m_knowledgeService;
     guide::KnowledgeCardWriter m_knowledgeCardWriter;
+    guide::KnowledgePrewarmer m_knowledgePrewarmer;
     guide::LyricsService m_lyricsService;
     guide::LyricsTranslator m_lyricsTranslator;
     guide::LineExplainer m_lineExplainer;
