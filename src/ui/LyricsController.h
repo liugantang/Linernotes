@@ -12,6 +12,7 @@
 #include <ai/AiConfig.h>
 #include <core/Result.h>
 #include <core/Settings.h>
+#include <guide/LineExplainer.h>
 #include <guide/LrcParser.h>
 #include <guide/Lyrics.h>
 #include <guide/LyricsService.h>
@@ -37,11 +38,18 @@ class LyricsController : public QObject {
             translationChanged)
     Q_PROPERTY(bool translating READ translating NOTIFY translationChanged)
     Q_PROPERTY(QString translationError READ translationError NOTIFY translationChanged)
+    Q_PROPERTY(int explainIndex READ explainIndex NOTIFY explanationChanged)
+    Q_PROPERTY(QString explanationLine READ explanationLine NOTIFY explanationChanged)
+    Q_PROPERTY(QString explanation READ explanation NOTIFY explanationChanged)
+    Q_PROPERTY(bool explaining READ explaining NOTIFY explanationChanged)
+    Q_PROPERTY(QString explanationError READ explanationError NOTIFY explanationChanged)
+    Q_PROPERTY(bool explainAvailable READ explainAvailable NOTIFY explanationChanged)
 
 public:
     explicit LyricsController(guide::LyricsService &lyricsService,
-        guide::LyricsTranslator &translator, const ai::AiConfig &aiConfig, core::Settings &settings,
-        player::Player &player, NowPlaying &nowPlaying, QObject *parent = nullptr);
+        guide::LyricsTranslator &translator, guide::LineExplainer &explainer,
+        const ai::AiConfig &aiConfig, core::Settings &settings, player::Player &player,
+        NowPlaying &nowPlaying, QObject *parent = nullptr);
     ~LyricsController() override = default;
 
     [[nodiscard]] QVariantList lines() const;
@@ -56,24 +64,36 @@ public:
     void setShowTranslation(bool show);
     [[nodiscard]] bool translating() const;
     [[nodiscard]] QString translationError() const;
+    [[nodiscard]] int explainIndex() const;
+    [[nodiscard]] QString explanationLine() const;
+    [[nodiscard]] QString explanation() const;
+    [[nodiscard]] bool explaining() const;
+    [[nodiscard]] QString explanationError() const;
+    [[nodiscard]] bool explainAvailable() const;
 
     Q_INVOKABLE void seekToLine(int index);
     Q_INVOKABLE void saveManual(const QString &text);
     Q_INVOKABLE void importFile(const QUrl &fileUrl);
     Q_INVOKABLE void refetch();
     Q_INVOKABLE void retryTranslation();
+    Q_INVOKABLE void explainLine(int index);
+    Q_INVOKABLE void closeExplanation();
 
 signals:
     void linesChanged();
     void currentIndexChanged();
     void statusChanged();
     void translationChanged();
+    void explanationChanged();
 
 private slots:
     void onNowPlayingChanged();
     void onLyricsFinished(const linernotes::guide::LyricsResult &result);
     void onTranslationFinished(qint64 trackId, const linernotes::core::Result<QStringList> &result);
     void onPositionChanged(double position);
+    void onExplainDelta(qint64 trackId, int lineIndex, const QString &text);
+    void onExplainFinished(
+        qint64 trackId, int lineIndex, const linernotes::core::Result<QString> &result);
 
 private:
     void clear();
@@ -82,6 +102,7 @@ private:
 
     guide::LyricsService &m_lyricsService;
     guide::LyricsTranslator &m_translator;
+    guide::LineExplainer &m_explainer;
     const ai::AiConfig &m_aiConfig;
     core::Settings &m_settings;
     player::Player &m_player;
@@ -100,6 +121,12 @@ private:
     QStringList m_llmTranslations;
     bool m_translating = false;
     QString m_translationError;
+
+    int m_explainIndex = -1;
+    QString m_explanationLine;
+    QString m_explanation;
+    bool m_explaining = false;
+    QString m_explanationError;
 };
 
 } // namespace linernotes::ui

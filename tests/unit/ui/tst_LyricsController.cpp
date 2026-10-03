@@ -20,6 +20,7 @@
 #include <ai/UsageStore.h>
 #include <common/ManualClock.h>
 #include <core/Settings.h>
+#include <guide/LineExplainer.h>
 #include <guide/Lyrics.h>
 #include <guide/LyricsService.h>
 #include <guide/LyricsStore.h>
@@ -43,6 +44,7 @@ using linernotes::ai::PrivacyGuard;
 using linernotes::ai::PromptLibrary;
 using linernotes::ai::UsageStore;
 using linernotes::core::Settings;
+using linernotes::guide::LineExplainer;
 using linernotes::guide::LyricsService;
 using linernotes::guide::LyricsSource;
 using linernotes::guide::LyricsStatus;
@@ -112,8 +114,10 @@ void TstLyricsController::testLyricsFlow()
     LlmDebugLog debugLog(settings);
     LlmService llm(aiConfig, secrets, client, llmCache, usageStore, privacy, debugLog, clock);
     LyricsTranslator translator(llm, prompts, db, clock);
+    LineExplainer explainer(llm, prompts);
 
-    LyricsController controller(lyricsService, translator, aiConfig, settings, player, nowPlaying);
+    LyricsController controller(
+        lyricsService, translator, explainer, aiConfig, settings, player, nowPlaying);
 
     QSignalSpy linesSpy(&controller, &LyricsController::linesChanged);
     QSignalSpy statusSpy(&controller, &LyricsController::statusChanged);

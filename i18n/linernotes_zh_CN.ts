@@ -1734,6 +1734,7 @@
     </message>
     <message>
         <location filename="../qml/LyricsPanel.qml" line="173"/>
+        <location filename="../qml/LyricsPanel.qml" line="425"/>
         <source>Retry</source>
         <translation>重试</translation>
     </message>
@@ -1743,52 +1744,73 @@
         <translation>没有找到歌词。</translation>
     </message>
     <message>
-        <location filename="../qml/LyricsPanel.qml" line="326"/>
+        <location filename="../qml/LyricsPanel.qml" line="296"/>
+        <location filename="../qml/LyricsPanel.qml" line="310"/>
+        <source>Explain this line</source>
+        <translation>解读这一句</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="385"/>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="436"/>
+        <source>Thinking…</source>
+        <translation>正在思考…</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="458"/>
+        <source>AI interpretation — not verified</source>
+        <translation>AI 解读，未经证实</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="495"/>
         <source>Source:</source>
         <translation>来源：</translation>
     </message>
     <message>
-        <location filename="../qml/LyricsPanel.qml" line="356"/>
+        <location filename="../qml/LyricsPanel.qml" line="525"/>
         <source>Edited by you</source>
         <translation>你编辑的歌词</translation>
     </message>
     <message>
-        <location filename="../qml/LyricsPanel.qml" line="358"/>
+        <location filename="../qml/LyricsPanel.qml" line="527"/>
         <source>Embedded tags</source>
         <translation>内嵌标签</translation>
     </message>
     <message>
-        <location filename="../qml/LyricsPanel.qml" line="360"/>
+        <location filename="../qml/LyricsPanel.qml" line="529"/>
         <source>.lrc file</source>
         <translation>.lrc 文件</translation>
     </message>
     <message>
-        <location filename="../qml/LyricsPanel.qml" line="399"/>
+        <location filename="../qml/LyricsPanel.qml" line="568"/>
         <source>Translating…</source>
         <translation>正在翻译…</translation>
     </message>
     <message>
-        <location filename="../qml/LyricsPanel.qml" line="400"/>
+        <location filename="../qml/LyricsPanel.qml" line="569"/>
         <source>Translate</source>
         <translation>翻译</translation>
     </message>
     <message>
-        <location filename="../qml/LyricsPanel.qml" line="405"/>
+        <location filename="../qml/LyricsPanel.qml" line="574"/>
         <source>Retry translation</source>
         <translation>重试翻译</translation>
     </message>
     <message>
-        <location filename="../qml/LyricsPanel.qml" line="407"/>
+        <location filename="../qml/LyricsPanel.qml" line="576"/>
         <source>Hide translation</source>
         <translation>隐藏译文</translation>
     </message>
     <message>
-        <location filename="../qml/LyricsPanel.qml" line="407"/>
+        <location filename="../qml/LyricsPanel.qml" line="576"/>
         <source>Translate lyrics</source>
         <translation>翻译歌词</translation>
     </message>
     <message>
-        <location filename="../qml/LyricsPanel.qml" line="426"/>
+        <location filename="../qml/LyricsPanel.qml" line="595"/>
         <source>Lyrics Options</source>
         <translation>歌词选项</translation>
     </message>

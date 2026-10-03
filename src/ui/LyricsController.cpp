@@ -17,11 +17,13 @@
 namespace linernotes::ui {
 
 LyricsController::LyricsController(guide::LyricsService &lyricsService,
-    guide::LyricsTranslator &translator, const ai::AiConfig &aiConfig, core::Settings &settings,
-    player::Player &player, NowPlaying &nowPlaying, QObject *parent)
+    guide::LyricsTranslator &translator, guide::LineExplainer &explainer,
+    const ai::AiConfig &aiConfig, core::Settings &settings, player::Player &player,
+    NowPlaying &nowPlaying, QObject *parent)
     : QObject(parent)
     , m_lyricsService(lyricsService)
     , m_translator(translator)
+    , m_explainer(explainer)
     , m_aiConfig(aiConfig)
     , m_settings(settings)
     , m_player(player)
@@ -34,7 +36,11 @@ LyricsController::LyricsController(guide::LyricsService &lyricsService,
         &m_player, &player::Player::positionChanged, this, &LyricsController::onPositionChanged);
     connect(&m_translator, &guide::LyricsTranslator::finished, this,
         &LyricsController::onTranslationFinished);
+    connect(&m_explainer, &guide::LineExplainer::delta, this, &LyricsController::onExplainDelta);
+    connect(
+        &m_explainer, &guide::LineExplainer::finished, this, &LyricsController::onExplainFinished);
     connect(&m_aiConfig, &ai::AiConfig::changed, this, &LyricsController::translationChanged);
+    connect(&m_aiConfig, &ai::AiConfig::changed, this, &LyricsController::explanationChanged);
 
     if (m_nowPlaying.hasTrack()) {
         onNowPlayingChanged();
@@ -114,6 +120,37 @@ QString LyricsController::translationError() const
     return m_translationError;
 }
 
+int LyricsController::explainIndex() const
+{
+    return m_explainIndex;
+}
+
+QString LyricsController::explanationLine() const
+{
+    return m_explanationLine;
+}
+
+QString LyricsController::explanation() const
+{
+    return m_explanation;
+}
+
+bool LyricsController::explaining() const
+{
+    return m_explaining;
+}
+
+QString LyricsController::explanationError() const
+{
+    return m_explanationError;
+}
+
+bool LyricsController::explainAvailable() const
+{
+    return m_status == guide::LyricsStatus::Found
+        && m_aiConfig.resolve(ai::Purpose::Guide).has_value();
+}
+
 void LyricsController::seekToLine(int index)
 {
     if (!m_synced || index < 0 || index >= m_parsedLyrics.lines.size()) {
@@ -131,6 +168,7 @@ void LyricsController::saveManual(const QString &text)
         return;
     }
     m_translator.cancel();
+    closeExplanation();
     m_translating = false;
     m_translationError.clear();
     m_llmTranslations.clear();
@@ -166,6 +204,7 @@ void LyricsController::refetch()
         return;
     }
     m_translator.cancel();
+    closeExplanation();
     m_translating = false;
     m_translationError.clear();
     m_llmTranslations.clear();
@@ -182,6 +221,59 @@ void LyricsController::retryTranslation()
         return;
     }
     startTranslation();
+}
+
+void LyricsController::explainLine(int index)
+{
+    if (m_currentTrackId <= 0 || !explainAvailable()) {
+        return;
+    }
+    if (index < 0 || index >= m_parsedLyrics.lines.size()) {
+        return;
+    }
+    if (m_parsedLyrics.lines.at(index).text.trimmed().isEmpty()) {
+        return;
+    }
+
+    m_explainer.cancel();
+    m_explainIndex = index;
+    m_explanationLine = m_parsedLyrics.lines.at(index).text;
+    m_explanation.clear();
+    m_explaining = true;
+    m_explanationError.clear();
+    emit explanationChanged();
+
+    guide::LineExplainRequest req;
+    req.trackId = m_currentTrackId;
+    req.lineIndex = index;
+    req.title = m_nowPlaying.title();
+    req.artist = m_nowPlaying.artist();
+    req.album = m_nowPlaying.album();
+    req.lyrics = m_parsedLyrics;
+
+    if (showTranslation() && !m_llmTranslations.isEmpty()) {
+        req.translations = m_llmTranslations;
+    } else {
+        QStringList trans;
+        trans.reserve(m_parsedLyrics.lines.size());
+        for (const auto &line : m_parsedLyrics.lines) {
+            trans.append(line.translation);
+        }
+        req.translations = trans;
+    }
+
+    m_explainer.explain(req);
+}
+
+void LyricsController::closeExplanation()
+{
+    m_explainer.cancel();
+    m_explainIndex = -1;
+    m_explanationLine.clear();
+    m_explanation.clear();
+    m_explaining = false;
+    m_explanationError.clear();
+    emit explanationChanged();
 }
 
 void LyricsController::startTranslation()
@@ -225,6 +317,7 @@ void LyricsController::onNowPlayingChanged()
         return;
     }
     m_translator.cancel();
+    closeExplanation();
     m_currentTrackId = trackId;
     if (!hasTrack || trackId <= 0) {
         clear();
@@ -260,6 +353,7 @@ void LyricsController::onLyricsFinished(const guide::LyricsResult &result)
     m_loading = false;
     m_status = result.status;
     m_translator.cancel();
+    closeExplanation();
     m_translating = false;
     m_translationError.clear();
     m_llmTranslations.clear();
@@ -317,6 +411,31 @@ void LyricsController::onTranslationFinished(
     emit translationChanged();
 }
 
+void LyricsController::onExplainDelta(qint64 trackId, int lineIndex, const QString &text)
+{
+    if (trackId != m_currentTrackId || lineIndex != m_explainIndex) {
+        return;
+    }
+    m_explanation.append(text);
+    emit explanationChanged();
+}
+
+void LyricsController::onExplainFinished(
+    qint64 trackId, int lineIndex, const core::Result<QString> &result)
+{
+    if (trackId != m_currentTrackId || lineIndex != m_explainIndex) {
+        return;
+    }
+    m_explaining = false;
+    if (!result.ok()) {
+        m_explanationError = userErrorText(result.error());
+    } else {
+        m_explanation = result.value();
+        m_explanationError.clear();
+    }
+    emit explanationChanged();
+}
+
 void LyricsController::onPositionChanged(double position)
 {
     if (!m_synced || m_currentTrackId <= 0) {
@@ -333,6 +452,7 @@ void LyricsController::onPositionChanged(double position)
 void LyricsController::clear()
 {
     m_translator.cancel();
+    closeExplanation();
     m_loading = false;
     m_currentTrackId = -1;
     m_parsedLyrics = guide::ParsedLyrics { };

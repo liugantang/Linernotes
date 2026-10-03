@@ -45,6 +45,7 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_ai(m_settings, m_db, m_clock, m_options.promptsDir)
     , m_lyricsService(m_db, m_ai.network(), m_clock)
     , m_lyricsTranslator(m_ai.llm(), m_ai.prompts(), m_db, m_clock)
+    , m_lineExplainer(m_ai.llm(), m_ai.prompts())
     , m_writeback(m_db, m_clock, m_ai.jobs(), m_scanner)
     , m_cleanup(m_db, m_clock, m_ai.jobs(), m_ai.prompts(), m_ai.config(), m_settings)
     , m_audioAnalysis(m_db, m_clock, m_ai.jobs(), audio::defaultEmbeddingModelPath())
@@ -59,8 +60,8 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_recorder(m_player, m_db, m_clock)
     , m_settingsController(m_settings, m_player)
     , m_nowPlaying(m_db, m_player, m_coverStore)
-    , m_lyrics(
-          m_lyricsService, m_lyricsTranslator, m_ai.config(), m_settings, m_player, m_nowPlaying)
+    , m_lyrics(m_lyricsService, m_lyricsTranslator, m_lineExplainer, m_ai.config(), m_settings,
+          m_player, m_nowPlaying)
     , m_queueModel(m_db, m_player)
     , m_search(m_db)
     , m_playlists(m_db, m_player)

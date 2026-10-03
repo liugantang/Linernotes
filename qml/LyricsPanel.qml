@@ -232,6 +232,8 @@ Item {
                     required property var modelData
 
                     readonly property bool isCurrent: root.isSynced && root.currentLineIndex === lineDelegate.index
+                    readonly property bool isExplainingThisLine: !!AppContext.lyrics && AppContext.lyrics.explainIndex === lineDelegate.index
+                    readonly property bool hasText: lineDelegate.modelData && !!lineDelegate.modelData.text && lineDelegate.modelData.text.trim().length > 0
 
                     width: listView.width
                     implicitHeight: lineCol.implicitHeight + Theme.spacingSmall * 2
@@ -241,8 +243,15 @@ Item {
                         anchors.leftMargin: Theme.spacingSmall
                         anchors.rightMargin: Theme.spacingSmall
                         radius: Theme.radiusSmall
-                        color: (lineMouseArea.containsMouse && root.isSynced)
-                            ? Theme.itemHover : "transparent"
+                        color: {
+                            if (lineDelegate.isExplainingThisLine) {
+                                return Theme.isDark ? Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.2) : Qt.rgba(Theme.accent.r, Theme.accent.g, Theme.accent.b, 0.12)
+                            }
+                            if (lineMouseArea.containsMouse || explainButton.hovered) {
+                                return Theme.itemHover
+                            }
+                            return "transparent"
+                        }
                     }
 
                     ColumnLayout {
@@ -250,8 +259,8 @@ Item {
                         anchors.left: parent.left
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
-                        anchors.leftMargin: Theme.spacingMedium
-                        anchors.rightMargin: Theme.spacingMedium
+                        anchors.leftMargin: Theme.spacingLarge + 10
+                        anchors.rightMargin: Theme.spacingLarge + 10
                         spacing: Theme.spacingTiny
 
                         Label {
@@ -276,19 +285,179 @@ Item {
                         }
                     }
 
+                    Controls.IconButton {
+                        id: explainButton
+                        anchors.right: parent.right
+                        anchors.rightMargin: Theme.spacingMedium
+                        anchors.verticalCenter: parent.verticalCenter
+                        implicitWidth: 26
+                        implicitHeight: 26
+                        icon.source: "icons/sparkles.svg"
+                        toolTip: qsTr("Explain this line")
+                        visible: !!AppContext.lyrics && AppContext.lyrics.explainAvailable && lineDelegate.hasText && (lineMouseArea.containsMouse || hovered)
+                        z: 2
+                        onClicked: {
+                            if (AppContext.lyrics) {
+                                AppContext.lyrics.explainLine(lineDelegate.index)
+                            }
+                        }
+                    }
+
+                    Controls.AppMenu {
+                        id: lineContextMenu
+
+                        Controls.AppMenuItem {
+                            text: qsTr("Explain this line")
+                            enabled: !!AppContext.lyrics && AppContext.lyrics.explainAvailable && lineDelegate.hasText
+                            onTriggered: {
+                                if (AppContext.lyrics) {
+                                    AppContext.lyrics.explainLine(lineDelegate.index)
+                                }
+                            }
+                        }
+                    }
+
                     MouseArea {
                         id: lineMouseArea
                         anchors.fill: parent
                         hoverEnabled: true
+                        acceptedButtons: Qt.LeftButton | Qt.RightButton
                         cursorShape: root.isSynced ? Qt.PointingHandCursor : Qt.ArrowCursor
-                        onClicked: {
-                            if (root.isSynced && AppContext.lyrics) {
-                                AppContext.lyrics.seekToLine(lineDelegate.index)
-                                manualScrollTimer.stop()
-                                listView.positionViewAtIndex(lineDelegate.index, ListView.Center)
+                        onClicked: (mouse) => {
+                            if (mouse.button === Qt.LeftButton) {
+                                if (root.isSynced && AppContext.lyrics) {
+                                    AppContext.lyrics.seekToLine(lineDelegate.index)
+                                    manualScrollTimer.stop()
+                                    listView.positionViewAtIndex(lineDelegate.index, ListView.Center)
+                                }
+                            } else if (mouse.button === Qt.RightButton) {
+                                if (AppContext.lyrics && AppContext.lyrics.explainAvailable && lineDelegate.hasText) {
+                                    lineContextMenu.popup(lineMouseArea, mouse.x, mouse.y)
+                                }
                             }
                         }
                     }
+                }
+            }
+        }
+
+        // Explanation Card
+        Rectangle {
+            id: explainCard
+            visible: !!AppContext.lyrics && AppContext.lyrics.explainIndex >= 0
+            Layout.fillWidth: true
+            Layout.leftMargin: Theme.spacingSmall
+            Layout.rightMargin: Theme.spacingSmall
+            Layout.bottomMargin: Theme.spacingSmall
+            Layout.maximumHeight: root.height * 0.45
+            Layout.preferredHeight: Math.min(cardLayout.implicitHeight + Theme.spacingSmall * 2, root.height * 0.45)
+            color: Theme.surfaceVariant
+            border.color: Theme.divider
+            border.width: 1
+            radius: Theme.radiusMedium
+
+            ColumnLayout {
+                id: cardLayout
+                anchors.fill: parent
+                anchors.margins: Theme.spacingSmall
+                spacing: Theme.spacingSmall
+
+                // Header
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Theme.spacingSmall
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: AppContext.lyrics ? AppContext.lyrics.explanationLine : ""
+                        font.bold: true
+                        font.pixelSize: Theme.fontSizeNormal
+                        color: Theme.text
+                        wrapMode: Text.Wrap
+                        maximumLineCount: 2
+                        elide: Text.ElideRight
+                    }
+
+                    Controls.IconButton {
+                        implicitWidth: 24
+                        implicitHeight: 24
+                        icon.source: "icons/x.svg"
+                        toolTip: qsTr("Close")
+                        onClicked: {
+                            if (AppContext.lyrics) {
+                                AppContext.lyrics.closeExplanation()
+                            }
+                        }
+                    }
+                }
+
+                // Scrollable Body
+                Flickable {
+                    id: explainFlickable
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    // Flickable 没有隐式高度：按内容给首选高度，卡片的最大高度再把它压回可滚动
+                    Layout.preferredHeight: contentHeight
+                    clip: true
+                    contentWidth: width
+                    contentHeight: explainBodyCol.implicitHeight
+                    boundsBehavior: Flickable.StopAtBounds
+
+                    ScrollBar.vertical: Controls.AppScrollBar {}
+
+                    ColumnLayout {
+                        id: explainBodyCol
+                        width: explainFlickable.width
+                        spacing: Theme.spacingSmall
+
+                        // Error state
+                        Label {
+                            visible: !!AppContext.lyrics && AppContext.lyrics.explanationError.length > 0
+                            Layout.fillWidth: true
+                            text: AppContext.lyrics ? AppContext.lyrics.explanationError : ""
+                            color: Theme.errorText
+                            font.pixelSize: Theme.fontSizeSmall
+                            wrapMode: Text.Wrap
+                        }
+
+                        Controls.AppButton {
+                            visible: !!AppContext.lyrics && AppContext.lyrics.explanationError.length > 0
+                            text: qsTr("Retry")
+                            onClicked: {
+                                if (AppContext.lyrics) {
+                                    AppContext.lyrics.explainLine(AppContext.lyrics.explainIndex)
+                                }
+                            }
+                        }
+
+                        // Thinking state
+                        Label {
+                            visible: !!AppContext.lyrics && AppContext.lyrics.explaining && (!AppContext.lyrics.explanation || AppContext.lyrics.explanation.length === 0) && (!AppContext.lyrics.explanationError || AppContext.lyrics.explanationError.length === 0)
+                            text: qsTr("Thinking…")
+                            color: Theme.textSecondary
+                            font.pixelSize: Theme.fontSizeNormal
+                            font.italic: true
+                        }
+
+                        // Normal / streaming text
+                        Label {
+                            visible: !!AppContext.lyrics && (!AppContext.lyrics.explanationError || AppContext.lyrics.explanationError.length === 0) && (!!AppContext.lyrics.explanation && AppContext.lyrics.explanation.length > 0)
+                            Layout.fillWidth: true
+                            text: AppContext.lyrics ? AppContext.lyrics.explanation : ""
+                            color: Theme.text
+                            font.pixelSize: Theme.fontSizeNormal
+                            wrapMode: Text.Wrap
+                            textFormat: Text.PlainText
+                        }
+                    }
+                }
+
+                // Footer disclaimer
+                Label {
+                    Layout.fillWidth: true
+                    text: qsTr("AI interpretation — not verified")
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.textSecondary
                 }
             }
         }

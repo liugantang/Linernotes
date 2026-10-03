@@ -89,10 +89,11 @@ void LyricsTranslator::translate(qint64 trackId, const QString &rawText, const P
             if (m_currentTask.get() != taskPtr) {
                 return;
             }
-            m_currentTask.reset();
+            // 移到局部变量：任务在本槽结束时才销毁（LlmTask 允许在 finished 槽里销毁）
+            const auto task = std::move(m_currentTask);
             m_activeTrackId = -1;
 
-            const auto &res = taskPtr->result();
+            const auto &res = task->result();
             if (!res.ok()) {
                 emit finished(trackId, res.error());
                 return;

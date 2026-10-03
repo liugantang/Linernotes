@@ -13,6 +13,7 @@
 #include <butler/DuplicateResolver.h>
 #include <core/Clock.h>
 #include <core/Result.h>
+#include <guide/LineExplainer.h>
 #include <guide/LyricsService.h>
 #include <guide/LyricsTranslator.h>
 #include <library/CoverStore.h>
@@ -178,6 +179,7 @@ private:
     AiContext m_ai;
     guide::LyricsService m_lyricsService;
     guide::LyricsTranslator m_lyricsTranslator;
+    guide::LineExplainer m_lineExplainer;
     WritebackController m_writeback;
     CleanupController m_cleanup;
     AudioAnalysisController m_audioAnalysis;

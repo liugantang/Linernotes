@@ -7,6 +7,8 @@ add_library(linernotes_guide STATIC
     Errors.h
     GuideLogging.cpp
     GuideLogging.h
+    LineExplainer.cpp
+    LineExplainer.h
     LocalLyrics.cpp
     LocalLyrics.h
     LrcParser.cpp

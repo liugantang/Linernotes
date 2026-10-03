@@ -90,3 +90,14 @@ linernotes_add_test(
         Qt6::Core
         Qt6::Sql
 )
+
+linernotes_add_test(
+    NAME guide_LineExplainer
+    SOURCES
+        tst_LineExplainer.cpp
+    LIBS
+        Linernotes::guide
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Core
+)
