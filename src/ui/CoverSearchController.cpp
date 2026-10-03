@@ -22,16 +22,6 @@
 
 namespace linernotes::ui {
 
-namespace {
-
-QString appUserAgent()
-{
-    return QStringLiteral("Linernotes/%1 ( https://github.com/linernotes/linernotes )")
-        .arg(core::versionString());
-}
-
-} // namespace
-
 CoverSearchController::CoverSearchController(library::Database &db, QNetworkAccessManager &network,
     library::CoverStore &coverStore, const core::Clock &clock, QObject *parent)
     : QObject(parent)
@@ -163,7 +153,7 @@ void CoverSearchController::startNextSearchRequest()
     QNetworkRequest req(url);
     req.setAttribute(
         QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
-    req.setRawHeader("User-Agent", appUserAgent().toUtf8());
+    req.setRawHeader("User-Agent", core::userAgent().toUtf8());
     req.setTransferTimeout(15000);
 
     m_currentReply = m_network.get(req);
@@ -252,7 +242,7 @@ void CoverSearchController::choose(int index)
     QNetworkRequest req(downloadUrl);
     req.setAttribute(
         QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
-    req.setRawHeader("User-Agent", appUserAgent().toUtf8());
+    req.setRawHeader("User-Agent", core::userAgent().toUtf8());
     req.setTransferTimeout(30000);
 
     m_downloadReply = m_network.get(req);
