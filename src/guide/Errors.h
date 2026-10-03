@@ -10,5 +10,6 @@ namespace linernotes::guide::errc {
 inline constexpr QLatin1StringView kDbFailed { "guide.db_failed" };
 inline constexpr QLatin1StringView kNetworkFailed { "guide.network_failed" };
 inline constexpr QLatin1StringView kParseFailed { "guide.parse_failed" };
+inline constexpr QLatin1StringView kTranslationMisaligned { "guide.translation_misaligned" };
 
 } // namespace linernotes::guide::errc

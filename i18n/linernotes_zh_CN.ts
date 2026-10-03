@@ -1743,27 +1743,52 @@
         <translation>没有找到歌词。</translation>
     </message>
     <message>
-        <location filename="../qml/LyricsPanel.qml" line="325"/>
+        <location filename="../qml/LyricsPanel.qml" line="326"/>
         <source>Source:</source>
         <translation>来源：</translation>
     </message>
     <message>
-        <location filename="../qml/LyricsPanel.qml" line="355"/>
+        <location filename="../qml/LyricsPanel.qml" line="356"/>
         <source>Edited by you</source>
         <translation>你编辑的歌词</translation>
     </message>
     <message>
-        <location filename="../qml/LyricsPanel.qml" line="357"/>
+        <location filename="../qml/LyricsPanel.qml" line="358"/>
         <source>Embedded tags</source>
         <translation>内嵌标签</translation>
     </message>
     <message>
-        <location filename="../qml/LyricsPanel.qml" line="359"/>
+        <location filename="../qml/LyricsPanel.qml" line="360"/>
         <source>.lrc file</source>
         <translation>.lrc 文件</translation>
     </message>
     <message>
-        <location filename="../qml/LyricsPanel.qml" line="380"/>
+        <location filename="../qml/LyricsPanel.qml" line="399"/>
+        <source>Translating…</source>
+        <translation>正在翻译…</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="400"/>
+        <source>Translate</source>
+        <translation>翻译</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="405"/>
+        <source>Retry translation</source>
+        <translation>重试翻译</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="407"/>
+        <source>Hide translation</source>
+        <translation>隐藏译文</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="407"/>
+        <source>Translate lyrics</source>
+        <translation>翻译歌词</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="426"/>
         <source>Lyrics Options</source>
         <translation>歌词选项</translation>
     </message>
@@ -4010,142 +4035,147 @@
 <context>
     <name>linernotes::ui::ErrorText</name>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="20"/>
+        <location filename="../src/ui/ErrorText.cpp" line="21"/>
+        <source>Translation lines could not be aligned.</source>
+        <translation>译文与原文的行对不上。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="30"/>
         <source>Invalid natural language query.</source>
         <translation>查询条件无效。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="24"/>
+        <location filename="../src/ui/ErrorText.cpp" line="34"/>
         <source>Failed to interpret the query.</source>
         <translation>无法理解这个问题。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="28"/>
+        <location filename="../src/ui/ErrorText.cpp" line="38"/>
         <source>Query template error.</source>
         <translation>查询模板错误。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="36"/>
+        <location filename="../src/ui/ErrorText.cpp" line="46"/>
         <source>The music library was created by a newer version of Linernotes.</source>
         <translation>曲库由更新版本的 Linernotes 创建。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="45"/>
+        <location filename="../src/ui/ErrorText.cpp" line="55"/>
         <source>A database error occurred.</source>
         <translation>数据库发生错误。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="49"/>
+        <location filename="../src/ui/ErrorText.cpp" line="59"/>
         <source>The correction is invalid.</source>
         <translation>修正无效。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="53"/>
+        <location filename="../src/ui/ErrorText.cpp" line="63"/>
         <source>The specified correction was not found.</source>
         <translation>未找到指定的修正。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="57"/>
+        <location filename="../src/ui/ErrorText.cpp" line="67"/>
         <source>Invalid tag modification.</source>
         <translation>标签修改无效。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="61"/>
+        <location filename="../src/ui/ErrorText.cpp" line="71"/>
         <source>Failed to read audio file tags.</source>
         <translation>读取音频标签失败。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="65"/>
+        <location filename="../src/ui/ErrorText.cpp" line="75"/>
         <source>The audio file format or tag format is not supported.</source>
         <translation>不支持该音频文件或标签格式。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="69"/>
+        <location filename="../src/ui/ErrorText.cpp" line="79"/>
         <source>Writing tags to this audio format is not supported.</source>
         <translation>不支持向这种音频格式写入标签。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="73"/>
+        <location filename="../src/ui/ErrorText.cpp" line="83"/>
         <source>Failed to write tags to audio file.</source>
         <translation>写入音频文件标签失败。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="77"/>
+        <location filename="../src/ui/ErrorText.cpp" line="87"/>
         <source>Tag verification failed after writing.</source>
         <translation>写入后校验标签失败。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="81"/>
+        <location filename="../src/ui/ErrorText.cpp" line="91"/>
         <source>Failed to read file.</source>
         <translation>读取文件失败。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="84"/>
+        <location filename="../src/ui/ErrorText.cpp" line="94"/>
         <source>Invalid music folder.</source>
         <translation>无效的音乐文件夹。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="87"/>
+        <location filename="../src/ui/ErrorText.cpp" line="97"/>
         <source>Music folder overlaps with an existing library root.</source>
         <translation>音乐文件夹与现有曲库目录重叠。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="91"/>
+        <location filename="../src/ui/ErrorText.cpp" line="101"/>
         <source>Failed to decode cover image.</source>
         <translation>解析封面图片失败。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="95"/>
+        <location filename="../src/ui/ErrorText.cpp" line="105"/>
         <source>Invalid playlist.</source>
         <translation>歌单无效。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="98"/>
+        <location filename="../src/ui/ErrorText.cpp" line="108"/>
         <source>Invalid smart playlist rule.</source>
         <translation>智能歌单规则无效。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="102"/>
+        <location filename="../src/ui/ErrorText.cpp" line="112"/>
         <source>Invalid rating value.</source>
         <translation>评分值无效。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="105"/>
+        <location filename="../src/ui/ErrorText.cpp" line="115"/>
         <source>Could not access the system keyring.</source>
         <translation>无法访问系统密钥环。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="109"/>
+        <location filename="../src/ui/ErrorText.cpp" line="119"/>
         <source>Unable to connect to AI service.</source>
         <translation>无法连接到 AI 服务。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="113"/>
+        <location filename="../src/ui/ErrorText.cpp" line="123"/>
         <source>AI service request timed out.</source>
         <translation>AI 服务请求超时。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="117"/>
+        <location filename="../src/ui/ErrorText.cpp" line="127"/>
         <source>AI service authentication failed.</source>
         <translation>AI 服务认证失败。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="121"/>
+        <location filename="../src/ui/ErrorText.cpp" line="131"/>
         <source>AI service rate limit exceeded.</source>
         <translation>超出 AI 服务请求限制。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="125"/>
+        <location filename="../src/ui/ErrorText.cpp" line="135"/>
         <source>Request blocked by privacy settings.</source>
         <translation>请求已被隐私设置拦截。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="130"/>
+        <location filename="../src/ui/ErrorText.cpp" line="140"/>
         <source>Operation failed.</source>
         <translation>操作失败。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="132"/>
+        <location filename="../src/ui/ErrorText.cpp" line="142"/>
         <source>Operation failed (error code: %1)</source>
         <translation>操作失败（错误码：%1）</translation>
     </message>

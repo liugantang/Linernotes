@@ -307,6 +307,8 @@ linernotes_add_test(
         tst_LyricsController.cpp
     LIBS
         Linernotes::ui
+        Linernotes::ai
+        Linernotes::core
         Linernotes::guide
         Linernotes::library
         Linernotes::player

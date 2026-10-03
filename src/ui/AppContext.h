@@ -14,6 +14,7 @@
 #include <core/Clock.h>
 #include <core/Result.h>
 #include <guide/LyricsService.h>
+#include <guide/LyricsTranslator.h>
 #include <library/CoverStore.h>
 #include <library/Database.h>
 #include <library/PlayStats.h>
@@ -176,6 +177,7 @@ private:
     library::Scanner m_scanner;
     AiContext m_ai;
     guide::LyricsService m_lyricsService;
+    guide::LyricsTranslator m_lyricsTranslator;
     WritebackController m_writeback;
     CleanupController m_cleanup;
     AudioAnalysisController m_audioAnalysis;

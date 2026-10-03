@@ -9,10 +9,21 @@
 #include <QTemporaryDir>
 #include <QTest>
 
+#include <ai/AiConfig.h>
+#include <ai/LlmCache.h>
+#include <ai/LlmClient.h>
+#include <ai/LlmDebugLog.h>
+#include <ai/LlmService.h>
+#include <ai/PrivacyGuard.h>
+#include <ai/PromptLibrary.h>
+#include <ai/SecretStore.h>
+#include <ai/UsageStore.h>
 #include <common/ManualClock.h>
+#include <core/Settings.h>
 #include <guide/Lyrics.h>
 #include <guide/LyricsService.h>
 #include <guide/LyricsStore.h>
+#include <guide/LyricsTranslator.h>
 #include <library/CoverStore.h>
 #include <library/Database.h>
 #include <library/Migrator.h>
@@ -22,9 +33,20 @@
 
 namespace {
 
+using linernotes::ai::AiConfig;
+using linernotes::ai::LlmCache;
+using linernotes::ai::LlmClient;
+using linernotes::ai::LlmDebugLog;
+using linernotes::ai::LlmService;
+using linernotes::ai::MemorySecretStore;
+using linernotes::ai::PrivacyGuard;
+using linernotes::ai::PromptLibrary;
+using linernotes::ai::UsageStore;
+using linernotes::core::Settings;
 using linernotes::guide::LyricsService;
 using linernotes::guide::LyricsSource;
 using linernotes::guide::LyricsStatus;
+using linernotes::guide::LyricsTranslator;
 using linernotes::library::CoverStore;
 using linernotes::library::Database;
 using linernotes::library::Migrator;
@@ -78,7 +100,20 @@ void TstLyricsController::testLyricsFlow()
     Player player;
     CoverStore coverStore(tempDir.filePath(QStringLiteral("covers")));
     NowPlaying nowPlaying(db, player, coverStore);
-    LyricsController controller(lyricsService, player, nowPlaying);
+
+    Settings settings(tempDir.filePath(QStringLiteral("settings.ini")));
+    AiConfig aiConfig(settings);
+    MemorySecretStore secrets;
+    LlmClient client(network);
+    LlmCache llmCache(db, clock);
+    UsageStore usageStore(db);
+    PrivacyGuard privacy(settings);
+    PromptLibrary prompts({ QStringLiteral(":/prompts") });
+    LlmDebugLog debugLog(settings);
+    LlmService llm(aiConfig, secrets, client, llmCache, usageStore, privacy, debugLog, clock);
+    LyricsTranslator translator(llm, prompts, db, clock);
+
+    LyricsController controller(lyricsService, translator, aiConfig, settings, player, nowPlaying);
 
     QSignalSpy linesSpy(&controller, &LyricsController::linesChanged);
     QSignalSpy statusSpy(&controller, &LyricsController::statusChanged);

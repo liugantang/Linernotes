@@ -312,7 +312,7 @@ Item {
                 anchors.rightMargin: Theme.spacingSmall
                 spacing: Theme.spacingSmall
 
-                // Source indicator
+                // Source indicator or translation error
                 Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
@@ -321,16 +321,17 @@ Item {
                         anchors.fill: parent
                         spacing: Theme.spacingTiny
 
+                        // Source indicator (shown when no translation error)
                         Label {
                             text: qsTr("Source:")
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.textSecondary
-                            visible: root.hasTrack && root.lyricsStatus === Guide.LyricsStatus.Found && !!AppContext.lyrics
+                            visible: root.hasTrack && root.lyricsStatus === Guide.LyricsStatus.Found && !!AppContext.lyrics && (!AppContext.lyrics.translationError || AppContext.lyrics.translationError.length === 0)
                         }
 
                         // LRCLIB Link
                         Text {
-                            visible: root.hasTrack && root.lyricsStatus === Guide.LyricsStatus.Found && !!AppContext.lyrics && AppContext.lyrics.source === Guide.LyricsSource.Lrclib
+                            visible: root.hasTrack && root.lyricsStatus === Guide.LyricsStatus.Found && !!AppContext.lyrics && AppContext.lyrics.source === Guide.LyricsSource.Lrclib && (!AppContext.lyrics.translationError || AppContext.lyrics.translationError.length === 0)
                             text: "LRCLIB"
                             font.pixelSize: Theme.fontSizeSmall
                             color: lrclibMouse.containsMouse ? Theme.accentHover : Theme.accent
@@ -347,7 +348,7 @@ Item {
 
                         // Other sources
                         Label {
-                            visible: root.hasTrack && root.lyricsStatus === Guide.LyricsStatus.Found && !!AppContext.lyrics && AppContext.lyrics.source !== Guide.LyricsSource.Lrclib
+                            visible: root.hasTrack && root.lyricsStatus === Guide.LyricsStatus.Found && !!AppContext.lyrics && AppContext.lyrics.source !== Guide.LyricsSource.Lrclib && (!AppContext.lyrics.translationError || AppContext.lyrics.translationError.length === 0)
                             text: {
                                 if (!AppContext.lyrics) return ""
                                 switch (AppContext.lyrics.source) {
@@ -365,8 +366,53 @@ Item {
                             color: Theme.textSecondary
                         }
 
+                        // Translation error
+                        Label {
+                            visible: root.hasTrack && root.lyricsStatus === Guide.LyricsStatus.Found && !!AppContext.lyrics && !!AppContext.lyrics.translationError && AppContext.lyrics.translationError.length > 0
+                            text: AppContext.lyrics ? AppContext.lyrics.translationError : ""
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.errorText
+                            elide: Text.ElideRight
+                            Layout.fillWidth: true
+                            ToolTip.visible: errorMouse.containsMouse && text.length > 0
+                            ToolTip.text: text
+
+                            MouseArea {
+                                id: errorMouse
+                                anchors.fill: parent
+                                hoverEnabled: true
+                            }
+                        }
+
                         Item {
                             Layout.fillWidth: true
+                        }
+                    }
+                }
+
+                // Translate button
+                Controls.AppButton {
+                    visible: root.hasTrack && root.lyricsStatus === Guide.LyricsStatus.Found && !!AppContext.lyrics && AppContext.lyrics.translationAvailable
+                    checkable: true
+                    checked: !!AppContext.lyrics && AppContext.lyrics.showTranslation
+                    text: (AppContext.lyrics && AppContext.lyrics.translating)
+                        ? qsTr("Translating…")
+                        : qsTr("Translate")
+                    ToolTip.visible: hovered
+                    ToolTip.text: {
+                        if (!AppContext.lyrics) return ""
+                        if (AppContext.lyrics.translationError.length > 0) {
+                            return qsTr("Retry translation")
+                        }
+                        return AppContext.lyrics.showTranslation ? qsTr("Hide translation") : qsTr("Translate lyrics")
+                    }
+                    onClicked: {
+                        if (AppContext.lyrics) {
+                            if (AppContext.lyrics.showTranslation && AppContext.lyrics.translationError.length > 0) {
+                                AppContext.lyrics.retryTranslation()
+                            } else {
+                                AppContext.lyrics.showTranslation = !AppContext.lyrics.showTranslation
+                            }
                         }
                     }
                 }

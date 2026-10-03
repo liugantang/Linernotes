@@ -65,3 +65,28 @@ linernotes_add_test(
         Qt6::Network
         Qt6::Sql
 )
+
+linernotes_add_test(
+    NAME guide_LyricsTranslation
+    SOURCES
+        tst_LyricsTranslation.cpp
+    LIBS
+        Linernotes::guide
+        Linernotes::core
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Core
+)
+
+linernotes_add_test(
+    NAME guide_LyricsTranslationStore
+    SOURCES
+        tst_LyricsTranslationStore.cpp
+    LIBS
+        Linernotes::guide
+        Linernotes::core
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Core
+        Qt6::Sql
+)

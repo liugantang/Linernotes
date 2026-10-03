@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
+file(GLOB SCHEMA_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/schemas/guide/*.json")
+
 add_library(linernotes_guide STATIC
     Errors.h
     GuideLogging.cpp
@@ -17,10 +19,24 @@ add_library(linernotes_guide STATIC
     LyricsService.h
     LyricsStore.cpp
     LyricsStore.h
+    LyricsTranslation.cpp
+    LyricsTranslation.h
+    LyricsTranslationStore.cpp
+    LyricsTranslationStore.h
+    LyricsTranslator.cpp
+    LyricsTranslator.h
 )
 add_library(Linernotes::guide ALIAS linernotes_guide)
 
 qt6_extract_metatypes(linernotes_guide)
+
+if(SCHEMA_FILES)
+    qt_add_resources(linernotes_guide "schemas"
+        PREFIX "/schemas"
+        BASE "${PROJECT_SOURCE_DIR}/resources/schemas"
+        FILES ${SCHEMA_FILES}
+    )
+endif()
 
 target_include_directories(linernotes_guide
     PUBLIC
@@ -29,6 +45,7 @@ target_include_directories(linernotes_guide
 
 target_link_libraries(linernotes_guide
     PUBLIC
+        Linernotes::ai
         Linernotes::butler
         Linernotes::core
         Linernotes::library

@@ -54,6 +54,7 @@ private slots:
     void upgradesTo0026DropsAlbumInfo();
     void upgradesTo0028AddsAudioEmbeddings();
     void upgradesTo0029AddsLyrics();
+    void upgradesTo0030AddsLyricsTranslations();
 };
 
 void TstMigrator::appliesMigrationsInOrder()
@@ -1112,6 +1113,76 @@ void TstMigrator::upgradesTo0029AddsLyrics()
     // Cascade delete when track is deleted
     QVERIFY(checkQ.exec(QStringLiteral("DELETE FROM tracks WHERE id = 1;")));
     QVERIFY(checkQ.exec(QStringLiteral("SELECT COUNT(*) FROM lyrics;")));
+    QVERIFY(checkQ.next());
+    QCOMPARE(checkQ.value(0).toInt(), 0);
+}
+
+void TstMigrator::upgradesTo0030AddsLyricsTranslations()
+{
+    const QTemporaryDir migDir;
+    QVERIFY(migDir.isValid());
+    const QTemporaryDir dbDir;
+    QVERIFY(dbDir.isValid());
+
+    const Migrator defaultMigrator;
+    const auto res = defaultMigrator.migrations();
+    QVERIFY(res.ok());
+    const auto &allMigrations = res.value();
+    QVERIFY(allMigrations.size() >= 30);
+
+    // Apply up to migration 29
+    for (int i = 0; i < 29; ++i) {
+        const auto &m = allMigrations.at(i);
+        const QString fileName
+            = QStringLiteral("%1_%2.sql").arg(m.version, 4, 10, QLatin1Char('0')).arg(m.name);
+        writeSqlFile(migDir.path(), fileName, m.sql);
+    }
+
+    const QString dbPath = dbDir.filePath(QStringLiteral("test.db"));
+    Database db(dbPath);
+    const auto connRes = db.connection();
+    QVERIFY(connRes.ok());
+    const auto &conn = connRes.value();
+
+    const Migrator migrator1(migDir.path());
+    QVERIFY(migrator1.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 29);
+
+    // Insert track row in v29 schema
+    {
+        QSqlQuery q(conn);
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO library_roots (id, path, enabled, added_at) "
+                                      "VALUES (1, '/music', 1, 100);")));
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO files (id, root_id, path, duration_ms, size, "
+                                      "mtime, first_seen_at, scanned_at) VALUES "
+                                      "(1, 1, '/music/1.mp3', 60000, 1, 1, 1, 1);")));
+        QVERIFY(q.exec(QStringLiteral("INSERT INTO tracks (id, file_id, tags_read_at, created_at) "
+                                      "VALUES (1, 1, 1, 1);")));
+    }
+
+    // Add migration 30
+    const auto &m30 = allMigrations.at(29);
+    const QString fileName30
+        = QStringLiteral("%1_%2.sql").arg(m30.version, 4, 10, QLatin1Char('0')).arg(m30.name);
+    writeSqlFile(migDir.path(), fileName30, m30.sql);
+
+    const Migrator migrator2(migDir.path());
+    QVERIFY(migrator2.migrate(conn).ok());
+    QCOMPARE(Migrator::currentVersion(conn).value(), 30);
+
+    // Verify lyrics_translations table exists
+    QSqlQuery checkQ(conn);
+    QVERIFY(checkQ.exec(
+        QStringLiteral("INSERT INTO lyrics_translations (track_id, lyrics_hash, target_lang, "
+                       "lines, model, prompt_version, created_at) "
+                       "VALUES (1, 'hash1', 'zh-Hans', '[\"t1\"]', 'gpt-4o', 1, 1000);")));
+    QVERIFY(checkQ.exec(QStringLiteral("SELECT COUNT(*) FROM lyrics_translations;")));
+    QVERIFY(checkQ.next());
+    QCOMPARE(checkQ.value(0).toInt(), 1);
+
+    // Cascade delete when track is deleted
+    QVERIFY(checkQ.exec(QStringLiteral("DELETE FROM tracks WHERE id = 1;")));
+    QVERIFY(checkQ.exec(QStringLiteral("SELECT COUNT(*) FROM lyrics_translations;")));
     QVERIFY(checkQ.next());
     QCOMPARE(checkQ.value(0).toInt(), 0);
 }
