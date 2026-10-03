@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <QByteArray>
 #include <QString>
 
 #include <core/Result.h>
@@ -11,6 +12,9 @@
 #include <optional>
 
 namespace linernotes::guide {
+
+/// 先按 UTF-8（去 BOM）解码，含替换字符时再按 GB18030 → Shift_JIS 依次尝试，都失败用 UTF-8 结果。
+QString decodeLyricsFile(const QByteArray &rawBytes);
 
 /// raw_tags 中该曲的 LYRICS / UNSYNCED LYRICS（取 priority 最小的一条，参照 raw_tags 表结构与
 /// TagReader 的写入方式）

@@ -32,6 +32,16 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS SidePanel.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/LyricsPanel.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS LyricsPanel.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/LyricsEditDialog.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS LyricsEditDialog.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/AlbumGrid.qml
     PROPERTIES
         QT_RESOURCE_ALIAS AlbumGrid.qml
@@ -612,6 +622,8 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/PlayerBarTrackInfo.qml
         ${CMAKE_SOURCE_DIR}/qml/VolumeControl.qml
         ${CMAKE_SOURCE_DIR}/qml/SidePanel.qml
+        ${CMAKE_SOURCE_DIR}/qml/LyricsPanel.qml
+        ${CMAKE_SOURCE_DIR}/qml/LyricsEditDialog.qml
         ${CMAKE_SOURCE_DIR}/qml/QueuePanel.qml
         ${CMAKE_SOURCE_DIR}/qml/QueueRow.qml
         ${CMAKE_SOURCE_DIR}/qml/PlaylistNameDialog.qml

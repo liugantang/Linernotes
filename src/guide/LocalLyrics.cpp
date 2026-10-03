@@ -15,9 +15,7 @@
 
 namespace linernotes::guide {
 
-namespace {
-
-QString decodeLyricsBytes(const QByteArray &rawBytes)
+QString decodeLyricsFile(const QByteArray &rawBytes)
 {
     QByteArray data = rawBytes;
     if (data.startsWith("\xEF\xBB\xBF")) {
@@ -52,8 +50,6 @@ QString decodeLyricsBytes(const QByteArray &rawBytes)
     // Fallback: UTF-8 result
     return utf8Result;
 }
-
-} // namespace
 
 core::Result<std::optional<QString>> embeddedLyrics(library::Database &db, qint64 trackId)
 {
@@ -159,7 +155,7 @@ std::optional<QString> sidecarLyrics(const QString &audioPath)
     }
 
     const QByteArray rawBytes = file.readAll();
-    return decodeLyricsBytes(rawBytes);
+    return decodeLyricsFile(rawBytes);
 }
 
 } // namespace linernotes::guide

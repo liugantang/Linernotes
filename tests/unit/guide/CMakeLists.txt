@@ -2,6 +2,17 @@
 # SPDX-FileCopyrightText: 2026 Linernotes contributors
 
 linernotes_add_test(
+    NAME guide_LrcParser
+    SOURCES
+        tst_LrcParser.cpp
+    LIBS
+        Linernotes::guide
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Core
+)
+
+linernotes_add_test(
     NAME guide_Lrclib
     SOURCES
         tst_Lrclib.cpp

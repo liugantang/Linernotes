@@ -1653,6 +1653,122 @@
     </message>
 </context>
 <context>
+    <name>LyricsEditDialog</name>
+    <message>
+        <location filename="../qml/LyricsEditDialog.qml" line="51"/>
+        <source>Edit Lyrics</source>
+        <translation>编辑歌词</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsEditDialog.qml" line="59"/>
+        <source>Tip: Saving empty text will remove manual lyrics and restore automatic source.</source>
+        <translation>提示：保存空内容会删除手动歌词，恢复自动获取的歌词。</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsEditDialog.qml" line="82"/>
+        <source>Enter LRC or plain text lyrics…</source>
+        <translation>输入 LRC 或纯文本歌词…</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsEditDialog.qml" line="103"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsEditDialog.qml" line="109"/>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+</context>
+<context>
+    <name>LyricsPanel</name>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="32"/>
+        <source>Import Lyrics File</source>
+        <translation>导入歌词文件</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="33"/>
+        <source>Lyrics (*.lrc *.txt)</source>
+        <translation>歌词 (*.lrc *.txt)</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="33"/>
+        <source>All files (*)</source>
+        <translation>所有文件 (*)</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="45"/>
+        <source>Edit Lyrics…</source>
+        <translation>编辑歌词…</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="53"/>
+        <source>Import .lrc File…</source>
+        <translation>导入 .lrc 文件…</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="59"/>
+        <source>Search Online Again</source>
+        <translation>重新在线查找</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="110"/>
+        <source>Nothing playing.</source>
+        <translation>没有正在播放的歌曲。</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="129"/>
+        <source>Looking for lyrics…</source>
+        <translation>正在查找歌词…</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="147"/>
+        <source>Instrumental</source>
+        <translation>纯音乐</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="166"/>
+        <source>Couldn&apos;t fetch lyrics.</source>
+        <translation>获取歌词失败。</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="173"/>
+        <source>Retry</source>
+        <translation>重试</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="194"/>
+        <source>No lyrics found.</source>
+        <translation>没有找到歌词。</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="325"/>
+        <source>Source:</source>
+        <translation>来源：</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="355"/>
+        <source>Edited by you</source>
+        <translation>你编辑的歌词</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="357"/>
+        <source>Embedded tags</source>
+        <translation>内嵌标签</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="359"/>
+        <source>.lrc file</source>
+        <translation>.lrc 文件</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="380"/>
+        <source>Lyrics Options</source>
+        <translation>歌词选项</translation>
+    </message>
+</context>
+<context>
     <name>Main</name>
     <message>
         <location filename="../qml/Main.qml" line="14"/>
@@ -2909,13 +3025,12 @@
     </message>
     <message>
         <location filename="../qml/SidePanel.qml" line="39"/>
-        <location filename="../qml/SidePanel.qml" line="73"/>
         <source>Lyrics</source>
         <translation>歌词</translation>
     </message>
     <message>
         <location filename="../qml/SidePanel.qml" line="42"/>
-        <location filename="../qml/SidePanel.qml" line="94"/>
+        <location filename="../qml/SidePanel.qml" line="79"/>
         <source>Guide</source>
         <translation>向导</translation>
     </message>
@@ -2925,22 +3040,21 @@
         <translation>DJ</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="80"/>
         <source>Synchronized lyrics will appear here.</source>
-        <translation>同步歌词将在此显示。</translation>
+        <translation type="vanished">同步歌词将在此显示。</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="101"/>
+        <location filename="../qml/SidePanel.qml" line="86"/>
         <source>AI music guide and liner notes.</source>
         <translation>AI 音乐向导与专辑内页说明。</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="115"/>
+        <location filename="../qml/SidePanel.qml" line="100"/>
         <source>DJ Subtitles</source>
         <translation>DJ 字幕</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="122"/>
+        <location filename="../qml/SidePanel.qml" line="107"/>
         <source>Live AI DJ commentary and subtitles.</source>
         <translation>实时 AI DJ 解说与字幕。</translation>
     </message>
@@ -3848,37 +3962,37 @@
 <context>
     <name>linernotes::ui::CoverSearchController</name>
     <message>
-        <location filename="../src/ui/CoverSearchController.cpp" line="105"/>
+        <location filename="../src/ui/CoverSearchController.cpp" line="95"/>
         <source>Database error: %1</source>
         <translation>数据库错误：%1</translation>
     </message>
     <message>
-        <location filename="../src/ui/CoverSearchController.cpp" line="115"/>
+        <location filename="../src/ui/CoverSearchController.cpp" line="105"/>
         <source>Album not found</source>
         <translation>找不到专辑</translation>
     </message>
     <message>
-        <location filename="../src/ui/CoverSearchController.cpp" line="125"/>
+        <location filename="../src/ui/CoverSearchController.cpp" line="115"/>
         <source>No search terms available</source>
         <translation>缺少专辑名与艺人，无法搜索</translation>
     </message>
     <message>
-        <location filename="../src/ui/CoverSearchController.cpp" line="154"/>
+        <location filename="../src/ui/CoverSearchController.cpp" line="144"/>
         <source>Network request failed</source>
         <translation>网络请求失败</translation>
     </message>
     <message>
-        <location filename="../src/ui/CoverSearchController.cpp" line="282"/>
+        <location filename="../src/ui/CoverSearchController.cpp" line="272"/>
         <source>Failed to download cover image</source>
         <translation>封面下载失败</translation>
     </message>
     <message>
-        <location filename="../src/ui/CoverSearchController.cpp" line="291"/>
+        <location filename="../src/ui/CoverSearchController.cpp" line="281"/>
         <source>Failed to decode cover image</source>
         <translation>无法解析封面图片</translation>
     </message>
     <message>
-        <location filename="../src/ui/CoverSearchController.cpp" line="301"/>
+        <location filename="../src/ui/CoverSearchController.cpp" line="291"/>
         <source>Failed to save cover to database</source>
         <translation>封面保存失败</translation>
     </message>

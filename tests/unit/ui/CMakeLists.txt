@@ -301,3 +301,18 @@ linernotes_add_test(
         Qt6::Sql
 )
 
+linernotes_add_test(
+    NAME ui_LyricsController
+    SOURCES
+        tst_LyricsController.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::guide
+        Linernotes::library
+        Linernotes::player
+        Linernotes::TestSupport
+        Qt6::Network
+        Qt6::Sql
+)
+
+

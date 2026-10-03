@@ -44,6 +44,8 @@ add_library(linernotes_ui STATIC
     LlmDebugController.h
     LlmDebugModel.cpp
     LlmDebugModel.h
+    LyricsController.cpp
+    LyricsController.h
     MarksController.cpp
     MarksController.h
     NlqController.cpp
@@ -125,6 +127,7 @@ target_link_libraries(linernotes_ui
         Linernotes::audio
         Linernotes::butler
         Linernotes::core
+        Linernotes::guide
         Linernotes::library
         Linernotes::nlq
         Linernotes::player

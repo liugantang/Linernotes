@@ -9,6 +9,7 @@
 
 #include <ai/AiEnums.h>
 #include <core/PlaySource.h>
+#include <guide/Lyrics.h>
 #include <library/ArtistNamePreference.h>
 #include <library/LibraryEnums.h>
 #include <library/SmartRule.h>
@@ -30,6 +31,7 @@
 #include <ui/LibraryRootsModel.h>
 #include <ui/LlmDebugController.h>
 #include <ui/LlmDebugModel.h>
+#include <ui/LyricsController.h>
 #include <ui/MarksController.h>
 #include <ui/NlqController.h>
 #include <ui/NowPlaying.h>
@@ -321,4 +323,17 @@ struct RecommendControllerForeign {
     QML_FOREIGN(linernotes::ui::RecommendController)
     QML_NAMED_ELEMENT(RecommendController)
     QML_UNCREATABLE("RecommendController is managed by AppContext")
+};
+
+struct GuideForeign {
+    Q_GADGET
+    QML_FOREIGN_NAMESPACE(linernotes::guide)
+    QML_NAMED_ELEMENT(Guide)
+};
+
+struct LyricsControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::LyricsController)
+    QML_NAMED_ELEMENT(LyricsController)
+    QML_UNCREATABLE("LyricsController is managed by AppContext")
 };

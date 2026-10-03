@@ -65,24 +65,9 @@ Rectangle {
             }
 
             // Lyrics tab
-            Item {
-                ColumnLayout {
-                    anchors.centerIn: parent
-                    spacing: Theme.spacingSmall
-                    Label {
-                        text: qsTr("Lyrics")
-                        font.pixelSize: Theme.fontSizeLarge
-                        font.bold: true
-                        color: Theme.text
-                        Layout.alignment: Qt.AlignHCenter
-                    }
-                    Label {
-                        text: qsTr("Synchronized lyrics will appear here.")
-                        font.pixelSize: Theme.fontSizeSmall
-                        color: Theme.textSecondary
-                        Layout.alignment: Qt.AlignHCenter
-                    }
-                }
+            LyricsPanel {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
             }
 
             // Guide tab
