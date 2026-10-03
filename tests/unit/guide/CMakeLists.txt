@@ -101,3 +101,25 @@ linernotes_add_test(
         Linernotes::TestSupport
         Qt6::Core
 )
+
+linernotes_add_test(
+    NAME guide_Wikidata
+    SOURCES
+        tst_Wikidata.cpp
+    LIBS
+        Linernotes::guide
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Core
+)
+
+linernotes_add_test(
+    NAME guide_Wikipedia
+    SOURCES
+        tst_Wikipedia.cpp
+    LIBS
+        Linernotes::guide
+        Linernotes::core
+        Linernotes::TestSupport
+        Qt6::Core
+)

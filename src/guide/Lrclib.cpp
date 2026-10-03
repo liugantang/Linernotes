@@ -4,6 +4,7 @@
 #include "Lrclib.h"
 
 #include "Errors.h"
+#include "GuideUtils.h"
 
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -20,13 +21,6 @@
 namespace linernotes::guide {
 
 namespace {
-
-// QUrlQuery 不编码 '+'，服务器会把它当作空格；'%' 也要先转义，否则会被当成已编码的序列
-QString queryValue(QString value)
-{
-    return value.replace(QLatin1Char('%'), QStringLiteral("%25"))
-        .replace(QLatin1Char('+'), QStringLiteral("%2B"));
-}
 
 int recordTier(const LrclibRecord &rec)
 {

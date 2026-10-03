@@ -3,21 +3,11 @@
 
 #pragma once
 
-#include <QObject>
 #include <QString>
 
-#include <cstdint>
+#include <guide/GuideEnums.h>
 
 namespace linernotes::guide {
-
-Q_NAMESPACE
-Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
-
-enum class LyricsSource : std::uint8_t { Manual, Embedded, LrcFile, Lrclib };
-Q_ENUM_NS(LyricsSource)
-
-enum class LyricsStatus : std::uint8_t { Found, Instrumental, NotFound, Failed };
-Q_ENUM_NS(LyricsStatus)
 
 struct Lyrics {
     QString text { }; // 原样文本（LRC 或纯文本），不在这里解析

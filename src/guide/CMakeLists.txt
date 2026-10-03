@@ -5,8 +5,10 @@ file(GLOB SCHEMA_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/schema
 
 add_library(linernotes_guide STATIC
     Errors.h
+    GuideEnums.h
     GuideLogging.cpp
     GuideLogging.h
+    GuideUtils.h
     LineExplainer.cpp
     LineExplainer.h
     LocalLyrics.cpp
@@ -27,6 +29,10 @@ add_library(linernotes_guide STATIC
     LyricsTranslationStore.h
     LyricsTranslator.cpp
     LyricsTranslator.h
+    Wikidata.cpp
+    Wikidata.h
+    Wikipedia.cpp
+    Wikipedia.h
 )
 add_library(Linernotes::guide ALIAS linernotes_guide)
 
