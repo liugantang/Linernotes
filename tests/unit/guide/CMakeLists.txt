@@ -200,3 +200,18 @@ linernotes_add_test(
         Qt6::Network
         Qt6::Sql
 )
+
+linernotes_add_test(
+    NAME guide_DeepDiveTools
+    SOURCES
+        tst_DeepDiveTools.cpp
+    LIBS
+        Linernotes::guide
+        Linernotes::ai
+        Linernotes::core
+        Linernotes::library
+        Linernotes::TestSupport
+        Qt6::Core
+        Qt6::Sql
+)
+

@@ -4,6 +4,10 @@
 file(GLOB SCHEMA_FILES CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/resources/schemas/guide/*.json")
 
 add_library(linernotes_guide STATIC
+    DeepDiveSession.cpp
+    DeepDiveSession.h
+    DeepDiveTools.cpp
+    DeepDiveTools.h
     Errors.h
     GuideEnums.h
     GuideLogging.cpp
