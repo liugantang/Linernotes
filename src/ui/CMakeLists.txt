@@ -29,6 +29,8 @@ add_library(linernotes_ui STATIC
     CoverImageProvider.h
     CoverSearchController.cpp
     CoverSearchController.h
+    DeepDiveController.cpp
+    DeepDiveController.h
     DuplicateController.cpp
     DuplicateController.h
     EndlessPlay.cpp

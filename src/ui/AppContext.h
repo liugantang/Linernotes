@@ -13,6 +13,8 @@
 #include <butler/DuplicateResolver.h>
 #include <core/Clock.h>
 #include <core/Result.h>
+#include <guide/DeepDiveSession.h>
+#include <guide/DeepDiveTools.h>
 #include <guide/KnowledgeCardWriter.h>
 #include <guide/KnowledgePrewarmer.h>
 #include <guide/KnowledgeService.h>
@@ -34,6 +36,7 @@
 #include <ui/CleanupController.h>
 #include <ui/CorrectionReviewController.h>
 #include <ui/CoverSearchController.h>
+#include <ui/DeepDiveController.h>
 #include <ui/DuplicateController.h>
 #include <ui/EndlessPlay.h>
 #include <ui/GuideController.h>
@@ -101,6 +104,7 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::RecommendController *recommend READ recommend CONSTANT)
     Q_PROPERTY(linernotes::ui::LyricsController *lyrics READ lyrics CONSTANT)
     Q_PROPERTY(linernotes::ui::GuideController *guide READ guide CONSTANT)
+    Q_PROPERTY(linernotes::ui::DeepDiveController *deepDive READ deepDive CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
     Q_PROPERTY(QString startupError READ startupError NOTIFY startupErrorChanged)
     Q_PROPERTY(bool scanning READ isScanning NOTIFY scanningChanged)
@@ -155,6 +159,7 @@ public:
     [[nodiscard]] RecommendController *recommend();
     [[nodiscard]] LyricsController *lyrics();
     [[nodiscard]] GuideController *guide();
+    [[nodiscard]] DeepDiveController *deepDive();
     [[nodiscard]] library::Database &database();
     [[nodiscard]] const library::Database &database() const;
     [[nodiscard]] library::CoverStore *coverStore();
@@ -207,6 +212,9 @@ private:
     NowPlaying m_nowPlaying;
     LyricsController m_lyrics;
     GuideController m_guide;
+    guide::DeepDiveTools m_deepDiveTools;
+    guide::DeepDiveSession m_deepDiveSession;
+    DeepDiveController m_deepDive;
     QueueModel m_queueModel;
     SearchController m_search;
     PlaylistController m_playlists;

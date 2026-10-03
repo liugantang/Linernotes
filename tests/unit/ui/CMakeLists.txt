@@ -317,4 +317,13 @@ linernotes_add_test(
         Qt6::Sql
 )
 
+linernotes_add_test(
+    NAME ui_DeepDiveController
+    SOURCES
+        tst_DeepDiveController.cpp
+    LIBS
+        Linernotes::ui
+        Linernotes::core
+)
+
 

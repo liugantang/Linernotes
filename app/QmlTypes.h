@@ -26,6 +26,7 @@
 #include <ui/CorrectionBatchModel.h>
 #include <ui/CorrectionListModel.h>
 #include <ui/CorrectionReviewController.h>
+#include <ui/DeepDiveController.h>
 #include <ui/DuplicateController.h>
 #include <ui/GuideController.h>
 #include <ui/LibraryActions.h>
@@ -344,4 +345,11 @@ struct GuideControllerForeign {
     QML_FOREIGN(linernotes::ui::GuideController)
     QML_NAMED_ELEMENT(GuideController)
     QML_UNCREATABLE("GuideController is managed by AppContext")
+};
+
+struct DeepDiveControllerForeign {
+    Q_GADGET
+    QML_FOREIGN(linernotes::ui::DeepDiveController)
+    QML_NAMED_ELEMENT(DeepDiveController)
+    QML_UNCREATABLE("DeepDiveController is managed by AppContext")
 };

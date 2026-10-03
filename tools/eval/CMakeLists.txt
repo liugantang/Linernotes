@@ -8,6 +8,8 @@ add_executable(linernotes-eval
     ArtistMergeEval.h
     EvalHarness.cpp
     EvalHarness.h
+    GuideAskEval.cpp
+    GuideAskEval.h
     NlqAskEval.cpp
     NlqAskEval.h
     NlqEval.cpp
@@ -25,6 +27,7 @@ target_compile_definitions(linernotes-eval
 target_link_libraries(linernotes-eval
     PRIVATE
         Linernotes::butler
+        Linernotes::guide
         Linernotes::nlq
         Linernotes::ai
         Linernotes::library

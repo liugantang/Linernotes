@@ -66,6 +66,9 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_lyrics(m_lyricsService, m_lyricsTranslator, m_lineExplainer, m_ai.config(), m_settings,
           m_player, m_nowPlaying)
     , m_guide(m_knowledgeService, m_knowledgeCardWriter, m_ai.config(), m_nowPlaying)
+    , m_deepDiveTools(m_db, m_knowledgeService, m_lyricsService, m_clock)
+    , m_deepDiveSession(m_ai.llm(), m_ai.prompts(), m_ai.config(), m_deepDiveTools)
+    , m_deepDive(m_deepDiveSession, m_nowPlaying, m_ai.config())
     , m_queueModel(m_db, m_player)
     , m_search(m_db)
     , m_playlists(m_db, m_player)
@@ -393,6 +396,11 @@ LyricsController *AppContext::lyrics()
 GuideController *AppContext::guide()
 {
     return &m_guide;
+}
+
+DeepDiveController *AppContext::deepDive()
+{
+    return &m_deepDive;
 }
 
 library::Database &AppContext::database()

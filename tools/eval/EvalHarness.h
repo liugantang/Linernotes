@@ -39,6 +39,8 @@ struct EvalConfig {
     QString libraryPath { };
     QString keepDbPath { };
     QString question { };
+    QStringList questions;
+    qint64 trackId = 0;
     QString previous { };
     int timeoutMs = 60000;
     int requestsPerMinute = 0;
@@ -67,6 +69,8 @@ public:
     [[nodiscard]] ai::PromptLibrary &prompts() { return *m_prompts; }
     [[nodiscard]] ai::UsageStore &usage() { return *m_usage; }
     [[nodiscard]] ai::LlmService &llm() { return *m_llm; }
+    [[nodiscard]] QNetworkAccessManager &network() { return *m_network; }
+    [[nodiscard]] ai::AiConfig &aiConfig() { return *m_aiConfig; }
 
     bool init();
     bool runJob(const QString &kind, const QString &title, const QStringList &items,

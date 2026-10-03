@@ -1302,6 +1302,44 @@
     </message>
 </context>
 <context>
+    <name>DeepDiveView</name>
+    <message>
+        <location filename="../qml/DeepDiveView.qml" line="62"/>
+        <source>Back to Info</source>
+        <translation>返回资料</translation>
+    </message>
+    <message>
+        <location filename="../qml/DeepDiveView.qml" line="71"/>
+        <source>New chat</source>
+        <translation>新对话</translation>
+    </message>
+    <message>
+        <location filename="../qml/DeepDiveView.qml" line="98"/>
+        <source>Now playing a different song.</source>
+        <translation>正在播放的已是另一首歌。</translation>
+    </message>
+    <message>
+        <location filename="../qml/DeepDiveView.qml" line="106"/>
+        <source>Start new chat</source>
+        <translation>开始新对话</translation>
+    </message>
+    <message>
+        <location filename="../qml/DeepDiveView.qml" line="209"/>
+        <source>Thinking…</source>
+        <translation>正在思考…</translation>
+    </message>
+    <message>
+        <location filename="../qml/DeepDiveView.qml" line="270"/>
+        <source>† From the model&apos;s own knowledge, not verified</source>
+        <translation>† 来自模型自身知识，未经证实</translation>
+    </message>
+    <message>
+        <location filename="../qml/DeepDiveView.qml" line="291"/>
+        <source>Retry</source>
+        <translation>重试</translation>
+    </message>
+</context>
+<context>
     <name>DuplicatePanel</name>
     <message>
         <location filename="../qml/DuplicatePanel.qml" line="31"/>
@@ -1550,54 +1588,74 @@
 <context>
     <name>GuidePanel</name>
     <message>
-        <location filename="../qml/GuidePanel.qml" line="32"/>
+        <location filename="../qml/GuidePanel.qml" line="88"/>
+        <source>Continue chat</source>
+        <translation>继续对话</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="109"/>
         <source>Nothing playing.</source>
         <translation>没有正在播放的歌曲。</translation>
     </message>
     <message>
-        <location filename="../qml/GuidePanel.qml" line="51"/>
+        <location filename="../qml/GuidePanel.qml" line="128"/>
         <source>Looking up…</source>
         <translation>正在查找资料…</translation>
     </message>
     <message>
-        <location filename="../qml/GuidePanel.qml" line="69"/>
+        <location filename="../qml/GuidePanel.qml" line="146"/>
         <source>Couldn&apos;t reach Wikipedia.</source>
         <translation>无法连接到维基百科。</translation>
     </message>
     <message>
-        <location filename="../qml/GuidePanel.qml" line="76"/>
+        <location filename="../qml/GuidePanel.qml" line="153"/>
         <source>Retry</source>
         <translation>重试</translation>
     </message>
     <message>
-        <location filename="../qml/GuidePanel.qml" line="97"/>
+        <location filename="../qml/GuidePanel.qml" line="174"/>
         <source>No information found for this track.</source>
         <translation>没有找到这首歌的相关资料。</translation>
     </message>
     <message>
-        <location filename="../qml/GuidePanel.qml" line="125"/>
+        <location filename="../qml/GuidePanel.qml" line="202"/>
         <source>Looking up more…</source>
         <translation>正在查找更多资料…</translation>
     </message>
     <message>
-        <location filename="../qml/GuidePanel.qml" line="197"/>
+        <location filename="../qml/GuidePanel.qml" line="274"/>
         <source>Writing…</source>
         <translation>正在撰写…</translation>
     </message>
     <message>
-        <location filename="../qml/GuidePanel.qml" line="253"/>
+        <location filename="../qml/GuidePanel.qml" line="330"/>
         <source>Show less</source>
         <translation>收起</translation>
     </message>
     <message>
-        <location filename="../qml/GuidePanel.qml" line="254"/>
+        <location filename="../qml/GuidePanel.qml" line="331"/>
         <source>Show all (%1)</source>
         <translation>显示全部（%1）</translation>
     </message>
     <message>
-        <location filename="../qml/GuidePanel.qml" line="308"/>
+        <location filename="../qml/GuidePanel.qml" line="385"/>
         <source>Written by AI from the sources above</source>
         <translation>由 AI 根据以上来源撰写</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="421"/>
+        <source>Ask about this song…</source>
+        <translation>问问这首歌…</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="431"/>
+        <source>Stop</source>
+        <translation>停止</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="431"/>
+        <source>Send</source>
+        <translation>发送</translation>
     </message>
 </context>
 <context>

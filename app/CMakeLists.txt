@@ -37,6 +37,11 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS GuidePanel.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/DeepDiveView.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS DeepDiveView.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/LyricsPanel.qml
     PROPERTIES
         QT_RESOURCE_ALIAS LyricsPanel.qml
@@ -628,6 +633,7 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/VolumeControl.qml
         ${CMAKE_SOURCE_DIR}/qml/SidePanel.qml
         ${CMAKE_SOURCE_DIR}/qml/GuidePanel.qml
+        ${CMAKE_SOURCE_DIR}/qml/DeepDiveView.qml
         ${CMAKE_SOURCE_DIR}/qml/LyricsPanel.qml
         ${CMAKE_SOURCE_DIR}/qml/LyricsEditDialog.qml
         ${CMAKE_SOURCE_DIR}/qml/QueuePanel.qml
