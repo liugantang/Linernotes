@@ -149,7 +149,9 @@ void CapabilityProbe::runCurrentStep()
     ChatRequest base;
     base.messages.append(makeMessage(Role::User, QStringLiteral("Respond with ok: true")));
     base.temperature = 0.0;
-    base.maxTokens = 50;
+    // 推理模型先输出思考内容：上限太小会在给出工具调用前被截断（finish_reason=length），
+    // 曾因 50 把 Ollama Cloud deepseek-v4.1-flash 误判为不支持 tools
+    base.maxTokens = 1024;
 
     const ChatRequest req = buildStructuredRequest(std::move(base), spec, mode);
     m_currentReply = m_client.complete(m_service, req);
