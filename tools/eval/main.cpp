@@ -4,6 +4,7 @@
 #include "ArtistCreditEval.h"
 #include "ArtistMergeEval.h"
 #include "EvalHarness.h"
+#include "GuideAskEval.h"
 #include "NlqAskEval.h"
 #include "NlqEval.h"
 
@@ -39,12 +40,16 @@ struct CliOptions {
     QCommandLineOption corpusOption { QStringLiteral("corpus"),
         QStringLiteral("Path to corpus JSON file (default: default corpus for subcommand)."),
         QStringLiteral("path") };
-    QCommandLineOption libraryOption { QStringLiteral("library"),
-        QStringLiteral(
-            "Path to a library.db file for real library evaluation (artist-credit or nlq-ask)."),
+    QCommandLineOption libraryOption { QStringList {
+                                           QStringLiteral("db"), QStringLiteral("library") },
+        QStringLiteral("Path to a library.db file for real library evaluation (artist-credit, "
+                       "nlq-ask, or guide-ask)."),
         QStringLiteral("path") };
+    QCommandLineOption trackOption { QStringLiteral("track"),
+        QStringLiteral("Track ID to evaluate (guide-ask only)."), QStringLiteral("id") };
     QCommandLineOption questionOption { QStringLiteral("question"),
-        QStringLiteral("Natural language question to ask (nlq-ask only)."),
+        QStringLiteral(
+            "Natural language question to ask (nlq-ask or guide-ask; multiple for guide-ask)."),
         QStringLiteral("question") };
     QCommandLineOption previousOption { QStringLiteral("previous"),
         QStringLiteral("Previous query JSON string for multi-turn inquiry (nlq-ask only)."),
@@ -74,12 +79,14 @@ void setupParser(QCommandLineParser &parser, const CliOptions &opts)
     parser.addHelpOption();
     parser.addVersionOption();
     parser.addPositionalArgument(QStringLiteral("subcommand"),
-        QStringLiteral("Evaluation subcommand to run (artist-merge, artist-credit, nlq-ask, nlq)."),
+        QStringLiteral(
+            "Evaluation subcommand to run (artist-merge, artist-credit, nlq-ask, nlq, guide-ask)."),
         QStringLiteral("<subcommand>"));
     parser.addOption(opts.baseUrlOption);
     parser.addOption(opts.modelOption);
     parser.addOption(opts.corpusOption);
     parser.addOption(opts.libraryOption);
+    parser.addOption(opts.trackOption);
     parser.addOption(opts.questionOption);
     parser.addOption(opts.previousOption);
     parser.addOption(opts.keepDbOption);
@@ -104,7 +111,7 @@ std::optional<QString> extractSubcommand(const QCommandLineParser &parser, int &
     const QStringList positionalArgs = parser.positionalArguments();
     if (positionalArgs.isEmpty()) {
         std::cerr << "Error: Missing subcommand. Available subcommands: artist-merge, "
-                     "artist-credit, nlq-ask, nlq\n\n";
+                     "artist-credit, nlq-ask, nlq, guide-ask\n\n";
         std::cerr << qPrintable(parser.helpText());
         exitCode = 2;
         return std::nullopt;
@@ -113,9 +120,10 @@ std::optional<QString> extractSubcommand(const QCommandLineParser &parser, int &
     const QString &subcommand = positionalArgs.at(0);
     if (subcommand != QStringLiteral("artist-merge")
         && subcommand != QStringLiteral("artist-credit") && subcommand != QStringLiteral("nlq-ask")
-        && subcommand != QStringLiteral("nlq")) {
-        std::cerr << "Error: Unknown subcommand: " << qPrintable(subcommand)
-                  << ". Available subcommands: artist-merge, artist-credit, nlq-ask, nlq\n\n";
+        && subcommand != QStringLiteral("nlq") && subcommand != QStringLiteral("guide-ask")) {
+        std::cerr
+            << "Error: Unknown subcommand: " << qPrintable(subcommand)
+            << ". Available subcommands: artist-merge, artist-credit, nlq-ask, nlq, guide-ask\n\n";
         std::cerr << qPrintable(parser.helpText());
         exitCode = 2;
         return std::nullopt;
@@ -246,6 +254,55 @@ bool resolveNlqAskPaths(const QCommandLineParser &parser, const CliOptions &opts
     return true;
 }
 
+bool resolveGuideAskPaths(const QCommandLineParser &parser, const CliOptions &opts,
+    QString &libraryPath, qint64 &trackId, QStringList &questions, int &exitCode)
+{
+    if (parser.isSet(opts.corpusOption) || parser.isSet(opts.previousOption)) {
+        std::cerr << "Error: --corpus and --previous options are not supported for guide-ask "
+                     "subcommand.\n";
+        exitCode = 2;
+        return false;
+    }
+    if (!parser.isSet(opts.libraryOption)) {
+        std::cerr << "Error: --db/--library option is required for guide-ask subcommand.\n";
+        exitCode = 2;
+        return false;
+    }
+    libraryPath = parser.value(opts.libraryOption);
+    if (!QFile::exists(libraryPath)) {
+        std::cerr << "Error: Specified library database file does not exist: "
+                  << qPrintable(libraryPath) << "\n";
+        exitCode = 2;
+        return false;
+    }
+    if (!parser.isSet(opts.trackOption)) {
+        std::cerr << "Error: --track option is required for guide-ask subcommand.\n";
+        exitCode = 2;
+        return false;
+    }
+    const auto trackIdVal = parsePositiveInt(parser.value(opts.trackOption), "--track");
+    if (!trackIdVal.has_value()) {
+        exitCode = 2;
+        return false;
+    }
+    trackId = *trackIdVal;
+
+    const QStringList rawQuestions = parser.values(opts.questionOption);
+    for (const auto &q : rawQuestions) {
+        const QString trimmed = q.trimmed();
+        if (!trimmed.isEmpty()) {
+            questions.append(trimmed);
+        }
+    }
+    if (questions.isEmpty()) {
+        std::cerr
+            << "Error: At least one --question option is required for guide-ask subcommand.\n";
+        exitCode = 2;
+        return false;
+    }
+    return true;
+}
+
 bool resolveNlqCorpus(
     const QCommandLineParser &parser, const CliOptions &opts, QString &corpusPath, int &exitCode)
 {
@@ -265,38 +322,49 @@ bool resolveNlqCorpus(
 }
 
 bool resolveSubcommandPaths(const QString &subcommand, const QCommandLineParser &parser,
-    const CliOptions &opts, QString &corpusPath, QString &libraryPath, QString &question,
-    QString &previous, int &exitCode)
+    const CliOptions &opts, QString &corpusPath, QString &libraryPath, qint64 &trackId,
+    QString &question, QStringList &questions, QString &previous, int &exitCode)
 {
     if (subcommand == QStringLiteral("artist-merge")) {
-        if (parser.isSet(opts.questionOption) || parser.isSet(opts.previousOption)) {
-            std::cerr
-                << "Error: --question and --previous options are only supported for nlq-ask.\n";
+        if (parser.isSet(opts.questionOption) || parser.isSet(opts.previousOption)
+            || parser.isSet(opts.trackOption)) {
+            std::cerr << "Error: --question, --previous, and --track options are not supported for "
+                         "artist-merge.\n";
             exitCode = 2;
             return false;
         }
         return resolveArtistMergeCorpus(parser, opts, corpusPath, exitCode);
     }
     if (subcommand == QStringLiteral("artist-credit")) {
-        if (parser.isSet(opts.questionOption) || parser.isSet(opts.previousOption)) {
-            std::cerr
-                << "Error: --question and --previous options are only supported for nlq-ask.\n";
+        if (parser.isSet(opts.questionOption) || parser.isSet(opts.previousOption)
+            || parser.isSet(opts.trackOption)) {
+            std::cerr << "Error: --question, --previous, and --track options are not supported for "
+                         "artist-credit.\n";
             exitCode = 2;
             return false;
         }
         return resolveArtistCreditPaths(parser, opts, corpusPath, libraryPath, exitCode);
     }
     if (subcommand == QStringLiteral("nlq-ask")) {
+        if (parser.isSet(opts.trackOption)) {
+            std::cerr << "Error: --track option is not supported for nlq-ask.\n";
+            exitCode = 2;
+            return false;
+        }
         return resolveNlqAskPaths(parser, opts, libraryPath, question, previous, exitCode);
     }
     if (subcommand == QStringLiteral("nlq")) {
-        if (parser.isSet(opts.questionOption) || parser.isSet(opts.previousOption)) {
-            std::cerr
-                << "Error: --question and --previous options are only supported for nlq-ask.\n";
+        if (parser.isSet(opts.questionOption) || parser.isSet(opts.previousOption)
+            || parser.isSet(opts.trackOption)) {
+            std::cerr << "Error: --question, --previous, and --track options are not supported for "
+                         "nlq.\n";
             exitCode = 2;
             return false;
         }
         return resolveNlqCorpus(parser, opts, corpusPath, exitCode);
+    }
+    if (subcommand == QStringLiteral("guide-ask")) {
+        return resolveGuideAskPaths(parser, opts, libraryPath, trackId, questions, exitCode);
     }
     return false;
 }
@@ -353,10 +421,12 @@ std::optional<ParsedArgs> parseAndValidateArgs(
 
     QString corpusPath;
     QString libraryPath;
+    qint64 trackId = 0;
     QString question;
+    QStringList questions;
     QString previous;
-    if (!resolveSubcommandPaths(
-            subcommand, parser, opts, corpusPath, libraryPath, question, previous, exitCode)) {
+    if (!resolveSubcommandPaths(subcommand, parser, opts, corpusPath, libraryPath, trackId,
+            question, questions, previous, exitCode)) {
         return std::nullopt;
     }
 
@@ -374,6 +444,8 @@ std::optional<ParsedArgs> parseAndValidateArgs(
             .libraryPath = libraryPath,
             .keepDbPath = keepDbPath,
             .question = question,
+            .questions = questions,
+            .trackId = trackId,
             .previous = previous,
             .timeoutMs = *timeoutVal,
             .requestsPerMinute = *rpmOpt,
@@ -439,6 +511,15 @@ int main(int argc, char *argv[])
                 return 2;
             }
             QTimer::singleShot(0, &eval, &linernotes::eval::NlqEval::start);
+            return QCoreApplication::exec();
+        }
+
+        if (parsedArgs.subcommand == QStringLiteral("guide-ask")) {
+            linernotes::eval::GuideAskEval eval(parsedArgs.config);
+            if (!eval.init()) {
+                return 2;
+            }
+            QTimer::singleShot(0, &eval, &linernotes::eval::GuideAskEval::start);
             return QCoreApplication::exec();
         }
 

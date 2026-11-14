@@ -13,6 +13,14 @@
 #include <butler/DuplicateResolver.h>
 #include <core/Clock.h>
 #include <core/Result.h>
+#include <guide/DeepDiveSession.h>
+#include <guide/DeepDiveTools.h>
+#include <guide/KnowledgeCardWriter.h>
+#include <guide/KnowledgePrewarmer.h>
+#include <guide/KnowledgeService.h>
+#include <guide/LineExplainer.h>
+#include <guide/LyricsService.h>
+#include <guide/LyricsTranslator.h>
 #include <library/CoverStore.h>
 #include <library/Database.h>
 #include <library/PlayStats.h>
@@ -28,11 +36,14 @@
 #include <ui/CleanupController.h>
 #include <ui/CorrectionReviewController.h>
 #include <ui/CoverSearchController.h>
+#include <ui/DeepDiveController.h>
 #include <ui/DuplicateController.h>
 #include <ui/EndlessPlay.h>
+#include <ui/GuideController.h>
 #include <ui/LibraryActions.h>
 #include <ui/LibraryRootsModel.h>
 #include <ui/LlmDebugController.h>
+#include <ui/LyricsController.h>
 #include <ui/MarksController.h>
 #include <ui/NlqController.h>
 #include <ui/NowPlaying.h>
@@ -91,6 +102,9 @@ class AppContext : public QObject {
     Q_PROPERTY(linernotes::ui::CoverSearchController *coverSearch READ coverSearch CONSTANT)
     Q_PROPERTY(linernotes::ui::EndlessPlay *endless READ endless CONSTANT)
     Q_PROPERTY(linernotes::ui::RecommendController *recommend READ recommend CONSTANT)
+    Q_PROPERTY(linernotes::ui::LyricsController *lyrics READ lyrics CONSTANT)
+    Q_PROPERTY(linernotes::ui::GuideController *guide READ guide CONSTANT)
+    Q_PROPERTY(linernotes::ui::DeepDiveController *deepDive READ deepDive CONSTANT)
     Q_PROPERTY(bool libraryReady READ isLibraryReady NOTIFY libraryReadyChanged)
     Q_PROPERTY(QString startupError READ startupError NOTIFY startupErrorChanged)
     Q_PROPERTY(bool scanning READ isScanning NOTIFY scanningChanged)
@@ -143,6 +157,9 @@ public:
     [[nodiscard]] CoverSearchController *coverSearch();
     [[nodiscard]] EndlessPlay *endless();
     [[nodiscard]] RecommendController *recommend();
+    [[nodiscard]] LyricsController *lyrics();
+    [[nodiscard]] GuideController *guide();
+    [[nodiscard]] DeepDiveController *deepDive();
     [[nodiscard]] library::Database &database();
     [[nodiscard]] const library::Database &database() const;
     [[nodiscard]] library::CoverStore *coverStore();
@@ -171,6 +188,12 @@ private:
     library::CoverStore m_coverStore;
     library::Scanner m_scanner;
     AiContext m_ai;
+    guide::KnowledgeService m_knowledgeService;
+    guide::KnowledgeCardWriter m_knowledgeCardWriter;
+    guide::KnowledgePrewarmer m_knowledgePrewarmer;
+    guide::LyricsService m_lyricsService;
+    guide::LyricsTranslator m_lyricsTranslator;
+    guide::LineExplainer m_lineExplainer;
     WritebackController m_writeback;
     CleanupController m_cleanup;
     AudioAnalysisController m_audioAnalysis;
@@ -187,6 +210,11 @@ private:
     SettingsController m_settingsController;
     std::unique_ptr<player::PlaybackStateStore> m_stateStore;
     NowPlaying m_nowPlaying;
+    LyricsController m_lyrics;
+    GuideController m_guide;
+    guide::DeepDiveTools m_deepDiveTools;
+    guide::DeepDiveSession m_deepDiveSession;
+    DeepDiveController m_deepDive;
     QueueModel m_queueModel;
     SearchController m_search;
     PlaylistController m_playlists;

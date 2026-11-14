@@ -181,6 +181,11 @@ void EvalHarness::initAiStack()
     profile.baseUrl = m_config.baseUrl;
     profile.defaultModel = m_config.model;
     profile.timeoutMs = m_config.timeoutMs;
+    profile.capabilities = ai::Capabilities {
+        .jsonSchema = true,
+        .tools = true,
+        .jsonObject = true,
+    };
     profile.requestsPerMinute = m_config.requestsPerMinute;
     profile.maxConcurrent = 2;
 

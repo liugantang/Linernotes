@@ -10,6 +10,12 @@ QString versionString()
     return QStringLiteral("%1.%2.%3").arg(kVersionMajor).arg(kVersionMinor).arg(kVersionPatch);
 }
 
+QString userAgent()
+{
+    return QStringLiteral("Linernotes/%1 ( https://github.com/linernotes/linernotes )")
+        .arg(versionString());
+}
+
 QString applicationName()
 {
     return QStringLiteral("Linernotes");

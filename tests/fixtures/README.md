@@ -55,4 +55,13 @@
 | `artists/distinct_artists.txt` | 文本 / 30 组不同艺人 | 32 行 | 开发者真实曲库中的公开艺名 / 审查者编写 | 艺人名防误合并测试素材（共享词、相似拼写等不同艺人） |
 | `itunes/search_album_tw.json` | JSON / iTunes Search API 响应 | ~13 KB | iTunes Search API 真实录制（2026-10-01），CC0 | 台湾区（tw）搜索“周杰伦 范特西”的真实响应，含 10 条专辑结果 |
 | `itunes/search_album_empty.json` | JSON / iTunes Search API 响应 | 44 B | iTunes Search API 真实录制（2026-10-01），CC0 | 中国大陆区（cn）搜索返回 0 条结果的真实空响应 |
+| `guide/wd_search_artist_aoi_eir.json` | JSON / Wikidata wbsearchentities | ~1 KB | Wikidata API 真实录制（2026-10-03），CC0 | 日语搜索“藍井エイル” |
+| `guide/wd_entities_artist_aoi_eir.json` | JSON / Wikidata wbgetentities | ~60 KB | Wikidata API 真实录制（2026-10-03），CC0 | 上述搜索结果的实体（labels/descriptions/claims/sitelinks，zh/ja/en） |
+| `guide/wd_search_song_ignite.json` | JSON / Wikidata wbsearchentities | ~4 KB | Wikidata API 真实录制（2026-10-03），CC0 | 日语搜索“IGNITE”：同名的单曲、专辑、乐队、游戏等 10 条，用于消歧 |
+| `guide/wd_entities_song_ignite.json` | JSON / Wikidata wbgetentities | ~120 KB | Wikidata API 真实录制（2026-10-03），CC0 | 上述 10 条的实体；Q17988679 为藍井エイル的单曲（P175 = Q4021857） |
+| `guide/wd_search_album_dazur.json` | JSON / Wikidata wbsearchentities | <1 KB | Wikidata API 真实录制（2026-10-03），CC0 | 日语搜索“D'AZUR” |
+| `guide/wd_entities_album_dazur.json` | JSON / Wikidata wbgetentities | ~9 KB | Wikidata API 真实录制（2026-10-03），CC0 | 上述搜索结果的实体；Q22126542 为藍井エイル的专辑 |
+| `guide/wd_labels_refs.json` | JSON / Wikidata wbgetentities（props=labels） | ~2 KB | Wikidata API 真实录制（2026-10-03），CC0 | 艺人与单曲引用的实体（唱片公司、流派等）的 zh/ja/en 标签 |
+| `guide/wp_summary_zh_aoi_eir.json` | JSON / Wikipedia REST page/summary | ~2 KB | 中文维基百科真实录制（2026-10-03），CC BY-SA 4.0 | 条目“藍井艾露”摘要 |
+| `guide/wp_summary_ja_ignite.json` | JSON / Wikipedia REST page/summary | ~1 KB | 日文维基百科真实录制（2026-10-03），CC BY-SA 4.0 | 单曲“IGNITE (藍井エイルの曲)”摘要 |
 

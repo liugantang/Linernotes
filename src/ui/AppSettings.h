@@ -64,5 +64,7 @@ inline const core::SettingKey<QString> kRecDailyDate { u"rec/dailyDate", u""_s }
 // NOLINTNEXTLINE(bugprone-throwing-static-initialization) - QString constructor is non-noexcept in
 // Qt6
 inline const core::SettingKey<QString> kRecDailyTracks { u"rec/dailyTracks", u""_s };
+// NOLINTNEXTLINE(bugprone-throwing-static-initialization)
+inline const core::SettingKey<bool> kLyricsShowTranslation { u"lyrics/showTranslation", false };
 
 } // namespace linernotes::ui

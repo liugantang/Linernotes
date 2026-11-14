@@ -29,6 +29,8 @@ add_library(linernotes_ui STATIC
     CoverImageProvider.h
     CoverSearchController.cpp
     CoverSearchController.h
+    DeepDiveController.cpp
+    DeepDiveController.h
     DuplicateController.cpp
     DuplicateController.h
     EndlessPlay.cpp
@@ -36,6 +38,8 @@ add_library(linernotes_ui STATIC
     ErrorText.cpp
     ErrorText.h
     Format.h
+    GuideController.cpp
+    GuideController.h
     LibraryActions.cpp
     LibraryActions.h
     LibraryRootsModel.cpp
@@ -44,6 +48,8 @@ add_library(linernotes_ui STATIC
     LlmDebugController.h
     LlmDebugModel.cpp
     LlmDebugModel.h
+    LyricsController.cpp
+    LyricsController.h
     MarksController.cpp
     MarksController.h
     NlqController.cpp
@@ -125,6 +131,7 @@ target_link_libraries(linernotes_ui
         Linernotes::audio
         Linernotes::butler
         Linernotes::core
+        Linernotes::guide
         Linernotes::library
         Linernotes::nlq
         Linernotes::player

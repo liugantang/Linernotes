@@ -9,5 +9,6 @@ add_subdirectory(butler)
 add_subdirectory(nlq)
 add_subdirectory(player)
 add_subdirectory(rec)
+add_subdirectory(guide)
 add_subdirectory(ui)
 

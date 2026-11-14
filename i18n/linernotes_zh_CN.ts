@@ -1302,6 +1302,44 @@
     </message>
 </context>
 <context>
+    <name>DeepDiveView</name>
+    <message>
+        <location filename="../qml/DeepDiveView.qml" line="62"/>
+        <source>Back to Info</source>
+        <translation>返回资料</translation>
+    </message>
+    <message>
+        <location filename="../qml/DeepDiveView.qml" line="71"/>
+        <source>New chat</source>
+        <translation>新对话</translation>
+    </message>
+    <message>
+        <location filename="../qml/DeepDiveView.qml" line="98"/>
+        <source>Now playing a different song.</source>
+        <translation>正在播放的已是另一首歌。</translation>
+    </message>
+    <message>
+        <location filename="../qml/DeepDiveView.qml" line="106"/>
+        <source>Start new chat</source>
+        <translation>开始新对话</translation>
+    </message>
+    <message>
+        <location filename="../qml/DeepDiveView.qml" line="209"/>
+        <source>Thinking…</source>
+        <translation>正在思考…</translation>
+    </message>
+    <message>
+        <location filename="../qml/DeepDiveView.qml" line="270"/>
+        <source>† From the model&apos;s own knowledge, not verified</source>
+        <translation>† 来自模型自身知识，未经证实</translation>
+    </message>
+    <message>
+        <location filename="../qml/DeepDiveView.qml" line="291"/>
+        <source>Retry</source>
+        <translation>重试</translation>
+    </message>
+</context>
+<context>
     <name>DuplicatePanel</name>
     <message>
         <location filename="../qml/DuplicatePanel.qml" line="31"/>
@@ -1548,6 +1586,79 @@
     </message>
 </context>
 <context>
+    <name>GuidePanel</name>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="88"/>
+        <source>Continue chat</source>
+        <translation>继续对话</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="109"/>
+        <source>Nothing playing.</source>
+        <translation>没有正在播放的歌曲。</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="128"/>
+        <source>Looking up…</source>
+        <translation>正在查找资料…</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="146"/>
+        <source>Couldn&apos;t reach Wikipedia.</source>
+        <translation>无法连接到维基百科。</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="153"/>
+        <source>Retry</source>
+        <translation>重试</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="174"/>
+        <source>No information found for this track.</source>
+        <translation>没有找到这首歌的相关资料。</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="202"/>
+        <source>Looking up more…</source>
+        <translation>正在查找更多资料…</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="274"/>
+        <source>Writing…</source>
+        <translation>正在撰写…</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="330"/>
+        <source>Show less</source>
+        <translation>收起</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="331"/>
+        <source>Show all (%1)</source>
+        <translation>显示全部（%1）</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="385"/>
+        <source>Written by AI from the sources above</source>
+        <translation>由 AI 根据以上来源撰写</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="421"/>
+        <source>Ask about this song…</source>
+        <translation>问问这首歌…</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="431"/>
+        <source>Stop</source>
+        <translation>停止</translation>
+    </message>
+    <message>
+        <location filename="../qml/GuidePanel.qml" line="431"/>
+        <source>Send</source>
+        <translation>发送</translation>
+    </message>
+</context>
+<context>
     <name>LlmDebugPanel</name>
     <message>
         <location filename="../qml/LlmDebugPanel.qml" line="13"/>
@@ -1650,6 +1761,169 @@
         <location filename="../qml/LlmDebugPanel.qml" line="410"/>
         <source>Error</source>
         <translation>错误</translation>
+    </message>
+</context>
+<context>
+    <name>LyricsEditDialog</name>
+    <message>
+        <location filename="../qml/LyricsEditDialog.qml" line="51"/>
+        <source>Edit Lyrics</source>
+        <translation>编辑歌词</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsEditDialog.qml" line="59"/>
+        <source>Tip: Saving empty text will remove manual lyrics and restore automatic source.</source>
+        <translation>提示：保存空内容会删除手动歌词，恢复自动获取的歌词。</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsEditDialog.qml" line="82"/>
+        <source>Enter LRC or plain text lyrics…</source>
+        <translation>输入 LRC 或纯文本歌词…</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsEditDialog.qml" line="103"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsEditDialog.qml" line="109"/>
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+</context>
+<context>
+    <name>LyricsPanel</name>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="32"/>
+        <source>Import Lyrics File</source>
+        <translation>导入歌词文件</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="33"/>
+        <source>Lyrics (*.lrc *.txt)</source>
+        <translation>歌词 (*.lrc *.txt)</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="33"/>
+        <source>All files (*)</source>
+        <translation>所有文件 (*)</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="45"/>
+        <source>Edit Lyrics…</source>
+        <translation>编辑歌词…</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="53"/>
+        <source>Import .lrc File…</source>
+        <translation>导入 .lrc 文件…</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="59"/>
+        <source>Search Online Again</source>
+        <translation>重新在线查找</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="110"/>
+        <source>Nothing playing.</source>
+        <translation>没有正在播放的歌曲。</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="129"/>
+        <source>Looking for lyrics…</source>
+        <translation>正在查找歌词…</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="147"/>
+        <source>Instrumental</source>
+        <translation>纯音乐</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="166"/>
+        <source>Couldn&apos;t fetch lyrics.</source>
+        <translation>获取歌词失败。</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="173"/>
+        <location filename="../qml/LyricsPanel.qml" line="425"/>
+        <source>Retry</source>
+        <translation>重试</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="194"/>
+        <source>No lyrics found.</source>
+        <translation>没有找到歌词。</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="296"/>
+        <location filename="../qml/LyricsPanel.qml" line="310"/>
+        <source>Explain this line</source>
+        <translation>解读这一句</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="385"/>
+        <source>Close</source>
+        <translation>关闭</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="436"/>
+        <source>Thinking…</source>
+        <translation>正在思考…</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="458"/>
+        <source>AI interpretation — not verified</source>
+        <translation>AI 解读，未经证实</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="495"/>
+        <source>Source:</source>
+        <translation>来源：</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="525"/>
+        <source>Edited by you</source>
+        <translation>你编辑的歌词</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="527"/>
+        <source>Embedded tags</source>
+        <translation>内嵌标签</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="529"/>
+        <source>.lrc file</source>
+        <translation>.lrc 文件</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="568"/>
+        <source>Translating…</source>
+        <translation>正在翻译…</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="569"/>
+        <source>Translate</source>
+        <translation>翻译</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="574"/>
+        <source>Retry translation</source>
+        <translation>重试翻译</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="576"/>
+        <source>Hide translation</source>
+        <translation>隐藏译文</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="576"/>
+        <source>Translate lyrics</source>
+        <translation>翻译歌词</translation>
+    </message>
+    <message>
+        <location filename="../qml/LyricsPanel.qml" line="595"/>
+        <source>Lyrics Options</source>
+        <translation>歌词选项</translation>
     </message>
 </context>
 <context>
@@ -2903,44 +3177,40 @@
 <context>
     <name>SidePanel</name>
     <message>
-        <location filename="../qml/SidePanel.qml" line="36"/>
+        <location filename="../qml/SidePanel.qml" line="42"/>
         <source>Queue</source>
         <translation>播放队列</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="39"/>
-        <location filename="../qml/SidePanel.qml" line="73"/>
+        <location filename="../qml/SidePanel.qml" line="45"/>
         <source>Lyrics</source>
         <translation>歌词</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="42"/>
-        <location filename="../qml/SidePanel.qml" line="94"/>
+        <location filename="../qml/SidePanel.qml" line="48"/>
         <source>Guide</source>
         <translation>向导</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="45"/>
+        <location filename="../qml/SidePanel.qml" line="51"/>
         <source>DJ</source>
         <translation>DJ</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="80"/>
         <source>Synchronized lyrics will appear here.</source>
-        <translation>同步歌词将在此显示。</translation>
+        <translation type="vanished">同步歌词将在此显示。</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="101"/>
         <source>AI music guide and liner notes.</source>
-        <translation>AI 音乐向导与专辑内页说明。</translation>
+        <translation type="vanished">AI 音乐向导与专辑内页说明。</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="115"/>
+        <location filename="../qml/SidePanel.qml" line="91"/>
         <source>DJ Subtitles</source>
         <translation>DJ 字幕</translation>
     </message>
     <message>
-        <location filename="../qml/SidePanel.qml" line="122"/>
+        <location filename="../qml/SidePanel.qml" line="98"/>
         <source>Live AI DJ commentary and subtitles.</source>
         <translation>实时 AI DJ 解说与字幕。</translation>
     </message>
@@ -3687,6 +3957,94 @@
     </message>
 </context>
 <context>
+    <name>linernotes::guide::Wikidata</name>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="530"/>
+        <source>Release date</source>
+        <translation>发行日期</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="533"/>
+        <source>Inception</source>
+        <translation>成立时间</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="536"/>
+        <source>Date of birth</source>
+        <translation>出生日期</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="539"/>
+        <source>Country of citizenship</source>
+        <translation>国籍</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="542"/>
+        <source>Country of origin</source>
+        <translation>来源国</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="545"/>
+        <source>Genre</source>
+        <translation>流派</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="548"/>
+        <source>Record label</source>
+        <translation>唱片公司</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="551"/>
+        <source>Members</source>
+        <translation>成员</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="554"/>
+        <source>Member of</source>
+        <translation>所属团体</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="557"/>
+        <source>Performer</source>
+        <translation>表演者</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="560"/>
+        <source>Composer</source>
+        <translation>作曲</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="563"/>
+        <source>Lyricist</source>
+        <translation>作词</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="566"/>
+        <source>Producer</source>
+        <translation>制作人</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="569"/>
+        <source>Part of</source>
+        <translation>收录于</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="572"/>
+        <source>Based on</source>
+        <translation>改编自</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="575"/>
+        <source>Follows</source>
+        <translation>前作</translation>
+    </message>
+    <message>
+        <location filename="../src/guide/Wikidata.cpp" line="578"/>
+        <source>Followed by</source>
+        <translation>后作</translation>
+    </message>
+</context>
+<context>
     <name>linernotes::ui::AiSettingsController</name>
     <message>
         <location filename="../src/ui/AiSettingsController.cpp" line="52"/>
@@ -3848,37 +4206,37 @@
 <context>
     <name>linernotes::ui::CoverSearchController</name>
     <message>
-        <location filename="../src/ui/CoverSearchController.cpp" line="105"/>
+        <location filename="../src/ui/CoverSearchController.cpp" line="95"/>
         <source>Database error: %1</source>
         <translation>数据库错误：%1</translation>
     </message>
     <message>
-        <location filename="../src/ui/CoverSearchController.cpp" line="115"/>
+        <location filename="../src/ui/CoverSearchController.cpp" line="105"/>
         <source>Album not found</source>
         <translation>找不到专辑</translation>
     </message>
     <message>
-        <location filename="../src/ui/CoverSearchController.cpp" line="125"/>
+        <location filename="../src/ui/CoverSearchController.cpp" line="115"/>
         <source>No search terms available</source>
         <translation>缺少专辑名与艺人，无法搜索</translation>
     </message>
     <message>
-        <location filename="../src/ui/CoverSearchController.cpp" line="154"/>
+        <location filename="../src/ui/CoverSearchController.cpp" line="144"/>
         <source>Network request failed</source>
         <translation>网络请求失败</translation>
     </message>
     <message>
-        <location filename="../src/ui/CoverSearchController.cpp" line="282"/>
+        <location filename="../src/ui/CoverSearchController.cpp" line="272"/>
         <source>Failed to download cover image</source>
         <translation>封面下载失败</translation>
     </message>
     <message>
-        <location filename="../src/ui/CoverSearchController.cpp" line="291"/>
+        <location filename="../src/ui/CoverSearchController.cpp" line="281"/>
         <source>Failed to decode cover image</source>
         <translation>无法解析封面图片</translation>
     </message>
     <message>
-        <location filename="../src/ui/CoverSearchController.cpp" line="301"/>
+        <location filename="../src/ui/CoverSearchController.cpp" line="291"/>
         <source>Failed to save cover to database</source>
         <translation>封面保存失败</translation>
     </message>
@@ -3896,144 +4254,167 @@
 <context>
     <name>linernotes::ui::ErrorText</name>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="20"/>
+        <location filename="../src/ui/ErrorText.cpp" line="21"/>
+        <source>Translation lines could not be aligned.</source>
+        <translation>译文与原文的行对不上。</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/ErrorText.cpp" line="30"/>
         <source>Invalid natural language query.</source>
         <translation>查询条件无效。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="24"/>
+        <location filename="../src/ui/ErrorText.cpp" line="34"/>
         <source>Failed to interpret the query.</source>
         <translation>无法理解这个问题。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="28"/>
+        <location filename="../src/ui/ErrorText.cpp" line="38"/>
         <source>Query template error.</source>
         <translation>查询模板错误。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="36"/>
+        <location filename="../src/ui/ErrorText.cpp" line="46"/>
         <source>The music library was created by a newer version of Linernotes.</source>
         <translation>曲库由更新版本的 Linernotes 创建。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="45"/>
+        <location filename="../src/ui/ErrorText.cpp" line="55"/>
         <source>A database error occurred.</source>
         <translation>数据库发生错误。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="49"/>
+        <location filename="../src/ui/ErrorText.cpp" line="59"/>
         <source>The correction is invalid.</source>
         <translation>修正无效。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="53"/>
+        <location filename="../src/ui/ErrorText.cpp" line="63"/>
         <source>The specified correction was not found.</source>
         <translation>未找到指定的修正。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="57"/>
+        <location filename="../src/ui/ErrorText.cpp" line="67"/>
         <source>Invalid tag modification.</source>
         <translation>标签修改无效。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="61"/>
+        <location filename="../src/ui/ErrorText.cpp" line="71"/>
         <source>Failed to read audio file tags.</source>
         <translation>读取音频标签失败。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="65"/>
+        <location filename="../src/ui/ErrorText.cpp" line="75"/>
         <source>The audio file format or tag format is not supported.</source>
         <translation>不支持该音频文件或标签格式。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="69"/>
+        <location filename="../src/ui/ErrorText.cpp" line="79"/>
         <source>Writing tags to this audio format is not supported.</source>
         <translation>不支持向这种音频格式写入标签。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="73"/>
+        <location filename="../src/ui/ErrorText.cpp" line="83"/>
         <source>Failed to write tags to audio file.</source>
         <translation>写入音频文件标签失败。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="77"/>
+        <location filename="../src/ui/ErrorText.cpp" line="87"/>
         <source>Tag verification failed after writing.</source>
         <translation>写入后校验标签失败。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="81"/>
+        <location filename="../src/ui/ErrorText.cpp" line="91"/>
         <source>Failed to read file.</source>
         <translation>读取文件失败。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="84"/>
+        <location filename="../src/ui/ErrorText.cpp" line="94"/>
         <source>Invalid music folder.</source>
         <translation>无效的音乐文件夹。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="87"/>
+        <location filename="../src/ui/ErrorText.cpp" line="97"/>
         <source>Music folder overlaps with an existing library root.</source>
         <translation>音乐文件夹与现有曲库目录重叠。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="91"/>
+        <location filename="../src/ui/ErrorText.cpp" line="101"/>
         <source>Failed to decode cover image.</source>
         <translation>解析封面图片失败。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="95"/>
+        <location filename="../src/ui/ErrorText.cpp" line="105"/>
         <source>Invalid playlist.</source>
         <translation>歌单无效。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="98"/>
+        <location filename="../src/ui/ErrorText.cpp" line="108"/>
         <source>Invalid smart playlist rule.</source>
         <translation>智能歌单规则无效。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="102"/>
+        <location filename="../src/ui/ErrorText.cpp" line="112"/>
         <source>Invalid rating value.</source>
         <translation>评分值无效。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="105"/>
+        <location filename="../src/ui/ErrorText.cpp" line="115"/>
         <source>Could not access the system keyring.</source>
         <translation>无法访问系统密钥环。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="109"/>
+        <location filename="../src/ui/ErrorText.cpp" line="119"/>
         <source>Unable to connect to AI service.</source>
         <translation>无法连接到 AI 服务。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="113"/>
+        <location filename="../src/ui/ErrorText.cpp" line="123"/>
         <source>AI service request timed out.</source>
         <translation>AI 服务请求超时。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="117"/>
+        <location filename="../src/ui/ErrorText.cpp" line="127"/>
         <source>AI service authentication failed.</source>
         <translation>AI 服务认证失败。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="121"/>
+        <location filename="../src/ui/ErrorText.cpp" line="131"/>
         <source>AI service rate limit exceeded.</source>
         <translation>超出 AI 服务请求限制。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="125"/>
+        <location filename="../src/ui/ErrorText.cpp" line="135"/>
         <source>Request blocked by privacy settings.</source>
         <translation>请求已被隐私设置拦截。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="130"/>
+        <location filename="../src/ui/ErrorText.cpp" line="140"/>
         <source>Operation failed.</source>
         <translation>操作失败。</translation>
     </message>
     <message>
-        <location filename="../src/ui/ErrorText.cpp" line="132"/>
+        <location filename="../src/ui/ErrorText.cpp" line="142"/>
         <source>Operation failed (error code: %1)</source>
         <translation>操作失败（错误码：%1）</translation>
+    </message>
+</context>
+<context>
+    <name>linernotes::ui::GuideController</name>
+    <message>
+        <location filename="../src/ui/GuideController.cpp" line="348"/>
+        <source>Song</source>
+        <translation>歌曲</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/GuideController.cpp" line="351"/>
+        <source>Album</source>
+        <translation>专辑</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/GuideController.cpp" line="354"/>
+        <source>Artist</source>
+        <translation>艺人</translation>
     </message>
 </context>
 <context>

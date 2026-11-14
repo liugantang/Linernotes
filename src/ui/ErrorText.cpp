@@ -7,12 +7,22 @@
 
 #include <ai/Errors.h>
 #include <core/Result.h>
+#include <guide/Errors.h>
 #include <library/Errors.h>
 #include <nlq/Errors.h>
 
 namespace linernotes::ui {
 
 namespace {
+
+QString guideErrorText(const QString &code)
+{
+    if (code == guide::errc::kTranslationMisaligned) {
+        return QCoreApplication::translate(
+            "linernotes::ui::ErrorText", "Translation lines could not be aligned.");
+    }
+    return { };
+}
 
 QString nlqErrorText(const QString &code)
 {
@@ -138,8 +148,13 @@ QString coreErrorText(const core::Error &error)
 
 QString userErrorText(const core::Error &error)
 {
-    const QString text = nlqErrorText(error.code);
-    return text.isEmpty() ? coreErrorText(error) : text;
+    if (QString text = nlqErrorText(error.code); !text.isEmpty()) {
+        return text;
+    }
+    if (QString text = guideErrorText(error.code); !text.isEmpty()) {
+        return text;
+    }
+    return coreErrorText(error);
 }
 
 } // namespace linernotes::ui

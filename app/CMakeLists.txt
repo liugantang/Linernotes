@@ -32,6 +32,26 @@ set_source_files_properties(
         QT_RESOURCE_ALIAS SidePanel.qml
 )
 set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/GuidePanel.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS GuidePanel.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/DeepDiveView.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS DeepDiveView.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/LyricsPanel.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS LyricsPanel.qml
+)
+set_source_files_properties(
+    ${CMAKE_SOURCE_DIR}/qml/LyricsEditDialog.qml
+    PROPERTIES
+        QT_RESOURCE_ALIAS LyricsEditDialog.qml
+)
+set_source_files_properties(
     ${CMAKE_SOURCE_DIR}/qml/AlbumGrid.qml
     PROPERTIES
         QT_RESOURCE_ALIAS AlbumGrid.qml
@@ -612,6 +632,10 @@ qt_add_qml_module(linernotes
         ${CMAKE_SOURCE_DIR}/qml/PlayerBarTrackInfo.qml
         ${CMAKE_SOURCE_DIR}/qml/VolumeControl.qml
         ${CMAKE_SOURCE_DIR}/qml/SidePanel.qml
+        ${CMAKE_SOURCE_DIR}/qml/GuidePanel.qml
+        ${CMAKE_SOURCE_DIR}/qml/DeepDiveView.qml
+        ${CMAKE_SOURCE_DIR}/qml/LyricsPanel.qml
+        ${CMAKE_SOURCE_DIR}/qml/LyricsEditDialog.qml
         ${CMAKE_SOURCE_DIR}/qml/QueuePanel.qml
         ${CMAKE_SOURCE_DIR}/qml/QueueRow.qml
         ${CMAKE_SOURCE_DIR}/qml/PlaylistNameDialog.qml
@@ -729,7 +753,7 @@ qt_add_translations(linernotes
     TS_FILE_BASE linernotes
     TS_FILE_DIR ${CMAKE_SOURCE_DIR}/i18n
     RESOURCE_PREFIX /i18n
-    SOURCE_TARGETS linernotes linernotes_ui linernotes_butler
+    SOURCE_TARGETS linernotes linernotes_ui linernotes_butler linernotes_guide
 )
 
 linernotes_set_target_options(linernotes)

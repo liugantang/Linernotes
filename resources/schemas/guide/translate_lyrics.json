@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TranslateLyrics",
+  "type": "object",
+  "properties": {
+    "lines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "translation": {
+            "type": "string"
+          }
+        },
+        "required": ["id", "translation"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["lines"],
+  "additionalProperties": false
+}

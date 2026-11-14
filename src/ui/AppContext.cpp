@@ -43,6 +43,12 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
               return opts;
           }())
     , m_ai(m_settings, m_db, m_clock, m_options.promptsDir)
+    , m_knowledgeService(m_db, m_ai.network(), m_clock)
+    , m_knowledgeCardWriter(m_ai.llm(), m_ai.prompts())
+    , m_knowledgePrewarmer(m_db, m_knowledgeService, m_clock, m_settings)
+    , m_lyricsService(m_db, m_ai.network(), m_clock)
+    , m_lyricsTranslator(m_ai.llm(), m_ai.prompts(), m_db, m_clock)
+    , m_lineExplainer(m_ai.llm(), m_ai.prompts())
     , m_writeback(m_db, m_clock, m_ai.jobs(), m_scanner)
     , m_cleanup(m_db, m_clock, m_ai.jobs(), m_ai.prompts(), m_ai.config(), m_settings)
     , m_audioAnalysis(m_db, m_clock, m_ai.jobs(), audio::defaultEmbeddingModelPath())
@@ -57,6 +63,12 @@ AppContext::AppContext(core::Settings &settings, Options options, QObject *paren
     , m_recorder(m_player, m_db, m_clock)
     , m_settingsController(m_settings, m_player)
     , m_nowPlaying(m_db, m_player, m_coverStore)
+    , m_lyrics(m_lyricsService, m_lyricsTranslator, m_lineExplainer, m_ai.config(), m_settings,
+          m_player, m_nowPlaying)
+    , m_guide(m_knowledgeService, m_knowledgeCardWriter, m_ai.config(), m_nowPlaying)
+    , m_deepDiveTools(m_db, m_knowledgeService, m_lyricsService, m_clock)
+    , m_deepDiveSession(m_ai.llm(), m_ai.prompts(), m_ai.config(), m_deepDiveTools)
+    , m_deepDive(m_deepDiveSession, m_nowPlaying, m_ai.config())
     , m_queueModel(m_db, m_player)
     , m_search(m_db)
     , m_playlists(m_db, m_player)
@@ -177,6 +189,7 @@ void AppContext::connectScannerSignals()
 
 AppContext::~AppContext()
 {
+    m_knowledgePrewarmer.stop();
     m_backupTimer.stop();
     if (m_backupFuture.isRunning()) {
         m_backupFuture.waitForFinished();
@@ -236,6 +249,9 @@ core::Result<void> AppContext::start()
 
     m_watcher->reload();
     rescan();
+
+    QTimer::singleShot(
+        std::chrono::minutes(2), this, [this]() { m_knowledgePrewarmer.maybeStart(); });
 
     if (!m_options.backupDir.isEmpty()) {
         triggerBackupIfDue();
@@ -370,6 +386,21 @@ EndlessPlay *AppContext::endless()
 RecommendController *AppContext::recommend()
 {
     return &m_recommend;
+}
+
+LyricsController *AppContext::lyrics()
+{
+    return &m_lyrics;
+}
+
+GuideController *AppContext::guide()
+{
+    return &m_guide;
+}
+
+DeepDiveController *AppContext::deepDive()
+{
+    return &m_deepDive;
 }
 
 library::Database &AppContext::database()
