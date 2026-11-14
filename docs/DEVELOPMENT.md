@@ -2,7 +2,7 @@
 
 > 适用于本仓库的所有代码与文档，包括人工编写和 AI 辅助生成的内容。
 > 相关文档：[需求](REQUIREMENTS.md) · [开发计划](ROADMAP.md)
-> AI 协作分工（Claude 规划与审查、Gemini 执行）见仓库根目录的 `CLAUDE.md`；代码由审查者在审查通过后提交。
+> AI 协作工作流（Antigravity 主 Agent 规划/验证/审查、Gemini Swarm Worker 执行）见仓库根目录的 [AGENTS.md](../AGENTS.md)；AI 会话下本文件若有与 `AGENTS.md` 冲突之处（如严禁新增测试），一律以 `AGENTS.md` 为准。
 
 ---
 
